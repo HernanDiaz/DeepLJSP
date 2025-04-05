@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import logging
 import time
 import os
+import datetime
 from typing import Dict, List, Tuple, Any, Optional
 from jobshop_rl.utils.visualization import save_plots as visualization_save_plots
 from jobshop_rl.environment.job_shop_env import JobShopEnv
@@ -121,7 +122,8 @@ class ExperimentFactory:
                            agent_params: Dict = None, reward_params: Dict = None,
                            seed: Optional[int] = None, visualize: bool = True,
                            save_plots: bool = True, csv_logging: bool = True, 
-                           csv_filename: Optional[str] = None, csv_base_dir: str = './') -> Tuple[PPOAgent, Dict]:
+                           csv_filename: Optional[str] = None, csv_base_dir: str = 'outputs',
+                           output_dir: str = 'outputs', experiment_name: Optional[str] = None) -> Tuple[PPOAgent, Dict]:
         """
         Ejecuta un experimento completo con evaluación de heurísticas y entrenamiento.
         
@@ -157,6 +159,46 @@ class ExperimentFactory:
 
         logger.info(f"Iniciando experimento de Job Shop Scheduling con RL (reward_strategy={reward_strategy})...")
 
+        # Guardar configuración del experimento
+        from jobshop_rl.utils.experiment_config import ExperimentConfig
+        import datetime
+        
+        # Generar un nombre de experimento único si no se proporcionó uno
+        if experiment_name is None:
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            experiment_name = f"experiment_{timestamp}"
+        
+        # Recopilar todos los parámetros en un solo diccionario
+        config = {
+            'experiment_name': experiment_name,
+            'episodes': episodes,
+            'reward_strategy': reward_strategy,
+            'seed': seed,
+            'visualize': visualize,
+            'save_plots': save_plots,
+            'csv_logging': csv_logging,
+            'problem_name': 'FT10',
+            'num_jobs': 10,
+            'num_machines': 10,
+            'optimal_makespan': 930
+        }
+        
+        # Añadir parámetros del agente
+        if agent_params:
+            config.update(agent_params)
+            
+        # Añadir parámetros de recompensa
+        if reward_params:
+            config.update(reward_params)
+            
+        # Guardar la configuración
+        config_path = ExperimentConfig.save_config(
+            config, 
+            experiment_name=experiment_name,
+            output_dir=os.path.join(output_dir, "configs")
+        )
+        logger.info(f"Configuración del experimento guardada en: {config_path}")
+        
         # Crear entorno
         env = ExperimentFactory.create_ft10_env(reward_strategy, seed=seed, **reward_params)
 
@@ -226,10 +268,11 @@ class ExperimentFactory:
 
             # Guardar gráficos si está habilitado
             if save_plots:
-                output_dir = "plots"
+                plots_dir = os.path.join(output_dir, "plots")
+                os.makedirs(plots_dir, exist_ok=True)
                 experiment_name = f"{reward_strategy}_{episodes}ep"
-                logger.info(f"Guardando visualizaciones en directorio: {output_dir}")
-                visualization_save_plots(plots, directory=output_dir, prefix=experiment_name)
+                logger.info(f"Guardando visualizaciones en directorio: {plots_dir}")
+                visualization_save_plots(plots, directory=plots_dir, prefix=experiment_name)
 
         return agent, {
             "heuristic_results": heuristic_results,

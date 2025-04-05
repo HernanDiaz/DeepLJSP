@@ -199,11 +199,11 @@ Si utilizas este código en tu investigación, por favor cítalo:
   url = {https://github.com/username/jobshop_rl}
 }
 ```
---Que haga los graficos sobre el mejor makespan encontrado
---cambiar el formato de los graficos
---Cambiar directorio de salida de todos los archivos a 'outputs'
---Comprobar como funcioan el entrenamiento por lotes
+TODO
+.. dentro de checkpoints guardar el del mejor resultado
+-- hacer qeu los calculos no dependan de 930 sino que valgan para cada problema hacerlo generico y njo para ft10
+--Comprobar como funciona el entrenamiento por lotes
 --Comprobar que se cargan los ejemplos en el formato correcto
 
-Poner claude como asistente:
-https://www.youtube.com/watch?v=lbCrQ7iqRuo
+Enlaces https://www.youtube.com/watch?v=lbCrQ7iqRuo
+https://spinningup.openai.com/en/latest/algorithms/ppo.html#references[readme.md](readme.md)

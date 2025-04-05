@@ -18,18 +18,18 @@ logger = logging.getLogger("JobShopRL")
 class TrainingLogger:
     """Clase para el registro de datos de entrenamiento en CSV"""
     
-    def __init__(self, filename: str = None, include_timestamp: bool = True, base_dir: str = './'):
+    def __init__(self, filename: str = None, include_timestamp: bool = True, base_dir: str = 'outputs'):
         """
         Inicializa el logger para CSV.
         
         Args:
             filename: Nombre del archivo CSV de salida. Si es None, se genera uno automáticamente.
             include_timestamp: Si se debe incluir una marca de tiempo en el nombre del archivo.
-            base_dir: Directorio base donde se guardará el archivo (por defecto el directorio actual).
+            base_dir: Directorio base donde se guardará el archivo (por defecto 'outputs').
         """
-        # Asegurar que base_dir termina con /
-        if not base_dir.endswith('/'):
-            base_dir += '/'
+        # Asegurar que existe el directorio base
+        if not os.path.exists(base_dir):
+            os.makedirs(base_dir, exist_ok=True)
             
         # Crear directorio de logs dentro del directorio base
         logs_dir = os.path.join(base_dir, 'logs')
@@ -37,9 +37,9 @@ class TrainingLogger:
         
         # Verificar que el directorio se creó correctamente
         if not os.path.exists(logs_dir):
-            # Si no se pudo crear, usar el directorio actual
+            # Si no se pudo crear, usar el directorio base
             logs_dir = base_dir
-            logger.warning(f"No se pudo crear el directorio logs. Usando {logs_dir} como alternativa.")
+            logger.warning(f"No se pudo crear el directorio logs. Usando {base_dir} como alternativa.")
         
         # Generar nombre de archivo si no se proporcionó
         if filename is None:

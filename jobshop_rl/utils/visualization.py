@@ -63,12 +63,22 @@ def plot_makespan_history(makespan_history: List[float], title: str = "Evolució
         Objeto figura de matplotlib
     """
     plt.figure(figsize=(12, 6))
-    plt.plot(makespan_history, '-o')
     
+    # Gráfica principal de makespan
+    plt.plot(makespan_history)
+    
+    # Línea de valor óptimo si se proporciona
     if optimal_makespan is not None:
         plt.axhline(y=optimal_makespan, color='r', linestyle='--', label=f'Óptimo: {optimal_makespan}')
     
-    plt.xlabel('Pasos')
+    # Calcular y añadir media móvil
+    window_size = min(30, len(makespan_history))
+    if window_size > 0:
+        moving_avg = [sum(makespan_history[max(0, i-window_size):i])/min(i, window_size)
+                     for i in range(1, len(makespan_history)+1)]
+        plt.plot(moving_avg, color='blue', linewidth=2, label=f'Media móvil ({window_size} episodios)')
+    
+    plt.xlabel('Episodios')
     plt.ylabel('Makespan')
     plt.title(title)
     plt.legend()
@@ -95,13 +105,21 @@ def plot_training_metrics(metrics: Dict[str, List[float]], window_size: int = 30
             continue
             
         plt.figure(figsize=(12, 6))
-        plt.plot(values, label=f'{metric_name} por episodio')
         
-        # Calcular y añadir media móvil si hay suficientes datos
-        if len(values) > window_size:
+        # Línea principal
+        plt.plot(values)
+        
+        # Color específico para la media móvil según el tipo de métrica
+        line_color = 'blue'
+        if 'reward' in metric_name.lower():
+            line_color = 'green'
+        
+        # Calcular y añadir media móvil
+        window_size = min(window_size, len(values))
+        if window_size > 0:
             moving_avg = [sum(values[max(0, i-window_size):i])/min(i, window_size) 
                          for i in range(1, len(values)+1)]
-            plt.plot(moving_avg, linewidth=2, label=f'Media móvil ({window_size} episodios)')
+            plt.plot(moving_avg, color=line_color, linewidth=2, label=f'Media móvil ({window_size} episodios)')
         
         plt.xlabel('Episodios')
         plt.ylabel(metric_name.capitalize())
@@ -114,13 +132,13 @@ def plot_training_metrics(metrics: Dict[str, List[float]], window_size: int = 30
     return figures
 
 
-def save_plots(plots: Dict[str, Any], directory: str = "./plots", prefix: str = ""):
+def save_plots(plots: Dict[str, Any], directory: str = "outputs/plots", prefix: str = ""):
     """
     Guarda una colección de gráficos en archivos.
 
     Args:
         plots: Diccionario de plots matplotlib
-        directory: Directorio donde guardar los gráficos
+        directory: Directorio donde guardar los gráficos (por defecto outputs/plots)
         prefix: Prefijo para los nombres de archivos
     """
     import os

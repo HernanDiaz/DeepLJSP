@@ -9,6 +9,7 @@ from torch.distributions import Categorical
 import numpy as np
 import time
 import logging
+import os
 from typing import List, Dict, Tuple, Optional, Any
 from copy import deepcopy
 import matplotlib.pyplot as plt
@@ -403,8 +404,20 @@ class PPOAgent(Agent):
         if self.csv_logger:
             self.csv_logger.save()
 
-    def save_checkpoint(self, path: str):
+    def save_checkpoint(self, path: str, output_dir: str = "outputs"):
         """Guarda el modelo en un checkpoint"""
+        # Asegurar que existe el directorio de salida
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir, exist_ok=True)
+            
+        # Crear subdirectorio para checkpoints
+        checkpoints_dir = os.path.join(output_dir, "checkpoints")
+        if not os.path.exists(checkpoints_dir):
+            os.makedirs(checkpoints_dir, exist_ok=True)
+            
+        # Construir la ruta completa para el checkpoint
+        checkpoint_path = os.path.join(checkpoints_dir, path)
+            
         checkpoint = {
             'policy_state_dict': self.policy.state_dict(),
             'value_state_dict': self.value.state_dict(),
@@ -417,8 +430,8 @@ class PPOAgent(Agent):
             'episode_rewards': self.episode_rewards,
             'training_losses': self.training_losses
         }
-        torch.save(checkpoint, path)
-        logger.info(f"Checkpoint guardado en {path}")
+        torch.save(checkpoint, checkpoint_path)
+        logger.info(f"Checkpoint guardado en {checkpoint_path}")
 
     def load_checkpoint(self, path: str):
         """Carga un modelo desde un checkpoint"""
@@ -453,21 +466,42 @@ class PPOAgent(Agent):
 
     def plot_training_history(self):
         """Visualiza la evolución del makespan durante el entrenamiento"""
-        from jobshop_rl.utils.visualization import plot_makespan_history
-        return plot_makespan_history(
-            self.training_makespan_history,
-            title='Evolución del Makespan durante el entrenamiento',
-            optimal_makespan=930
-        )
+        plt.figure(figsize=(12, 6))
+        plt.plot(self.training_makespan_history)
+        plt.axhline(y=930, color='r', linestyle='--', label='Óptimo: 930')
+
+        window_size = min(30, len(self.training_makespan_history))
+        if window_size > 0:
+            moving_avg = [sum(self.training_makespan_history[max(0, i-window_size):i])/min(i, window_size)
+                         for i in range(1, len(self.training_makespan_history)+1)]
+            plt.plot(moving_avg, color='blue', linewidth=2, label=f'Media móvil ({window_size} episodios)')
+
+        plt.xlabel('Episodios')
+        plt.ylabel('Makespan')
+        plt.title('Evolución del Makespan durante el entrenamiento')
+        plt.legend()
+        plt.grid(True)
+
+        return plt.gcf()
 
     def plot_reward_history(self):
         """Visualiza la evolución de las recompensas durante el entrenamiento"""
-        from jobshop_rl.utils.visualization import plot_makespan_history
-        return plot_makespan_history(
-            self.episode_rewards,
-            title='Evolución de la recompensa durante el entrenamiento',
-            optimal_makespan=None
-        )
+        plt.figure(figsize=(12, 6))
+        plt.plot(self.episode_rewards)
+
+        window_size = min(30, len(self.episode_rewards))
+        if window_size > 0:
+            moving_avg = [sum(self.episode_rewards[max(0, i-window_size):i])/min(i, window_size)
+                         for i in range(1, len(self.episode_rewards)+1)]
+            plt.plot(moving_avg, color='green', linewidth=2, label=f'Media móvil ({window_size} episodios)')
+
+        plt.xlabel('Episodios')
+        plt.ylabel('Recompensa')
+        plt.title('Evolución de la recompensa durante el entrenamiento')
+        plt.legend()
+        plt.grid(True)
+
+        return plt.gcf()
 
     def plot_losses(self):
         """Visualiza la evolución de las pérdidas durante el entrenamiento"""

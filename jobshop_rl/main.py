@@ -36,7 +36,7 @@ def parse_args():
                        help='Directorio con problemas de entrenamiento (modo batch)')
     parser.add_argument('--test-dir', type=str, default='./data/test_problems',
                        help='Directorio con problemas de prueba (modo batch)')
-    parser.add_argument('--output-dir', type=str, default='./results',
+    parser.add_argument('--output-dir', type=str, default='outputs/results',
                        help='Directorio para guardar resultados (modo batch)')
     parser.add_argument('--episodes-per-problem', type=int, default=100,
                        help='Episodios para entrenar en cada problema (modo batch)')
@@ -61,6 +61,8 @@ def parse_args():
                        help='Habilitar logging de métricas en CSV')
     parser.add_argument('--csv-file', type=str, default=None,
                        help='Nombre del archivo CSV para logging de métricas')
+    parser.add_argument('--experiment-name', type=str, default=None,
+                       help='Nombre del experimento (para identificación y reproducibilidad)')
     
     return parser.parse_args()
 
@@ -77,6 +79,11 @@ def setup_logging(log_level):
 
 def run_single_experiment(args):
     """Ejecuta un experimento con un único problema (FT10)"""
+    # Asegurar que existe el directorio de salida
+    output_dir = "outputs"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir, exist_ok=True)
+        
     reward_params = {
         "makespan_weight": 1.0,
         "idle_weight": 0.2,
@@ -110,7 +117,9 @@ def run_single_experiment(args):
         save_plots=args.save_plots,
         csv_logging=args.csv_logging,
         csv_filename=args.csv_file,
-        csv_base_dir="./outputs/"
+        csv_base_dir=output_dir,
+        output_dir=output_dir,
+        experiment_name=args.experiment_name
     )
     
     total_time = time.time() - start_time
@@ -129,6 +138,14 @@ def run_single_experiment(args):
 
 def run_batch_experiment(args):
     """Ejecuta un experimento por lotes con múltiples problemas"""
+    # Asegurar que existe el directorio de salida principal
+    output_dir = "outputs"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir, exist_ok=True)
+    
+    # Modificar el directorio de salida para usar outputs/results
+    batch_output_dir = os.path.join(output_dir, os.path.basename(args.output_dir))
+    
     reward_params = {
         "makespan_weight": 1.0,
         "idle_weight": 0.2,
@@ -152,12 +169,13 @@ def run_batch_experiment(args):
     # Crear directorios si no existen
     os.makedirs(args.training_dir, exist_ok=True)
     os.makedirs(args.test_dir, exist_ok=True)
+    os.makedirs(batch_output_dir, exist_ok=True)
     
     # Configurar experimentador por lotes
     experimenter = BatchExperimenter(
         training_dir=args.training_dir,
         test_dir=args.test_dir,
-        output_dir=args.output_dir,
+        output_dir=batch_output_dir,
         agent_params=agent_params,
         reward_strategy=args.reward,
         reward_params=reward_params,
@@ -197,14 +215,19 @@ def run_batch_experiment(args):
                 print(f"  Gap mínimo: {valid_gaps.min():.2f}%")
                 print(f"  Gap máximo: {valid_gaps.max():.2f}%")
     
-    print(f"\nResultados completos guardados en: {args.output_dir}")
+    print(f"\nResultados completos guardados en: {batch_output_dir}")
     
     return best_agent, results
 
 def generate_problems(args):
     """Genera problemas aleatorios y los guarda en archivos"""
-    # Crear directorio de salida
-    output_dir = 'jobshop_rl/data/generated_problems'
+    # Asegurar que existe el directorio de salida principal
+    main_output_dir = "outputs"
+    if not os.path.exists(main_output_dir):
+        os.makedirs(main_output_dir, exist_ok=True)
+        
+    # Crear directorio de salida para problemas generados
+    output_dir = os.path.join(main_output_dir, 'generated_problems')
     os.makedirs(output_dir, exist_ok=True)
     
     print(f"Generando {args.num_problems} problemas aleatorios...")
