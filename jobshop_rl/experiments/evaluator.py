@@ -1,0 +1,217 @@
+"""
+Evaluador de estrategias heurísticas y agentes de RL para Job Shop Scheduling.
+"""
+
+import logging
+from typing import Dict, List, Tuple, Any, Optional
+from copy import deepcopy
+
+from jobshop_rl.environment.job_shop_env import JobShopEnv
+from jobshop_rl.heuristics.strategies import (
+    HeuristicStrategy, SPTHeuristic, LPTHeuristic, 
+    MORHeuristic, MWKRHeuristic, RandomHeuristic
+)
+from jobshop_rl.agents.ppo_agent import PPOAgent
+
+logger = logging.getLogger("JobShopRL.Evaluator")
+
+class HeuristicEvaluator:
+    """Evaluador para comparar diferentes heurísticas"""
+
+    def __init__(self, env: JobShopEnv):
+        """
+        Inicializa el evaluador.
+        
+        Args:
+            env: Entorno de Job Shop Scheduling
+        """
+        self.env = env
+        self.results = {}
+
+    def evaluate_heuristic(self, heuristic: HeuristicStrategy, name: str) -> float:
+        """
+        Evalúa una heurística específica.
+        
+        Args:
+            heuristic: Estrategia heurística a evaluar
+            name: Nombre identificativo de la heurística
+            
+        Returns:
+            Makespan resultante
+        """
+        # Crear una copia del entorno para no afectar a otros experimentos
+        env_copy = deepcopy(self.env)
+        state = env_copy.reset()
+        done = False
+
+        while not done:
+            eligible_ops = state['eligible_ops']
+            if not eligible_ops:
+                break
+
+            features = env_copy.get_features(state)
+
+            if len(eligible_ops) > 0:
+                action_idx = heuristic.select_action(eligible_ops, features)
+                action_idx = min(action_idx, len(eligible_ops)-1)  # Asegurar índice válido
+                next_state, _, done, _ = env_copy.step(action_idx)
+                state = next_state
+
+        makespan = max(env_copy.job_completion_time) if done else float('inf')
+        self.results[name] = makespan
+        logger.info(f"{name}: Makespan = {makespan}")
+        return makespan
+
+    def evaluate_all(self) -> Dict[str, float]:
+        """
+        Evalúa todas las heurísticas comunes.
+        
+        Returns:
+            Diccionario con los resultados (makespan) de cada heurística
+        """
+        self.evaluate_heuristic(SPTHeuristic(), "SPT")
+        self.evaluate_heuristic(LPTHeuristic(), "LPT")
+        self.evaluate_heuristic(MORHeuristic(), "MOR")
+        self.evaluate_heuristic(MWKRHeuristic(), "MWKR")
+        self.evaluate_heuristic(RandomHeuristic(), "Random")
+        return self.results
+
+    def compare_with_agent(self, agent_makespan: float) -> Dict[str, float]:
+        """
+        Compara el rendimiento del agente con las heurísticas.
+        
+        Args:
+            agent_makespan: Mejor makespan obtenido por el agente
+            
+        Returns:
+            Diccionario con el porcentaje de mejora respecto a cada heurística
+        """
+        comparison = {}
+        for name, makespan in self.results.items():
+            improvement = (makespan - agent_makespan) / makespan * 100
+            comparison[name] = improvement
+            logger.info(f"vs {name}: {improvement:.2f}% de mejora")
+        return comparison
+
+class AgentEvaluator:
+    """Evaluador para experimentos con agentes de RL"""
+    
+    def __init__(self, env: JobShopEnv, agent: PPOAgent):
+        """
+        Inicializa el evaluador.
+        
+        Args:
+            env: Entorno de Job Shop Scheduling
+            agent: Agente de RL a evaluar
+        """
+        self.env = env
+        self.agent = agent
+        self.results = {}
+        
+    def evaluate_on_problem(self, problem_data: Dict[str, Any], problem_name: str) -> Dict[str, Any]:
+        """
+        Evalúa el agente en un problema específico.
+        
+        Args:
+            problem_data: Datos del problema (secuencias, duraciones, etc.)
+            problem_name: Nombre identificativo del problema
+            
+        Returns:
+            Diccionario con los resultados de la evaluación
+        """
+        from jobshop_rl.experiments.factory import ExperimentFactory
+        
+        # Configurar entorno para este problema
+        test_env = ExperimentFactory.create_env_from_problem(problem_data)
+        
+        # Crear un agente para evaluación que comparta el modelo con el agente original
+        test_agent = PPOAgent(test_env)
+        test_agent.policy.load_state_dict(self.agent.policy.state_dict())
+        test_agent.value.load_state_dict(self.agent.value.state_dict())
+        
+        # Evaluar
+        makespan, schedule, makespan_history = test_agent.evaluate_policy()
+        
+        # Calcular desviación del óptimo si está disponible
+        optimal = problem_data.get('optimal_makespan', None)
+        if optimal:
+            gap = (makespan - optimal) / optimal * 100
+        else:
+            gap = None
+            
+        # Guardar resultados
+        result = {
+            'problem': problem_name,
+            'makespan': makespan,
+            'schedule': schedule,
+            'makespan_history': makespan_history,
+            'optimal': optimal,
+            'gap': gap
+        }
+        
+        self.results[problem_name] = result
+        
+        return result
+    
+    def evaluate_on_problems(self, problems: List[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
+        """
+        Evalúa el agente en múltiples problemas.
+        
+        Args:
+            problems: Lista de diccionarios con datos de problemas
+            
+        Returns:
+            Diccionario con los resultados para cada problema
+        """
+        for i, problem in enumerate(problems):
+            problem_name = problem.get('name', f"problem_{i}")
+            logger.info(f"Evaluando agente en problema: {problem_name}")
+            self.evaluate_on_problem(problem, problem_name)
+            
+        # Calcular estadísticas globales
+        if self.results:
+            avg_makespan = sum(r['makespan'] for r in self.results.values()) / len(self.results)
+            logger.info(f"Makespan promedio en {len(self.results)} problemas: {avg_makespan:.2f}")
+            
+            # Calcular gap promedio si hay valores óptimos
+            gaps = [r['gap'] for r in self.results.values() if r['gap'] is not None]
+            if gaps:
+                avg_gap = sum(gaps) / len(gaps)
+                logger.info(f"Desviación promedio del óptimo: {avg_gap:.2f}%")
+        
+        return self.results
+    
+    def compare_with_heuristics(self, problems: List[Dict[str, Any]]) -> Dict[str, Dict[str, float]]:
+        """
+        Compara el agente con heurísticas clásicas en múltiples problemas.
+        
+        Args:
+            problems: Lista de diccionarios con datos de problemas
+            
+        Returns:
+            Diccionario con comparativas para cada problema
+        """
+        from jobshop_rl.experiments.factory import ExperimentFactory
+        
+        comparisons = {}
+        
+        for i, problem in enumerate(problems):
+            problem_name = problem.get('name', f"problem_{i}")
+            logger.info(f"Comparando en problema: {problem_name}")
+            
+            # Evaluar el agente si aún no se ha hecho
+            if problem_name not in self.results:
+                self.evaluate_on_problem(problem, problem_name)
+                
+            agent_makespan = self.results[problem_name]['makespan']
+            
+            # Evaluar heurísticas
+            test_env = ExperimentFactory.create_env_from_problem(problem)
+            evaluator = HeuristicEvaluator(test_env)
+            heuristic_results = evaluator.evaluate_all()
+            
+            # Comparar
+            comparison = evaluator.compare_with_agent(agent_makespan)
+            comparisons[problem_name] = comparison
+            
+        return comparisons
