@@ -197,6 +197,9 @@ class PPOAgent(Agent):
                 self.best_schedule = deepcopy(self.env.schedule_history)
                 self.best_makespan_history = deepcopy(self.env.makespan_history)
                 logger.info(f"Nuevo mejor makespan: {makespan}")
+                
+                # Guardar checkpoint del mejor modelo
+                self.save_best_checkpoint()
 
         self.episode_rewards.append(episode_reward)
         self.epsilon_history.append(self.eps_clip)  # Tracking de epsilon
@@ -390,6 +393,32 @@ class PPOAgent(Agent):
         
         # Usar el CheckpointManager para guardar
         self.checkpoint_manager.save_checkpoint(checkpoint, checkpoint_path)
+        
+    def save_best_checkpoint(self):
+        """
+        Guarda el checkpoint del modelo que ha conseguido el mejor makespan.
+        Este método se llama automáticamente cuando se encuentra un nuevo mejor makespan.
+        """
+        # Obtener la ruta para el checkpoint del mejor modelo
+        checkpoint_path = get_checkpoint_path("best_model.pt")
+        
+        checkpoint = {
+            'policy_state_dict': self.policy.state_dict(),
+            'value_state_dict': self.value.state_dict(),
+            'optimizer_policy_state_dict': self.optimizer_policy.state_dict(),
+            'optimizer_value_state_dict': self.optimizer_value.state_dict(),
+            'best_makespan': self.best_makespan,
+            'best_schedule': self.best_schedule,
+            'best_makespan_history': self.best_makespan_history,
+            'training_history': self.training_makespan_history,
+            'episode_rewards': self.episode_rewards,
+            'training_losses': self.training_losses,
+            'total_episodes': self.total_episodes
+        }
+        
+        # Usar el CheckpointManager para guardar
+        self.checkpoint_manager.save_checkpoint(checkpoint, checkpoint_path)
+        logger.info(f"Guardado checkpoint del mejor modelo (makespan: {self.best_makespan}) en {checkpoint_path}")
 
     def load_checkpoint(self, path: str):
         """
