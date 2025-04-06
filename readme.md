@@ -202,6 +202,8 @@ Si utilizas este código en tu investigación, por favor cítalo:
 TODO
 .. dentro de checkpoints guardar el del mejor resultado
 -- hacer qeu los calculos no dependan de 930 sino que valgan para cada problema hacerlo generico y njo para ft10
+en general hay que mejorar los valores hardcoded
+-- una vez guardado el mejor modelo, evaluarlo con la instancia de otro problema.
 --Comprobar como funciona el entrenamiento por lotes
 --Comprobar que se cargan los ejemplos en el formato correcto
 
