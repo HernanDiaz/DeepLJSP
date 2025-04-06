@@ -14,13 +14,11 @@ from typing import List, Dict, Tuple, Optional, Any
 from copy import deepcopy
 import matplotlib.pyplot as plt
 
-# Ensure the 'jobshop_rl' module is accessible. If it's a local module, add its directory to sys.path
-import sys
-sys.path.append('/path/to/jobshop_rl')
 from jobshop_rl.agents.base_agent import Agent
 from jobshop_rl.models.neural_models import PolicyNetwork, ValueNetwork
 from jobshop_rl.environment.job_shop_env import JobShopEnv
 from jobshop_rl.utils.logging import TrainingLogger
+from jobshop_rl.utils.path_utils import get_checkpoint_path, get_output_dir
 
 logger = logging.getLogger("JobShopRL.PPOAgent")
 
@@ -404,19 +402,16 @@ class PPOAgent(Agent):
         if self.csv_logger:
             self.csv_logger.save()
 
-    def save_checkpoint(self, path: str, output_dir: str = "outputs"):
-        """Guarda el modelo en un checkpoint"""
-        # Asegurar que existe el directorio de salida
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir, exist_ok=True)
-            
-        # Crear subdirectorio para checkpoints
-        checkpoints_dir = os.path.join(output_dir, "checkpoints")
-        if not os.path.exists(checkpoints_dir):
-            os.makedirs(checkpoints_dir, exist_ok=True)
-            
-        # Construir la ruta completa para el checkpoint
-        checkpoint_path = os.path.join(checkpoints_dir, path)
+    def save_checkpoint(self, path: str, output_dir: str = None):
+        """
+        Guarda el modelo en un checkpoint.
+        
+        Args:
+            path: Nombre del archivo de checkpoint
+            output_dir: Directorio de salida opcional (usa el predeterminado si es None)
+        """
+        # Obtener la ruta completa para el checkpoint
+        checkpoint_path = get_checkpoint_path(path)
             
         checkpoint = {
             'policy_state_dict': self.policy.state_dict(),

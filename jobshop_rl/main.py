@@ -12,6 +12,10 @@ from jobshop_rl.experiments.factory import ExperimentFactory
 from jobshop_rl.experiments.batch_experimenter import BatchExperimenter
 from jobshop_rl.data.problem_loader import ProblemLoader
 from jobshop_rl.utils.logging import TrainingLogger
+from jobshop_rl.utils.path_utils import (
+    ensure_dir, get_output_dir, get_checkpoint_path, 
+    get_plots_dir, join_paths, DEFAULT_OUTPUT_DIR
+)
 
 def parse_args():
     """Configura y parsea los argumentos de línea de comandos"""
@@ -79,10 +83,8 @@ def setup_logging(log_level):
 
 def run_single_experiment(args):
     """Ejecuta un experimento con un único problema (FT10)"""
-    # Asegurar que existe el directorio de salida
-    output_dir = "outputs"
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir, exist_ok=True)
+    # Obtener el directorio de salida estandarizado
+    output_dir = get_output_dir()
         
     reward_params = {
         "makespan_weight": 1.0,
@@ -138,13 +140,8 @@ def run_single_experiment(args):
 
 def run_batch_experiment(args):
     """Ejecuta un experimento por lotes con múltiples problemas"""
-    # Asegurar que existe el directorio de salida principal
-    output_dir = "outputs"
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir, exist_ok=True)
-    
-    # Modificar el directorio de salida para usar outputs/results
-    batch_output_dir = os.path.join(output_dir, os.path.basename(args.output_dir))
+    # Obtener el directorio de salida estandarizado para experimentos por lotes
+    batch_output_dir = get_output_dir([os.path.basename(args.output_dir)])
     
     reward_params = {
         "makespan_weight": 1.0,
@@ -221,14 +218,8 @@ def run_batch_experiment(args):
 
 def generate_problems(args):
     """Genera problemas aleatorios y los guarda en archivos"""
-    # Asegurar que existe el directorio de salida principal
-    main_output_dir = "outputs"
-    if not os.path.exists(main_output_dir):
-        os.makedirs(main_output_dir, exist_ok=True)
-        
-    # Crear directorio de salida para problemas generados
-    output_dir = os.path.join(main_output_dir, 'generated_problems')
-    os.makedirs(output_dir, exist_ok=True)
+    # Obtener el directorio de salida estandarizado para problemas generados
+    output_dir = get_output_dir(['generated_problems'])
     
     print(f"Generando {args.num_problems} problemas aleatorios...")
     

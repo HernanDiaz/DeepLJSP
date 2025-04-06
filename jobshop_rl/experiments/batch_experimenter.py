@@ -15,6 +15,7 @@ from jobshop_rl.experiments.factory import ExperimentFactory
 from jobshop_rl.utils.logging import TrainingLogger
 from jobshop_rl.agents.ppo_agent import PPOAgent
 from jobshop_rl.utils.visualization import save_plots
+from jobshop_rl.utils.path_utils import ensure_dir, join_paths
 
 logger = logging.getLogger("JobShopRL.BatchExperimenter")
 
@@ -47,14 +48,11 @@ class BatchExperimenter:
         logger.info(f"Cargando problemas de prueba desde: {test_dir}")
         self.test_problems = ProblemLoader.load_from_directory(test_dir)
         
-        self.output_dir = output_dir
+        self.output_dir = ensure_dir(output_dir)
         self.agent_params = agent_params or {}
         self.reward_strategy = reward_strategy
         self.reward_params = reward_params or {}
         self.seed = seed
-        
-        # Crear directorio de salida si no existe
-        os.makedirs(output_dir, exist_ok=True)
         
         logger.info(f"Configuración completa: {len(self.training_problems)} problemas de entrenamiento, "
                    f"{len(self.test_problems)} problemas de prueba")
@@ -191,8 +189,7 @@ class BatchExperimenter:
     
     def _generate_problem_visualizations(self, agent: PPOAgent, problem_name: str, env):
         """Genera visualizaciones para un problema específico"""
-        plots_dir = os.path.join(self.output_dir, "plots", problem_name)
-        os.makedirs(plots_dir, exist_ok=True)
+        plots_dir = ensure_dir(join_paths(self.output_dir, "plots", problem_name))
         
         plots = {}
         
@@ -270,9 +267,8 @@ class BatchExperimenter:
             
             # Guardar programación resultante como visualización
             fig = env.render_schedule(f"Solución para {problem_name}")
-            plots_dir = os.path.join(self.output_dir, "plots", "test")
-            os.makedirs(plots_dir, exist_ok=True)
-            fig.savefig(f"{plots_dir}/{problem_name}_schedule.png")
+            plots_dir = ensure_dir(join_paths(self.output_dir, "plots", "test"))
+            fig.savefig(join_paths(plots_dir, f"{problem_name}_schedule.png"))
             plt.close(fig)
             
             # Calcular gap si hay valor óptimo
@@ -340,7 +336,6 @@ class BatchExperimenter:
         plt.tight_layout()
         
         # Guardar gráfico
-        plots_dir = os.path.join(self.output_dir, "plots")
-        os.makedirs(plots_dir, exist_ok=True)
-        plt.savefig(f"{plots_dir}/test_gaps.png")
+        plots_dir = ensure_dir(join_paths(self.output_dir, "plots"))
+        plt.savefig(join_paths(plots_dir, "test_gaps.png"))
         plt.close()
