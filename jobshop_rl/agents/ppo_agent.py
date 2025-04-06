@@ -15,10 +15,13 @@ from copy import deepcopy
 import matplotlib.pyplot as plt
 
 from jobshop_rl.agents.base_agent import Agent
+from jobshop_rl.agents.ppo_memory import PPOMemory
 from jobshop_rl.models.neural_models import PolicyNetwork, ValueNetwork
 from jobshop_rl.environment.job_shop_env import JobShopEnv
 from jobshop_rl.utils.logging import TrainingLogger
 from jobshop_rl.utils.path_utils import get_checkpoint_path, get_output_dir
+from jobshop_rl.utils.checkpoint_manager import CheckpointManager
+from jobshop_rl.utils.visualization import plot_makespan_history, plot_training_metrics
 
 logger = logging.getLogger("JobShopRL.PPOAgent")
 
@@ -77,6 +80,14 @@ class PPOAgent(Agent):
         
         # Tiempo de inicio para tracking de duración
         self.training_start_time = None
+        
+        # Inicializar componentes modulares
+        self.memory = PPOMemory(
+            gamma=gamma, 
+            gae_lambda=gae_lambda,
+            advantage_normalization=advantage_normalization
+        )
+        self.checkpoint_manager = CheckpointManager()
 
     def _state_to_value_input(self, state: Dict) -> torch.Tensor:
         """Convierte el estado a un tensor para la red de valor"""
@@ -123,26 +134,7 @@ class PPOAgent(Agent):
 
         return action_log_probs, dist_entropy
 
-    def calculate_gae(self, rewards, values, is_terminals, gamma, lam):
-        """Calcula ventajas usando Generalized Advantage Estimation"""
-        gae = 0
-        returns = []
-        advantages = []
-
-        for i in reversed(range(len(rewards))):
-            if i == len(rewards) - 1 or is_terminals[i]:
-                # Si es terminal, no hay próximo estado
-                next_value = 0
-            else:
-                next_value = values[i + 1]
-
-            delta = rewards[i] + gamma * next_value * (1 - is_terminals[i]) - values[i]
-            gae = delta + gamma * lam * (1 - is_terminals[i]) * gae
-
-            returns.insert(0, gae + values[i])
-            advantages.insert(0, gae)
-
-        return returns, advantages
+    # El método calculate_gae ha sido movido a la clase PPOMemory
 
     def _recreate_best_solution(self) -> Tuple[float, List[Dict], List[float]]:
         """Recrea la mejor solución encontrada para obtener el makespan history"""
@@ -163,18 +155,11 @@ class PPOAgent(Agent):
         """Entrena un episodio completo y devuelve la recompensa total"""
         state = self.env.reset()
         done = False
-
-        # Buffers para almacenar la experiencia
-        states = []
-        actions = []
-        log_probs = []
-        rewards = []
-        features_list = []
-        is_terminals = []
-        values = []
-
         episode_reward = 0
         self.total_episodes += 1
+        
+        # Limpiar memoria para el nuevo episodio
+        self.memory.clear()
 
         while not done:
             action_idx, action_log_prob, features = self.select_action(state, training=True)
@@ -188,14 +173,17 @@ class PPOAgent(Agent):
                 value = self.value(value_input).item()
 
             next_state, reward, done, info = self.env.step(action_idx)
-
-            states.append(state)
-            actions.append(action_idx)
-            log_probs.append(action_log_prob)
-            rewards.append(reward)
-            features_list.append(features)
-            is_terminals.append(done)
-            values.append(value)
+            
+            # Almacenar en memoria
+            self.memory.store(
+                state=state,
+                action=action_idx,
+                log_prob=action_log_prob,
+                reward=reward,
+                features=features,
+                is_terminal=done,
+                value=value
+            )
 
             episode_reward += reward
             state = next_state
@@ -237,38 +225,12 @@ class PPOAgent(Agent):
                 training_time=training_time
             )
 
-        if len(states) == 0:
+        # Si no hay experiencias, terminar
+        if self.memory.is_empty():
             return episode_reward
 
-        # Calcular retornos y ventajas
-        if self.gae_lambda > 0:
-            returns, advantages = self.calculate_gae(
-                rewards, values, is_terminals, self.gamma, self.gae_lambda
-            )
-            returns = torch.tensor(returns, dtype=torch.float32)
-            advantages = torch.tensor(advantages, dtype=torch.float32)
-        else:
-            # Método tradicional de retornos descontados
-            returns = []
-            discounted_reward = 0
-            for reward, is_terminal in zip(reversed(rewards), reversed(is_terminals)):
-                if is_terminal:
-                    discounted_reward = 0
-                discounted_reward = reward + (self.gamma * discounted_reward)
-                returns.insert(0, discounted_reward)
-
-            returns = torch.tensor(returns, dtype=torch.float32)
-
-            # Calcular ventajas como retornos - valores
-            value_tensor = torch.tensor(values, dtype=torch.float32)
-            advantages = returns - value_tensor
-
-        # Normalizar ventajas si está habilitado
-        if self.advantage_normalization and len(advantages) > 1:
-            advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
-
-        old_actions = torch.tensor([a for a in actions], dtype=torch.int64)
-        old_log_probs = torch.stack(log_probs)
+        # Obtener tensores de la memoria
+        old_actions, old_log_probs, returns, advantages, features_list = self.memory.get_tensors()
 
         # Realizar actualizaciones de PPO
         policy_losses = []
@@ -288,13 +250,13 @@ class PPOAgent(Agent):
 
         # Mini-batch updates for K epochs
         for _ in range(self.K_epochs):
-            for i in range(len(states)):
+            for i in range(len(self.memory.states)):
                 state_features = features_list[i]
-                value_input = self._state_to_value_input(states[i])
+                value_input = self._state_to_value_input(self.memory.states[i])
 
                 value = self.value(value_input)
 
-                new_log_probs, dist_entropy = self.evaluate(state_features, torch.tensor(actions[i], dtype=torch.int64))
+                new_log_probs, dist_entropy = self.evaluate(state_features, torch.tensor(self.memory.actions[i], dtype=torch.int64))
 
                 ratio = torch.exp(new_log_probs - old_log_probs[i].detach())
 
@@ -425,12 +387,21 @@ class PPOAgent(Agent):
             'episode_rewards': self.episode_rewards,
             'training_losses': self.training_losses
         }
-        torch.save(checkpoint, checkpoint_path)
-        logger.info(f"Checkpoint guardado en {checkpoint_path}")
+        
+        # Usar el CheckpointManager para guardar
+        self.checkpoint_manager.save_checkpoint(checkpoint, checkpoint_path)
 
     def load_checkpoint(self, path: str):
-        """Carga un modelo desde un checkpoint"""
-        checkpoint = torch.load(path)
+        """
+        Carga un modelo desde un checkpoint.
+        
+        Args:
+            path: Ruta al archivo de checkpoint
+        """
+        # Usar el CheckpointManager para cargar
+        checkpoint = self.checkpoint_manager.load_checkpoint(path)
+        
+        # Cargar los datos al agente
         self.policy.load_state_dict(checkpoint['policy_state_dict'])
         self.value.load_state_dict(checkpoint['value_state_dict'])
         self.optimizer_policy.load_state_dict(checkpoint['optimizer_policy_state_dict'])
@@ -441,7 +412,6 @@ class PPOAgent(Agent):
         self.training_makespan_history = checkpoint['training_history']
         self.episode_rewards = checkpoint.get('episode_rewards', [])
         self.training_losses = checkpoint.get('training_losses', {"policy": [], "value": []})
-        logger.info(f"Checkpoint cargado desde {path}")
 
     def evaluate_policy(self) -> Tuple[float, List[Dict], List[float]]:
         """Evalúa la política actual en un episodio completo"""
@@ -459,90 +429,82 @@ class PPOAgent(Agent):
         makespan = max(self.env.job_completion_time) if done else float('inf')
         return makespan, self.env.schedule_history, self.env.makespan_history
 
-    def plot_training_history(self):
-        """Visualiza la evolución del makespan durante el entrenamiento"""
-        plt.figure(figsize=(12, 6))
-        plt.plot(self.training_makespan_history)
-        plt.axhline(y=930, color='r', linestyle='--', label='Óptimo: 930')
-
-        window_size = min(30, len(self.training_makespan_history))
-        if window_size > 0:
-            moving_avg = [sum(self.training_makespan_history[max(0, i-window_size):i])/min(i, window_size)
-                         for i in range(1, len(self.training_makespan_history)+1)]
-            plt.plot(moving_avg, color='blue', linewidth=2, label=f'Media móvil ({window_size} episodios)')
-
-        plt.xlabel('Episodios')
-        plt.ylabel('Makespan')
-        plt.title('Evolución del Makespan durante el entrenamiento')
-        plt.legend()
-        plt.grid(True)
-
-        return plt.gcf()
+    def plot_training_history(self, optimal_makespan: Optional[int] = 930):
+        """
+        Visualiza la evolución del makespan durante el entrenamiento.
+        
+        Args:
+            optimal_makespan: Valor óptimo de makespan para referencia (opcional)
+            
+        Returns:
+            Figura de matplotlib con la visualización
+        """
+        return plot_makespan_history(
+            makespan_history=self.training_makespan_history,
+            title='Evolución del Makespan durante el entrenamiento',
+            optimal_makespan=optimal_makespan
+        )
 
     def plot_reward_history(self):
-        """Visualiza la evolución de las recompensas durante el entrenamiento"""
-        plt.figure(figsize=(12, 6))
-        plt.plot(self.episode_rewards)
-
-        window_size = min(30, len(self.episode_rewards))
-        if window_size > 0:
-            moving_avg = [sum(self.episode_rewards[max(0, i-window_size):i])/min(i, window_size)
-                         for i in range(1, len(self.episode_rewards)+1)]
-            plt.plot(moving_avg, color='green', linewidth=2, label=f'Media móvil ({window_size} episodios)')
-
-        plt.xlabel('Episodios')
-        plt.ylabel('Recompensa')
-        plt.title('Evolución de la recompensa durante el entrenamiento')
-        plt.legend()
-        plt.grid(True)
-
-        return plt.gcf()
+        """
+        Visualiza la evolución de las recompensas durante el entrenamiento.
+        
+        Returns:
+            Figura de matplotlib con la visualización
+        """
+        # Usar plot_makespan_history de utils.visualization pero adaptado para recompensas
+        return plot_makespan_history(
+            makespan_history=self.episode_rewards,
+            title='Evolución de la recompensa durante el entrenamiento',
+            optimal_makespan=None  # No hay valor óptimo para recompensas
+        )
 
     def plot_losses(self):
-        """Visualiza la evolución de las pérdidas durante el entrenamiento"""
+        """
+        Visualiza la evolución de las pérdidas durante el entrenamiento.
+        
+        Returns:
+            Diccionario de figuras de matplotlib
+        """
         if not self.training_losses["policy"] or not self.training_losses["value"]:
             return None
-
-        # Crear una sola figura con dos subplots
-        plt.figure(figsize=(12, 6))
-
-        # Subplot para pérdida de política
-        plt.subplot(1, 2, 1)
-        plt.plot(self.training_losses["policy"])
-        plt.xlabel('Episodios')
-        plt.ylabel('Pérdida de política')
-        plt.title('Evolución de la pérdida de política')
-        plt.grid(True)
-
-        # Subplot para pérdida de valor
-        plt.subplot(1, 2, 2)
-        plt.plot(self.training_losses["value"])
-        plt.xlabel('Episodios')
-        plt.ylabel('Pérdida de valor')
-        plt.title('Evolución de la pérdida de valor')
-        plt.grid(True)
-
-        plt.tight_layout()
-        return plt.gcf()
+            
+        # Crear un diccionario con las métricas para usar plot_training_metrics
+        metrics = {
+            'policy_loss': self.training_losses["policy"],
+            'value_loss': self.training_losses["value"]
+        }
+        
+        return plot_training_metrics(metrics)
 
     def plot_exploration_history(self):
-        """Visualiza la evolución del parámetro epsilon (exploración) durante el entrenamiento"""
-        from jobshop_rl.utils.visualization import plot_makespan_history
+        """
+        Visualiza la evolución del parámetro epsilon (exploración) durante el entrenamiento.
+        
+        Returns:
+            Figura de matplotlib con la visualización
+        """
         return plot_makespan_history(
-            self.epsilon_history,
+            makespan_history=self.epsilon_history,
             title='Evolución del parámetro de exploración (epsilon)',
             optimal_makespan=None
         )
         
-    def plot_best_solution_makespan(self):
-        """Visualiza la evolución del makespan de la mejor solución encontrada"""
-        from jobshop_rl.utils.visualization import plot_makespan_history
+    def plot_best_solution_makespan(self, optimal_makespan: Optional[int] = 930):
+        """
+        Visualiza la evolución del makespan de la mejor solución encontrada.
         
+        Args:
+            optimal_makespan: Valor óptimo de makespan para referencia (opcional)
+            
+        Returns:
+            Figura de matplotlib con la visualización
+        """
         if not self.best_makespan_history:
             return None
             
         return plot_makespan_history(
-            self.best_makespan_history,
+            makespan_history=self.best_makespan_history,
             title='Evolución del Makespan de la Mejor Solución',
-            optimal_makespan=930
+            optimal_makespan=optimal_makespan
         )

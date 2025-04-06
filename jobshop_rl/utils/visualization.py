@@ -137,7 +137,7 @@ def save_plots(plots: Dict[str, Any], directory: str = "outputs/plots", prefix: 
     Guarda una colección de gráficos en archivos.
 
     Args:
-        plots: Diccionario de plots matplotlib
+        plots: Diccionario de plots matplotlib o diccionarios de plots
         directory: Directorio donde guardar los gráficos (por defecto outputs/plots)
         prefix: Prefijo para los nombres de archivos
     """
@@ -154,16 +154,29 @@ def save_plots(plots: Dict[str, Any], directory: str = "outputs/plots", prefix: 
 
     # Guardar cada gráfico
     for name, plot in plots.items():
-        if plot is not None:
-            try:
+        if plot is None:
+            continue
+            
+        try:
+            # Si plot es un diccionario de figuras (como el que devuelve plot_training_metrics)
+            if isinstance(plot, dict):
+                for subname, subfig in plot.items():
+                    if subfig is not None and hasattr(subfig, 'savefig'):
+                        # Crear un nombre único para cada subfigura
+                        if prefix:
+                            filename = f"{prefix}_{name}_{subname}.png"
+                        else:
+                            filename = f"{name}_{subname}.png"
+                        filepath = os.path.join(directory, filename)
+                        subfig.savefig(filepath)
+                        plt.close(subfig)
+            # Si plot es una figura directamente
+            elif hasattr(plot, 'savefig'):
                 filename = f"{prefix}_{name}.png" if prefix else f"{name}.png"
                 filepath = os.path.join(directory, filename)
-
-                # Verificar si el plot tiene el método savefig
-                if hasattr(plot, 'savefig'):
-                    plot.savefig(filepath)
-                    plt.close(plot)
-                else:
-                    print(f"Error: plot '{name}' no tiene método savefig. Tipo: {type(plot)}")
-            except Exception as e:
-                print(f"Error al guardar plot '{name}': {e}")
+                plot.savefig(filepath)
+                plt.close(plot)
+            else:
+                print(f"Error: plot '{name}' no tiene método savefig ni es un diccionario de figuras. Tipo: {type(plot)}")
+        except Exception as e:
+            print(f"Error al guardar plot '{name}': {e}")
