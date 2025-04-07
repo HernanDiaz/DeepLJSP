@@ -10,7 +10,7 @@ from copy import deepcopy
 from jobshop_rl.environment.job_shop_env import JobShopEnv
 from jobshop_rl.heuristics.strategies import (
     HeuristicStrategy, SPTHeuristic, LPTHeuristic, 
-    MORHeuristic, MWKRHeuristic, RandomHeuristic
+    MORHeuristic, MWKRHeuristic, RandomHeuristic, ORToolsHeuristic
 )
 from jobshop_rl.agents.ppo_agent import PPOAgent
 
@@ -71,7 +71,7 @@ class HeuristicEvaluator:
         logger.info(f"{name}: Makespan = {makespan}, Tiempo = {execution_time:.4f} segundos")
         return makespan, execution_time
 
-    def evaluate_all(self, return_times: bool = False) -> Dict[str, float]:
+    def evaluate_all(self, return_times: bool = False, use_ortools: bool = True) -> Dict[str, float]:
         """
         Evalúa todas las heurísticas comunes.
         
@@ -87,6 +87,41 @@ class HeuristicEvaluator:
         self.evaluate_heuristic(MORHeuristic(), "MOR")
         self.evaluate_heuristic(MWKRHeuristic(), "MWKR")
         self.evaluate_heuristic(RandomHeuristic(), "Random")
+        
+        # Evaluar con OR-Tools
+        if use_ortools:
+            try:
+                # Obtener datos del problema del entorno
+                sequences = self.env.sequences
+                durations = self.env.durations
+                
+                # Verificar si las características están disponibles
+                if not hasattr(self.env, 'sequences') or not hasattr(self.env, 'durations'):
+                    logger.warning("El entorno no proporciona secuencias o duraciones. No se puede evaluar OR-Tools.")
+                    return self.results
+                    
+                if sequences is None or durations is None:
+                    logger.warning("Secuencias o duraciones son None. No se puede evaluar OR-Tools.")
+                    return self.results
+                
+                # Crear instancia de OR-Tools con tiempo límite de 60 segundos
+                ortools_heuristic = ORToolsHeuristic(sequences, durations, time_limit_seconds=60)
+                
+                # Si OR-Tools está disponible, evaluar esta heurística
+                if hasattr(ortools_heuristic, 'ortools_available') and ortools_heuristic.ortools_available:
+                    logger.info("Evaluando heurística OR-Tools (tiempo límite: 60 segundos)...")
+                    self.evaluate_heuristic(ortools_heuristic, "OR-Tools")
+                    logger.info(f"Evaluación de OR-Tools completada. Makespan: {self.results.get('OR-Tools', 'N/A')}")
+                else:
+                    logger.warning("OR-Tools no disponible. Saltando la evaluación de OR-Tools.")
+                    logger.warning("Para instalar OR-Tools: pip install ortools")
+            except ImportError as e:
+                logger.error(f"Error al importar OR-Tools: {str(e)}")
+                logger.warning("Para instalar OR-Tools: pip install ortools")
+            except Exception as e:
+                logger.error(f"Error al evaluar OR-Tools: {str(e)}")
+                import traceback
+                logger.error(traceback.format_exc())
         
         if return_times:
             return self.results, self.execution_times

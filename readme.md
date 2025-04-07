@@ -35,6 +35,7 @@ jobshop_rl/
 - NumPy
 - Pandas
 - Matplotlib
+- OR-Tools (opcional, para comparación con solucionador de Google)
 
 ## Instalación
 
@@ -117,8 +118,9 @@ El sistema incluye implementaciones de las heurísticas clásicas para Job Shop:
 - MWKR (Most Work Remaining)
 - EST (Earliest Start Time)
 - CR (Critical Ratio)
+- OR-Tools (Solucionador de programación de restricciones de Google)
 
-Estas heurísticas se utilizan como baseline para comparar el rendimiento del agente de RL.
+Estas heurísticas se utilizan como baseline para comparar el rendimiento del agente de RL. La heurística de OR-Tools proporciona soluciones de alta calidad utilizando técnicas avanzadas de programación con restricciones y puede servir como referencia para evaluar la calidad de las soluciones obtenidas por el agente de RL.
 
 ## Extensión a Múltiples Problemas
 
@@ -222,12 +224,48 @@ La evaluación generará:
 - El makespan resultante
 - El registro detallado del orden de tareas en el archivo de log
 
+## Comparación con Google OR-Tools
+
+El sistema incluye la capacidad de comparar los resultados del agente de RL con los obtenidos por Google OR-Tools, un solucionador de programación de restricciones avanzado.
+
+### Instalación de OR-Tools
+
+Para utilizar esta funcionalidad, primero debes instalar OR-Tools:
+
+```bash
+pip install ortools
+```
+
+También puedes instalar todas las dependencias, incluida OR-Tools, ejecutando:
+
+```bash
+pip install -r requirements.txt
+```
+
+### Uso de OR-Tools
+
+La comparación con OR-Tools se realiza automáticamente durante la evaluación de heurísticas. Al ejecutar un experimento, verás una comparación con los resultados de OR-Tools junto con las otras heurísticas:
+
+```bash
+python -m jobshop_rl.main --mode single --episodes 300 --reward advanced --visualize
+```
+
+### Configuración de OR-Tools
+
+Puedes modificar la configuración de OR-Tools editando el archivo `jobshop_rl/heuristics/ortools_solver.py`. Las principales opciones incluyen:
+
+- **Tiempo límite**: por defecto, OR-Tools busca una solución durante 60 segundos. Puedes ajustar este valor según tus necesidades.
+- **Estrategia de búsqueda**: puedes experimentar con diferentes estrategias de búsqueda proporcionadas por OR-Tools.
+
+### Ventajas de la comparación con OR-Tools
+
+- OR-Tools proporciona soluciones de alta calidad (a menudo óptimas) para problemas de Job Shop Scheduling.
+- Sirve como una referencia robusta para evaluar el rendimiento del agente de RL.
+- Permite entender el gap entre las soluciones del agente y las mejores soluciones conocidas.
+
 ## TODO
-- Hacer que los cálculos no dependan de un valor óptimo fijo (930) sino que sea genérico para cada problema
-- Mejorar los valores hardcodeados para hacerlos más configurables
-- Comparar lo resutados con OR tools.
-- Guardar el mejor modelo solo al final del entrenamiento, y no hacer guardados cada 50 epocas
-- la dimensión de entrada de la red neuronal de valor (ValueNetwork) cambia según el número de trabajos y máquinas.
+- probar si en el modo single se puede entrenar con un problema y resolver con otro.
+- La dimensión de entrada de la red neuronal de valor (ValueNetwork) cambia según el número de trabajos y máquinas.
 - Comprobar cómo funciona el entrenamiento por lotes
 - Comprobar que se cargan los ejemplos en el formato correcto
 

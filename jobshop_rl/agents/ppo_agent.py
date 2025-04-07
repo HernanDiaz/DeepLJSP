@@ -356,8 +356,8 @@ class PPOAgent(Agent):
                 
                 logger.info(f"Nuevo mejor makespan: {makespan}")
                 
-                # Guardar checkpoint del mejor modelo
-                self.save_best_checkpoint()
+                # Comentado el guardado del mejor checkpoint para mejorar eficiencia
+                # self.save_best_checkpoint()
 
         self.episode_rewards.append(episode_reward)
         self.epsilon_history.append(self.eps_clip)  # Tracking de epsilon
@@ -478,13 +478,35 @@ class PPOAgent(Agent):
                     if should_stop:
                         break
 
-            # Guardar checkpoint si está habilitado
-            if checkpoint_interval > 0 and i % checkpoint_interval == 0:
-                self.save_checkpoint(f"checkpoint_ep{i}.pt")
+            # Comentado el guardado periódico para mejorar eficiencia
+            # if checkpoint_interval > 0 and i % checkpoint_interval == 0:
+            #     self.save_checkpoint(f"checkpoint_ep{i}.pt")
         
         # Registrar el tiempo total de entrenamiento
         total_training_time = time.time() - self.training_start_time
         logger.info(f"Entrenamiento completado en {total_training_time:.2f} segundos")
+        
+        # Guardar el mejor modelo encontrado durante todo el entrenamiento
+        if self.best_model_state:
+            logger.info(f"Guardando el mejor modelo encontrado (makespan: {self.best_makespan})")
+            self.save_best_checkpoint()
+            
+            # Cargar el mejor modelo para la evaluación final
+            policy_backup = self.policy.state_dict().copy()
+            value_backup = self.value.state_dict().copy()
+            
+            # Cargar el mejor modelo
+            self.policy.load_state_dict(self.best_model_state["policy"])
+            self.value.load_state_dict(self.best_model_state["value"])
+            
+            # Evaluación final con el mejor modelo
+            logger.info("Evaluando el mejor modelo encontrado...")
+            best_makespan, best_schedule, _, _ = self.evaluate_policy()
+            logger.info(f"Makespan con el mejor modelo: {best_makespan}")
+            
+            # Restaurar el modelo actual
+            self.policy.load_state_dict(policy_backup)
+            self.value.load_state_dict(value_backup)
         
         # Registrar el registro final en el CSV si está configurado
         if self.csv_logger:

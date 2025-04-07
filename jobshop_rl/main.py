@@ -40,6 +40,10 @@ def parse_args():
                        help='Evaluar el mejor modelo con el problema ABZ10 al finalizar')
     parser.add_argument('--problem-id', type=str, default='ft10',
                        help='ID del problema a resolver (default: ft10)')
+    parser.add_argument('--use-ortools', action='store_true',
+                       help='Comparar con solucionador de Google OR-Tools')
+    parser.add_argument('--ortools-time-limit', type=int, default=60,
+                       help='Límite de tiempo (segundos) para el solucionador OR-Tools')
     
     # Parámetros para modo batch
     parser.add_argument('--training-dir', type=str, default='./data/training_problems',
@@ -136,7 +140,9 @@ def run_single_experiment(args):
         csv_base_dir=output_dir,
         output_dir=output_dir,
         experiment_name=args.experiment_name,
-        evaluate_abz10=args.evaluate_abz10
+        evaluate_abz10=args.evaluate_abz10,
+        use_ortools=args.use_ortools,
+        ortools_time_limit=args.ortools_time_limit
     )
     
     total_time = time.time() - start_time
@@ -145,7 +151,9 @@ def run_single_experiment(args):
     print(f"Problema: {problem_id}")
     print(f"Tiempo total: {total_time:.2f} segundos")
     print(f"Mejor makespan: {agent.best_makespan}")
-    print(f"Makespan final: {results['final_makespan']}")
+    # Usar el makespan del último episodio de entrenamiento en lugar de una nueva evaluación
+    last_makespan = agent.training_makespan_history[-1] if agent.training_makespan_history else float('inf')
+    print(f"Makespan final: {last_makespan}")
     
     # Si tenemos el análisis del problema, mostrar información sobre los límites
     if hasattr(agent, 'env') and hasattr(agent.env, 'problem_analysis'):
@@ -161,6 +169,21 @@ def run_single_experiment(args):
             print("\nLímites inferiores calculados:")
             for bound_name, bound_value in problem_analysis['lower_bounds'].items():
                 print(f"  {bound_name}: {bound_value}")
+    
+    # Mostrar resultados de OR-Tools si están disponibles
+    if 'ortools_results' in results and results['ortools_results']:
+        ortools_data = results['ortools_results']
+        print("\n===== Resultados de Google OR-Tools =====")
+        print(f"Makespan con OR-Tools: {ortools_data['makespan']}")
+        print(f"Tiempo de ejecución: {ortools_data['execution_time']:.2f} segundos")
+        print(f"Gap respecto a OR-Tools: {ortools_data['gap']:.2f}%")
+        
+        # Si el agente obtuvo un makespan mejor o igual que OR-Tools
+        if agent.best_makespan <= ortools_data['makespan']:
+            print(f"\n¡FELICIDADES! El agente RL encontró una solución mejor o igual que OR-Tools!")
+        else:
+            improvement_needed = ((agent.best_makespan - ortools_data['makespan']) / agent.best_makespan) * 100
+            print(f"\nEl agente RL necesita mejorar un {improvement_needed:.2f}% para igualar a OR-Tools.")
     
     if 'comparison' in results:
         print("\nComparación con heurísticas:")

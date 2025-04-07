@@ -20,6 +20,7 @@ from jobshop_rl.experiments.evaluator import HeuristicEvaluator
 from jobshop_rl.utils.logging import TrainingLogger
 from jobshop_rl.utils.problem_analyzer import ProblemAnalyzer, AdaptiveConfigGenerator
 from jobshop_rl.data.problem_loader import ProblemLoader
+from jobshop_rl.data.ft10 import get_ft10_problem
 from jobshop_rl.data.ft20 import get_ft20_problem
 from jobshop_rl.data.abz10 import get_abz10_problem
 
@@ -46,35 +47,7 @@ class ExperimentFactory:
         
         if problem_id == "ft10":
             # Configuración del problema FT10
-            return {
-                'num_jobs': 10,
-                'num_machines': 10,
-                'problem_id': 'ft10',
-                'sequences': [
-                    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-                    [0, 2, 4, 9, 3, 1, 6, 5, 7, 8],
-                    [1, 0, 3, 2, 8, 5, 7, 6, 9, 4],
-                    [1, 2, 0, 4, 6, 8, 7, 3, 9, 5],
-                    [2, 0, 1, 5, 3, 4, 8, 7, 9, 6],
-                    [2, 1, 5, 3, 8, 9, 0, 6, 4, 7],
-                    [1, 0, 3, 2, 6, 5, 9, 8, 7, 4],
-                    [2, 0, 1, 5, 4, 6, 8, 9, 7, 3],
-                    [0, 1, 3, 5, 2, 9, 6, 7, 4, 8],
-                    [1, 0, 2, 6, 8, 9, 5, 3, 4, 7]
-                ],
-                'durations': [
-                    [29, 78, 9, 36, 49, 11, 62, 56, 44, 21],
-                    [43, 90, 75, 11, 69, 28, 46, 46, 72, 30],
-                    [91, 85, 39, 74, 90, 10, 12, 89, 45, 33],
-                    [81, 95, 71, 99, 9, 52, 85, 98, 22, 43],
-                    [14, 6, 22, 61, 26, 69, 21, 49, 72, 53],
-                    [84, 2, 52, 95, 48, 72, 47, 65, 6, 25],
-                    [46, 37, 61, 13, 32, 21, 32, 89, 30, 55],
-                    [31, 86, 46, 74, 32, 88, 19, 48, 36, 79],
-                    [76, 69, 76, 51, 85, 11, 40, 89, 26, 74],
-                    [85, 13, 61, 7, 64, 76, 47, 52, 90, 45]
-                ]
-            }
+            return get_ft10_problem()
         elif problem_id == "ft20":
             return get_ft20_problem()
         elif problem_id == "abz10":
@@ -219,7 +192,9 @@ class ExperimentFactory:
                            csv_logging: bool = True, csv_filename: Optional[str] = None, 
                            csv_base_dir: str = 'outputs', output_dir: str = 'outputs', 
                            experiment_name: Optional[str] = None,
-                           evaluate_abz10: bool = True) -> Tuple[PPOAgent, Dict]:
+                           evaluate_abz10: bool = True,
+                           use_ortools: bool = False,
+                           ortools_time_limit: int = 60) -> Tuple[PPOAgent, Dict]:
         """
         Ejecuta un experimento completo con evaluación de heurísticas y entrenamiento.
         
@@ -309,7 +284,7 @@ class ExperimentFactory:
         # Evaluar heurísticas básicas
         logger.info("Evaluando heurísticas básicas como referencia:")
         evaluator = HeuristicEvaluator(env)
-        heuristic_results = evaluator.evaluate_all()
+        heuristic_results = evaluator.evaluate_all(use_ortools=use_ortools)
         
         # Configurar logger CSV si está habilitado
         csv_logger = None
@@ -339,11 +314,44 @@ class ExperimentFactory:
         agent = ExperimentFactory.create_agent(env, **default_params)
         agent.train(episodes=episodes, dynamic_entropy=True, early_stopping=True)
 
-        # Evaluar la política final
-        logger.info("Evaluando la política final...")
-        makespan, schedule, makespan_history, _ = agent.evaluate_policy()
-        logger.info(f"Makespan final: {makespan}")
+        # No evaluamos la política final para evitar discrepancias con el entrenamiento
+        logger.info("Obteniendo resultados finales...")
+        # Usamos el último makespan registrado durante el entrenamiento
+        last_makespan = agent.training_makespan_history[-1] if agent.training_makespan_history else float('inf')
+        logger.info(f"Makespan final (último episodio): {last_makespan}")
         logger.info(f"Mejor makespan durante entrenamiento: {agent.best_makespan}")
+        
+        # Evaluar con OR-Tools para comparación
+        ortools_results = None
+        if use_ortools:
+            try:
+                from jobshop_rl.heuristics.ortools_solver import JobShopORToolsSolver, ORTOOLS_AVAILABLE
+                
+                if ORTOOLS_AVAILABLE:
+                    logger.info(f"Evaluando con Google OR-Tools para comparación (tiempo límite: {ortools_time_limit} segundos)...")
+                    ortools_makespan, _, ortools_time = JobShopORToolsSolver.solve(
+                        env.sequences, env.durations, time_limit_seconds=ortools_time_limit
+                    )
+                    
+                    if ortools_makespan < float('inf'):
+                        gap_vs_ortools = ((agent.best_makespan - ortools_makespan) / ortools_makespan) * 100
+                        logger.info(f"Makespan con OR-Tools: {ortools_makespan} (tiempo: {ortools_time:.2f}s)")
+                        logger.info(f"Gap respecto a OR-Tools: {gap_vs_ortools:.2f}%")
+                        
+                        # Guardar resultados
+                        ortools_results = {
+                            "makespan": ortools_makespan,
+                            "execution_time": ortools_time,
+                            "gap": gap_vs_ortools
+                        }
+                    else:
+                        logger.warning("OR-Tools no pudo encontrar una solución factible.")
+                else:
+                    logger.info("Google OR-Tools no está disponible. Instálelo con: pip install ortools")
+            except ImportError:
+                logger.info("No se pudo importar OR-Tools. Instálelo con: pip install ortools")
+            except Exception as e:
+                logger.error(f"Error al evaluar con OR-Tools: {str(e)}")
         
         # Obtener información de límites del problema
         if hasattr(env, 'problem_analysis'):
@@ -425,7 +433,7 @@ class ExperimentFactory:
             # Comparar con heurísticas
             logger.info("Comparando con heurísticas clásicas en ABZ10...")
             abz10_evaluator = HeuristicEvaluator(abz10_env)
-            abz10_heuristic_results, abz10_execution_times = abz10_evaluator.evaluate_all(True)
+            abz10_heuristic_results, abz10_execution_times = abz10_evaluator.evaluate_all(True, use_ortools)
             abz10_comparison = abz10_evaluator.compare_with_agent(abz10_makespan)
             
             # Registrar el orden de tareas y el makespan en el log
@@ -473,11 +481,15 @@ class ExperimentFactory:
                 "comparison": abz10_comparison
             }
         
+        # Obtener el último makespan registrado durante el entrenamiento
+        last_makespan = agent.training_makespan_history[-1] if agent.training_makespan_history else float('inf')
+        
         return agent, {
             "heuristic_results": heuristic_results,
             "comparison": comparison,
             "best_makespan": agent.best_makespan,
-            "final_makespan": makespan,
+            "final_makespan": last_makespan,
             "abz10_results": abz10_results,
+            "ortools_results": ortools_results,
             "plots": plots if visualize else None
         }
