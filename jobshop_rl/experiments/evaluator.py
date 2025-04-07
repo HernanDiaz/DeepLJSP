@@ -71,19 +71,27 @@ class HeuristicEvaluator:
         logger.info(f"{name}: Makespan = {makespan}, Tiempo = {execution_time:.4f} segundos")
         return makespan, execution_time
 
-    def evaluate_all(self) -> Tuple[Dict[str, float], Dict[str, float]]:
+    def evaluate_all(self, return_times: bool = False) -> Dict[str, float]:
         """
         Evalúa todas las heurísticas comunes.
         
+        Args:
+            return_times: Si es True, devuelve también los tiempos de ejecución
+            
         Returns:
-            Tupla con (diccionario de makespan, diccionario de tiempos de ejecución)
+            Si return_times es False: diccionario de makespan
+            Si return_times es True: tupla (diccionario de makespan, diccionario de tiempos)
         """
         self.evaluate_heuristic(SPTHeuristic(), "SPT")
         self.evaluate_heuristic(LPTHeuristic(), "LPT")
         self.evaluate_heuristic(MORHeuristic(), "MOR")
         self.evaluate_heuristic(MWKRHeuristic(), "MWKR")
         self.evaluate_heuristic(RandomHeuristic(), "Random")
-        return self.results, self.execution_times
+        
+        if return_times:
+            return self.results, self.execution_times
+        else:
+            return self.results
 
     def compare_with_agent(self, agent_makespan: float) -> Dict[str, float]:
         """

@@ -16,6 +16,7 @@ from jobshop_rl.utils.path_utils import (
     ensure_dir, get_output_dir, get_checkpoint_path, 
     get_plots_dir, join_paths, DEFAULT_OUTPUT_DIR
 )
+from jobshop_rl.utils.problem_analyzer import AdaptiveConfigGenerator
 
 def parse_args():
     """Configura y parsea los argumentos de línea de comandos"""
@@ -28,14 +29,17 @@ def parse_args():
     # Parámetros para modo single
     parser.add_argument('--episodes', type=int, default=300,
                        help='Número de episodios para entrenar (modo single)')
-    parser.add_argument('--reward', type=str, default='advanced',
-                       help='Estrategia de recompensa: basic, advanced o combined')
+    parser.add_argument('--reward', type=str, default='adaptive', 
+                       choices=['basic', 'advanced', 'adaptive', 'combined'],
+                       help='Estrategia de recompensa')
     parser.add_argument('--visualize', action='store_true',
                        help='Generar visualizaciones')
     parser.add_argument('--save-plots', action='store_true',
                        help='Guardar visualizaciones en archivos')
     parser.add_argument('--evaluate-abz10', action='store_true',
                        help='Evaluar el mejor modelo con el problema ABZ10 al finalizar')
+    parser.add_argument('--problem-id', type=str, default='ft10',
+                       help='ID del problema a resolver (default: ft10)')
     
     # Parámetros para modo batch
     parser.add_argument('--training-dir', type=str, default='./data/training_problems',
@@ -84,10 +88,15 @@ def setup_logging(log_level):
     )
 
 def run_single_experiment(args):
-    """Ejecuta un experimento con un único problema (FT10)"""
+    """Ejecuta un experimento con un único problema"""
     # Obtener el directorio de salida estandarizado
     output_dir = get_output_dir()
-        
+    
+    # Cargar el problema especificado
+    problem_id = args.problem_id.lower()
+    
+    # Los parámetros de recompensa serán configurados automáticamente por el analizador de problemas
+    # basado en las características del problema, pero se pueden proporcionar valores por defecto
     reward_params = {
         "makespan_weight": 1.0,
         "idle_weight": 0.2,
@@ -97,6 +106,8 @@ def run_single_experiment(args):
         "local_improvement_weight": 0.15
     }
     
+    # Los parámetros del agente también se pueden adaptar automáticamente, 
+    # pero proporcionamos valores por defecto
     agent_params = {
         "lr": 0.0003,
         "gamma": 0.99,
@@ -116,6 +127,7 @@ def run_single_experiment(args):
         reward_strategy=args.reward,
         agent_params=agent_params,
         reward_params=reward_params,
+        problem_id=problem_id,
         seed=args.seed,
         visualize=args.visualize,
         save_plots=args.save_plots,
@@ -130,9 +142,25 @@ def run_single_experiment(args):
     total_time = time.time() - start_time
     
     print(f"\n===== Resultados del experimento =====")
+    print(f"Problema: {problem_id}")
     print(f"Tiempo total: {total_time:.2f} segundos")
     print(f"Mejor makespan: {agent.best_makespan}")
     print(f"Makespan final: {results['final_makespan']}")
+    
+    # Si tenemos el análisis del problema, mostrar información sobre los límites
+    if hasattr(agent, 'env') and hasattr(agent.env, 'problem_analysis'):
+        problem_analysis = agent.env.problem_analysis
+        best_lower_bound = problem_analysis.get('best_lower_bound', 0)
+        if best_lower_bound > 0:
+            gap = ((agent.best_makespan - best_lower_bound) / best_lower_bound) * 100
+            print(f"Mejor límite inferior: {best_lower_bound}")
+            print(f"Gap respecto al límite: {gap:.2f}%")
+            
+        # Mostrar información sobre los límites individuales
+        if 'lower_bounds' in problem_analysis:
+            print("\nLímites inferiores calculados:")
+            for bound_name, bound_value in problem_analysis['lower_bounds'].items():
+                print(f"  {bound_name}: {bound_value}")
     
     if 'comparison' in results:
         print("\nComparación con heurísticas:")
@@ -169,6 +197,7 @@ def run_batch_experiment(args):
     # Obtener el directorio de salida estandarizado para experimentos por lotes
     batch_output_dir = get_output_dir([os.path.basename(args.output_dir)])
     
+    # Los parámetros de recompensa se configurarán dinámicamente por problema
     reward_params = {
         "makespan_weight": 1.0,
         "idle_weight": 0.2,
@@ -178,6 +207,7 @@ def run_batch_experiment(args):
         "local_improvement_weight": 0.15
     }
     
+    # Los parámetros del agente también se pueden adaptar automáticamente
     agent_params = {
         "lr": 0.0003,
         "gamma": 0.99,
@@ -230,11 +260,11 @@ def run_batch_experiment(args):
         print(f"\nResumen de evaluación:")
         print(f"  Makespan promedio: {results['makespan'].mean():.2f}")
         
-        # Calcular gap promedio para problemas con óptimo conocido
+        # Calcular gap promedio para problemas con óptimo conocido o límite inferior
         if 'gap' in results.columns:
             valid_gaps = results['gap'].dropna()
             if len(valid_gaps) > 0:
-                print(f"  Gap promedio del óptimo: {valid_gaps.mean():.2f}%")
+                print(f"  Gap promedio: {valid_gaps.mean():.2f}%")
                 print(f"  Gap mínimo: {valid_gaps.min():.2f}%")
                 print(f"  Gap máximo: {valid_gaps.max():.2f}%")
     

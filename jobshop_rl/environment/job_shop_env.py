@@ -10,6 +10,7 @@ from copy import deepcopy
 
 from jobshop_rl.models.data_models import SchedulingStep, OperationFeatures
 from jobshop_rl.rewards.strategies import RewardStrategy, BasicRewardStrategy
+from jobshop_rl.utils.problem_analyzer import ProblemAnalyzer, MakespanBoundCalculator
 
 class JobShopEnv:
     """Entorno para el problema de Job Shop Scheduling"""
@@ -17,12 +18,29 @@ class JobShopEnv:
     def __init__(self, num_jobs: int, num_machines: int,
                  sequences: List[List[int]], durations: List[List[int]],
                  reward_strategy: Optional[RewardStrategy] = None,
+                 problem_id: Optional[str] = None,
                  seed: Optional[int] = None):
         self.num_jobs = num_jobs
         self.num_machines = num_machines
         self.sequences = sequences
         self.durations = durations
-        self.reward_strategy = reward_strategy or BasicRewardStrategy()
+        self.problem_id = problem_id
+        
+        # Analizar el problema para obtener límites y características
+        self.problem_analysis = ProblemAnalyzer.analyze_problem(sequences, durations)
+        
+        # Seleccionar la estrategia de recompensa
+        if reward_strategy is None:
+            # Crear estrategia por defecto con el análisis del problema
+            self.reward_strategy = BasicRewardStrategy(problem_analysis=self.problem_analysis)
+        else:
+            self.reward_strategy = reward_strategy
+            # Si la estrategia no tiene el análisis, proporcionarlo
+            if hasattr(reward_strategy, 'problem_analysis') and reward_strategy.problem_analysis is None:
+                reward_strategy.problem_analysis = self.problem_analysis
+                # Si tiene método para adaptar, llamarlo
+                if hasattr(reward_strategy, '_adapt_scales_to_problem') and callable(getattr(reward_strategy, '_adapt_scales_to_problem')):
+                    reward_strategy._adapt_scales_to_problem()
 
         # Establecer semilla para reproducibilidad
         if seed is not None:
@@ -34,10 +52,17 @@ class JobShopEnv:
     def set_reward_strategy(self, strategy: RewardStrategy):
         """Cambia la estrategia de recompensa (patrón Strategy)"""
         self.reward_strategy = strategy
+        
+        # Si la estrategia no tiene el análisis, proporcionarlo
+        if hasattr(strategy, 'problem_analysis') and strategy.problem_analysis is None:
+            strategy.problem_analysis = self.problem_analysis
+            # Si tiene método para adaptar, llamarlo
+            if hasattr(strategy, '_adapt_scales_to_problem') and callable(getattr(strategy, '_adapt_scales_to_problem')):
+                strategy._adapt_scales_to_problem()
 
         # Si la estrategia tiene un método reset, llamarlo
-        if hasattr(self.reward_strategy, 'reset') and callable(getattr(self.reward_strategy, 'reset')):
-            self.reward_strategy.reset()
+        if hasattr(strategy, 'reset') and callable(getattr(strategy, 'reset')):
+            strategy.reset()
 
     def reset(self) -> Dict:
         """Reinicia el entorno a su estado inicial"""
@@ -206,14 +231,30 @@ class JobShopEnv:
 
         return plt.gcf()
 
-    def plot_makespan_history(self, makespan_history=None, title="Evolución del Makespan"):
+    def plot_makespan_history(self, makespan_history=None, title="Evolución del Makespan", reference_value=None):
         """Visualiza la evolución del makespan durante un episodio"""
         if makespan_history is None:
             makespan_history = self.makespan_history
             
         plt.figure(figsize=(12, 6))
         plt.plot(makespan_history, '-o')
-        plt.axhline(y=930, color='r', linestyle='--', label='Óptimo: 930')
+        
+        # Si no se proporciona un valor de referencia, usar el límite inferior del problema
+        if reference_value is None:
+            if 'best_lower_bound' in self.problem_analysis:
+                reference_value = self.problem_analysis['best_lower_bound']
+                reference_label = f'Límite inferior: {reference_value}'
+            elif 'lower_bounds' in self.problem_analysis:
+                best_bound = max(self.problem_analysis['lower_bounds'].values())
+                reference_value = best_bound
+                reference_label = f'Límite inferior: {reference_value}'
+        else:
+            reference_label = f'Referencia: {reference_value}'
+            
+        # Dibujar línea de referencia si está disponible
+        if reference_value:
+            plt.axhline(y=reference_value, color='r', linestyle='--', label=reference_label)
+            
         plt.xlabel('Pasos')
         plt.ylabel('Makespan')
         plt.title(title)

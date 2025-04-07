@@ -52,7 +52,7 @@ pip install -r requirements.txt
 ### Experimento con un único problema (FT10)
 
 ```bash
-python -m jobshop_rl.main --mode single --episodes 300 --reward advanced --visualize --save-plots --csv-logging
+python -m jobshop_rl.main --mode single --episodes 300 --reward advanced --visualize --save-plots  
 ```
 
 ### Experimentación por lotes con múltiples problemas
