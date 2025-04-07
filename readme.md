@@ -199,13 +199,37 @@ Si utilizas este código en tu investigación, por favor cítalo:
   url = {https://github.com/username/jobshop_rl}
 }
 ```
-TODO
-.. dentro de checkpoints guardar el del mejor resultado
--- hacer qeu los calculos no dependan de 930 sino que valgan para cada problema hacerlo generico y njo para ft10
-en general hay que mejorar los valores hardcoded
--- una vez guardado el mejor modelo, evaluarlo con la instancia de otro problema.
---Comprobar como funciona el entrenamiento por lotes
---Comprobar que se cargan los ejemplos en el formato correcto
+## Evaluación con ABZ10
+
+JobShopRL incluye la capacidad de evaluar modelos entrenados en el problema ABZ10 (10 trabajos × 10 máquinas). Puedes utilizar esta funcionalidad de dos formas:
+
+1. **Durante el entrenamiento**:
+   ```bash
+   python -m jobshop_rl.main --mode single --episodes 300 --reward advanced --evaluate-abz10 --visualize --save-plots
+   ```
+
+2. **Evaluación independiente de un modelo ya entrenado**:
+   ```bash
+   python -m jobshop_rl.evaluate_abz10 --visualize --save-plot
+   ```
+   
+   También puedes usar los scripts proporcionados:
+   - En Windows: `evaluate_abz10.bat`
+   - En Linux/Mac: `./evaluate_abz10.sh` (asegúrate de darle permisos de ejecución con `chmod +x evaluate_abz10.sh`)
+
+La evaluación generará:
+- Un diagrama de Gantt de la programación obtenida para ABZ10
+- El makespan resultante
+- El registro detallado del orden de tareas en el archivo de log
+
+## TODO
+- Hacer que los cálculos no dependan de un valor óptimo fijo (930) sino que sea genérico para cada problema
+- Mejorar los valores hardcodeados para hacerlos más configurables
+- Comparar lo resutados con OR tools.
+- Guardar el mejor modelo solo al final del entrenamiento, y no hacer guardados cada 50 epocas
+- la dimensión de entrada de la red neuronal de valor (ValueNetwork) cambia según el número de trabajos y máquinas.
+- Comprobar cómo funciona el entrenamiento por lotes
+- Comprobar que se cargan los ejemplos en el formato correcto
 
 Enlaces https://www.youtube.com/watch?v=lbCrQ7iqRuo
 https://spinningup.openai.com/en/latest/algorithms/ppo.html#references[readme.md](readme.md)

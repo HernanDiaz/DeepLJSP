@@ -3,6 +3,7 @@ Evaluador de estrategias heurísticas y agentes de RL para Job Shop Scheduling.
 """
 
 import logging
+import time
 from typing import Dict, List, Tuple, Any, Optional
 from copy import deepcopy
 
@@ -27,8 +28,9 @@ class HeuristicEvaluator:
         """
         self.env = env
         self.results = {}
+        self.execution_times = {}
 
-    def evaluate_heuristic(self, heuristic: HeuristicStrategy, name: str) -> float:
+    def evaluate_heuristic(self, heuristic: HeuristicStrategy, name: str) -> Tuple[float, float]:
         """
         Evalúa una heurística específica.
         
@@ -37,13 +39,16 @@ class HeuristicEvaluator:
             name: Nombre identificativo de la heurística
             
         Returns:
-            Makespan resultante
+            Tupla con (makespan resultante, tiempo de ejecución en segundos)
         """
         # Crear una copia del entorno para no afectar a otros experimentos
         env_copy = deepcopy(self.env)
         state = env_copy.reset()
         done = False
-
+        
+        # Medir tiempo de ejecución
+        start_time = time.time()
+        
         while not done:
             eligible_ops = state['eligible_ops']
             if not eligible_ops:
@@ -56,25 +61,29 @@ class HeuristicEvaluator:
                 action_idx = min(action_idx, len(eligible_ops)-1)  # Asegurar índice válido
                 next_state, _, done, _ = env_copy.step(action_idx)
                 state = next_state
-
+        
+        execution_time = time.time() - start_time
         makespan = max(env_copy.job_completion_time) if done else float('inf')
+        
         self.results[name] = makespan
-        logger.info(f"{name}: Makespan = {makespan}")
-        return makespan
+        self.execution_times[name] = execution_time
+        
+        logger.info(f"{name}: Makespan = {makespan}, Tiempo = {execution_time:.4f} segundos")
+        return makespan, execution_time
 
-    def evaluate_all(self) -> Dict[str, float]:
+    def evaluate_all(self) -> Tuple[Dict[str, float], Dict[str, float]]:
         """
         Evalúa todas las heurísticas comunes.
         
         Returns:
-            Diccionario con los resultados (makespan) de cada heurística
+            Tupla con (diccionario de makespan, diccionario de tiempos de ejecución)
         """
         self.evaluate_heuristic(SPTHeuristic(), "SPT")
         self.evaluate_heuristic(LPTHeuristic(), "LPT")
         self.evaluate_heuristic(MORHeuristic(), "MOR")
         self.evaluate_heuristic(MWKRHeuristic(), "MWKR")
         self.evaluate_heuristic(RandomHeuristic(), "Random")
-        return self.results
+        return self.results, self.execution_times
 
     def compare_with_agent(self, agent_makespan: float) -> Dict[str, float]:
         """
@@ -130,7 +139,7 @@ class AgentEvaluator:
         test_agent.value.load_state_dict(self.agent.value.state_dict())
         
         # Evaluar
-        makespan, schedule, makespan_history = test_agent.evaluate_policy()
+        makespan, schedule, makespan_history, _ = test_agent.evaluate_policy()
         
         # Calcular desviación del óptimo si está disponible
         optimal = problem_data.get('optimal_makespan', None)

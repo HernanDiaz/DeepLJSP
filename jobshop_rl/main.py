@@ -34,6 +34,8 @@ def parse_args():
                        help='Generar visualizaciones')
     parser.add_argument('--save-plots', action='store_true',
                        help='Guardar visualizaciones en archivos')
+    parser.add_argument('--evaluate-abz10', action='store_true',
+                       help='Evaluar el mejor modelo con el problema ABZ10 al finalizar')
     
     # Parámetros para modo batch
     parser.add_argument('--training-dir', type=str, default='./data/training_problems',
@@ -121,7 +123,8 @@ def run_single_experiment(args):
         csv_filename=args.csv_file,
         csv_base_dir=output_dir,
         output_dir=output_dir,
-        experiment_name=args.experiment_name
+        experiment_name=args.experiment_name,
+        evaluate_abz10=args.evaluate_abz10
     )
     
     total_time = time.time() - start_time
@@ -135,6 +138,29 @@ def run_single_experiment(args):
         print("\nComparación con heurísticas:")
         for heuristic, improvement in results['comparison'].items():
             print(f"  vs {heuristic}: {improvement:.2f}% de mejora")
+    
+    # Mostrar resultados de ABZ10 si están disponibles
+    if 'abz10_results' in results and results['abz10_results']:
+        print("\n===== Resultados de ABZ10 =====")
+        print(f"Makespan ABZ10 (RL): {results['abz10_results']['makespan']}, " + 
+              f"Tiempo: {results['abz10_results']['execution_time']:.4f} segundos")
+        
+        # Mostrar resultados de las heurísticas
+        if 'heuristic_results' in results['abz10_results'] and 'heuristic_times' in results['abz10_results']:
+            print("\nComparación con heurísticas en ABZ10:")
+            heur_results = results['abz10_results']['heuristic_results']
+            heur_times = results['abz10_results']['heuristic_times']
+            
+            print(f"{'Heurística':<10} {'Makespan':<10} {'Tiempo (s)':<12} {'vs RL (%)':<10}")
+            print("-" * 45)
+            
+            for heuristic, makespan in heur_results.items():
+                time_value = heur_times[heuristic]
+                improvement = results['abz10_results']['comparison'][heuristic]
+                print(f"{heuristic:<10} {makespan:<10} {time_value:.6f}s{'':5} {improvement:.2f}%")
+        
+        print("\nNota: Para evaluar un modelo existente con ABZ10 también puedes usar:")
+        print("python -m jobshop_rl.evaluate_abz10 --visualize --save-plot")
             
     return agent, results
 

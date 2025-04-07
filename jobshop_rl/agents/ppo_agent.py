@@ -71,6 +71,7 @@ class PPOAgent(Agent):
         self.best_makespan = float('inf')
         self.best_schedule = None
         self.best_makespan_history = None
+        self.best_model_state = None  # Para guardar el estado del mejor modelo
         self.training_makespan_history = []
         self.episode_rewards = []
         self.training_losses = {"policy": [], "value": []}
@@ -346,6 +347,13 @@ class PPOAgent(Agent):
                 self.best_makespan = makespan
                 self.best_schedule = deepcopy(self.env.schedule_history)
                 self.best_makespan_history = deepcopy(self.env.makespan_history)
+                
+                # Guardar también el estado del modelo para uso futuro
+                self.best_model_state = {
+                    "policy": deepcopy(self.policy.state_dict()),
+                    "value": deepcopy(self.value.state_dict())
+                }
+                
                 logger.info(f"Nuevo mejor makespan: {makespan}")
                 
                 # Guardar checkpoint del mejor modelo
@@ -525,6 +533,7 @@ class PPOAgent(Agent):
             'best_makespan': self.best_makespan,
             'best_schedule': self.best_schedule,
             'best_makespan_history': self.best_makespan_history,
+            'best_model_state': self.best_model_state,
             'training_history': self.training_makespan_history,
             'episode_rewards': self.episode_rewards,
             'training_losses': self.training_losses,
@@ -553,15 +562,19 @@ class PPOAgent(Agent):
         self.best_makespan = checkpoint['best_makespan']
         self.best_schedule = checkpoint['best_schedule']
         self.best_makespan_history = checkpoint.get('best_makespan_history')
+        self.best_model_state = checkpoint.get('best_model_state')
         self.training_makespan_history = checkpoint['training_history']
         self.episode_rewards = checkpoint.get('episode_rewards', [])
         self.training_losses = checkpoint.get('training_losses', {"policy": [], "value": []})
 
-    def evaluate_policy(self) -> Tuple[float, List[Dict], List[float]]:
+    def evaluate_policy(self) -> Tuple[float, List[Dict], List[float], float]:
         """Evalúa la política actual en un episodio completo"""
+        start_time = time.time()
         done, _ = self._run_episode_without_training()
+        execution_time = time.time() - start_time
+        
         makespan = max(self.env.job_completion_time) if done else float('inf')
-        return makespan, self.env.schedule_history, self.env.makespan_history
+        return makespan, self.env.schedule_history, self.env.makespan_history, execution_time
 
     def plot_training_history(self, optimal_makespan: Optional[int] = 930):
         """

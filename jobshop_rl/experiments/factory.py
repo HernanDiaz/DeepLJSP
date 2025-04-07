@@ -123,9 +123,15 @@ class ExperimentFactory:
                            seed: Optional[int] = None, visualize: bool = True,
                            save_plots: bool = True, csv_logging: bool = True, 
                            csv_filename: Optional[str] = None, csv_base_dir: str = 'outputs',
-                           output_dir: str = 'outputs', experiment_name: Optional[str] = None) -> Tuple[PPOAgent, Dict]:
+                           output_dir: str = 'outputs', experiment_name: Optional[str] = None,
+                           evaluate_abz10: bool = True) -> Tuple[PPOAgent, Dict]:
         """
         Ejecuta un experimento completo con evaluación de heurísticas y entrenamiento.
+        
+        El experimento incluye:
+        1. Entrenamiento del agente en el problema FT10
+        2. Evaluación y comparación con heurísticas
+        3. Opcionalmente, evaluación del mejor modelo encontrado con el problema ABZ10
         
         Args:
             episodes: Número de episodios a entrenar
@@ -138,6 +144,7 @@ class ExperimentFactory:
             csv_logging: Si se deben registrar métricas en CSV
             csv_filename: Nombre del archivo CSV
             csv_base_dir: Directorio base para archivos CSV
+            evaluate_abz10: Si se debe evaluar el mejor modelo con ABZ10 al finalizar
             
         Returns:
             Tupla (agente entrenado, resultados del experimento)
@@ -237,7 +244,7 @@ class ExperimentFactory:
 
         # Evaluar la política final
         logger.info("Evaluando la política final...")
-        makespan, schedule, makespan_history = agent.evaluate_policy()
+        makespan, schedule, makespan_history, _ = agent.evaluate_policy()
         logger.info(f"Makespan final: {makespan}")
         logger.info(f"Mejor makespan durante entrenamiento: {agent.best_makespan}")
         logger.info(f"Óptimo conocido para FT10: 930")
@@ -274,10 +281,95 @@ class ExperimentFactory:
                 logger.info(f"Guardando visualizaciones en directorio: {plots_dir}")
                 visualization_save_plots(plots, directory=plots_dir, prefix=experiment_name)
 
+        # Evaluación del mejor modelo con ABZ10 si está habilitado
+        abz10_results = None
+        if evaluate_abz10:
+            logger.info("Evaluando el mejor modelo con el problema ABZ10...")
+            
+            # Importar datos del problema ABZ10
+            from jobshop_rl.data.abz10 import get_abz10_problem
+            abz10_data = get_abz10_problem()
+            
+            # Crear entorno ABZ10 con la misma estrategia de recompensa
+            abz10_env = ExperimentFactory.create_env_from_problem(
+                abz10_data, 
+                reward_strategy=reward_strategy, 
+                seed=seed, 
+                **reward_params
+            )
+            
+            # Crear un agente de evaluación usando el mejor modelo encontrado
+            abz10_agent = PPOAgent(abz10_env)
+            
+            # Cargar el mejor modelo si está disponible, si no, usar el modelo actual
+            if agent.best_model_state:
+                abz10_agent.policy.load_state_dict(agent.best_model_state["policy"])
+                abz10_agent.value.load_state_dict(agent.best_model_state["value"])
+                logger.info("Cargado el mejor modelo encontrado durante el entrenamiento")
+            else:
+                abz10_agent.policy.load_state_dict(agent.policy.state_dict())
+                abz10_agent.value.load_state_dict(agent.value.state_dict())
+                logger.info("Usando el modelo final del entrenamiento (no se encontró mejor modelo guardado)")
+            
+            # Evaluar en ABZ10 y medir tiempo
+            abz10_makespan, abz10_schedule, abz10_makespan_history, rl_execution_time = abz10_agent.evaluate_policy()
+            
+            # Comparar con heurísticas
+            logger.info("Comparando con heurísticas clásicas en ABZ10...")
+            abz10_evaluator = HeuristicEvaluator(abz10_env)
+            abz10_heuristic_results, abz10_execution_times = abz10_evaluator.evaluate_all()
+            abz10_comparison = abz10_evaluator.compare_with_agent(abz10_makespan)
+            
+            # Registrar el orden de tareas y el makespan en el log
+            logger.info("=== Resultados de la evaluación en ABZ10 ===")
+            logger.info(f"Makespan ABZ10 (RL): {abz10_makespan}, Tiempo: {rl_execution_time:.4f} segundos")
+            
+            # Mostrar resultados de heurísticas
+            logger.info("Comparación con heurísticas:")
+            for heuristic, makespan in abz10_heuristic_results.items():
+                exec_time = abz10_execution_times[heuristic]
+                logger.info(f"{heuristic}: Makespan = {makespan}, Tiempo: {exec_time:.4f} segundos")
+                
+            logger.info("Mejora porcentual en makespan:")
+            for heuristic, improvement in abz10_comparison.items():
+                logger.info(f"vs {heuristic}: {improvement:.2f}%")
+            
+            # Ordenar las operaciones por tiempo de inicio
+            sorted_schedule = sorted(abz10_schedule, key=lambda x: x['start'])
+            
+            # Mostrar el orden de tareas en el log
+            logger.info("Orden de tareas de la planificación:")
+            for i, op in enumerate(sorted_schedule):
+                logger.info(f"{i+1}. Job {op['job']}, Operación {op['operation']}, Máquina {op['machine']}, Inicio: {op['start']}, Fin: {op['end']}")
+            
+            # Generar y guardar el diagrama de Gantt si está habilitado
+            if visualize:
+                abz10_gantt = abz10_env.render_schedule(f"Planificación ABZ10 con Mejor Modelo (Makespan: {abz10_makespan})", abz10_schedule)
+                plots["abz10_schedule"] = abz10_gantt
+                
+                if save_plots:
+                    plots_dir = os.path.join(output_dir, "plots")
+                    timestamp = time.strftime("%Y%m%d-%H%M%S")
+                    abz10_gantt_path = os.path.join(plots_dir, f"{reward_strategy}_{episodes}ep_abz10_schedule_{timestamp}.png")
+                    abz10_gantt.savefig(abz10_gantt_path)
+                    logger.info(f"Diagrama de Gantt de ABZ10 guardado en: {abz10_gantt_path}")
+            
+            # Guardar resultados de ABZ10
+            abz10_results = {
+                "makespan": abz10_makespan,
+                "schedule": abz10_schedule,
+                "makespan_history": abz10_makespan_history,
+                "execution_time": rl_execution_time,
+                "heuristic_results": abz10_heuristic_results,
+                "heuristic_times": abz10_execution_times,
+                "comparison": abz10_comparison
+            }
+        
         return agent, {
             "heuristic_results": heuristic_results,
             "comparison": comparison,
             "best_makespan": agent.best_makespan,
             "final_makespan": makespan,
+            "abz10_results": abz10_results,
             "plots": plots if visualize else None
         }

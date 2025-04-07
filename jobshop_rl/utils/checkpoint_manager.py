@@ -34,6 +34,17 @@ class CheckpointManager:
         Returns:
             Diccionario con los datos del checkpoint
         """
-        checkpoint = torch.load(path)
-        logger.info(f"Checkpoint cargado desde {path}")
-        return checkpoint
+        try:
+            # Intentar cargar primero con weights_only=False (para compatibilidad con versiones más recientes de PyTorch)
+            checkpoint = torch.load(path, weights_only=False)
+            logger.info(f"Checkpoint cargado desde {path}")
+            return checkpoint
+        except TypeError:
+            # Si el parámetro weights_only no es soportado (versiones antiguas de PyTorch)
+            logger.warning("Compatibilidad: PyTorch no reconoce weights_only, intentando sin ese parámetro")
+            checkpoint = torch.load(path)
+            logger.info(f"Checkpoint cargado desde {path}")
+            return checkpoint
+        except Exception as e:
+            logger.error(f"Error al cargar el checkpoint: {str(e)}")
+            raise
