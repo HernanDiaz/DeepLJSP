@@ -3,23 +3,22 @@ Implementación de agente PPO (Proximal Policy Optimization) para Job Shop Sched
 """
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # Nombre común en la comunidad PyTorch
 import torch.optim as optim
 from torch.distributions import Categorical
 import numpy as np
 import time
 import logging
-import os
-from typing import List, Dict, Tuple, Optional, Any
+from typing import List, Dict, Tuple, Optional
 from copy import deepcopy
-import matplotlib.pyplot as plt
+
 
 from jobshop_rl.agents.base_agent import Agent
 from jobshop_rl.agents.ppo_memory import PPOMemory
 from jobshop_rl.models.neural_models import PolicyNetwork, ValueNetwork
 from jobshop_rl.environment.job_shop_env import JobShopEnv
 from jobshop_rl.utils.logging import TrainingLogger
-from jobshop_rl.utils.path_utils import get_checkpoint_path, get_output_dir
+from jobshop_rl.utils.path_utils import get_checkpoint_path
 from jobshop_rl.utils.checkpoint_manager import CheckpointManager
 from jobshop_rl.utils.visualization import plot_makespan_history, plot_training_metrics
 
@@ -77,6 +76,9 @@ class PPOAgent(Agent):
         self.training_losses = {"policy": [], "value": []}
         self.epsilon_history = []  # Para tracking de la exploración
         self.total_episodes = 0
+        
+        # Guardar valores iniciales para uso en schedulers
+        self.initial_entropy_coef = entropy_coef
         
         # Tiempo de inicio para tracking de duración
         self.training_start_time = None
@@ -136,10 +138,16 @@ class PPOAgent(Agent):
 
     # El método calculate_gae ha sido movido a la clase PPOMemory
 
-    def _recreate_best_solution(self) -> Tuple[float, List[Dict], List[float]]:
-        """Recrea la mejor solución encontrada para obtener el makespan history"""
+    def _run_episode_without_training(self) -> Tuple[bool, Dict]:
+        """
+        Ejecuta un episodio completo sin entrenamiento para evaluación o recreación de soluciones.
+        
+        Returns:
+            Tuple[bool, Dict]: Indicador de si el episodio terminó correctamente y la info del último step
+        """
         state = self.env.reset()
         done = False
+        info = {}
 
         while not done:
             action_idx, _, _ = self.select_action(state, training=False)
@@ -149,107 +157,129 @@ class PPOAgent(Agent):
 
             state, reward, done, info = self.env.step(action_idx)
 
+        return done, info
+
+    def _recreate_best_solution(self) -> List[float]:
+        """Recrea la mejor solución encontrada para obtener el makespan history"""
+        self._run_episode_without_training()
         return self.env.makespan_history
 
-    def train_episode(self) -> float:
-        """Entrena un episodio completo y devuelve la recompensa total"""
-        state = self.env.reset()
-        done = False
-        episode_reward = 0
-        self.total_episodes += 1
+    def update_learning_rate(self, current_episode: int, total_episodes: int):
+        """
+        Actualiza la tasa de aprendizaje según la programación definida.
         
-        # Limpiar memoria para el nuevo episodio
-        self.memory.clear()
-
-        while not done:
-            action_idx, action_log_prob, features = self.select_action(state, training=True)
-
-            if action_idx is None:
-                break
-
-            # Calcular valor para GAE
-            value_input = self._state_to_value_input(state)
-            with torch.no_grad():
-                value = self.value(value_input).item()
-
-            next_state, reward, done, info = self.env.step(action_idx)
+        Args:
+            current_episode: Episodio actual
+            total_episodes: Total de episodios planificados
+        """
+        if not self.use_lr_decay:
+            return
+        
+        # Programación del learning rate (decaimiento lineal)
+        decay_factor = max(0.1, 1.0 - (current_episode / total_episodes))
+        current_lr = self.lr * decay_factor
+        
+        # Actualizar optimizadores
+        for param_group in self.optimizer_policy.param_groups:
+            param_group['lr'] = current_lr
+        for param_group in self.optimizer_value.param_groups:
+            param_group['lr'] = current_lr
             
-            # Almacenar en memoria
-            self.memory.store(
-                state=state,
-                action=action_idx,
-                log_prob=action_log_prob,
-                reward=reward,
-                features=features,
-                is_terminal=done,
-                value=value
-            )
+    def _log_training_progress(self, current_episode: int, total_episodes: int, log_interval: int) -> float:
+        """
+        Registra el progreso del entrenamiento periódicamente.
+        
+        Args:
+            current_episode: Episodio actual
+            total_episodes: Total de episodios
+            log_interval: Intervalo para el cálculo de promedios
+            
+        Returns:
+            float: Recompensa promedio (para uso en early stopping)
+        """
+        if not self.training_makespan_history:
+            logger.info(f"Episodio {current_episode}/{total_episodes}, Sin makespan válido aún")
+            return 0.0
+            
+        # Calcular promedios sobre los últimos log_interval episodios
+        avg_makespan = sum(self.training_makespan_history[-log_interval:]) / min(log_interval, len(self.training_makespan_history[-log_interval:]))
+        avg_reward = sum(self.episode_rewards[-log_interval:]) / min(log_interval, len(self.episode_rewards[-log_interval:]))
+        
+        training_time = time.time() - self.training_start_time
+        
+        # Registrar progreso
+        logger.info(f"Episodio {current_episode}/{total_episodes}, "
+                    f"Recompensa promedio: {avg_reward:.4f}, "
+                    f"Makespan promedio: {avg_makespan:.2f}, "
+                    f"Mejor: {self.best_makespan}, "
+                    f"Tiempo: {training_time:.2f}s")
+        
+        return avg_reward
+    
+    def _check_early_stopping(self, avg_reward: float, best_avg_reward: float, 
+                             no_improvement_count: int, patience: int) -> Tuple[float, int, bool]:
+        """
+        Comprueba si se cumplen las condiciones para early stopping.
+        
+        Args:
+            avg_reward: Recompensa promedio actual
+            best_avg_reward: Mejor recompensa promedio hasta ahora
+            no_improvement_count: Contador de episodios sin mejora
+            patience: Número de episodios sin mejora para activar early stopping
+            
+        Returns:
+            Tuple[float, int, bool]: Nueva mejor recompensa, nuevo contador, y si debe detenerse
+        """
+        should_stop = False
+        new_best = best_avg_reward
+        new_count = no_improvement_count
+        
+        if avg_reward > best_avg_reward:
+            new_best = avg_reward
+            new_count = 0
+        else:
+            new_count += 1
 
-            episode_reward += reward
-            state = next_state
+        if new_count >= patience:
+            logger.info(f"Early stopping activado después de {new_count} episodios sin mejora en la recompensa promedio")
+            should_stop = True
+            
+        return new_best, new_count, should_stop
+    
+    def _update_exploration_parameters(self, current_episode: int, total_episodes: int, 
+                               initial_eps_clip: float, dynamic_entropy: bool):
+        """
+        Actualiza los parámetros relacionados con la exploración.
+        
+        Args:
+            current_episode: Episodio actual
+            total_episodes: Total de episodios
+            initial_eps_clip: Valor inicial de epsilon
+            dynamic_entropy: Si se debe ajustar dinámicamente el coeficiente de entropía
+        """
+        if not dynamic_entropy:
+            return
+            
+        # Gradualmente reducir epsilon para fomentar explotación
+        self.eps_clip = initial_eps_clip * (1 - (current_episode / total_episodes) * 0.7)  # Mínimo 30% del original
 
-        if done and info['makespan'] is not None:
-            makespan = info['makespan']
-            self.training_makespan_history.append(makespan)
-
-            if makespan < self.best_makespan:
-                self.best_makespan = makespan
-                self.best_schedule = deepcopy(self.env.schedule_history)
-                self.best_makespan_history = deepcopy(self.env.makespan_history)
-                logger.info(f"Nuevo mejor makespan: {makespan}")
-                
-                # Guardar checkpoint del mejor modelo
-                self.save_best_checkpoint()
-
-        self.episode_rewards.append(episode_reward)
-        self.epsilon_history.append(self.eps_clip)  # Tracking de epsilon
-
-        # Actualizar el CSV logger si está configurado
-        if self.csv_logger:
-            # Calcular makespan promedio de los últimos 30 episodios (o menos si no hay suficientes)
-            window_size = min(30, len(self.training_makespan_history))
-            if window_size > 0:
-                avg_makespan = sum(self.training_makespan_history[-window_size:]) / window_size
-            else:
-                avg_makespan = 0
-                
-            # Calcular tiempo transcurrido
-            if self.training_start_time:
-                training_time = time.time() - self.training_start_time
-            else:
-                training_time = 0
-                
-            current_makespan = self.training_makespan_history[-1] if self.training_makespan_history else 0
-            self.csv_logger.log_step(
-                episode=self.total_episodes,
-                current_makespan=current_makespan,
-                best_makespan=self.best_makespan,
-                avg_makespan=avg_makespan,
-                training_time=training_time
-            )
-
-        # Si no hay experiencias, terminar
-        if self.memory.is_empty():
-            return episode_reward
-
+        # Ajuste dinámico del coeficiente de entropía
+        progress = current_episode / total_episodes
+        self.entropy_coef = max(0.001, self.entropy_coef * (1 - progress * 0.9))  # Mínimo 10% del original
+    
+    def _update_networks(self) -> Tuple[float, float]:
+        """
+        Actualiza las redes de política y valor usando la experiencia recopilada.
+        
+        Returns:
+            Tuple con pérdidas medias de política y valor
+        """
         # Obtener tensores de la memoria
         old_actions, old_log_probs, returns, advantages, features_list = self.memory.get_tensors()
 
         # Realizar actualizaciones de PPO
         policy_losses = []
         value_losses = []
-
-        # Calcular un factor de decaimiento de learning rate si está activado
-        if self.use_lr_decay:
-            # Decaimiento lineal simple basado en episodios
-            decay_factor = max(0.1, 1.0 - (self.total_episodes / 500))  # Mínimo 10% del lr original
-            current_lr = self.lr * decay_factor
-
-            # Actualizar lr en optimizadores
-            for param_group in self.optimizer_policy.param_groups:
-                param_group['lr'] = current_lr
-            for param_group in self.optimizer_value.param_groups:
-                param_group['lr'] = current_lr
 
         # Mini-batch updates for K epochs
         for _ in range(self.K_epochs):
@@ -288,9 +318,113 @@ class PPOAgent(Agent):
                 policy_losses.append(policy_loss.item())
                 value_losses.append(value_loss.item())
 
+        # Calcular pérdidas medias
+        policy_loss_mean = float(np.mean(policy_losses))
+        value_loss_mean = float(np.mean(value_losses))
+        
         # Registrar pérdidas medias
-        self.training_losses["policy"].append(np.mean(policy_losses))
-        self.training_losses["value"].append(np.mean(value_losses))
+        self.training_losses["policy"].append(policy_loss_mean)
+        self.training_losses["value"].append(value_loss_mean)
+        
+        return policy_loss_mean, value_loss_mean
+    
+    def _log_episode_metrics(self, episode_reward: float, info: Dict, done: bool):
+        """
+        Registra métricas después de un episodio completo.
+        
+        Args:
+            episode_reward: Recompensa total del episodio
+            info: Información del último step
+            done: Si el episodio terminó correctamente
+        """
+        # Registrar makespan si el episodio terminó correctamente
+        if done and info.get('makespan') is not None:
+            makespan = info['makespan']
+            self.training_makespan_history.append(makespan)
+
+            if makespan < self.best_makespan:
+                self.best_makespan = makespan
+                self.best_schedule = deepcopy(self.env.schedule_history)
+                self.best_makespan_history = deepcopy(self.env.makespan_history)
+                logger.info(f"Nuevo mejor makespan: {makespan}")
+                
+                # Guardar checkpoint del mejor modelo
+                self.save_best_checkpoint()
+
+        self.episode_rewards.append(episode_reward)
+        self.epsilon_history.append(self.eps_clip)  # Tracking de epsilon
+
+        # Actualizar el CSV logger si está configurado
+        if self.csv_logger:
+            # Calcular makespan promedio de los últimos 30 episodios (o menos si no hay suficientes)
+            window_size = min(30, len(self.training_makespan_history))
+            if window_size > 0:
+                avg_makespan = sum(self.training_makespan_history[-window_size:]) / window_size
+            else:
+                avg_makespan = 0
+                
+            # Calcular tiempo transcurrido
+            if self.training_start_time:
+                training_time = time.time() - self.training_start_time
+            else:
+                training_time = 0
+                
+            current_makespan = self.training_makespan_history[-1] if self.training_makespan_history else 0
+            self.csv_logger.log_step(
+                episode=self.total_episodes,
+                current_makespan=current_makespan,
+                best_makespan=self.best_makespan,
+                avg_makespan=avg_makespan,
+                training_time=training_time
+            )
+    
+    def train_episode(self) -> float:
+        """Entrena un episodio completo y devuelve la recompensa total"""
+        state = self.env.reset()
+        done = False
+        episode_reward = 0
+        info = {}  # Inicializar info con un diccionario vacío por defecto
+        self.total_episodes += 1
+        
+        # Limpiar memoria para el nuevo episodio
+        self.memory.clear()
+
+        while not done:
+            action_idx, action_log_prob, features = self.select_action(state, training=True)
+
+            if action_idx is None:
+                break
+
+            # Calcular valor para GAE
+            value_input = self._state_to_value_input(state)
+            with torch.no_grad():
+                value = self.value(value_input).item()
+
+            next_state, reward, done, info = self.env.step(action_idx)
+            
+            # Almacenar en memoria
+            self.memory.store(
+                state=state,
+                action=action_idx,
+                log_prob=action_log_prob,
+                reward=reward,
+                features=features,
+                is_terminal=done,
+                value=value
+            )
+
+            episode_reward += reward
+            state = next_state
+
+        # Registrar métricas del episodio
+        self._log_episode_metrics(episode_reward, info, done)
+
+        # Si no hay experiencias, terminar
+        if self.memory.is_empty():
+            return episode_reward
+
+        # Actualizar redes (las pérdidas se registran dentro del método)
+        self._update_networks()
 
         return episode_reward
 
@@ -304,8 +438,10 @@ class PPOAgent(Agent):
         # Iniciar cronómetro para tracking de duración
         self.training_start_time = time.time()
 
-        # Programación de la tasa de aprendizaje si está habilitada
-        initial_lr = self.lr
+        # Guardar configuración de lr_decay para update_learning_rate
+        self.use_lr_decay = lr_decay
+        
+        # Guardar valores iniciales para referencia
         initial_eps_clip = self.eps_clip
 
         # Seguimiento para early stopping
@@ -313,47 +449,26 @@ class PPOAgent(Agent):
         no_improvement_count = 0
 
         for i in range(1, episodes+1):
-            # Ajustar la tasa de aprendizaje si está habilitado
-            if lr_decay:
-                new_lr = initial_lr * (1 - (i / episodes))
-                for param_group in self.optimizer_policy.param_groups:
-                    param_group['lr'] = new_lr
-                for param_group in self.optimizer_value.param_groups:
-                    param_group['lr'] = new_lr
+            # Actualizar learning rate una sola vez por episodio
+            self.update_learning_rate(i, episodes)
 
-            # Ajuste dinámico de epsilon para exploración
-            if dynamic_entropy:
-                # Gradualmente reducir epsilon para fomentar explotación
-                self.eps_clip = initial_eps_clip * (1 - (i / episodes) * 0.7)  # Mínimo 30% del original
-
-                # Ajuste dinámico del coeficiente de entropía
-                progress = i / episodes
-                self.entropy_coef = max(0.001, self.entropy_coef * (1 - progress * 0.9))  # Mínimo 10% del original
+            # Ajustar parámetros de exploración
+            self._update_exploration_parameters(i, episodes, initial_eps_clip, dynamic_entropy)
 
             # Entrenar un episodio
-            episode_reward = self.train_episode()
+            self.train_episode()
 
             # Registrar métricas periódicamente
             if i % log_interval == 0:
-                if self.training_makespan_history:
-                    avg_makespan = sum(self.training_makespan_history[-log_interval:]) / min(log_interval, len(self.training_makespan_history[-log_interval:]))
-                    avg_reward = sum(self.episode_rewards[-log_interval:]) / min(log_interval, len(self.episode_rewards[-log_interval:]))
-                    training_time = time.time() - self.training_start_time
-                    logger.info(f"Episodio {i}/{episodes}, Recompensa promedio: {avg_reward:.4f}, Makespan promedio: {avg_makespan:.2f}, Mejor: {self.best_makespan}, Tiempo: {training_time:.2f}s")
-
-                    # Early stopping check
-                    if early_stopping:
-                        if avg_reward > best_avg_reward:
-                            best_avg_reward = avg_reward
-                            no_improvement_count = 0
-                        else:
-                            no_improvement_count += 1
-
-                        if no_improvement_count >= early_stopping_patience:
-                            logger.info(f"Early stopping activado después de {i} episodios sin mejora en la recompensa promedio")
-                            break
-                else:
-                    logger.info(f"Episodio {i}/{episodes}, Sin makespan válido aún")
+                avg_reward = self._log_training_progress(i, episodes, log_interval)
+                
+                # Comprobar early stopping si está habilitado
+                if early_stopping and self.training_makespan_history:
+                    best_avg_reward, no_improvement_count, should_stop = self._check_early_stopping(
+                        avg_reward, best_avg_reward, no_improvement_count, early_stopping_patience
+                    )
+                    if should_stop:
+                        break
 
             # Guardar checkpoint si está habilitado
             if checkpoint_interval > 0 and i % checkpoint_interval == 0:
@@ -444,17 +559,7 @@ class PPOAgent(Agent):
 
     def evaluate_policy(self) -> Tuple[float, List[Dict], List[float]]:
         """Evalúa la política actual en un episodio completo"""
-        state = self.env.reset()
-        done = False
-
-        while not done:
-            action_idx, _, _ = self.select_action(state, training=False)
-
-            if action_idx is None:
-                break
-
-            state, reward, done, info = self.env.step(action_idx)
-
+        done, _ = self._run_episode_without_training()
         makespan = max(self.env.job_completion_time) if done else float('inf')
         return makespan, self.env.schedule_history, self.env.makespan_history
 

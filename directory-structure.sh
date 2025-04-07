@@ -10,7 +10,8 @@ jobshop_rl/
 ├── agents/
 │   ├── __init__.py
 │   ├── base_agent.py         # Clase base para agentes
-│   └── ppo_agent.py          # Implementación de PPO
+│   ├── ppo_agent.py          # Implementación de PPO
+│   └── ppo_memory.py         # Memoria para el agente PPO
 ├── rewards/
 │   ├── __init__.py
 │   └── strategies.py         # Estrategias de recompensa
@@ -20,7 +21,10 @@ jobshop_rl/
 ├── utils/
 │   ├── __init__.py
 │   ├── visualization.py      # Funciones de visualización
-│   └── logging.py            # TrainingLogger
+│   ├── logging.py            # TrainingLogger
+│   ├── checkpoint_manager.py # Gestión de checkpoints
+│   ├── experiment_config.py  # Configuración de experimentos
+│   └── path_utils.py         # Utilidades para manejo de rutas
 ├── experiments/
 │   ├── __init__.py
 │   ├── factory.py            # ExperimentFactory
