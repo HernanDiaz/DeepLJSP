@@ -36,10 +36,10 @@ def parse_args():
                        help='Generar visualizaciones')
     parser.add_argument('--save-plots', action='store_true',
                        help='Guardar visualizaciones en archivos')
-    parser.add_argument('--evaluate-abz10', action='store_true',
-                       help='Evaluar el mejor modelo con el problema ABZ10 al finalizar')
-    parser.add_argument('--problem-id', type=str, default='ft10',
-                       help='ID del problema a resolver (default: ft10)')
+    parser.add_argument('--train-problem', type=str, default='ft10',
+                       help='ID del problema para entrenamiento (default: ft10)')
+    parser.add_argument('--eval-problem', type=str, default=None,
+                       help='ID del problema para evaluación (si no se especifica, no se realiza evaluación)')
     parser.add_argument('--use-ortools', action='store_true',
                        help='Comparar con solucionador de Google OR-Tools')
     parser.add_argument('--ortools-time-limit', type=int, default=60,
@@ -97,7 +97,7 @@ def run_single_experiment(args):
     output_dir = get_output_dir()
     
     # Cargar el problema especificado
-    problem_id = args.problem_id.lower()
+    problem_id = args.train_problem.lower()
     
     # Los parámetros de recompensa serán configurados automáticamente por el analizador de problemas
     # basado en las características del problema, pero se pueden proporcionar valores por defecto
@@ -126,6 +126,9 @@ def run_single_experiment(args):
     
     start_time = time.time()
     
+    # Determinar si se debe realizar evaluación
+    evaluate_other_problem = args.eval_problem is not None
+    
     agent, results = ExperimentFactory.run_full_experiment(
         episodes=args.episodes,
         reward_strategy=args.reward,
@@ -140,7 +143,8 @@ def run_single_experiment(args):
         csv_base_dir=output_dir,
         output_dir=output_dir,
         experiment_name=args.experiment_name,
-        evaluate_abz10=args.evaluate_abz10,
+        evaluate_other_problem=evaluate_other_problem,
+        evaluation_problem_id=args.eval_problem,
         use_ortools=args.use_ortools,
         ortools_time_limit=args.ortools_time_limit
     )
@@ -148,7 +152,7 @@ def run_single_experiment(args):
     total_time = time.time() - start_time
     
     print(f"\n===== Resultados del experimento =====")
-    print(f"Problema: {problem_id}")
+    print(f"Problema de entrenamiento: {problem_id}")
     print(f"Tiempo total: {total_time:.2f} segundos")
     print(f"Mejor makespan: {agent.best_makespan}")
     # Usar el makespan del último episodio de entrenamiento en lugar de una nueva evaluación
@@ -184,34 +188,25 @@ def run_single_experiment(args):
         else:
             improvement_needed = ((agent.best_makespan - ortools_data['makespan']) / agent.best_makespan) * 100
             print(f"\nEl agente RL necesita mejorar un {improvement_needed:.2f}% para igualar a OR-Tools.")
+            
+    # Mostrar resultados de evaluación si están disponibles
+    if 'evaluation_results' in results and results['evaluation_results']:
+        eval_data = results['evaluation_results']
+        print(f"\n===== Resultados de evaluación en {eval_data['problem_id']} =====")
+        print(f"Makespan: {eval_data['makespan']}")
+        print(f"Tiempo de ejecución: {eval_data['execution_time']:.2f} segundos")
+        
+        if 'heuristic_results' in eval_data:
+            print("\nComparación con heurísticas:")
+            for heuristic, makespan in eval_data['heuristic_results'].items():
+                if heuristic in eval_data['comparison']:
+                    improvement = eval_data['comparison'][heuristic]
+                    print(f"  vs {heuristic}: Makespan = {makespan}, Mejora = {improvement:.2f}%")
     
     if 'comparison' in results:
         print("\nComparación con heurísticas:")
         for heuristic, improvement in results['comparison'].items():
             print(f"  vs {heuristic}: {improvement:.2f}% de mejora")
-    
-    # Mostrar resultados de ABZ10 si están disponibles
-    if 'abz10_results' in results and results['abz10_results']:
-        print("\n===== Resultados de ABZ10 =====")
-        print(f"Makespan ABZ10 (RL): {results['abz10_results']['makespan']}, " + 
-              f"Tiempo: {results['abz10_results']['execution_time']:.4f} segundos")
-        
-        # Mostrar resultados de las heurísticas
-        if 'heuristic_results' in results['abz10_results'] and 'heuristic_times' in results['abz10_results']:
-            print("\nComparación con heurísticas en ABZ10:")
-            heur_results = results['abz10_results']['heuristic_results']
-            heur_times = results['abz10_results']['heuristic_times']
-            
-            print(f"{'Heurística':<10} {'Makespan':<10} {'Tiempo (s)':<12} {'vs RL (%)':<10}")
-            print("-" * 45)
-            
-            for heuristic, makespan in heur_results.items():
-                time_value = heur_times[heuristic]
-                improvement = results['abz10_results']['comparison'][heuristic]
-                print(f"{heuristic:<10} {makespan:<10} {time_value:.6f}s{'':5} {improvement:.2f}%")
-        
-        print("\nNota: Para evaluar un modelo existente con ABZ10 también puedes usar:")
-        print("python -m jobshop_rl.evaluate_abz10 --visualize --save-plot")
             
     return agent, results
 

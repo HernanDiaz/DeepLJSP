@@ -264,7 +264,8 @@ Puedes modificar la configuración de OR-Tools editando el archivo `jobshop_rl/h
 - Permite entender el gap entre las soluciones del agente y las mejores soluciones conocidas.
 
 ## TODO
-- probar si en el modo single se puede entrenar con un problema y resolver con otro.
+- reescribir archivo readme
+- refactorizar el codigo
 - La dimensión de entrada de la red neuronal de valor (ValueNetwork) cambia según el número de trabajos y máquinas.
 - Comprobar cómo funciona el entrenamiento por lotes
 - Comprobar que se cargan los ejemplos en el formato correcto

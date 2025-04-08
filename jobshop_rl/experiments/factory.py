@@ -10,6 +10,7 @@ import logging
 import time
 import os
 import datetime
+import traceback
 from typing import Dict, List, Tuple, Any, Optional
 
 from jobshop_rl.utils.visualization import save_plots as visualization_save_plots
@@ -192,7 +193,8 @@ class ExperimentFactory:
                            csv_logging: bool = True, csv_filename: Optional[str] = None, 
                            csv_base_dir: str = 'outputs', output_dir: str = 'outputs', 
                            experiment_name: Optional[str] = None,
-                           evaluate_abz10: bool = True,
+                           evaluate_other_problem: bool = False,
+                           evaluation_problem_id: Optional[str] = None,
                            use_ortools: bool = False,
                            ortools_time_limit: int = 60) -> Tuple[PPOAgent, Dict]:
         """
@@ -398,88 +400,93 @@ class ExperimentFactory:
                 logger.info(f"Guardando visualizaciones en directorio: {plots_dir}")
                 visualization_save_plots(plots, directory=plots_dir, prefix=plot_prefix)
 
-        # Evaluación del mejor modelo con ABZ10 si está habilitado y no es el problema actual
-        abz10_results = None
-        if evaluate_abz10 and problem_id.lower() != "abz10":
-            logger.info("Evaluando el mejor modelo con el problema ABZ10...")
+        # Evaluación del mejor modelo con otro problema si está habilitado y no es el problema de entrenamiento
+        eval_results = None
+        if evaluate_other_problem and evaluation_problem_id and evaluation_problem_id.lower() != problem_id.lower():
+            logger.info(f"Evaluando el mejor modelo con el problema {evaluation_problem_id}...")
             
-            # Importar datos del problema ABZ10
-            abz10_data = get_abz10_problem()
-            
-            # Crear entorno ABZ10 con la misma estrategia de recompensa
-            abz10_env = ExperimentFactory.create_env_from_problem(
-                abz10_data, 
-                reward_strategy=reward_strategy, 
-                seed=seed, 
-                **reward_params
-            )
-            
-            # Crear un agente de evaluación usando el mejor modelo encontrado
-            abz10_agent = PPOAgent(abz10_env)
-            
-            # Cargar el mejor modelo si está disponible, si no, usar el modelo actual
-            if agent.best_model_state:
-                abz10_agent.policy.load_state_dict(agent.best_model_state["policy"])
-                abz10_agent.value.load_state_dict(agent.best_model_state["value"])
-                logger.info("Cargado el mejor modelo encontrado durante el entrenamiento")
-            else:
-                abz10_agent.policy.load_state_dict(agent.policy.state_dict())
-                abz10_agent.value.load_state_dict(agent.value.state_dict())
-                logger.info("Usando el modelo final del entrenamiento (no se encontró mejor modelo guardado)")
-            
-            # Evaluar en ABZ10 y medir tiempo
-            abz10_makespan, abz10_schedule, abz10_makespan_history, rl_execution_time = abz10_agent.evaluate_policy()
-            
-            # Comparar con heurísticas
-            logger.info("Comparando con heurísticas clásicas en ABZ10...")
-            abz10_evaluator = HeuristicEvaluator(abz10_env)
-            abz10_heuristic_results, abz10_execution_times = abz10_evaluator.evaluate_all(True, use_ortools)
-            abz10_comparison = abz10_evaluator.compare_with_agent(abz10_makespan)
-            
-            # Registrar el orden de tareas y el makespan en el log
-            logger.info("=== Resultados de la evaluación en ABZ10 ===")
-            logger.info(f"Makespan ABZ10 (RL): {abz10_makespan}, Tiempo: {rl_execution_time:.4f} segundos")
-            
-            # Mostrar resultados de heurísticas
-            logger.info("Comparación con heurísticas:")
-            for heuristic, makespan in abz10_heuristic_results.items():
-                exec_time = abz10_execution_times[heuristic]
-                logger.info(f"{heuristic}: Makespan = {makespan}, Tiempo: {exec_time:.4f} segundos")
+            try:
+                # Obtener datos del problema de evaluación
+                eval_data = ExperimentFactory.load_problem_by_id(evaluation_problem_id)
                 
-            logger.info("Mejora porcentual en makespan:")
-            for heuristic, improvement in abz10_comparison.items():
-                logger.info(f"vs {heuristic}: {improvement:.2f}%")
-            
-            # Ordenar las operaciones por tiempo de inicio
-            sorted_schedule = sorted(abz10_schedule, key=lambda x: x['start'])
-            
-            # Mostrar el orden de tareas en el log
-            logger.info("Orden de tareas de la planificación:")
-            for i, op in enumerate(sorted_schedule):
-                logger.info(f"{i+1}. Job {op['job']}, Operación {op['operation']}, Máquina {op['machine']}, Inicio: {op['start']}, Fin: {op['end']}")
-            
-            # Generar y guardar el diagrama de Gantt si está habilitado
-            if visualize:
-                abz10_gantt = abz10_env.render_schedule(f"Planificación ABZ10 con Mejor Modelo (Makespan: {abz10_makespan})", abz10_schedule)
-                plots["abz10_schedule"] = abz10_gantt
+                # Crear entorno de evaluación con la misma estrategia de recompensa
+                eval_env = ExperimentFactory.create_env_from_problem(
+                    eval_data, 
+                    reward_strategy=reward_strategy, 
+                    seed=seed, 
+                    **reward_params
+                )
                 
-                if save_plots:
-                    plots_dir = os.path.join(output_dir, "plots")
-                    timestamp = time.strftime("%Y%m%d-%H%M%S")
-                    abz10_gantt_path = os.path.join(plots_dir, f"{problem_id}_{reward_strategy}_{episodes}ep_abz10_schedule_{timestamp}.png")
-                    abz10_gantt.savefig(abz10_gantt_path)
-                    logger.info(f"Diagrama de Gantt de ABZ10 guardado en: {abz10_gantt_path}")
-            
-            # Guardar resultados de ABZ10
-            abz10_results = {
-                "makespan": abz10_makespan,
-                "schedule": abz10_schedule,
-                "makespan_history": abz10_makespan_history,
-                "execution_time": rl_execution_time,
-                "heuristic_results": abz10_heuristic_results,
-                "heuristic_times": abz10_execution_times,
-                "comparison": abz10_comparison
-            }
+                # Crear un agente de evaluación usando el mejor modelo encontrado
+                eval_agent = PPOAgent(eval_env)
+                
+                # Cargar el mejor modelo si está disponible, si no, usar el modelo actual
+                if agent.best_model_state:
+                    eval_agent.policy.load_state_dict(agent.best_model_state["policy"])
+                    eval_agent.value.load_state_dict(agent.best_model_state["value"])
+                    logger.info("Cargado el mejor modelo encontrado durante el entrenamiento")
+                else:
+                    eval_agent.policy.load_state_dict(agent.policy.state_dict())
+                    eval_agent.value.load_state_dict(agent.value.state_dict())
+                    logger.info("Usando el modelo final del entrenamiento (no se encontró mejor modelo guardado)")
+                
+                # Evaluar en el problema de evaluación y medir tiempo
+                eval_makespan, eval_schedule, eval_makespan_history, rl_execution_time = eval_agent.evaluate_policy()
+                
+                # Comparar con heurísticas
+                logger.info(f"Comparando con heurísticas clásicas en {evaluation_problem_id}...")
+                eval_evaluator = HeuristicEvaluator(eval_env)
+                eval_heuristic_results, eval_execution_times = eval_evaluator.evaluate_all(True, use_ortools)
+                eval_comparison = eval_evaluator.compare_with_agent(eval_makespan)
+                
+                # Registrar el orden de tareas y el makespan en el log
+                logger.info(f"=== Resultados de la evaluación en {evaluation_problem_id} ===")
+                logger.info(f"Makespan {evaluation_problem_id} (RL): {eval_makespan}, Tiempo: {rl_execution_time:.4f} segundos")
+                
+                # Mostrar resultados de heurísticas
+                logger.info("Comparación con heurísticas:")
+                for heuristic, makespan in eval_heuristic_results.items():
+                    exec_time = eval_execution_times[heuristic]
+                    logger.info(f"{heuristic}: Makespan = {makespan}, Tiempo: {exec_time:.4f} segundos")
+                    
+                logger.info("Mejora porcentual en makespan:")
+                for heuristic, improvement in eval_comparison.items():
+                    logger.info(f"vs {heuristic}: {improvement:.2f}%")
+                
+                # Ordenar las operaciones por tiempo de inicio
+                sorted_schedule = sorted(eval_schedule, key=lambda x: x['start'])
+                
+                # Mostrar el orden de tareas en el log
+                logger.info("Orden de tareas de la planificación:")
+                for i, op in enumerate(sorted_schedule):
+                    logger.info(f"{i+1}. Job {op['job']}, Operación {op['operation']}, Máquina {op['machine']}, Inicio: {op['start']}, Fin: {op['end']}")
+                
+                # Generar y guardar el diagrama de Gantt si está habilitado
+                if visualize:
+                    eval_gantt = eval_env.render_schedule(f"Planificación {evaluation_problem_id} con Mejor Modelo (Makespan: {eval_makespan})", eval_schedule)
+                    plots[f"{evaluation_problem_id}_schedule"] = eval_gantt
+                    
+                    if save_plots:
+                        plots_dir = os.path.join(output_dir, "plots")
+                        timestamp = time.strftime("%Y%m%d-%H%M%S")
+                        eval_gantt_path = os.path.join(plots_dir, f"{problem_id}_{reward_strategy}_{episodes}ep_{evaluation_problem_id}_schedule_{timestamp}.png")
+                        eval_gantt.savefig(eval_gantt_path)
+                        logger.info(f"Diagrama de Gantt de {evaluation_problem_id} guardado en: {eval_gantt_path}")
+                
+                # Guardar resultados de evaluación
+                eval_results = {
+                    "problem_id": evaluation_problem_id,
+                    "makespan": eval_makespan,
+                    "schedule": eval_schedule,
+                    "makespan_history": eval_makespan_history,
+                    "execution_time": rl_execution_time,
+                    "heuristic_results": eval_heuristic_results,
+                    "heuristic_times": eval_execution_times,
+                    "comparison": eval_comparison
+                }
+            except Exception as e:
+                logger.error(f"Error al evaluar el problema {evaluation_problem_id}: {str(e)}")
+                logger.error(f"Detalles: {traceback.format_exc()}")
         
         # Obtener el último makespan registrado durante el entrenamiento
         last_makespan = agent.training_makespan_history[-1] if agent.training_makespan_history else float('inf')
@@ -489,7 +496,7 @@ class ExperimentFactory:
             "comparison": comparison,
             "best_makespan": agent.best_makespan,
             "final_makespan": last_makespan,
-            "abz10_results": abz10_results,
+            "evaluation_results": eval_results,
             "ortools_results": ortools_results,
             "plots": plots if visualize else None
         }
