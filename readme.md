@@ -2,7 +2,7 @@
 
 JobShopRL es un sistema modular de aprendizaje por refuerzo diseñado para resolver problemas de Job Shop Scheduling. La arquitectura modular del sistema facilita la extensibilidad, mantenibilidad y reutilización de componentes.
 
-## Características
+## 🚀 Características Principales
 
 - 🧩 **Arquitectura Modular**: Componentes desacoplados con interfaces bien definidas
 - 🔀 **Múltiples Estrategias de Recompensa**: Configuración flexible de funciones de recompensa
@@ -11,8 +11,97 @@ JobShopRL es un sistema modular de aprendizaje por refuerzo diseñado para resol
 - 🧠 **Algoritmo PPO**: Implementación eficiente del algoritmo Proximal Policy Optimization
 - ⚙️ **Experimentación por Lotes**: Entrenamiento y evaluación con múltiples problemas
 - 🔄 **Transferencia de Conocimiento**: Reutilización de modelos entre problemas similares
+- 📋 **Comparación con Heurísticas**: Evaluación contra métodos clásicos y OR-Tools
 
-## Estructura del Proyecto
+## 📦 Instalación
+
+```bash
+# Clonar el repositorio
+git clone https://github.com/username/jobshop_rl.git
+cd jobshop_rl
+
+# Instalar dependencias
+pip install -r requirements.txt
+```
+
+## 📋 Requisitos
+
+- Python 3.8+
+- PyTorch 1.9+
+- NumPy
+- Pandas
+- Matplotlib
+- OR-Tools (opcional, para comparación con solucionador de Google)
+
+## 🖥️ Ejemplos de Uso
+
+### 1. Entrenamiento con un Único Problema (FT10)
+
+Para entrenar un agente en el problema FT10 con visualización:
+
+```bash
+python -m jobshop_rl.main --mode single --episodes 300 --reward adaptive --visualize --save-plots
+```
+
+### 2. Entrenamiento en un Problema y Evaluación en Otro (deben tener el mismo tamaño)
+
+Entrenar en FT10 y evaluar en ABZ10:
+
+```bash
+python -m jobshop_rl.main --mode single --episodes 300 --reward adaptive --visualize --save-plots --train-problem ft10 --eval-problem abz10
+```
+
+También puede usar los scripts proporcionados:
+- En Windows: `train_ft10_eval_abz10.bat`
+- En Linux/Mac: `./train_ft10_eval_abz10.sh`
+
+### 3. Evaluación de un Modelo Entrenado en ABZ10
+
+Para evaluar un modelo previamente entrenado en el problema ABZ10:
+
+```bash
+python -m jobshop_rl.evaluate_abz10 --visualize --save-plot
+```
+
+O use los scripts proporcionados:
+- En Windows: `evaluate_abz10.bat`
+- En Linux/Mac: `./evaluate_abz10.sh`
+
+### 4. Experimentación por Lotes con Múltiples Problemas
+
+Para entrenar y evaluar con conjuntos de problemas:
+
+```bash
+python -m jobshop_rl.main --mode batch \
+    --training-dir data/training_problems \
+    --test-dir data/test_problems \
+    --output-dir results \
+    --episodes-per-problem 100
+```
+
+### 5. Generación de Problemas Aleatorios
+
+Para generar un conjunto de problemas aleatorios:
+
+```bash
+python -m jobshop_rl.main --mode generate \
+    --num-problems 5 \
+    --num-jobs 10 \
+    --num-machines 10 \
+    --output-format json
+```
+
+### 6. Comparación con Google OR-Tools
+
+Para comparar los resultados del agente con OR-Tools:
+
+```bash
+python -m jobshop_rl.main --mode single --episodes 300 --reward adaptive --visualize --use-ortools
+```
+
+En Windows, puede usar: `run_with_ortools.bat`
+
+## 🧰 Arquitectura del Proyecto
 
 ```
 jobshop_rl/
@@ -28,76 +117,18 @@ jobshop_rl/
 └── main.py             # Punto de entrada principal
 ```
 
-## Requisitos
-
-- Python 3.8+
-- PyTorch 1.9+
-- NumPy
-- Pandas
-- Matplotlib
-- OR-Tools (opcional, para comparación con solucionador de Google)
-
-## Instalación
-
-```bash
-# Clonar el repositorio
-git clone https://github.com/username/jobshop_rl.git
-cd jobshop_rl
-
-# Instalar dependencias
-pip install -r requirements.txt
-```
-
-## Uso
-
-### Experimento con un único problema (FT10)
-
-```bash
-python -m jobshop_rl.main --mode single --episodes 300 --reward advanced --visualize --save-plots  
-```
-
-### Experimentación por lotes con múltiples problemas
-
-```bash
-python -m jobshop_rl.main --mode batch \
-    --training-dir data/training_problems \
-    --test-dir data/test_problems \
-    --output-dir results \
-    --episodes-per-problem 100
-```
-
-### Generación de problemas aleatorios
-
-```bash
-python -m jobshop_rl.main --mode generate \
-    --num-problems 5 \
-    --num-jobs 10 \
-    --num-machines 10 \
-    --output-format json
-```
-
-## Uso en Google Colab
-
-JobShopRL se puede ejecutar fácilmente en Google Colab. Para ello:
-
-1. Crea un nuevo notebook en Colab
-2. Clona el repositorio o copia los archivos manualmente
-3. Instala las dependencias necesarias
-4. Importa los módulos y ejecuta los experimentos
-
-Consulta el notebook de ejemplo `jobshop_rl_colab.ipynb` para más detalles.
-
-## Personalización
+## 🔧 Personalización
 
 ### Estrategias de Recompensa
 
-JobShopRL incluye varias estrategias de recompensa predefinidas:
+JobShopRL incluye varias estrategias de recompensa predefinidas que pueden seleccionarse con el parámetro `--reward`:
 
-- `BasicRewardStrategy`: Recompensa simple basada en el makespan final
-- `AdvancedRewardStrategy`: Recompensa con señales intermedias (tiempos de inactividad, operaciones críticas, etc.)
-- `CombinedRewardStrategy`: Combinación ponderada de múltiples estrategias
+- `basic`: Recompensa simple basada en el makespan final
+- `advanced`: Recompensa con señales intermedias (tiempos de inactividad, operaciones críticas, etc.)
+- `adaptive`: Recompensa que se adapta a las características del problema (recomendada)
+- `combined`: Combinación ponderada de múltiples estrategias
 
-Puedes crear tus propias estrategias implementando la clase base `RewardStrategy`:
+Ejemplo de implementación de una estrategia personalizada:
 
 ```python
 from jobshop_rl.rewards.strategies import RewardStrategy
@@ -108,9 +139,9 @@ class MyCustomRewardStrategy(RewardStrategy):
         return reward
 ```
 
-### Heurísticas
+### Heurísticas Implementadas
 
-El sistema incluye implementaciones de las heurísticas clásicas para Job Shop:
+El sistema incluye varias heurísticas clásicas que se utilizan como baseline:
 
 - SPT (Shortest Processing Time)
 - LPT (Longest Processing Time)
@@ -120,28 +151,16 @@ El sistema incluye implementaciones de las heurísticas clásicas para Job Shop:
 - CR (Critical Ratio)
 - OR-Tools (Solucionador de programación de restricciones de Google)
 
-Estas heurísticas se utilizan como baseline para comparar el rendimiento del agente de RL. La heurística de OR-Tools proporciona soluciones de alta calidad utilizando técnicas avanzadas de programación con restricciones y puede servir como referencia para evaluar la calidad de las soluciones obtenidas por el agente de RL.
+## 📊 Ejemplos de Código
 
-## Extensión a Múltiples Problemas
-
-El sistema está diseñado para trabajar con múltiples problemas organizados en carpetas:
-
-1. Coloca tus problemas de entrenamiento en `data/training_problems/`
-2. Coloca tus problemas de prueba en `data/test_problems/`
-3. Ejecuta el modo batch como se muestra arriba
-
-El sistema cargará automáticamente los problemas, entrenará un modelo en los problemas de entrenamiento y lo evaluará en los problemas de prueba.
-
-## Ejemplos
-
-### Entrenamiento con recompensa avanzada
+### Entrenamiento Programático
 
 ```python
 from jobshop_rl.experiments.factory import ExperimentFactory
 
 agent, results = ExperimentFactory.run_full_experiment(
     episodes=300,
-    reward_strategy="advanced",
+    reward_strategy="adaptive",
     agent_params={
         "lr": 0.0003,
         "gamma": 0.99,
@@ -157,7 +176,7 @@ agent, results = ExperimentFactory.run_full_experiment(
 )
 ```
 
-### Experimentación por lotes
+### Experimentación por Lotes
 
 ```python
 from jobshop_rl.experiments.batch_experimenter import BatchExperimenter
@@ -175,21 +194,79 @@ best_agent = experimenter.train_agent(episodes_per_problem=100)
 results = experimenter.evaluate_on_test_set(best_agent)
 ```
 
-## Contribuciones
+## 📋 Opciones de Línea de Comandos
 
-Las contribuciones son bienvenidas. Por favor, sigue estos pasos:
+### Opciones Generales
 
-1. Haz un fork del repositorio
-2. Crea una rama para tu funcionalidad (`git checkout -b feature/amazing-feature`)
-3. Haz commit de tus cambios (`git commit -m 'Add amazing feature'`)
-4. Haz push a la rama (`git push origin feature/amazing-feature`)
-5. Abre un Pull Request
+| Opción | Descripción |
+|--------|-------------|
+| `--mode` | Modo de ejecución: `single`, `batch` o `generate` |
+| `--episodes` | Número de episodios para entrenar (modo single) |
+| `--reward` | Estrategia de recompensa: `basic`, `advanced`, `adaptive`, `combined` |
+| `--visualize` | Generar visualizaciones durante el entrenamiento |
+| `--save-plots` | Guardar visualizaciones en archivos |
+| `--seed` | Semilla para reproducibilidad |
+| `--log-level` | Nivel de logging: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` |
 
-## Licencia
+### Opciones de Experimento Individual
+
+| Opción | Descripción |
+|--------|-------------|
+| `--train-problem` | ID del problema para entrenamiento (default: ft10) |
+| `--eval-problem` | ID del problema para evaluación (si no se especifica, no se realiza evaluación) |
+| `--use-ortools` | Comparar con solucionador de Google OR-Tools |
+| `--ortools-time-limit` | Límite de tiempo para el solucionador OR-Tools (segundos) |
+
+### Opciones de Lotes
+
+| Opción | Descripción |
+|--------|-------------|
+| `--training-dir` | Directorio con problemas de entrenamiento |
+| `--test-dir` | Directorio con problemas de prueba |
+| `--output-dir` | Directorio para guardar resultados |
+| `--episodes-per-problem` | Episodios para entrenar en cada problema |
+
+## 🔍 Detalles de Implementación
+
+### Uso de Google OR-Tools
+
+Para utilizar la comparación con OR-Tools:
+
+1. Instale OR-Tools: `pip install ortools`
+2. Ejecute experimentos con la bandera `--use-ortools`
+
+La configuración del solucionador OR-Tools puede modificarse en `jobshop_rl/heuristics/ortools_solver.py`.
+
+### Formato de los Problemas
+
+Los problemas pueden cargarse en varios formatos:
+- JSON: Formato nativo del sistema
+- CSV: Compatible con formatos tabulares
+- Taillard: Compatible con problemas clásicos de literatura
+
+## 🧪 Scripts de Experimentación
+
+El proyecto incluye varios scripts para facilitar la experimentación:
+
+| Script | Descripción |
+|--------|-------------|
+| `evaluate_abz10.bat` / `.sh` | Evalúa un modelo en ABZ10 |
+| `train_ft10_eval_abz10.bat` / `.sh` | Entrena con FT10 y evalúa con ABZ10 |
+| `train_abz10_eval_ft10.bat` / `.sh` | Entrena con ABZ10 y evalúa con FT10 |
+| `train_ft20_eval_ft10.bat` / `.sh` | Entrena con FT20 y evalúa con FT10 |
+| `train_and_evaluate_abz10.bat` / `.sh` | Entrena y evalúa con ABZ10 |
+| `run_with_ortools.bat` | Ejecuta entrenamiento con comparación OR-Tools |
+
+## 📚 Referencias
+
+- [Tutorial sobre PPO](https://spinningup.openai.com/en/latest/algorithms/ppo.html)
+- [Visualización de Job Shop Scheduling](https://www.youtube.com/watch?v=lbCrQ7iqRuo)
+
+## 📄 Licencia
 
 Este proyecto está licenciado bajo la licencia MIT - ver el archivo LICENSE para más detalles.
 
-## Cita
+## 📝 Cita
 
 Si utilizas este código en tu investigación, por favor cítalo:
 
@@ -201,74 +278,3 @@ Si utilizas este código en tu investigación, por favor cítalo:
   url = {https://github.com/username/jobshop_rl}
 }
 ```
-## Evaluación con ABZ10
-
-JobShopRL incluye la capacidad de evaluar modelos entrenados en el problema ABZ10 (10 trabajos × 10 máquinas). Puedes utilizar esta funcionalidad de dos formas:
-
-1. **Durante el entrenamiento**:
-   ```bash
-   python -m jobshop_rl.main --mode single --episodes 300 --reward advanced --evaluate-abz10 --visualize --save-plots
-   ```
-
-2. **Evaluación independiente de un modelo ya entrenado**:
-   ```bash
-   python -m jobshop_rl.evaluate_abz10 --visualize --save-plot
-   ```
-   
-   También puedes usar los scripts proporcionados:
-   - En Windows: `evaluate_abz10.bat`
-   - En Linux/Mac: `./evaluate_abz10.sh` (asegúrate de darle permisos de ejecución con `chmod +x evaluate_abz10.sh`)
-
-La evaluación generará:
-- Un diagrama de Gantt de la programación obtenida para ABZ10
-- El makespan resultante
-- El registro detallado del orden de tareas en el archivo de log
-
-## Comparación con Google OR-Tools
-
-El sistema incluye la capacidad de comparar los resultados del agente de RL con los obtenidos por Google OR-Tools, un solucionador de programación de restricciones avanzado.
-
-### Instalación de OR-Tools
-
-Para utilizar esta funcionalidad, primero debes instalar OR-Tools:
-
-```bash
-pip install ortools
-```
-
-También puedes instalar todas las dependencias, incluida OR-Tools, ejecutando:
-
-```bash
-pip install -r requirements.txt
-```
-
-### Uso de OR-Tools
-
-La comparación con OR-Tools se realiza automáticamente durante la evaluación de heurísticas. Al ejecutar un experimento, verás una comparación con los resultados de OR-Tools junto con las otras heurísticas:
-
-```bash
-python -m jobshop_rl.main --mode single --episodes 300 --reward advanced --visualize
-```
-
-### Configuración de OR-Tools
-
-Puedes modificar la configuración de OR-Tools editando el archivo `jobshop_rl/heuristics/ortools_solver.py`. Las principales opciones incluyen:
-
-- **Tiempo límite**: por defecto, OR-Tools busca una solución durante 60 segundos. Puedes ajustar este valor según tus necesidades.
-- **Estrategia de búsqueda**: puedes experimentar con diferentes estrategias de búsqueda proporcionadas por OR-Tools.
-
-### Ventajas de la comparación con OR-Tools
-
-- OR-Tools proporciona soluciones de alta calidad (a menudo óptimas) para problemas de Job Shop Scheduling.
-- Sirve como una referencia robusta para evaluar el rendimiento del agente de RL.
-- Permite entender el gap entre las soluciones del agente y las mejores soluciones conocidas.
-
-## TODO
-- reescribir archivo readme
-- refactorizar el codigo
-- La dimensión de entrada de la red neuronal de valor (ValueNetwork) cambia según el número de trabajos y máquinas.
-- Comprobar cómo funciona el entrenamiento por lotes
-- Comprobar que se cargan los ejemplos en el formato correcto
-
-Enlaces https://www.youtube.com/watch?v=lbCrQ7iqRuo
-https://spinningup.openai.com/en/latest/algorithms/ppo.html#references[readme.md](readme.md)
