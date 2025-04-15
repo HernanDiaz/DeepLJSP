@@ -73,15 +73,21 @@ def plot_makespan_history(makespan_history: List[float], title: str = "Evolució
     
     # Calcular y añadir media móvil
     window_size = min(30, len(makespan_history))
+    has_legend_items = False
+    
     if window_size > 0:
         moving_avg = [sum(makespan_history[max(0, i-window_size):i])/min(i, window_size)
                      for i in range(1, len(makespan_history)+1)]
         plt.plot(moving_avg, color='blue', linewidth=2, label=f'Media móvil ({window_size} episodios)')
+        has_legend_items = True
     
     plt.xlabel('Episodios')
     plt.ylabel('Makespan')
     plt.title(title)
-    plt.legend()
+    
+    # Solo mostrar leyenda si hay elementos para mostrar
+    if has_legend_items or optimal_makespan is not None:
+        plt.legend()
     plt.grid(True)
 
     return plt.gcf()

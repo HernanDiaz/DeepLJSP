@@ -8,7 +8,11 @@ JobShopRL es un sistema modular de aprendizaje por refuerzo diseñado para resol
 - 🔀 **Múltiples Estrategias de Recompensa**: Configuración flexible de funciones de recompensa
 - 📊 **Visualización Avanzada**: Gráficos detallados de makespan, programaciones y métricas de entrenamiento
 - 📈 **Logging Completo**: Registro de métricas de entrenamiento en CSV para análisis posterior
-- 🧠 **Algoritmo PPO**: Implementación eficiente del algoritmo Proximal Policy Optimization
+- 🧠 **Múltiples Algoritmos**: 
+  - **PPO**: Implementación eficiente del algoritmo Proximal Policy Optimization
+  - **GNN**: Graph Neural Networks para procesar la estructura del problema
+  - **Transformer**: Mecanismos de atención para capturar relaciones entre operaciones
+  - **Modelos Híbridos**: Combinación de GNN y atención para un rendimiento superior
 - ⚙️ **Experimentación por Lotes**: Entrenamiento y evaluación con múltiples problemas
 - 🔄 **Transferencia de Conocimiento**: Reutilización de modelos entre problemas similares
 - 📋 **Comparación con Heurísticas**: Evaluación contra métodos clásicos y OR-Tools
@@ -35,15 +39,41 @@ pip install -r requirements.txt
 
 ## 🖥️ Ejemplos de Uso
 
-### 1. Entrenamiento con un Único Problema (FT10)
+### 1. Entrenamiento con un Único Problema (FT10) - Agente PPO Clásico
 
-Para entrenar un agente en el problema FT10 con visualización:
+Para entrenar un agente PPO clásico en el problema FT10 con visualización:
 
 ```bash
 python -m jobshop_rl.main --mode single --episodes 300 --reward adaptive --visualize --save-plots
 ```
 
-### 2. Entrenamiento en un Problema y Evaluación en Otro (deben tener el mismo tamaño)
+### 2. Entrenamiento con Arquitecturas Avanzadas (GNN, Transformer, Híbrido)
+
+Hemos creado scripts específicos para facilitar el uso de las arquitecturas avanzadas:
+
+#### Entrenar con modelo GNN:
+```bash
+python scripts/run_gnn_example.py
+```
+
+#### Entrenar con modelo Transformer:
+```bash
+python scripts/run_transformer_example.py
+```
+
+#### Entrenar con múltiples instancias:
+```bash
+python scripts/run_multi_instance_example.py
+```
+
+#### Comparar diferentes arquitecturas:
+```bash
+python scripts/run_architecture_comparison.py
+```
+
+También puedes crear tus propios scripts utilizando el módulo `example_usage.py`, que contiene ejemplos de cómo configurar y entrenar diferentes arquitecturas.
+
+### 3. Entrenamiento en un Problema y Evaluación en Otro (deben tener el mismo tamaño)
 
 Entrenar en FT10 y evaluar en ABZ10:
 
@@ -55,7 +85,7 @@ También puede usar los scripts proporcionados:
 - En Windows: `train_ft10_eval_abz10.bat`
 - En Linux/Mac: `./train_ft10_eval_abz10.sh`
 
-### 3. Evaluación de un Modelo Entrenado en ABZ10
+### 4. Evaluación de un Modelo Entrenado en ABZ10
 
 Para evaluar un modelo previamente entrenado en el problema ABZ10:
 
@@ -67,7 +97,7 @@ O use los scripts proporcionados:
 - En Windows: `evaluate_abz10.bat`
 - En Linux/Mac: `./evaluate_abz10.sh`
 
-### 4. Experimentación por Lotes con Múltiples Problemas
+### 5. Experimentación por Lotes con Múltiples Problemas
 
 Para entrenar y evaluar con conjuntos de problemas:
 
@@ -79,7 +109,7 @@ python -m jobshop_rl.main --mode batch \
     --episodes-per-problem 100
 ```
 
-### 5. Generación de Problemas Aleatorios
+### 6. Generación de Problemas Aleatorios
 
 Para generar un conjunto de problemas aleatorios:
 
@@ -91,7 +121,7 @@ python -m jobshop_rl.main --mode generate \
     --output-format json
 ```
 
-### 6. Comparación con Google OR-Tools
+### 7. Comparación con Google OR-Tools
 
 Para comparar los resultados del agente con OR-Tools:
 
@@ -107,15 +137,46 @@ En Windows, puede usar: `run_with_ortools.bat`
 jobshop_rl/
 ├── __init__.py
 ├── models/             # Modelos de datos y redes neuronales
+│   ├── data_models.py  # Estructuras de datos básicas
+│   ├── neural_models.py # Redes neuronales clásicas
+│   └── gnn_models.py   # Modelos GNN, Transformer e híbridos
 ├── environment/        # Entornos de Job Shop
 ├── agents/             # Agentes de aprendizaje por refuerzo
+│   ├── base_agent.py   # Clase base para agentes
+│   ├── ppo_agent.py    # Implementación clásica de PPO
+│   └── ppo_agent_gnn.py # Agentes con GNN y Transformer
 ├── rewards/            # Estrategias de recompensa
 ├── heuristics/         # Estrategias heurísticas
+├── preprocessing/      # Procesamiento de estados para modelos avanzados
+│   └── state_processors.py # Convertir estados a grafos o secuencias
 ├── utils/              # Utilidades (logging, visualización)
 ├── experiments/        # Configuración y ejecución de experimentos
 ├── data/               # Cargadores de problemas y conjuntos de datos
 └── main.py             # Punto de entrada principal
 ```
+
+## 🔍 Arquitecturas Disponibles
+
+El sistema incluye varias arquitecturas para resolver problemas de Job Shop Scheduling:
+
+### PPO Clásico
+La implementación base de Proximal Policy Optimization utiliza redes neuronales densas y trata las operaciones como acciones discretas.
+
+### Modelos Basados en Grafos (GNN)
+Modelan el problema JSP como un grafo donde:
+- Nodos: representan operaciones
+- Aristas: representan restricciones (precedencia, recursos compartidos)
+- Ventajas: Capturan explícitamente la estructura del problema
+
+### Modelos Basados en Transformer
+Utilizan mecanismos de atención para:
+- Aprender relaciones entre operaciones independientemente de su posición
+- Capturar dependencias a largo plazo
+
+### Modelos Híbridos
+Combinan lo mejor de GNN y mecanismos de atención:
+- Primero procesan la estructura del grafo con GNN
+- Luego aplican atención para resaltar las partes más relevantes
 
 ## 🔧 Personalización
 
@@ -153,7 +214,7 @@ El sistema incluye varias heurísticas clásicas que se utilizan como baseline:
 
 ## 📊 Ejemplos de Código
 
-### Entrenamiento Programático
+### Entrenamiento con Arquitectura Clásica
 
 ```python
 from jobshop_rl.experiments.factory import ExperimentFactory
@@ -174,6 +235,28 @@ agent, results = ExperimentFactory.run_full_experiment(
     },
     visualize=True
 )
+```
+
+### Entrenamiento con Modelo GNN
+
+```python
+from jobshop_rl.experiments.factory_integration import ExtendedAgentFactory
+from jobshop_rl.experiments.factory import ExperimentFactory, EnvironmentFactory
+
+# Crear entorno y agente GNN
+env = EnvironmentFactory.create_from_problem_id("ft10", reward_strategy="adaptive")
+agent = ExtendedAgentFactory.create_agent(
+    env=env,
+    agent_type='advanced',
+    model_type='gnn',
+    hidden_dim=128,
+    num_gnn_layers=2,
+    node_feature_dim=14,
+    edge_feature_dim=3
+)
+
+# Entrenar
+agent.train(episodes=300, dynamic_entropy=True)
 ```
 
 ### Experimentación por Lotes
@@ -250,17 +333,23 @@ El proyecto incluye varios scripts para facilitar la experimentación:
 
 | Script | Descripción |
 |--------|-------------|
-| `evaluate_abz10.bat` / `.sh` | Evalúa un modelo en ABZ10 |
-| `train_ft10_eval_abz10.bat` / `.sh` | Entrena con FT10 y evalúa con ABZ10 |
-| `train_abz10_eval_ft10.bat` / `.sh` | Entrena con ABZ10 y evalúa con FT10 |
-| `train_ft20_eval_ft10.bat` / `.sh` | Entrena con FT20 y evalúa con FT10 |
-| `train_and_evaluate_abz10.bat` / `.sh` | Entrena y evalúa con ABZ10 |
-| `run_with_ortools.bat` | Ejecuta entrenamiento con comparación OR-Tools |
+| `scripts/run_gnn_example.py` | Entrena con arquitectura GNN en FT10 |
+| `scripts/run_transformer_example.py` | Entrena con arquitectura Transformer en TAI20_20_01 |
+| `scripts/run_multi_instance_example.py` | Entrena con múltiples instancias para mejorar generalización |
+| `scripts/run_architecture_comparison.py` | Compara diferentes arquitecturas |
+| `scripts/evaluate_abz10.bat` / `.sh` | Evalúa un modelo en ABZ10 |
+| `scripts/train_ft10_eval_abz10.bat` / `.sh` | Entrena con FT10 y evalúa con ABZ10 |
+| `scripts/train_abz10_eval_ft10.bat` / `.sh` | Entrena con ABZ10 y evalúa con FT10 |
+| `scripts/train_ft20_eval_ft10.bat` / `.sh` | Entrena con FT20 y evalúa con FT10 |
+| `scripts/train_and_evaluate_abz10.bat` / `.sh` | Entrena y evalúa con ABZ10 |
+| `scripts/run_with_ortools.bat` | Ejecuta entrenamiento con comparación OR-Tools |
 
 ## 📚 Referencias
 
 - [Tutorial sobre PPO](https://spinningup.openai.com/en/latest/algorithms/ppo.html)
-- [Visualización de Job Shop Scheduling](https://www.youtube.com/watch?v=lbCrQ7iqRuo)
+- [Graph Neural Networks para Scheduling](https://arxiv.org/abs/2010.12367)
+- [Transformer Networks](https://arxiv.org/abs/1706.03762)
+- [Conectar Claude con Pycharm](https://www.youtube.com/watch?v=lbCrQ7iqRuo)
 
 ## 📄 Licencia
 
@@ -278,3 +367,13 @@ Si utilizas este código en tu investigación, por favor cítalo:
   url = {https://github.com/username/jobshop_rl}
 }
 ```
+
+
+
+Recomendaciones para mejora
+
+Explorar otros algoritmos de RL: Implementar alternativas a PPO como SAC, TD3 o algoritmos basados en Q-learning.
+Aumentar paralelización: Implementar entrenamiento paralelo para explorar múltiples instancias simultáneamente.
+Técnicas de transfer learning: Mejorar los mecanismos de transferencia de conocimiento entre problemas similares.
+Incorporar técnicas de meta-learning: Para adaptar rápidamente el agente a nuevos problemas.
+Expandir la interfaz de usuario: Desarrollar una interfaz gráfica para facilitar la configuración y visualización de experimentos.

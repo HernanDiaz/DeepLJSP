@@ -422,7 +422,7 @@ class ExperimentRunner:
         plots["schedule"] = self.env.render_schedule("Planificación Final con RL-PPO")
         
         # Usar el historial de makespan de la mejor solución si está disponible
-        if self.agent.best_makespan_history:
+        if hasattr(self.agent, 'plot_best_solution_makespan') and self.agent.best_makespan_history:
             plots["best_solution_makespan"] = self.agent.plot_best_solution_makespan()
             
         # Usar referencia del límite inferior para el gráfico de makespan si está disponible
@@ -431,10 +431,19 @@ class ExperimentRunner:
             reference_value = self.env.problem_analysis['best_lower_bound']
             
         plots["episode_makespan"] = self.env.plot_makespan_history(reference_value=reference_value)
-        plots["training_makespan"] = self.agent.plot_training_history(optimal_makespan=reference_value)
-        plots["rewards"] = self.agent.plot_reward_history()
-        plots["losses"] = self.agent.plot_losses()
-        plots["exploration"] = self.agent.plot_exploration_history()
+        
+        # Verificar que el agente tiene los métodos de visualización antes de llamarlos
+        if hasattr(self.agent, 'plot_training_history'):
+            plots["training_makespan"] = self.agent.plot_training_history(optimal_makespan=reference_value)
+        
+        if hasattr(self.agent, 'plot_reward_history'):
+            plots["rewards"] = self.agent.plot_reward_history()
+        
+        if hasattr(self.agent, 'plot_losses'):
+            plots["losses"] = self.agent.plot_losses()
+        
+        if hasattr(self.agent, 'plot_exploration_history'):
+            plots["exploration"] = self.agent.plot_exploration_history()
         
         return plots
 

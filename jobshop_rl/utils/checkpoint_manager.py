@@ -20,6 +20,13 @@ class CheckpointManager:
             checkpoint_data: Diccionario con datos a guardar
             checkpoint_path: Ruta completa donde guardar el checkpoint
         """
+        # Asegurarse de que el directorio padre exista
+        import os
+        checkpoint_dir = os.path.dirname(checkpoint_path)
+        if checkpoint_dir:
+            os.makedirs(checkpoint_dir, exist_ok=True)
+            
+        # Guardar el checkpoint
         torch.save(checkpoint_data, checkpoint_path)
         logger.info(f"Checkpoint guardado en {checkpoint_path}")
         
