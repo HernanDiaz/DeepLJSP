@@ -11,7 +11,7 @@ from typing import List, Dict, Tuple, Any, Optional
 from copy import deepcopy
 
 from jobshop_rl.data.problem_loader import ProblemLoader
-from jobshop_rl.experiments.factory import ExperimentFactory
+from jobshop_rl.experiments.factory import EnvironmentFactory, AgentFactory
 from jobshop_rl.utils.logging import TrainingLogger
 from jobshop_rl.agents.ppo_agent import PPOAgent
 from jobshop_rl.utils.visualization import save_plots
@@ -80,14 +80,14 @@ class BatchExperimenter:
         # Inicializar el mejor agente con el primer problema
         logger.info("Inicializando entrenamiento con el primer problema")
         first_problem = self.training_problems[0]
-        env = ExperimentFactory.create_env_from_problem(
+        env = EnvironmentFactory.create_from_problem(
             first_problem, 
             self.reward_strategy,
             seed=self.seed,
             **self.reward_params
         )
         
-        best_agent = ExperimentFactory.create_agent(
+        best_agent = AgentFactory.create_agent(
             env,
             csv_logger=global_logger,
             **self.agent_params
@@ -110,7 +110,7 @@ class BatchExperimenter:
             )
             
             # Configurar entorno para este problema
-            env = ExperimentFactory.create_env_from_problem(
+            env = EnvironmentFactory.create_from_problem(
                 problem,
                 self.reward_strategy,
                 seed=self.seed,
@@ -119,10 +119,14 @@ class BatchExperimenter:
             
             # Si no es el primer problema, transferir conocimiento del mejor agente
             if i > 0:
-                current_agent = ExperimentFactory.create_agent(
+                # CORRECCIÓN: Pasar csv_logger como un parámetro separado, no dentro del diccionario
+                # Crear el nuevo agente con los parámetros adecuados
+                current_agent = AgentFactory.create_agent(
                     env, 
-                    {**self.agent_params, 'csv_logger': problem_logger}
+                    csv_logger=problem_logger,
+                    **self.agent_params
                 )
+                # Transferir los pesos del modelo
                 current_agent.policy.load_state_dict(best_agent.policy.state_dict())
                 current_agent.value.load_state_dict(best_agent.value.state_dict())
             else:
@@ -135,10 +139,24 @@ class BatchExperimenter:
             training_time = time.time() - start_time
             
             # Evaluar rendimiento
-            makespan, _, _ = current_agent.evaluate_policy()
+            makespan, _, _, _ = current_agent.evaluate_policy()
+            
+            # Asegurar que el directorio de salida existe antes de guardar
+            import os
+            checkpoint_path = f"{self.output_dir}/{problem_name}_model.pt"
+            model_dir = os.path.dirname(checkpoint_path)
+            os.makedirs(model_dir, exist_ok=True)
             
             # Guardar checkpoint
-            current_agent.save_checkpoint(f"{self.output_dir}/{problem_name}_model.pt")
+            try:
+                current_agent.save_checkpoint(checkpoint_path)
+            except Exception as e:
+                logger.error(f"Error al guardar checkpoint: {str(e)}")
+                # Intentar guardar en un directorio de respaldo
+                backup_path = f"checkpoints/{problem_name}_model.pt"
+                os.makedirs("checkpoints", exist_ok=True)
+                current_agent.save_checkpoint(backup_path)
+                logger.info(f"Checkpoint guardado en ruta alternativa: {backup_path}")
             
             # Generar visualizaciones
             self._generate_problem_visualizations(current_agent, problem_name, env)
@@ -210,12 +228,13 @@ class BatchExperimenter:
         # Guardar gráficas
         save_plots(plots, directory=plots_dir)
     
-    def evaluate_on_test_set(self, agent: Optional[PPOAgent] = None) -> pd.DataFrame:
+    def evaluate_on_test_set(self, agent: Optional[PPOAgent] = None, use_ortools: bool = False) -> pd.DataFrame:
         """
         Evalúa el agente en los problemas de prueba.
         
         Args:
             agent: Agente PPO a evaluar (si es None, se carga el mejor modelo guardado)
+            use_ortools: Si se debe incluir comparación con OR-Tools
             
         Returns:
             DataFrame con los resultados de evaluación
@@ -232,12 +251,12 @@ class BatchExperimenter:
                 return pd.DataFrame()
                 
             # Usar primer problema de test para inicializar el agente
-            env = ExperimentFactory.create_env_from_problem(
+            env = EnvironmentFactory.create_from_problem(
                 self.test_problems[0], 
                 self.reward_strategy,
                 **self.reward_params
             )
-            agent = ExperimentFactory.create_agent(env, **self.agent_params)
+            agent = AgentFactory.create_agent(env, **self.agent_params)
             agent.load_checkpoint(model_path)
             logger.info(f"Modelo cargado desde {model_path}")
         
@@ -245,25 +264,42 @@ class BatchExperimenter:
         test_start_time = time.time()
         
         for i, problem in enumerate(self.test_problems):
+            # Obtener el nombre real del problema
             problem_name = problem.get('name', f"test_{i}")
+            # Si el nombre no está definido, intentar extraerlo de problem_id
+            if problem_name.startswith("test_") and 'problem_id' in problem:
+                problem_name = problem['problem_id']
             logger.info(f"Evaluando en problema: {problem_name} ({i+1}/{len(self.test_problems)})")
             
             # Configurar entorno para este problema de prueba
-            env = ExperimentFactory.create_env_from_problem(
+            env = EnvironmentFactory.create_from_problem(
                 problem, 
                 self.reward_strategy,
                 **self.reward_params
             )
             
             # Transferir el modelo al nuevo entorno
-            test_agent = ExperimentFactory.create_agent(env, **self.agent_params)
+            test_agent = AgentFactory.create_agent(env, **self.agent_params)
             test_agent.policy.load_state_dict(agent.policy.state_dict())
             test_agent.value.load_state_dict(agent.value.state_dict())
             
             # Evaluar
             start_time = time.time()
-            makespan, schedule, makespan_history = test_agent.evaluate_policy()
+            makespan, schedule, makespan_history, _ = test_agent.evaluate_policy()
             eval_time = time.time() - start_time
+            
+            # Evaluar heurísticas para comparación
+            if use_ortools:
+                logger.info(f"Evaluando heurísticas y OR-Tools para comparación...")
+                from jobshop_rl.experiments.evaluator import HeuristicEvaluator
+                heuristic_evaluator = HeuristicEvaluator(env)
+                heuristic_results, execution_times = heuristic_evaluator.evaluate_all(return_times=True, use_ortools=True)
+                comparison = heuristic_evaluator.compare_with_agent(makespan)
+                logger.info(f"Comparación con heurísticas: {comparison}")
+            else:
+                heuristic_results = None
+                execution_times = None
+                comparison = None
             
             # Guardar programación resultante como visualización
             fig = env.render_schedule(f"Solución para {problem_name}")
@@ -278,14 +314,62 @@ class BatchExperimenter:
             else:
                 gap = None
             
-            # Guardar resultado
-            test_results.append({
+            # Preparar resultado
+            result = {
                 'problem': problem_name,
                 'makespan': makespan,
                 'evaluation_time': eval_time,
                 'optimal': optimal,
                 'gap': gap
-            })
+            }
+            
+            # Añadir el orden de las tareas (schedule) al resultado
+            if schedule:
+                try:
+                    # Ordenar el schedule por tiempo de inicio
+                    sorted_schedule = sorted(schedule, key=lambda x: x.get('start', 0))
+                    
+                    # Crear una representación del orden de tareas como string para el CSV
+                    task_order = []
+                    for task in sorted_schedule:
+                        # Usar get() para acceder a las claves con valores por defecto si no existen
+                        job_id = task.get('job', '?')
+                        # La clave puede ser 'task' o 'operation' dependiendo de la implementación
+                        op_id = task.get('task', task.get('operation', '?'))
+                        machine = task.get('machine', '?')
+                        start = task.get('start', '?')
+                        end = task.get('end', '?')
+                        task_order.append(f"(J{job_id}-O{op_id}-M{machine}:{start}-{end})")
+                    
+                    result['task_order'] = ",".join(task_order)
+                    
+                    # También guardar un archivo JSON con la planificación completa para más detalle
+                    import json
+                    schedule_file = os.path.join(plots_dir, f"{problem_name}_schedule.json")
+                    with open(schedule_file, 'w') as f:
+                        json.dump(schedule, f, indent=2)
+                except Exception as e:
+                    # Si hay algún error, registrarlo pero continuar con la evaluación
+                    logger.error(f"Error al procesar el orden de tareas: {str(e)}")
+                    # Guardar el schedule como está, sin procesamiento
+                    result['task_order'] = "Error al procesar el orden de tareas"
+            
+            # Añadir resultados de heurísticas si están disponibles
+            if heuristic_results:
+                result['heuristic_results'] = heuristic_results
+                result['heuristic_times'] = execution_times
+                result['comparison'] = comparison
+                
+                # Si OR-Tools está disponible, añadir comparación específica
+                if 'OR-Tools' in heuristic_results:
+                    ortools_makespan = heuristic_results['OR-Tools']
+                    ortools_time = execution_times.get('OR-Tools', 0)
+                    gap_vs_ortools = ((makespan - ortools_makespan) / ortools_makespan) * 100 if ortools_makespan > 0 else 0
+                    result['ortools_makespan'] = ortools_makespan
+                    result['ortools_time'] = ortools_time
+                    result['ortools_gap'] = gap_vs_ortools
+            
+            test_results.append(result)
         
         total_eval_time = time.time() - test_start_time
         
@@ -306,12 +390,98 @@ class BatchExperimenter:
                     f.write(f"Gap promedio del óptimo: {valid_gaps.mean():.2f}%\n")
                     f.write(f"Gap mínimo: {valid_gaps.min():.2f}%\n")
                     f.write(f"Gap máximo: {valid_gaps.max():.2f}%\n")
+            
+            # Añadir estadísticas de comparación con heurísticas
+            if any('heuristic_results' in result for result in test_results):
+                f.write("\n===== Comparación con heurísticas =====\n")
+                
+                # Calcular promedios de comparación para cada heurística
+                heuristic_types = set()
+                for result in test_results:
+                    if 'comparison' in result:
+                        heuristic_types.update(result['comparison'].keys())
+                
+                for heuristic in sorted(heuristic_types):
+                    comparisons = [result['comparison'][heuristic] for result in test_results 
+                                  if 'comparison' in result and heuristic in result['comparison']]
+                    if comparisons:
+                        avg_comparison = sum(comparisons) / len(comparisons)
+                        f.write(f"vs {heuristic}: {avg_comparison:.2f}% de mejora promedio\n")
+                
+                # Añadir estadísticas específicas de OR-Tools
+                if any('ortools_gap' in result for result in test_results):
+                    f.write("\n===== Comparación con OR-Tools =====\n")
+                    ortools_gaps = [result['ortools_gap'] for result in test_results if 'ortools_gap' in result]
+                    if ortools_gaps:
+                        avg_ortools_gap = sum(ortools_gaps) / len(ortools_gaps)
+                        f.write(f"Gap promedio vs OR-Tools: {avg_ortools_gap:.2f}%\n")
+                        
+                        # Contar cuántas veces el modelo fue mejor o igual que OR-Tools
+                        better_count = sum(1 for gap in ortools_gaps if gap <= 0)
+                        f.write(f"El modelo fue mejor o igual que OR-Tools en {better_count}/{len(ortools_gaps)} casos\n")
         
         # Crear gráfico comparativo
         self._create_comparison_chart(results_df)
         
+        # Crear gráfico comparativo con heurísticas si hay datos
+        if any('heuristic_results' in result for result in test_results):
+            self._create_heuristic_comparison_chart(test_results)
+        
         logger.info(f"Evaluación completada. Resultados guardados en {self.output_dir}/test_results.csv")
         return results_df
+    
+    def _create_heuristic_comparison_chart(self, test_results):
+        """Crea un gráfico comparativo con las heurísticas"""
+        if not test_results:
+            return
+            
+        # Verificar si hay resultados de heurísticas
+        if not any('heuristic_results' in result for result in test_results):
+            return
+            
+        # Crear un gráfico de barras para cada problema
+        for result in test_results:
+            if 'heuristic_results' not in result:
+                continue
+                
+            problem_name = result['problem']
+            makespan = result['makespan']
+            heuristic_results = result['heuristic_results']
+            
+            # Preparar datos para el gráfico
+            methods = ['RL'] + list(heuristic_results.keys())
+            makespans = [makespan] + list(heuristic_results.values())
+            
+            # Crear gráfico
+            plt.figure(figsize=(12, 6))
+            bars = plt.bar(methods, makespans)
+            
+            # Colorear la barra del modelo RL
+            bars[0].set_color('green')
+            
+            # Si OR-Tools está presente, colorear su barra
+            if 'OR-Tools' in heuristic_results:
+                ort_idx = methods.index('OR-Tools')
+                bars[ort_idx].set_color('red')
+            
+            plt.title(f'Comparación de Makespan para {problem_name}')
+            plt.xlabel('Método')
+            plt.ylabel('Makespan')
+            plt.xticks(rotation=45, ha='right')
+            
+            # Añadir valores encima de las barras
+            for bar in bars:
+                height = bar.get_height()
+                plt.text(bar.get_x() + bar.get_width()/2., height,
+                        f'{int(height)}',
+                        ha='center', va='bottom')
+            
+            plt.tight_layout()
+            
+            # Guardar gráfico
+            plots_dir = ensure_dir(join_paths(self.output_dir, "plots", "comparisons"))
+            plt.savefig(join_paths(plots_dir, f"{problem_name}_comparison.png"))
+            plt.close()
     
     def _create_comparison_chart(self, results_df: pd.DataFrame):
         """Crea un gráfico comparativo de resultados de evaluación"""

@@ -21,15 +21,6 @@ from jobshop_rl.experiments.evaluator import HeuristicEvaluator
 from jobshop_rl.utils.logging import TrainingLogger
 from jobshop_rl.utils.problem_analyzer import ProblemAnalyzer, AdaptiveConfigGenerator
 from jobshop_rl.data.problem_loader import ProblemLoader
-from jobshop_rl.data.ft10 import get_ft10_problem
-from jobshop_rl.data.ft20 import get_ft20_problem
-from jobshop_rl.data.abz10 import get_abz10_problem
-from jobshop_rl.data.tai20_20_01 import get_tai20_20_01_problem
-from jobshop_rl.data.tai20_20_02 import get_tai20_20_02_problem
-from jobshop_rl.data.tai50_15_01 import get_tai50_15_01_problem
-from jobshop_rl.data.tai50_15_02 import get_tai50_15_02_problem
-from jobshop_rl.data.tai100_20_01 import get_tai100_20_01_problem
-from jobshop_rl.data.tai100_20_02 import get_tai100_20_02_problem
 from jobshop_rl.utils.experiment_config import ExperimentConfig
 
 logger = logging.getLogger("JobShopRL.ExperimentFactory")
@@ -43,7 +34,7 @@ class ProblemFactory:
         Carga los datos de un problema por su ID.
         
         Args:
-            problem_id: Identificador del problema (ft10, ft20, abz10, etc.)
+            problem_id: Identificador del problema (ft10, ft20, abz10, tai15_15_01, etc.)
             
         Returns:
             Diccionario con los datos del problema
@@ -53,21 +44,11 @@ class ProblemFactory:
         """
         problem_id = problem_id.lower()
         
-        # Mapeo de problemas predefinidos
-        predefined_problems = {
-            "ft10": get_ft10_problem,
-            "ft20": get_ft20_problem,
-            "abz10": get_abz10_problem,
-            "tai20_20_01": get_tai20_20_01_problem,
-            "tai20_20_02": get_tai20_20_02_problem,
-            "tai50_15_01": get_tai50_15_01_problem,
-            "tai50_15_02": get_tai50_15_02_problem,
-            "tai100_20_01": get_tai100_20_01_problem,
-            "tai100_20_02": get_tai100_20_02_problem
-        }
+        # Usar el registro de problemas del módulo data
+        from jobshop_rl.data import PROBLEM_REGISTRY
         
-        if problem_id in predefined_problems:
-            return predefined_problems[problem_id]()
+        if problem_id in PROBLEM_REGISTRY:
+            return PROBLEM_REGISTRY[problem_id]()
         
         # Intentar cargar desde archivo usando el ProblemLoader
         try:

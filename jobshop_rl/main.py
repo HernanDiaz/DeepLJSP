@@ -6,6 +6,7 @@ import os
 import argparse
 import logging
 import time
+import pandas as pd
 from typing import Dict, Any, Optional
 
 from jobshop_rl.experiments.factory import ExperimentFactory
@@ -37,9 +38,9 @@ def parse_args():
     parser.add_argument('--save-plots', action='store_true',
                        help='Guardar visualizaciones en archivos')
     parser.add_argument('--train-problem', type=str, default='ft10',
-                       help='ID del problema para entrenamiento (default: ft10)')
+                       help='ID del problema para entrenamiento (p.ej. ft10) o lista separada por comas (p.ej. ft10,ft20,abz7)')
     parser.add_argument('--eval-problem', type=str, default=None,
-                       help='ID del problema para evaluación (si no se especifica, no se realiza evaluación)')
+                       help='ID del problema para evaluación o lista separada por comas (p.ej. abz8,abz9)')
     parser.add_argument('--use-ortools', action='store_true',
                        help='Comparar con solucionador de Google OR-Tools')
     parser.add_argument('--ortools-time-limit', type=int, default=60,
@@ -95,6 +96,12 @@ def run_single_experiment(args):
     """Ejecuta un experimento con un único problema"""
     # Obtener el directorio de salida estandarizado
     output_dir = get_output_dir()
+    
+    # Verificar si se proporcionó una lista de problemas separados por comas
+    if ',' in args.train_problem:
+        logging.info(f"Se detectó una lista de problemas: {args.train_problem}")
+        logging.info("Ejecutando en modo batch para procesar múltiples problemas...")
+        return run_batch_experiment(args)
     
     # Cargar el problema especificado
     problem_id = args.train_problem.lower()
@@ -237,9 +244,65 @@ def run_batch_experiment(args):
         "gae_lambda": 0.95
     }
     
-    # Crear directorios si no existen
-    os.makedirs(args.training_dir, exist_ok=True)
-    os.makedirs(args.test_dir, exist_ok=True)
+    # Verificar si hay IDs de problemas específicos para usar
+    training_problems = []
+    test_problems = []
+    
+    # Cargar problemas por IDs si se proporcionaron
+    if ',' in args.train_problem:
+        # Lista de IDs de problemas separados por comas
+        train_problem_ids = [p.strip() for p in args.train_problem.split(',')]
+        
+        from jobshop_rl.data import PROBLEM_REGISTRY
+        logging.info(f"Cargando problemas de entrenamiento por ID: {train_problem_ids}")
+        
+        for problem_id in train_problem_ids:
+            if problem_id in PROBLEM_REGISTRY:
+                try:
+                    problem_data = PROBLEM_REGISTRY[problem_id]()
+                    training_problems.append(problem_data)
+                    logging.info(f"Problema {problem_id} cargado correctamente")
+                except Exception as e:
+                    logging.error(f"Error al cargar problema {problem_id}: {str(e)}")
+            else:
+                logging.error(f"Problema {problem_id} no encontrado en el registro")
+                
+    # Cargar problemas de evaluación por IDs si se proporcionaron
+    if args.eval_problem is not None:
+        from jobshop_rl.data import PROBLEM_REGISTRY
+        
+        # Procesar una lista separada por comas o un solo problema
+        if ',' in args.eval_problem:
+            # Lista de IDs de problemas separados por comas
+            eval_problem_ids = [p.strip() for p in args.eval_problem.split(',')]
+            logging.info(f"Cargando problemas de evaluación por ID: {eval_problem_ids}")
+            
+            for problem_id in eval_problem_ids:
+                if problem_id in PROBLEM_REGISTRY:
+                    try:
+                        problem_data = PROBLEM_REGISTRY[problem_id]()
+                        test_problems.append(problem_data)
+                        logging.info(f"Problema {problem_id} cargado correctamente")
+                    except Exception as e:
+                        logging.error(f"Error al cargar problema {problem_id}: {str(e)}")
+                else:
+                    logging.error(f"Problema {problem_id} no encontrado en el registro")
+        else:
+            # Un solo problema de evaluación
+            problem_id = args.eval_problem.strip()
+            logging.info(f"Cargando problema de evaluación: {problem_id}")
+            
+            if problem_id in PROBLEM_REGISTRY:
+                try:
+                    problem_data = PROBLEM_REGISTRY[problem_id]()
+                    test_problems.append(problem_data)
+                    logging.info(f"Problema {problem_id} cargado correctamente")
+                except Exception as e:
+                    logging.error(f"Error al cargar problema {problem_id}: {str(e)}")
+            else:
+                logging.error(f"Problema {problem_id} no encontrado en el registro")
+    
+    # Crear directorios de salida si no existen
     os.makedirs(batch_output_dir, exist_ok=True)
     
     # Configurar experimentador por lotes
@@ -253,38 +316,98 @@ def run_batch_experiment(args):
         seed=args.seed
     )
     
+    # Si tenemos problemas cargados por ID, sobreescribir los problemas del experimentador
+    if training_problems:
+        experimenter.training_problems = training_problems
+        logging.info(f"Usando {len(training_problems)} problemas específicos para entrenamiento")
+    
+    if test_problems:
+        experimenter.test_problems = test_problems
+        logging.info(f"Usando {len(test_problems)} problemas específicos para evaluación")
+    
+    # Verificar que haya problemas para entrenar
+    if not experimenter.training_problems:
+        logging.error("No se encontraron problemas de entrenamiento. Abortando.")
+        return None
+    
+    # Determinar el número de episodios para cada problema
+    # Si se especificó episodes_per_problem, usar ese valor; de lo contrario, usar episodes
+    episodes_to_train = args.episodes_per_problem
+    # Si episodes se especificó explícitamente (diferente al valor por defecto de 300), usar ese valor
+    if 'episodes' in args and args.episodes != 300:
+        episodes_to_train = args.episodes
+        logging.info(f"Usando {episodes_to_train} episodios por problema basado en el parámetro --episodes")
+    else:
+        logging.info(f"Usando {episodes_to_train} episodios por problema basado en el parámetro --episodes-per-problem")
+    
     # Entrenar el agente
     start_time = time.time()
-    best_agent = experimenter.train_agent(episodes_per_problem=args.episodes_per_problem)
+    best_agent = experimenter.train_agent(episodes_per_problem=episodes_to_train)
     training_time = time.time() - start_time
     
     if best_agent is None:
         print("No se pudo completar el entrenamiento. Revise los logs para más detalles.")
         return None
     
-    # Evaluar en problemas de prueba
-    start_time = time.time()
-    results = experimenter.evaluate_on_test_set(best_agent)
-    eval_time = time.time() - start_time
+    # Evaluar en problemas de prueba si existen
+    results = pd.DataFrame()
+    eval_time = 0
+    
+    if experimenter.test_problems:
+        logging.info(f"Iniciando evaluación con {len(experimenter.test_problems)} problemas de prueba")
+        for i, test_problem in enumerate(experimenter.test_problems):
+            problem_name = test_problem.get('name', f"problema_test_{i}")
+            logging.info(f"Evaluando en el problema de prueba: {problem_name}")
+            
+        start_time = time.time()
+        # Pasamos el parámetro use_ortools al método evaluate_on_test_set
+        results = experimenter.evaluate_on_test_set(best_agent, use_ortools=args.use_ortools)
+        eval_time = time.time() - start_time
+        logging.info(f"Evaluación completada en {eval_time:.2f} segundos")
+    else:
+        logging.warning("No hay problemas de prueba para evaluación.")
+        if args.eval_problem:
+            logging.warning(f"El problema de evaluación '{args.eval_problem}' no pudo cargarse correctamente.")
+            # Intentar cargar el problema directamente aquí
+            try:
+                from jobshop_rl.data import PROBLEM_REGISTRY
+                if args.eval_problem in PROBLEM_REGISTRY:
+                    test_problem = PROBLEM_REGISTRY[args.eval_problem]()
+                    experimenter.test_problems = [test_problem]
+                    logging.info(f"Se cargó el problema de evaluación '{args.eval_problem}' para un segundo intento de evaluación")
+                    
+                    start_time = time.time()
+                    results = experimenter.evaluate_on_test_set(best_agent)
+                    eval_time = time.time() - start_time
+                    logging.info(f"Evaluación completada en {eval_time:.2f} segundos")
+                else:
+                    logging.error(f"El problema '{args.eval_problem}' no existe en el registro PROBLEM_REGISTRY")
+                    logging.info(f"Problemas disponibles: {list(PROBLEM_REGISTRY.keys())}")
+            except Exception as e:
+                logging.error(f"Error al intentar cargar el problema '{args.eval_problem}': {str(e)}")
+                import traceback
+                logging.error(traceback.format_exc())
     
     # Mostrar resumen
     print(f"\n===== Resultados del experimento por lotes =====")
     print(f"Tiempo total de entrenamiento: {training_time:.2f} segundos")
-    print(f"Tiempo total de evaluación: {eval_time:.2f} segundos")
     print(f"Problemas entrenados: {len(experimenter.training_problems)}")
-    print(f"Problemas evaluados: {len(experimenter.test_problems)}")
     
-    if not results.empty:
-        print(f"\nResumen de evaluación:")
-        print(f"  Makespan promedio: {results['makespan'].mean():.2f}")
+    if experimenter.test_problems:
+        print(f"Tiempo total de evaluación: {eval_time:.2f} segundos")
+        print(f"Problemas evaluados: {len(experimenter.test_problems)}")
         
-        # Calcular gap promedio para problemas con óptimo conocido o límite inferior
-        if 'gap' in results.columns:
-            valid_gaps = results['gap'].dropna()
-            if len(valid_gaps) > 0:
-                print(f"  Gap promedio: {valid_gaps.mean():.2f}%")
-                print(f"  Gap mínimo: {valid_gaps.min():.2f}%")
-                print(f"  Gap máximo: {valid_gaps.max():.2f}%")
+        if not results.empty:
+            print(f"\nResumen de evaluación:")
+            print(f"  Makespan promedio: {results['makespan'].mean():.2f}")
+            
+            # Calcular gap promedio para problemas con óptimo conocido o límite inferior
+            if 'gap' in results.columns:
+                valid_gaps = results['gap'].dropna()
+                if len(valid_gaps) > 0:
+                    print(f"  Gap promedio: {valid_gaps.mean():.2f}%")
+                    print(f"  Gap mínimo: {valid_gaps.min():.2f}%")
+                    print(f"  Gap máximo: {valid_gaps.max():.2f}%")
     
     print(f"\nResultados completos guardados en: {batch_output_dir}")
     

@@ -15,7 +15,7 @@ from copy import deepcopy
 
 from jobshop_rl.agents.base_agent import Agent
 from jobshop_rl.agents.ppo_memory import PPOMemory
-from jobshop_rl.models.neural_models import PolicyNetwork, ValueNetwork
+from jobshop_rl.models.neural_models import PolicyNetwork, ValueNetwork, calculate_hidden_dim
 from jobshop_rl.environment.job_shop_env import JobShopEnv
 from jobshop_rl.utils.logging import TrainingLogger
 from jobshop_rl.utils.path_utils import get_checkpoint_path
@@ -27,16 +27,25 @@ logger = logging.getLogger("JobShopRL.PPOAgent")
 class PPOAgent(Agent):
     """Agente de Proximal Policy Optimization para Job Shop Scheduling"""
 
-    def __init__(self, env: JobShopEnv, feature_dim: int = 7, hidden_dim: int = 128,
+    def __init__(self, env: JobShopEnv, feature_dim: int = 7, hidden_dim: int = None,
                  lr: float = 0.0003, gamma: float = 0.99, eps_clip: float = 0.2,
                  K_epochs: int = 4, entropy_coef: float = 0.01,
                  use_lr_decay: bool = True, use_grad_clip: bool = True,
                  advantage_normalization: bool = True, gae_lambda: float = 0.95,
                  csv_logger: Optional[TrainingLogger] = None,
-                 seed: Optional[int] = None):
+                 seed: Optional[int] = None,
+                 policy_depth: int = 2,
+                 value_depth: int = 3):
+    
         self.env = env
         self.feature_dim = feature_dim
-        self.hidden_dim = hidden_dim
+        
+        # Calcular dimensión oculta automáticamente si no se proporciona
+        if hidden_dim is None:
+            self.hidden_dim = calculate_hidden_dim(env.num_jobs, env.num_machines)
+        else:
+            self.hidden_dim = hidden_dim
+            
         self.lr = lr
         self.gamma = gamma
         self.eps_clip = eps_clip
@@ -47,6 +56,27 @@ class PPOAgent(Agent):
         self.advantage_normalization = advantage_normalization
         self.gae_lambda = gae_lambda
         self.csv_logger = csv_logger
+        self.policy_depth = policy_depth
+        self.value_depth = value_depth
+
+        # Para problemas grandes, aumentar la profundidad de las redes
+        # y decidir si usar arquitectura avanzada
+        problem_size = env.num_jobs * env.num_machines
+        self.use_advanced_networks = False
+        self.dropout_rate = 0.1
+        
+        if problem_size > 400:  # Para problemas > 20x20
+            self.policy_depth = max(3, policy_depth)
+            self.value_depth = max(4, value_depth)
+            
+        if problem_size > 750:  # Para problemas ≥ 50x15
+            self.use_advanced_networks = True
+            self.dropout_rate = 0.15
+            
+        if problem_size > 1500:  # Para problemas muy grandes (100x20)
+            self.policy_depth = max(4, policy_depth)
+            self.value_depth = max(5, value_depth)
+            self.dropout_rate = 0.2
 
         # Establecer semilla para reproducibilidad
         if seed is not None:
@@ -59,9 +89,17 @@ class PPOAgent(Agent):
         # Dimensión del estado para la red de valor
         self.state_dim = env.num_jobs + env.num_machines + 2
 
-        # Inicializar redes
-        self.policy = PolicyNetwork(feature_dim, hidden_dim)
-        self.value = ValueNetwork(self.state_dim, hidden_dim)
+        # Inicializar redes con la arquitectura apropiada
+        if self.use_advanced_networks:
+            from jobshop_rl.models.neural_models import AdvancedPolicyNetwork, AdvancedValueNetwork
+            self.policy = AdvancedPolicyNetwork(feature_dim, self.hidden_dim, 
+                                              self.policy_depth, self.dropout_rate)
+            self.value = AdvancedValueNetwork(self.state_dim, self.hidden_dim, 
+                                            self.value_depth, self.dropout_rate)
+            logger.info(f"Usando arquitectura de red avanzada con dropout {self.dropout_rate}")
+        else:
+            self.policy = PolicyNetwork(feature_dim, self.hidden_dim, self.policy_depth)
+            self.value = ValueNetwork(self.state_dim, self.hidden_dim, self.value_depth)
 
         # Optimizadores
         self.optimizer_policy = optim.Adam(self.policy.parameters(), lr=lr)
@@ -146,6 +184,10 @@ class PPOAgent(Agent):
         Returns:
             Tuple[bool, Dict]: Indicador de si el episodio terminó correctamente y la info del último step
         """
+        # Poner las redes en modo de evaluación
+        self.policy.eval()
+        self.value.eval()
+        
         state = self.env.reset()
         done = False
         info = {}
@@ -275,49 +317,126 @@ class PPOAgent(Agent):
         Returns:
             Tuple con pérdidas medias de política y valor
         """
+        # Asegurar que estamos en modo de entrenamiento
+        self.policy.train()
+        self.value.train()
+        
         # Obtener tensores de la memoria
         old_actions, old_log_probs, returns, advantages, features_list = self.memory.get_tensors()
 
         # Realizar actualizaciones de PPO
         policy_losses = []
         value_losses = []
-
-        # Mini-batch updates for K epochs
-        for _ in range(self.K_epochs):
-            for i in range(len(self.memory.states)):
-                state_features = features_list[i]
-                value_input = self._state_to_value_input(self.memory.states[i])
-
-                value = self.value(value_input)
-
-                new_log_probs, dist_entropy = self.evaluate(state_features, torch.tensor(self.memory.actions[i], dtype=torch.int64))
-
-                ratio = torch.exp(new_log_probs - old_log_probs[i].detach())
-
-                advantage = advantages[i]
-
-                surr1 = ratio * advantage
-                surr2 = torch.clamp(ratio, 1-self.eps_clip, 1+self.eps_clip) * advantage
-                policy_loss = -torch.min(surr1, surr2) - self.entropy_coef * dist_entropy
-
-                value_loss = F.mse_loss(value.squeeze(), returns[i])
-
-                # Actualizar política
-                self.optimizer_policy.zero_grad()
-                policy_loss.backward()
-                if self.use_grad_clip:
-                    torch.nn.utils.clip_grad_norm_(self.policy.parameters(), 0.5)  # Clipping de gradientes
-                self.optimizer_policy.step()
-
-                # Actualizar valor
-                self.optimizer_value.zero_grad()
-                value_loss.backward()
-                if self.use_grad_clip:
-                    torch.nn.utils.clip_grad_norm_(self.value.parameters(), 0.5)  # Clipping de gradientes
-                self.optimizer_value.step()
-
-                policy_losses.append(policy_loss.item())
-                value_losses.append(value_loss.item())
+        
+        # Determinar el tamaño de mini-batch apropiado
+        total_samples = len(self.memory.states)
+        # Para redes avanzadas con BatchNorm, queremos mini-batches de al menos 4 ejemplos
+        if self.use_advanced_networks and total_samples >= 8:
+            batch_size = min(4, total_samples // 2)  # Al menos 2 mini-batches
+            
+            # Generador de índices para mini-batches
+            def get_minibatch_indices():
+                indices = np.arange(total_samples)
+                np.random.shuffle(indices)
+                start_idx = 0
+                while start_idx < total_samples:
+                    end_idx = min(start_idx + batch_size, total_samples)
+                    yield indices[start_idx:end_idx]
+                    start_idx = end_idx
+            
+            # Mini-batch updates for K epochs
+            for _ in range(self.K_epochs):
+                for batch_indices in get_minibatch_indices():
+                    # Preparar mini-batch
+                    batch_features = [features_list[i] for i in batch_indices]
+                    batch_states = [self.memory.states[i] for i in batch_indices]
+                    batch_actions = [self.memory.actions[i] for i in batch_indices]
+                    batch_old_log_probs = torch.stack([old_log_probs[i] for i in batch_indices])
+                    batch_returns = torch.stack([returns[i] for i in batch_indices])
+                    batch_advantages = torch.stack([advantages[i] for i in batch_indices])
+                    
+                    # Procesar features y valores
+                    value_inputs = torch.stack([self._state_to_value_input(state) for state in batch_states])
+                    values = self.value(value_inputs)
+                    
+                    # Procesar mini-batch de features para la política
+                    # Cada elemento de batch_features puede tener diferente tamaño, no podemos usar torch.stack
+                    batch_new_log_probs = []
+                    batch_dist_entropy = []
+                    
+                    for i, idx in enumerate(batch_indices):
+                        state_features = batch_features[i]
+                        action = torch.tensor(batch_actions[i], dtype=torch.int64)
+                        new_log_prob, dist_entropy = self.evaluate(state_features, action)
+                        batch_new_log_probs.append(new_log_prob)
+                        batch_dist_entropy.append(dist_entropy)
+                    
+                    batch_new_log_probs = torch.stack(batch_new_log_probs)
+                    batch_dist_entropy = torch.stack(batch_dist_entropy)
+                    
+                    # Calcular ratios y pérdida de política
+                    ratios = torch.exp(batch_new_log_probs - batch_old_log_probs.detach())
+                    surr1 = ratios * batch_advantages
+                    surr2 = torch.clamp(ratios, 1-self.eps_clip, 1+self.eps_clip) * batch_advantages
+                    policy_loss = -torch.min(surr1, surr2).mean() - self.entropy_coef * batch_dist_entropy.mean()
+                    
+                    # Calcular pérdida de valor
+                    value_loss = F.mse_loss(values.squeeze(), batch_returns)
+                    
+                    # Actualizar política
+                    self.optimizer_policy.zero_grad()
+                    policy_loss.backward()
+                    if self.use_grad_clip:
+                        torch.nn.utils.clip_grad_norm_(self.policy.parameters(), 0.5)
+                    self.optimizer_policy.step()
+                    
+                    # Actualizar valor
+                    self.optimizer_value.zero_grad()
+                    value_loss.backward()
+                    if self.use_grad_clip:
+                        torch.nn.utils.clip_grad_norm_(self.value.parameters(), 0.5)
+                    self.optimizer_value.step()
+                    
+                    policy_losses.append(policy_loss.item())
+                    value_losses.append(value_loss.item())
+        else:
+            # Si no estamos usando redes avanzadas o hay pocos ejemplos, usar el enfoque original
+            # Mini-batch updates for K epochs
+            for _ in range(self.K_epochs):
+                for i in range(len(self.memory.states)):
+                    state_features = features_list[i]
+                    value_input = self._state_to_value_input(self.memory.states[i])
+    
+                    value = self.value(value_input)
+    
+                    new_log_probs, dist_entropy = self.evaluate(state_features, torch.tensor(self.memory.actions[i], dtype=torch.int64))
+    
+                    ratio = torch.exp(new_log_probs - old_log_probs[i].detach())
+    
+                    advantage = advantages[i]
+    
+                    surr1 = ratio * advantage
+                    surr2 = torch.clamp(ratio, 1-self.eps_clip, 1+self.eps_clip) * advantage
+                    policy_loss = -torch.min(surr1, surr2) - self.entropy_coef * dist_entropy
+    
+                    value_loss = F.mse_loss(value.squeeze(), returns[i])
+    
+                    # Actualizar política
+                    self.optimizer_policy.zero_grad()
+                    policy_loss.backward()
+                    if self.use_grad_clip:
+                        torch.nn.utils.clip_grad_norm_(self.policy.parameters(), 0.5)  # Clipping de gradientes
+                    self.optimizer_policy.step()
+    
+                    # Actualizar valor
+                    self.optimizer_value.zero_grad()
+                    value_loss.backward()
+                    if self.use_grad_clip:
+                        torch.nn.utils.clip_grad_norm_(self.value.parameters(), 0.5)  # Clipping de gradientes
+                    self.optimizer_value.step()
+    
+                    policy_losses.append(policy_loss.item())
+                    value_losses.append(value_loss.item())
 
         # Calcular pérdidas medias
         policy_loss_mean = float(np.mean(policy_losses))
@@ -364,30 +483,55 @@ class PPOAgent(Agent):
 
         # Actualizar el CSV logger si está configurado
         if self.csv_logger:
-            # Calcular makespan promedio de los últimos 30 episodios (o menos si no hay suficientes)
-            window_size = min(30, len(self.training_makespan_history))
-            if window_size > 0:
-                avg_makespan = sum(self.training_makespan_history[-window_size:]) / window_size
-            else:
-                avg_makespan = 0
-                
-            # Calcular tiempo transcurrido
-            if self.training_start_time:
-                training_time = time.time() - self.training_start_time
-            else:
-                training_time = 0
-                
-            current_makespan = self.training_makespan_history[-1] if self.training_makespan_history else 0
-            self.csv_logger.log_step(
-                episode=self.total_episodes,
-                current_makespan=current_makespan,
-                best_makespan=self.best_makespan,
-                avg_makespan=avg_makespan,
-                training_time=training_time
-            )
+            # Verificar que csv_logger es un objeto TrainingLogger válido y no un diccionario
+            if not hasattr(self.csv_logger, 'log_step'):
+                # Si no es un objeto válido, intentar recuperarse
+                from jobshop_rl.utils.logging import TrainingLogger
+                if isinstance(self.csv_logger, dict) and 'filename' in self.csv_logger:
+                    # Intentar crear un nuevo logger con la información del diccionario
+                    logger.warning("csv_logger es un diccionario en lugar de un objeto TrainingLogger. Intentando recuperar.")
+                    try:
+                        self.csv_logger = TrainingLogger(filename=self.csv_logger.get('filename'))
+                    except:
+                        logger.error("No se pudo recuperar el csv_logger. Deshabilitando logging CSV.")
+                        self.csv_logger = None
+                else:
+                    logger.error("csv_logger no es un objeto TrainingLogger válido. Deshabilitando logging CSV.")
+                    self.csv_logger = None
+            
+            # Continuar solo si tenemos un logger válido
+            if self.csv_logger:
+                # Calcular makespan promedio de los últimos 30 episodios (o menos si no hay suficientes)
+                window_size = min(30, len(self.training_makespan_history))
+                if window_size > 0:
+                    avg_makespan = sum(self.training_makespan_history[-window_size:]) / window_size
+                else:
+                    avg_makespan = 0
+                    
+                # Calcular tiempo transcurrido
+                if self.training_start_time:
+                    training_time = time.time() - self.training_start_time
+                else:
+                    training_time = 0
+                    
+                current_makespan = self.training_makespan_history[-1] if self.training_makespan_history else 0
+                self.csv_logger.log_step(
+                    episode=self.total_episodes,
+                    current_makespan=current_makespan,
+                    best_makespan=self.best_makespan,
+                    avg_makespan=avg_makespan,
+                    training_time=training_time
+                )
     
     def train_episode(self) -> float:
         """Entrena un episodio completo y devuelve la recompensa total"""
+        # Registrar tiempo de inicio para problemas grandes
+        start_time = time.time()
+        
+        # Asegurar que las redes estén en modo de entrenamiento
+        self.policy.train()
+        self.value.train()
+        
         state = self.env.reset()
         done = False
         episode_reward = 0
@@ -406,7 +550,15 @@ class PPOAgent(Agent):
             # Calcular valor para GAE
             value_input = self._state_to_value_input(state)
             with torch.no_grad():
-                value = self.value(value_input).item()
+                # Si estamos usando redes avanzadas, usar evaluación para BatchNorm
+                if self.use_advanced_networks:
+                    was_training = self.value.training
+                    self.value.eval()
+                    value = self.value(value_input).item()
+                    if was_training:
+                        self.value.train()
+                else:
+                    value = self.value(value_input).item()
 
             next_state, reward, done, info = self.env.step(action_idx)
             
@@ -432,8 +584,14 @@ class PPOAgent(Agent):
             return episode_reward
 
         # Actualizar redes (las pérdidas se registran dentro del método)
-        self._update_networks()
-
+        policy_loss_mean, value_loss_mean = self._update_networks()
+        
+        # Registrar el tiempo de procesamiento para diagnóstico en problemas grandes
+        end_time = time.time()
+        if self.env.num_jobs * self.env.num_machines > 750:  # Solo para problemas grandes
+            episode_time = end_time - start_time
+            logger.info(f"Episodio {self.total_episodes} completado en {episode_time:.2f}s. Pérdidas: P={policy_loss_mean:.4f}, V={value_loss_mean:.4f}")
+            
         return episode_reward
 
     def train(self, episodes: int = 500, lr_decay: bool = True,
@@ -520,8 +678,14 @@ class PPOAgent(Agent):
             path: Nombre del archivo de checkpoint
             output_dir: Directorio de salida opcional (usa el predeterminado si es None)
         """
-        # Obtener la ruta completa para el checkpoint
-        checkpoint_path = get_checkpoint_path(path)
+        # Si tenemos un directorio específico, usarlo; de lo contrario, usar el predeterminado
+        if output_dir:
+            # Asegurar que el directorio existe
+            os.makedirs(output_dir, exist_ok=True)
+            checkpoint_path = os.path.join(output_dir, path)
+        else:
+            # Obtener la ruta completa para el checkpoint
+            checkpoint_path = get_checkpoint_path(path)
             
         checkpoint = {
             'policy_state_dict': self.policy.state_dict(),
@@ -592,7 +756,7 @@ class PPOAgent(Agent):
     def evaluate_policy(self) -> Tuple[float, List[Dict], List[float], float]:
         """Evalúa la política actual en un episodio completo"""
         start_time = time.time()
-        done, _ = self._run_episode_without_training()
+        done, info = self._run_episode_without_training()
         execution_time = time.time() - start_time
         
         makespan = max(self.env.job_completion_time) if done else float('inf')

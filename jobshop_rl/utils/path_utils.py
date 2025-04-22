@@ -23,8 +23,32 @@ def ensure_dir(dir_path: str) -> str:
     Returns:
         La ruta del directorio (igual a dir_path)
     """
-    os.makedirs(dir_path, exist_ok=True)
-    return dir_path
+    try:
+        # Normaliza la ruta para manejar diferentes formatos de separadores
+        norm_path = os.path.normpath(dir_path)
+        os.makedirs(norm_path, exist_ok=True)
+        
+        # Verificar que el directorio realmente existe después de crearlo
+        if not os.path.isdir(norm_path):
+            raise OSError(f"No se pudo crear o acceder al directorio: {norm_path}")
+            
+        return norm_path
+    except Exception as e:
+        # Obtener el logger para registrar el error
+        import logging
+        logger = logging.getLogger("JobShopRL.PathUtils")
+        logger.error(f"Error al crear directorio {dir_path}: {str(e)}")
+        
+        # En caso de error, intentar crear un directorio alternativo
+        try:
+            fallback_dir = os.path.join("outputs", os.path.basename(dir_path))
+            os.makedirs(fallback_dir, exist_ok=True)
+            logger.warning(f"Usando directorio alternativo: {fallback_dir}")
+            return fallback_dir
+        except:
+            # Si todo falla, usar el directorio actual
+            logger.warning("Usando directorio actual como último recurso")
+            return "."
 
 def get_output_dir(subdirs: Optional[List[str]] = None) -> str:
     """
