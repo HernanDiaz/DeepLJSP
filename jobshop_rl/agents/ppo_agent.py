@@ -74,9 +74,17 @@ class PPOAgent(Agent):
             self.dropout_rate = 0.15
             
         if problem_size > 1500:  # Para problemas muy grandes (100x20)
-            self.policy_depth = max(4, policy_depth)
-            self.value_depth = max(5, value_depth)
+            self.policy_depth = max(5, policy_depth)  # Incrementado de 4 a 5
+            self.value_depth = max(6, value_depth)    # Incrementado de 5 a 6
             self.dropout_rate = 0.2
+            
+            # Para problemas 100x20, usar arquitectura avanzada con capacidad aumentada
+            if problem_size >= 2000:
+                self.dropout_rate = 0.25
+                # Incrementar el número de épocas de actualización para PPO
+                self.K_epochs = max(5, self.K_epochs)
+                # Reducir el learning rate para problemas más grandes
+                self.lr = min(0.0002, self.lr)
 
         # Establecer semilla para reproducibilidad
         if seed is not None:

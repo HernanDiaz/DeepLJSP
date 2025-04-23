@@ -88,17 +88,27 @@ class EnhancedFeatureExtractor(nn.Module):
         
         # Capas intermedias con aumento gradual de dimensionalidad
         current_dim = hidden_dim
+        expansion_factor = 1.0
+        
+        # Para problemas muy grandes (100x20), usar una arquitectura más expresiva
+        if hidden_dim >= 512:
+            expansion_factor = 1.5  # Aumentar el factor de expansión
+            
         for i in range(depth - 1):
             # Para las primeras capas, aumentar dimensionalidad
             if i < depth // 2:
-                next_dim = int(current_dim * 1.5)
+                next_dim = int(current_dim * expansion_factor)
             # Para las últimas, reducir o mantener
             else:
                 next_dim = current_dim
                 
             layers.append(nn.Linear(current_dim, next_dim))
             layers.append(nn.BatchNorm1d(next_dim))
-            layers.append(nn.ReLU())
+            # Usar LeakyReLU para problemas grandes para evitar neuronas muertas
+            if hidden_dim >= 512:
+                layers.append(nn.LeakyReLU(0.1))
+            else:
+                layers.append(nn.ReLU())
             layers.append(nn.Dropout(dropout_rate))
             
             current_dim = next_dim
@@ -370,15 +380,42 @@ class AdvancedValueNetwork(nn.Module):
         layers.append(nn.ReLU())
         layers.append(nn.Dropout(dropout_rate))
         
-        # Capas intermedias con dimensión fija
+        # Factor de expansión para problemas grandes
+        expansion_factor = 1.5 if hidden_dim >= 512 else 1.2
+        
+        # Capas intermedias con arquitectura de hora de reloj (aumentar y luego reducir)
+        current_dim = hidden_dim
         for i in range(depth - 2):
-            layers.append(nn.Linear(hidden_dim, hidden_dim))
-            layers.append(nn.BatchNorm1d(hidden_dim))
-            layers.append(nn.ReLU())
+            # Primero expandimos la red
+            if i < (depth - 2) // 2:
+                next_dim = int(current_dim * expansion_factor)
+            # Luego la contraemos de vuelta
+            else:
+                next_dim = int(current_dim / expansion_factor)
+                next_dim = max(next_dim, hidden_dim // 2)  # No reducir demasiado
+                
+            layers.append(nn.Linear(current_dim, next_dim))
+            layers.append(nn.BatchNorm1d(next_dim))
+            
+            # Usar activación más avanzada para problemas grandes
+            if hidden_dim >= 512:
+                layers.append(nn.LeakyReLU(0.1))
+            else:
+                layers.append(nn.ReLU())
+                
             layers.append(nn.Dropout(dropout_rate))
+            current_dim = next_dim
+        
+        # Para problemas muy grandes, añadir una capa final de reducción antes de la salida
+        if hidden_dim >= 512:
+            layers.append(nn.Linear(current_dim, hidden_dim // 2))
+            layers.append(nn.BatchNorm1d(hidden_dim // 2))
+            layers.append(nn.LeakyReLU(0.1))
+            layers.append(nn.Dropout(dropout_rate))
+            current_dim = hidden_dim // 2
         
         # Capa final para salida escalar
-        layers.append(nn.Linear(hidden_dim, 1))
+        layers.append(nn.Linear(current_dim, 1))
         
         self.layers = nn.ModuleList(layers)
         
@@ -431,5 +468,7 @@ def calculate_hidden_dim(num_jobs, num_machines):
         return 256
     elif problem_size <= 1000:  # hasta 50x20
         return 384
-    else:  # Para problemas muy grandes como 100x20
+    elif problem_size <= 2000:  # hasta 100x20
         return 512
+    else:  # Para problemas extremadamente grandes
+        return 768
