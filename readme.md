@@ -131,7 +131,7 @@ JobShopRL incluye varias estrategias de recompensa predefinidas que pueden selec
 Ejemplo de implementación de una estrategia personalizada:
 
 ```python
-from jobshop_rl.rewards.strategies import RewardStrategy
+from jobshop_rl.rewards.base import RewardStrategy
 
 class MyCustomRewardStrategy(RewardStrategy):
     def calculate_reward(self, env, state, next_state, action, done, info):

@@ -1,10 +1,8 @@
 """
-Sistema de recompensas para Job Shop Scheduling.
-Implementa el patrón Strategy para diferentes funciones de recompensa.
+Estrategias de recompensa para el sistema de Job Shop Scheduling.
 """
 
-from jobshop_rl.rewards.base import RewardStrategy, RewardComponent
-from jobshop_rl.rewards.factory import RewardStrategyFactory, RewardStrategyRegistry
+from jobshop_rl.rewards.base import RewardStrategy
 from jobshop_rl.rewards.strategies.basic import BasicRewardStrategy
 from jobshop_rl.rewards.strategies.advanced import AdvancedRewardStrategy
 from jobshop_rl.rewards.strategies.adaptive import AdaptiveRewardStrategy
@@ -12,9 +10,6 @@ from jobshop_rl.rewards.strategies.combined import CombinedRewardStrategy
 
 __all__ = [
     'RewardStrategy',
-    'RewardComponent',
-    'RewardStrategyFactory',
-    'RewardStrategyRegistry',
     'BasicRewardStrategy',
     'AdvancedRewardStrategy',
     'AdaptiveRewardStrategy',

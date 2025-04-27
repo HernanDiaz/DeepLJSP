@@ -9,6 +9,7 @@ from torch.distributions import Categorical
 import numpy as np
 import time
 import logging
+import os
 from typing import List, Dict, Tuple, Optional
 from copy import deepcopy
 
@@ -21,6 +22,7 @@ from jobshop_rl.utils.logging import TrainingLogger
 from jobshop_rl.utils.path_utils import get_checkpoint_path
 from jobshop_rl.utils.checkpoint_manager import CheckpointManager
 from jobshop_rl.utils.visualization import plot_makespan_history, plot_training_metrics
+from jobshop_rl.utils.seed_utils import set_random_seed
 
 logger = logging.getLogger("JobShopRL.PPOAgent")
 
@@ -86,13 +88,8 @@ class PPOAgent(Agent):
                 # Reducir el learning rate para problemas más grandes
                 self.lr = min(0.0002, self.lr)
 
-        # Establecer semilla para reproducibilidad
-        if seed is not None:
-            torch.manual_seed(seed)
-            np.random.seed(seed)
-            if torch.cuda.is_available():
-                torch.cuda.manual_seed(seed)
-                torch.cuda.manual_seed_all(seed)
+        # Establecer semilla para reproducibilidad usando la utilidad centralizada
+        set_random_seed(seed)
 
         # Dimensión del estado para la red de valor
         self.state_dim = env.num_jobs + env.num_machines + 2

@@ -13,10 +13,12 @@ import datetime
 import traceback
 from typing import Dict, List, Tuple, Any, Optional
 
+from jobshop_rl.utils.seed_utils import set_random_seed
+
 from jobshop_rl.utils.visualization import save_plots
 from jobshop_rl.environment.job_shop_env import JobShopEnv
 from jobshop_rl.agents.ppo_agent import PPOAgent
-from jobshop_rl.rewards.strategies import RewardStrategyFactory
+from jobshop_rl.rewards.factory import RewardStrategyFactory
 from jobshop_rl.experiments.evaluator import HeuristicEvaluator
 from jobshop_rl.utils.logging import TrainingLogger
 from jobshop_rl.utils.problem_analyzer import ProblemAnalyzer, AdaptiveConfigGenerator
@@ -454,14 +456,8 @@ class ExperimentFactory:
         Returns:
             Tupla (entorno, agente, ejecutor) configurados para el experimento
         """
-        # Aplicar semilla para reproducibilidad si se proporciona
-        if seed is not None:
-            random.seed(seed)
-            np.random.seed(seed)
-            torch.manual_seed(seed)
-            if torch.cuda.is_available():
-                torch.cuda.manual_seed(seed)
-                torch.cuda.manual_seed_all(seed)
+        # Aplicar semilla para reproducibilidad usando la utilidad centralizada
+        set_random_seed(seed)
                 
         # Valores por defecto
         agent_params = agent_params or {}

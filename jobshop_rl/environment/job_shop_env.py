@@ -9,8 +9,10 @@ from typing import List, Dict, Tuple, Optional, Any
 from copy import deepcopy
 
 from jobshop_rl.models.data_models import SchedulingStep, OperationFeatures
-from jobshop_rl.rewards.strategies import RewardStrategy, BasicRewardStrategy
+from jobshop_rl.rewards.base import RewardStrategy
+from jobshop_rl.rewards.strategies.basic import BasicRewardStrategy
 from jobshop_rl.utils.problem_analyzer import ProblemAnalyzer, MakespanBoundCalculator
+from jobshop_rl.utils.seed_utils import set_random_seed
 
 class JobShopEnv:
     """Entorno para el problema de Job Shop Scheduling"""
@@ -42,10 +44,8 @@ class JobShopEnv:
                 if hasattr(reward_strategy, '_adapt_scales_to_problem') and callable(getattr(reward_strategy, '_adapt_scales_to_problem')):
                     reward_strategy._adapt_scales_to_problem()
 
-        # Establecer semilla para reproducibilidad
-        if seed is not None:
-            random.seed(seed)
-            np.random.seed(seed)
+        # Establecer semilla para reproducibilidad usando la utilidad centralizada
+        set_random_seed(seed)
 
         self.reset()
 

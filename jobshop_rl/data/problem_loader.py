@@ -10,6 +10,8 @@ import numpy as np
 import logging
 from typing import List, Dict, Any, Optional, Tuple
 
+from jobshop_rl.utils.seed_utils import set_random_seed
+
 logger = logging.getLogger("JobShopRL.ProblemLoader")
 
 class ProblemLoader:
@@ -281,8 +283,8 @@ class ProblemLoader:
         Returns:
             Diccionario con el problema generado
         """
-        if seed is not None:
-            np.random.seed(seed)
+        # Establecer semilla para reproducibilidad usando la utilidad centralizada
+        set_random_seed(seed)
         
         # Generar secuencias de máquinas (permutaciones aleatorias)
         sequences = []

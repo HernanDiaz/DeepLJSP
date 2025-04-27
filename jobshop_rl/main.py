@@ -8,6 +8,9 @@ import logging
 import time
 import pandas as pd
 from typing import Dict, Any, Optional
+import random
+import numpy as np
+import torch
 
 from jobshop_rl.experiments.factory import ExperimentFactory
 from jobshop_rl.experiments.batch_experimenter import BatchExperimenter
@@ -18,6 +21,7 @@ from jobshop_rl.utils.path_utils import (
     get_plots_dir, join_paths, DEFAULT_OUTPUT_DIR
 )
 from jobshop_rl.utils.problem_analyzer import AdaptiveConfigGenerator
+from jobshop_rl.utils.seed_utils import set_random_seed
 
 def parse_args():
     """Configura y parsea los argumentos de línea de comandos"""
@@ -91,6 +95,18 @@ def setup_logging(log_level):
         level=numeric_level,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
+    
+def setup_seed(seed):
+    """
+    Configura la semilla para reproducibilidad al inicio del programa.
+    Esta función garantiza que todas las fuentes de aleatoriedad usen la misma semilla.
+    
+    Args:
+        seed (int, optional): Semilla a establecer. Si es None, no se aplicará ninguna semilla.
+    """
+    applied_seed = set_random_seed(seed)
+    if applied_seed is not None:
+        logging.info(f"Aplicada semilla global: {applied_seed} para reproducibilidad")
 
 def run_single_experiment(args):
     """Ejecuta un experimento con un único problema"""
@@ -420,12 +436,18 @@ def generate_problems(args):
     
     print(f"Generando {args.num_problems} problemas aleatorios...")
     
+    # La semilla global ya se ha establecido, pero necesitamos semillas diferentes para cada problema
+    base_seed = args.seed if args.seed is not None else int(time.time())
+    
     for i in range(args.num_problems):
-        # Generar problema
+        # Usamos la semilla base más un offset para cada problema
+        problem_seed = base_seed + i if args.seed is not None else None
+        
+        # Generar problema con su propia semilla
         problem = ProblemLoader.generate_random_problem(
             num_jobs=args.num_jobs,
             num_machines=args.num_machines,
-            seed=args.seed + i if args.seed is not None else None
+            seed=problem_seed
         )
         
         # Guardar problema
@@ -447,8 +469,13 @@ def main():
     args = parse_args()
     setup_logging(args.log_level)
     
+    # Configurar la semilla global para reproducibilidad
+    setup_seed(args.seed)
+    
     print(f"JobShopRL - Sistema de aprendizaje por refuerzo para problemas de Job Shop Scheduling")
     print(f"Modo: {args.mode}")
+    if args.seed is not None:
+        print(f"Semilla para reproducibilidad: {args.seed}")
     
     if args.mode == 'single':
         run_single_experiment(args)
