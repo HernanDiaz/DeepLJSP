@@ -17,6 +17,10 @@ from copy import deepcopy
 from jobshop_rl.agents.base_agent import Agent
 from jobshop_rl.agents.ppo_memory import PPOMemory
 from jobshop_rl.models.neural_models import PolicyNetwork, ValueNetwork, calculate_hidden_dim
+from jobshop_rl.models.training_utils import (
+    GradientAccumulator, WarmupScheduler, BatchSizeManager, 
+    reset_batch_norm_stats, configure_for_problem_size
+)
 from jobshop_rl.environment.job_shop_env import JobShopEnv
 from jobshop_rl.utils.logging import TrainingLogger
 from jobshop_rl.utils.path_utils import get_checkpoint_path
@@ -37,7 +41,8 @@ class PPOAgent(Agent):
                  csv_logger: Optional[TrainingLogger] = None,
                  seed: Optional[int] = None,
                  policy_depth: int = 2,
-                 value_depth: int = 3):
+                 value_depth: int = 3,
+                 use_batch_norm: bool = None):  # Nuevo parámetro
     
         self.env = env
         self.feature_dim = feature_dim
@@ -61,32 +66,42 @@ class PPOAgent(Agent):
         self.policy_depth = policy_depth
         self.value_depth = value_depth
 
-        # Para problemas grandes, aumentar la profundidad de las redes
-        # y decidir si usar arquitectura avanzada
+        # Calcular tamaño del problema
         problem_size = env.num_jobs * env.num_machines
-        self.use_advanced_networks = False
-        self.dropout_rate = 0.1
         
-        if problem_size > 400:  # Para problemas > 20x20
+        # Obtener configuración recomendada
+        config = configure_for_problem_size(problem_size)
+        
+        # Decidir si usar BatchNorm (por defecto True para problemas grandes)
+        if use_batch_norm is None:
+            self.use_batch_norm = problem_size > 400  # Usar BatchNorm para problemas > 20x20
+        else:
+            self.use_batch_norm = use_batch_norm
+            
+        # Aplicar configuración
+        self.use_advanced_networks = config["use_advanced_networks"]
+        self.dropout_rate = config["dropout_rate"]
+        self.use_gradient_accumulation = config["use_gradient_accumulation"]
+        self.accumulation_steps = config["accumulation_steps"]
+        self.use_warmup = config["use_warmup"]
+        self.warmup_episodes = config["warmup_episodes"]
+        
+        # Ajustar profundidad de redes según configuración
+        if problem_size > 400:
             self.policy_depth = max(3, policy_depth)
             self.value_depth = max(4, value_depth)
             
-        if problem_size > 750:  # Para problemas ≥ 50x15
-            self.use_advanced_networks = True
-            self.dropout_rate = 0.15
+        if problem_size > 1500:
+            self.policy_depth = max(5, policy_depth)
+            self.value_depth = max(6, value_depth)
             
-        if problem_size > 1500:  # Para problemas muy grandes (100x20)
-            self.policy_depth = max(5, policy_depth)  # Incrementado de 4 a 5
-            self.value_depth = max(6, value_depth)    # Incrementado de 5 a 6
-            self.dropout_rate = 0.2
-            
-            # Para problemas 100x20, usar arquitectura avanzada con capacidad aumentada
-            if problem_size >= 2000:
-                self.dropout_rate = 0.25
-                # Incrementar el número de épocas de actualización para PPO
-                self.K_epochs = max(5, self.K_epochs)
-                # Reducir el learning rate para problemas más grandes
-                self.lr = min(0.0002, self.lr)
+        # Logging de configuración
+        logger.info(f"Configuración PPO para problema {env.num_jobs}x{env.num_machines}:")
+        logger.info(f"  - Redes avanzadas: {self.use_advanced_networks}")
+        logger.info(f"  - BatchNorm: {self.use_batch_norm}")
+        logger.info(f"  - Gradient accumulation: {self.use_gradient_accumulation} (steps={self.accumulation_steps})")
+        logger.info(f"  - Warmup: {self.use_warmup} (episodes={self.warmup_episodes})")
+        logger.info(f"  - Dropout: {self.dropout_rate}")
 
         # Establecer semilla para reproducibilidad usando la utilidad centralizada
         set_random_seed(seed)
@@ -97,11 +112,14 @@ class PPOAgent(Agent):
         # Inicializar redes con la arquitectura apropiada
         if self.use_advanced_networks:
             from jobshop_rl.models.neural_models import AdvancedPolicyNetwork, AdvancedValueNetwork
-            self.policy = AdvancedPolicyNetwork(feature_dim, self.hidden_dim, 
-                                              self.policy_depth, self.dropout_rate)
-            self.value = AdvancedValueNetwork(self.state_dim, self.hidden_dim, 
-                                            self.value_depth, self.dropout_rate)
-            logger.info(f"Usando arquitectura de red avanzada con dropout {self.dropout_rate}")
+            self.policy = AdvancedPolicyNetwork(
+                feature_dim, self.hidden_dim, self.policy_depth, 
+                self.dropout_rate, problem_size, self.use_batch_norm
+            )
+            self.value = AdvancedValueNetwork(
+                self.state_dim, self.hidden_dim, self.value_depth, 
+                self.dropout_rate, problem_size, self.use_batch_norm
+            )
         else:
             self.policy = PolicyNetwork(feature_dim, self.hidden_dim, self.policy_depth)
             self.value = ValueNetwork(self.state_dim, self.hidden_dim, self.value_depth)
@@ -109,6 +127,31 @@ class PPOAgent(Agent):
         # Optimizadores
         self.optimizer_policy = optim.Adam(self.policy.parameters(), lr=lr)
         self.optimizer_value = optim.Adam(self.value.parameters(), lr=lr)
+        
+        # Configurar warmup schedulers si es necesario
+        if self.use_warmup:
+            self.warmup_scheduler_policy = WarmupScheduler(
+                self.optimizer_policy, self.warmup_episodes, lr, "quadratic"
+            )
+            self.warmup_scheduler_value = WarmupScheduler(
+                self.optimizer_value, self.warmup_episodes, lr, "quadratic"
+            )
+        else:
+            self.warmup_scheduler_policy = None
+            self.warmup_scheduler_value = None
+            
+        # Configurar gradient accumulator si es necesario
+        if self.use_gradient_accumulation:
+            self.gradient_accumulator = GradientAccumulator(
+                self.accumulation_steps,
+                [self.policy, self.value],
+                [self.optimizer_policy, self.optimizer_value]
+            )
+        else:
+            self.gradient_accumulator = None
+            
+        # Configurar batch size manager
+        self.batch_manager = BatchSizeManager(problem_size)
 
         # Tracking del rendimiento
         self.best_makespan = float('inf')
@@ -335,23 +378,23 @@ class PPOAgent(Agent):
         
         # Determinar el tamaño de mini-batch apropiado
         total_samples = len(self.memory.states)
-        # Para redes avanzadas con BatchNorm, queremos mini-batches de al menos 4 ejemplos
-        if self.use_advanced_networks and total_samples >= 8:
-            batch_size = min(4, total_samples // 2)  # Al menos 2 mini-batches
-            
-            # Generador de índices para mini-batches
-            def get_minibatch_indices():
-                indices = np.arange(total_samples)
-                np.random.shuffle(indices)
-                start_idx = 0
-                while start_idx < total_samples:
-                    end_idx = min(start_idx + batch_size, total_samples)
-                    yield indices[start_idx:end_idx]
-                    start_idx = end_idx
+        
+        # Usar el batch manager para obtener mini-batches
+        if self.use_advanced_networks and total_samples >= self.batch_manager.min_batch_size:
+            # Preparar todos los datos para mini-batching
+            all_indices = list(range(total_samples))
+            mini_batches = self.batch_manager.create_mini_batches(all_indices, shuffle=True)
             
             # Mini-batch updates for K epochs
-            for _ in range(self.K_epochs):
-                for batch_indices in get_minibatch_indices():
+            for epoch in range(self.K_epochs):
+                epoch_policy_losses = []
+                epoch_value_losses = []
+                
+                for batch_indices in mini_batches:
+                    # Verificar si el batch cumple el tamaño mínimo
+                    if len(batch_indices) < self.batch_manager.min_batch_size:
+                        continue
+                        
                     # Preparar mini-batch
                     batch_features = [features_list[i] for i in batch_indices]
                     batch_states = [self.memory.states[i] for i in batch_indices]
@@ -365,7 +408,6 @@ class PPOAgent(Agent):
                     values = self.value(value_inputs)
                     
                     # Procesar mini-batch de features para la política
-                    # Cada elemento de batch_features puede tener diferente tamaño, no podemos usar torch.stack
                     batch_new_log_probs = []
                     batch_dist_entropy = []
                     
@@ -388,25 +430,46 @@ class PPOAgent(Agent):
                     # Calcular pérdida de valor
                     value_loss = F.mse_loss(values.squeeze(), batch_returns)
                     
-                    # Actualizar política
-                    self.optimizer_policy.zero_grad()
-                    policy_loss.backward()
-                    if self.use_grad_clip:
-                        torch.nn.utils.clip_grad_norm_(self.policy.parameters(), 0.5)
-                    self.optimizer_policy.step()
+                    # Si usamos gradient accumulation
+                    if self.gradient_accumulator:
+                        # Limpiar gradientes si es necesario
+                        self.gradient_accumulator.zero_grad()
+                        
+                        # Backward con acumulación
+                        self.gradient_accumulator.backward(policy_loss)
+                        self.gradient_accumulator.backward(value_loss)
+                        
+                        # Step solo si hemos acumulado suficientes gradientes
+                        if self.gradient_accumulator.step():
+                            # Se realizó una actualización
+                            pass
+                    else:
+                        # Actualización normal sin acumulación
+                        # Actualizar política
+                        self.optimizer_policy.zero_grad()
+                        policy_loss.backward()
+                        if self.use_grad_clip:
+                            torch.nn.utils.clip_grad_norm_(self.policy.parameters(), 0.5)
+                        self.optimizer_policy.step()
+                        
+                        # Actualizar valor
+                        self.optimizer_value.zero_grad()
+                        value_loss.backward()
+                        if self.use_grad_clip:
+                            torch.nn.utils.clip_grad_norm_(self.value.parameters(), 0.5)
+                        self.optimizer_value.step()
                     
-                    # Actualizar valor
-                    self.optimizer_value.zero_grad()
-                    value_loss.backward()
-                    if self.use_grad_clip:
-                        torch.nn.utils.clip_grad_norm_(self.value.parameters(), 0.5)
-                    self.optimizer_value.step()
+                    epoch_policy_losses.append(policy_loss.item())
+                    epoch_value_losses.append(value_loss.item())
+                
+                # Agregar pérdidas del epoch
+                if epoch_policy_losses:
+                    policy_losses.extend(epoch_policy_losses)
+                    value_losses.extend(epoch_value_losses)
                     
-                    policy_losses.append(policy_loss.item())
-                    value_losses.append(value_loss.item())
         else:
             # Si no estamos usando redes avanzadas o hay pocos ejemplos, usar el enfoque original
-            # Mini-batch updates for K epochs
+            # pero con mejoras para estabilidad
             for _ in range(self.K_epochs):
                 for i in range(len(self.memory.states)):
                     state_features = features_list[i]
@@ -430,22 +493,22 @@ class PPOAgent(Agent):
                     self.optimizer_policy.zero_grad()
                     policy_loss.backward()
                     if self.use_grad_clip:
-                        torch.nn.utils.clip_grad_norm_(self.policy.parameters(), 0.5)  # Clipping de gradientes
+                        torch.nn.utils.clip_grad_norm_(self.policy.parameters(), 0.5)
                     self.optimizer_policy.step()
     
                     # Actualizar valor
                     self.optimizer_value.zero_grad()
                     value_loss.backward()
                     if self.use_grad_clip:
-                        torch.nn.utils.clip_grad_norm_(self.value.parameters(), 0.5)  # Clipping de gradientes
+                        torch.nn.utils.clip_grad_norm_(self.value.parameters(), 0.5)
                     self.optimizer_value.step()
     
                     policy_losses.append(policy_loss.item())
                     value_losses.append(value_loss.item())
 
         # Calcular pérdidas medias
-        policy_loss_mean = float(np.mean(policy_losses))
-        value_loss_mean = float(np.mean(value_losses))
+        policy_loss_mean = float(np.mean(policy_losses)) if policy_losses else 0.0
+        value_loss_mean = float(np.mean(value_losses)) if value_losses else 0.0
         
         # Registrar pérdidas medias
         self.training_losses["policy"].append(policy_loss_mean)
@@ -618,10 +681,21 @@ class PPOAgent(Agent):
         # Seguimiento para early stopping
         best_avg_reward = float('-inf')
         no_improvement_count = 0
+        
+        # Reset de estadísticas de BatchNorm si están usando redes avanzadas
+        if self.use_advanced_networks and self.use_batch_norm:
+            logger.info("Reseteando estadísticas de BatchNorm...")
+            reset_batch_norm_stats(self.policy, momentum=0.01)
+            reset_batch_norm_stats(self.value, momentum=0.01)
 
         for i in range(1, episodes+1):
-            # Actualizar learning rate una sola vez por episodio
-            self.update_learning_rate(i, episodes)
+            # Aplicar warmup si está configurado
+            if self.warmup_scheduler_policy and i <= self.warmup_episodes:
+                self.warmup_scheduler_policy.step(i)
+                self.warmup_scheduler_value.step(i)
+            else:
+                # Actualizar learning rate normal después del warmup
+                self.update_learning_rate(i, episodes)
 
             # Ajustar parámetros de exploración
             self._update_exploration_parameters(i, episodes, initial_eps_clip, dynamic_entropy)
@@ -828,6 +902,33 @@ class PPOAgent(Agent):
             optimal_makespan=None
         )
         
+    def reset_batch_norm_stats(self):
+        """Resetea las estadísticas de BatchNorm para un nuevo problema."""
+        if self.use_advanced_networks and self.use_batch_norm:
+            logger.info("Reseteando estadísticas de BatchNorm para nuevo problema...")
+            reset_batch_norm_stats(self.policy, momentum=0.01)
+            reset_batch_norm_stats(self.value, momentum=0.01)
+            
+    def set_problem(self, env: JobShopEnv):
+        """
+        Configura el agente para un nuevo problema.
+        Útil cuando se entrena en múltiples problemas.
+        
+        Args:
+            env: Nuevo entorno de Job Shop
+        """
+        self.env = env
+        
+        # Resetear estadísticas de BatchNorm si es necesario
+        self.reset_batch_norm_stats()
+        
+        # Actualizar dimensión del estado si cambia
+        new_state_dim = env.num_jobs + env.num_machines + 2
+        if new_state_dim != self.state_dim:
+            logger.warning(f"Dimensión del estado cambió de {self.state_dim} a {new_state_dim}. "
+                          "Considere re-entrenar el modelo.")
+            self.state_dim = new_state_dim
+            
     def plot_best_solution_makespan(self, optimal_makespan: Optional[int] = 930):
         """
         Visualiza la evolución del makespan de la mejor solución encontrada.
