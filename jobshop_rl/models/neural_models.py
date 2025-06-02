@@ -300,9 +300,7 @@ def calculate_hidden_dim(num_jobs, num_machines):
         return base_dim
     elif problem_size <= 400:  # hasta 20x20
         return 256
-    elif problem_size <= 1000:  # hasta 50x20
+    elif problem_size <= 2000:  # hasta 100x20 (incluido)
         return 384
-    elif problem_size <= 2000:  # hasta 100x20
-        return 512
     else:  # Para problemas extremadamente grandes
-        return 768
+        return 512

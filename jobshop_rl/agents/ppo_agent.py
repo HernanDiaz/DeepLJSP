@@ -91,7 +91,7 @@ class PPOAgent(Agent):
             self.policy_depth = max(3, policy_depth)
             self.value_depth = max(4, value_depth)
             
-        if problem_size > 1500:
+        if problem_size > 2000:  # Solo para problemas extremadamente grandes
             self.policy_depth = max(5, policy_depth)
             self.value_depth = max(6, value_depth)
             

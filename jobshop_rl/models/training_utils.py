@@ -155,18 +155,14 @@ class BatchSizeManager:
             self.min_batch_size = 8
             self.target_batch_size = 16
             self.accumulation_steps = 1
-        elif problem_size <= 1000:  # ≤50x20
+        elif problem_size <= 2000:  # ≤100x20 (incluido)
             self.min_batch_size = 16
             self.target_batch_size = 32
             self.accumulation_steps = 4
-        elif problem_size <= 2000:  # ≤100x20
+        else:  # Problemas extremadamente grandes
             self.min_batch_size = 32
             self.target_batch_size = 64
             self.accumulation_steps = 8
-        else:  # Problemas extremadamente grandes
-            self.min_batch_size = 64
-            self.target_batch_size = 128
-            self.accumulation_steps = 16
             
         logger.info(f"BatchSizeManager configurado para problema de tamaño {problem_size}: "
                    f"min_batch={self.min_batch_size}, target_batch={self.target_batch_size}, "
@@ -269,7 +265,7 @@ def configure_for_problem_size(
             "min_batch_size": 8
         })
         
-    if problem_size > 750:  # ≥50x15
+    if problem_size > 750:  # ≥50x15 (incluye 50x20 y 100x20)
         config.update({
             "use_gradient_accumulation": True,
             "use_warmup": True,
@@ -278,15 +274,6 @@ def configure_for_problem_size(
             "batch_norm_momentum": 0.01,
             "min_batch_size": 16,
             "accumulation_steps": 4
-        })
-        
-    if problem_size > 1500:  # ≥75x20
-        config.update({
-            "warmup_episodes": 30,
-            "dropout_rate": 0.25,
-            "batch_norm_momentum": 0.005,
-            "min_batch_size": 32,
-            "accumulation_steps": 8
         })
         
     return config

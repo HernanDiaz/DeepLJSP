@@ -157,13 +157,13 @@ class AdaptiveNormalization(nn.Module):
             self.primary_norm = nn.BatchNorm1d(num_features, eps=eps, momentum=0.1, affine=affine)
             self.strategy = "small"
             self.min_batch_size = 2
-        elif problem_size <= 1000:  # Problemas medianos (≤50x20)
+        elif problem_size <= 2000:  # Problemas medianos-grandes (≤100x20, incluido)
             self.primary_norm = StabilizedBatchNorm1d(
                 num_features, eps=eps, momentum=0.01, affine=affine, min_batch_size=4
             )
             self.strategy = "medium"
             self.min_batch_size = 4
-        else:  # Problemas grandes (>50x20)
+        else:  # Problemas extremadamente grandes (>100x20)
             self.primary_norm = StabilizedBatchNorm1d(
                 num_features, eps=eps*2, momentum=0.005, affine=affine, min_batch_size=8
             )
