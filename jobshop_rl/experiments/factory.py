@@ -11,6 +11,7 @@ import time
 import os
 import datetime
 import traceback
+import sys
 from typing import Dict, List, Tuple, Any, Optional
 
 from jobshop_rl.utils.seed_utils import set_random_seed
@@ -512,7 +513,8 @@ class ExperimentFactory:
         evaluate_other_problem: bool = False,
         evaluation_problem_id: Optional[str] = None,
         use_ortools: bool = False,
-        ortools_time_limit: int = 60
+        ortools_time_limit: int = 60,
+        save_config: bool = True
     ) -> Tuple[PPOAgent, Dict]:
         """
         Ejecuta un experimento completo con evaluación de heurísticas y entrenamiento.
@@ -540,6 +542,7 @@ class ExperimentFactory:
             evaluation_problem_id: ID del problema para evaluación adicional
             use_ortools: Si se debe comparar con el solucionador OR-Tools
             ortools_time_limit: Límite de tiempo para OR-Tools
+            save_config: Si se debe guardar la configuración del experimento
             
         Returns:
             Tupla (agente entrenado, resultados del experimento)
@@ -553,39 +556,12 @@ class ExperimentFactory:
             logger.info("Inicializando registro CSV para datos de entrenamiento")
             csv_logger = TrainingLogger(filename=csv_filename, base_dir=csv_base_dir)
             
-        # Guardar configuración del experimento
+        # Generar nombre de experimento si es necesario
         if experiment_name is None:
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
             experiment_name = f"{problem_id}_{reward_strategy}_{timestamp}"
-        
-        config = {
-            'experiment_name': experiment_name,
-            'episodes': episodes,
-            'reward_strategy': reward_strategy,
-            'problem_id': problem_id,
-            'seed': seed,
-            'visualize': visualize,
-            'save_plots': save_plots,
-            'csv_logging': csv_logging,
-        }
-        
-        # Añadir parámetros del agente
-        if agent_params:
-            config.update(agent_params)
-            
-        # Añadir parámetros de recompensa
-        if reward_params:
-            config.update(reward_params)
-            
-        # Guardar la configuración
-        config_path = ExperimentConfig.save_config(
-            config, 
-            experiment_name=experiment_name,
-            output_dir=os.path.join(output_dir, "configs")
-        )
-        logger.info(f"Configuración del experimento guardada en: {config_path}")
 
-        # Crear experimento completo
+        # Crear experimento completo (aquí se aplican las modificaciones adaptive)
         env, agent, runner = ExperimentFactory.create_experiment(
             problem_id=problem_id,
             reward_strategy=reward_strategy,
@@ -598,6 +574,23 @@ class ExperimentFactory:
             experiment_name=experiment_name,
             csv_logger=csv_logger
         )
+        
+        # Guardar configuración del experimento DESPUÉS de aplicar modificaciones adaptive
+        if save_config:
+            # Extraer TODOS los parámetros para reproducibilidad exacta
+            final_config = self._extract_complete_configuration(
+                env, agent, experiment_name, episodes, reward_strategy, problem_id, 
+                seed, visualize, save_plots, csv_logging
+            )
+                
+            config_path = ExperimentConfig.save_config(
+                final_config, 
+                experiment_name=experiment_name,
+                output_dir=os.path.join(output_dir, "configs")
+            )
+            logger.info(f"Configuración completa del experimento (con todos los parámetros) guardada en: {config_path}")
+        else:
+            logger.info("Guardado de configuración deshabilitado")
         
         # Evaluar heurísticas básicas
         logger.info("Evaluando heurísticas básicas como referencia")
@@ -645,3 +638,182 @@ class ExperimentFactory:
             "ortools_results": ortools_results,
             "plots": training_results.get("plots")
         }
+
+    @staticmethod
+    def _extract_complete_configuration(env, agent, experiment_name, episodes, reward_strategy, 
+                                      problem_id, seed, visualize, save_plots, csv_logging):
+        """
+        Extrae TODOS los parámetros del experimento para reproducibilidad exacta.
+        
+        Args:
+            env: Entorno configurado
+            agent: Agente configurado
+            experiment_name: Nombre del experimento
+            episodes: Número de episodios
+            reward_strategy: Estrategia de recompensa
+            problem_id: ID del problema
+            seed: Semilla usada
+            visualize: Si se generan visualizaciones
+            save_plots: Si se guardan gráficos
+            csv_logging: Si se usa logging CSV
+            
+        Returns:
+            Dict con configuración completa
+        """
+        import torch
+        
+        config = {
+            # ==================== METADATOS DEL EXPERIMENTO ====================
+            'experiment_name': experiment_name,
+            'episodes': episodes,
+            'reward_strategy': reward_strategy,
+            'problem_id': problem_id,
+            'seed': seed,
+            'visualize': visualize,
+            'save_plots': save_plots,
+            'csv_logging': csv_logging,
+            'adaptive_modifications_applied': reward_strategy.lower() == "adaptive",
+            'timestamp': datetime.datetime.now().isoformat(),
+            
+            # ==================== INFORMACIÓN DEL PROBLEMA ====================
+            'problem_info': {
+                'num_jobs': env.num_jobs,
+                'num_machines': env.num_machines,
+                'problem_size': env.num_jobs * env.num_machines,
+                'state_dim': getattr(agent, 'state_dim', env.num_jobs + env.num_machines + 2)
+            },
+            
+            # ==================== PARÁMETROS DEL AGENTE PPO ====================
+            'agent_params': {
+                'lr': agent.lr,
+                'current_lr_policy': agent.optimizer_policy.param_groups[0]['lr'],
+                'current_lr_value': agent.optimizer_value.param_groups[0]['lr'],
+                'gamma': agent.gamma,
+                'eps_clip': agent.eps_clip,
+                'K_epochs': agent.K_epochs,
+                'entropy_coef': agent.entropy_coef,
+                'initial_entropy_coef': getattr(agent, 'initial_entropy_coef', agent.entropy_coef),
+                'use_lr_decay': agent.use_lr_decay,
+                'use_grad_clip': agent.use_grad_clip,
+                'advantage_normalization': agent.advantage_normalization,
+                'gae_lambda': agent.gae_lambda,
+                'feature_dim': agent.feature_dim,
+                'hidden_dim': agent.hidden_dim,
+                'policy_depth': getattr(agent, 'policy_depth', 2),
+                'value_depth': getattr(agent, 'value_depth', 3),
+                'use_batch_norm': getattr(agent, 'use_batch_norm', False),
+                'use_advanced_networks': getattr(agent, 'use_advanced_networks', False),
+                'dropout_rate': getattr(agent, 'dropout_rate', 0.1)
+            },
+            
+            # ==================== PARÁMETROS DE MEMORIA PPO ====================
+            'memory_params': {
+                'gamma': agent.memory.gamma,
+                'gae_lambda': agent.memory.gae_lambda,
+                'advantage_normalization': agent.memory.advantage_normalization
+            },
+            
+            # ==================== PARÁMETROS DEL OPTIMIZADOR ====================
+            'optimizer_params': {
+                'policy_optimizer': {
+                    'type': agent.optimizer_policy.__class__.__name__,
+                    'lr': agent.optimizer_policy.param_groups[0]['lr'],
+                    'weight_decay': agent.optimizer_policy.param_groups[0].get('weight_decay', 0.0),
+                    'eps': agent.optimizer_policy.param_groups[0].get('eps', 1e-8),
+                },
+                'value_optimizer': {
+                    'type': agent.optimizer_value.__class__.__name__, 
+                    'lr': agent.optimizer_value.param_groups[0]['lr'],
+                    'weight_decay': agent.optimizer_value.param_groups[0].get('weight_decay', 0.0),
+                    'eps': agent.optimizer_value.param_groups[0].get('eps', 1e-8),
+                }
+            },
+            
+            # ==================== CONFIGURACIÓN DE ENTRENAMIENTO AVANZADO ====================
+            'advanced_training': {
+                'use_gradient_accumulation': getattr(agent, 'use_gradient_accumulation', False),
+                'accumulation_steps': getattr(agent, 'accumulation_steps', 1),
+                'use_warmup': getattr(agent, 'use_warmup', False),
+                'warmup_episodes': getattr(agent, 'warmup_episodes', 0),
+                'min_batch_size': getattr(agent.batch_manager, 'min_batch_size', 4) if hasattr(agent, 'batch_manager') else 4,
+                'target_batch_size': getattr(agent.batch_manager, 'target_batch_size', 8) if hasattr(agent, 'batch_manager') else 8
+            },
+            
+            # ==================== ARQUITECTURA DE REDES NEURONALES ====================
+            'network_architecture': {}
+        }
+        
+        # Agregar parámetros específicos de Adam si aplica
+        if isinstance(agent.optimizer_policy, torch.optim.Adam):
+            config['optimizer_params']['policy_optimizer'].update({
+                'betas': agent.optimizer_policy.param_groups[0].get('betas', (0.9, 0.999)),
+                'amsgrad': agent.optimizer_policy.param_groups[0].get('amsgrad', False)
+            })
+            config['optimizer_params']['value_optimizer'].update({
+                'betas': agent.optimizer_value.param_groups[0].get('betas', (0.9, 0.999)),
+                'amsgrad': agent.optimizer_value.param_groups[0].get('amsgrad', False)
+            })
+        
+        # Extraer arquitectura de redes neuronales
+        try:
+            # Información de la red de política
+            policy_info = {
+                'class_name': agent.policy.__class__.__name__,
+                'total_params': sum(p.numel() for p in agent.policy.parameters()),
+                'trainable_params': sum(p.numel() for p in agent.policy.parameters() if p.requires_grad)
+            }
+            
+            # Información de la red de valor
+            value_info = {
+                'class_name': agent.value.__class__.__name__,
+                'total_params': sum(p.numel() for p in agent.value.parameters()),
+                'trainable_params': sum(p.numel() for p in agent.value.parameters() if p.requires_grad)
+            }
+            
+            # Intentar extraer información detallada de las capas
+            if hasattr(agent.policy, 'feature_extractor'):
+                policy_info['has_feature_extractor'] = True
+                if hasattr(agent.policy.feature_extractor, 'output_dim'):
+                    policy_info['feature_extractor_output_dim'] = agent.policy.feature_extractor.output_dim
+                    
+            config['network_architecture'] = {
+                'policy_network': policy_info,
+                'value_network': value_info
+            }
+            
+        except Exception as e:
+            logger.warning(f"No se pudo extraer información completa de la arquitectura de red: {e}")
+            config['network_architecture'] = {'error': str(e)}
+        
+        # ==================== PARÁMETROS DE ESTRATEGIA DE RECOMPENSA ====================
+        config['reward_params'] = {}
+        reward_strategy_obj = env.reward_strategy
+        if hasattr(reward_strategy_obj, '__dict__'):
+            for attr_name, attr_value in reward_strategy_obj.__dict__.items():
+                if isinstance(attr_value, (int, float, bool, str, type(None))):
+                    config['reward_params'][attr_name] = attr_value
+        
+        # Agregar información específica del tipo de estrategia
+        config['reward_params']['strategy_class'] = reward_strategy_obj.__class__.__name__
+        
+        # ==================== ANÁLISIS DEL PROBLEMA ====================
+        if hasattr(env, 'problem_analysis'):
+            config['problem_analysis'] = env.problem_analysis
+        
+        # ==================== INFORMACIÓN DEL ENTORNO ====================
+        config['environment_info'] = {
+            'class_name': env.__class__.__name__,
+            'action_space_size': len(env.get_features({'job_status': [0]*env.num_jobs, 
+                                                      'machine_completion_time': [0]*env.num_machines})) 
+                                  if hasattr(env, 'get_features') else 'unknown'
+        }
+        
+        # ==================== INFORMACIÓN DEL SISTEMA ====================
+        config['system_info'] = {
+            'torch_version': torch.__version__,
+            'cuda_available': torch.cuda.is_available(),
+            'cuda_device_count': torch.cuda.device_count() if torch.cuda.is_available() else 0,
+            'python_version': f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+        }
+        
+        return config

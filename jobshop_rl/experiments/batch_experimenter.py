@@ -16,6 +16,7 @@ from jobshop_rl.utils.logging import TrainingLogger
 from jobshop_rl.agents.ppo_agent import PPOAgent
 from jobshop_rl.utils.visualization import save_plots
 from jobshop_rl.utils.path_utils import ensure_dir, join_paths
+from jobshop_rl.utils.experiment_config import ExperimentConfig
 
 logger = logging.getLogger("JobShopRL.BatchExperimenter")
 
@@ -43,16 +44,26 @@ class BatchExperimenter:
             seed: Semilla para reproducibilidad
         """
         logger.info(f"Cargando problemas de entrenamiento desde: {training_dir}")
-        self.training_problems = ProblemLoader.load_from_directory(training_dir)
+        try:
+            self.training_problems = ProblemLoader.load_from_directory(training_dir)
+        except Exception as e:
+            logger.warning(f"No se pudieron cargar problemas desde {training_dir}: {str(e)}")
+            self.training_problems = []
         
         logger.info(f"Cargando problemas de prueba desde: {test_dir}")
-        self.test_problems = ProblemLoader.load_from_directory(test_dir)
+        try:
+            self.test_problems = ProblemLoader.load_from_directory(test_dir)
+        except Exception as e:
+            logger.warning(f"No se pudieron cargar problemas desde {test_dir}: {str(e)}")
+            self.test_problems = []
         
         self.output_dir = ensure_dir(output_dir)
         self.agent_params = agent_params or {}
         self.reward_strategy = reward_strategy
         self.reward_params = reward_params or {}
         self.seed = seed
+        self.experiment_name = None  # Se puede establecer externamente
+        self.save_config = True  # Se puede deshabilitar externamente
         
         logger.info(f"Configuración completa: {len(self.training_problems)} problemas de entrenamiento, "
                    f"{len(self.test_problems)} problemas de prueba")
@@ -509,3 +520,114 @@ class BatchExperimenter:
         plots_dir = ensure_dir(join_paths(self.output_dir, "plots"))
         plt.savefig(join_paths(plots_dir, "test_gaps.png"))
         plt.close()
+    
+    def save_batch_config(self):
+        """Guarda la configuración del experimento por lotes usando ExperimentConfig.save_config()"""
+        if not self.save_config:
+            logger.info("Guardado de configuración deshabilitado para este experimento")
+            return
+            
+        import datetime
+        
+        logger.info(f"Guardando configuración: {len(self.training_problems)} problemas de entrenamiento, {len(self.test_problems)} problemas de test")
+        
+        # Para capturar parámetros adaptive, necesitamos crear un entorno de ejemplo
+        sample_env = None
+        final_config = {}
+        
+        if self.training_problems and self.reward_strategy.lower() == "adaptive":
+            try:
+                # Crear entorno con el primer problema para obtener parámetros adaptive
+                sample_problem = self.training_problems[0]
+                sample_env = EnvironmentFactory.create_from_problem(
+                    sample_problem,
+                    self.reward_strategy,
+                    seed=self.seed,
+                    **self.reward_params
+                )
+                
+                # Crear agente de ejemplo para obtener parámetros finales
+                sample_agent = AgentFactory.create_agent(sample_env, **self.agent_params)
+                
+                # Usar el método de extracción completa
+                from jobshop_rl.experiments.factory import ExperimentFactory
+                final_config = ExperimentFactory._extract_complete_configuration(
+                    sample_env, sample_agent, experiment_name, 0, self.reward_strategy, 
+                    sample_problem.get('problem_id', 'batch_sample'), self.seed, 
+                    False, False, False
+                )
+                
+                logger.info("Parámetros adaptive completos capturados del primer problema de entrenamiento")
+                
+            except Exception as e:
+                logger.warning(f"No se pudieron capturar parámetros adaptive completos: {str(e)}")
+                # Usar configuración básica como fallback
+                final_config = self._create_basic_config()
+        else:
+            # No es adaptive o no hay problemas, usar configuración básica
+            final_config = self._create_basic_config()
+        
+        # Sobrescribir metadatos específicos del batch
+        final_config.update({
+            'experiment_type': 'batch',
+            'experiment_name': experiment_name,
+            'reward_strategy': self.reward_strategy,
+            'seed': self.seed,
+            'training_problems_count': len(self.training_problems),
+            'test_problems_count': len(self.test_problems),
+            'output_dir': self.output_dir,
+            'adaptive_modifications_applied': self.reward_strategy.lower() == "adaptive"
+        })
+        
+        # Añadir lista de problemas de entrenamiento
+        training_problem_names = []
+        for problem in self.training_problems:
+            name = problem.get('name') or problem.get('problem_id') or 'unknown'
+            training_problem_names.append(name)
+        final_config['training_problems'] = training_problem_names
+        
+        # Añadir lista de problemas de test
+        test_problem_names = []
+        for problem in self.test_problems:
+            name = problem.get('name') or problem.get('problem_id') or 'unknown'
+            test_problem_names.append(name)
+        final_config['test_problems'] = test_problem_names
+        
+        # Generar nombre de experimento
+        if self.experiment_name:
+            experiment_name = self.experiment_name
+        else:
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            experiment_name = f"batch_experiment_{timestamp}"
+        
+        # Usar directamente ExperimentConfig.save_config()
+        try:
+            config_path = ExperimentConfig.save_config(
+                final_config, 
+                experiment_name=experiment_name,
+                output_dir=os.path.join(self.output_dir, "configs")
+            )
+            logger.info(f"Configuración completa del experimento por lotes guardada en: {config_path}")
+        except Exception as e:
+            logger.error(f"Error al guardar configuración: {str(e)}")
+            # Intentar guardar en directorio alternativo
+            try:
+                config_path = ExperimentConfig.save_config(
+                    final_config, 
+                    experiment_name=experiment_name,
+                    output_dir="outputs/configs"
+                )
+                logger.info(f"Configuración guardada en directorio alternativo: {config_path}")
+            except Exception as e2:
+                logger.error(f"Error al guardar en directorio alternativo: {str(e2)}")
+    
+    def _create_basic_config(self):
+        """Crea configuración básica cuando no se pueden capturar parámetros adaptive."""
+        return {
+            'experiment_type': 'batch',
+            'reward_strategy': self.reward_strategy,
+            'seed': self.seed,
+            'agent_params': self.agent_params,
+            'reward_params': self.reward_params,
+            'note': 'Configuración básica - no se pudieron capturar parámetros adaptive'
+        }

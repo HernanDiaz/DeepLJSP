@@ -221,13 +221,6 @@ results = experimenter.evaluate_on_test_set(best_agent)
 - ✅ Experimentación por lotes
 - ✅ Sistema de checkpoints
 
-### Posibles Mejoras Futuras
-- Integración con más algoritmos de RL (SAC, A3C)
-- Soporte para problemas con máquinas paralelas
-- Interfaz web para visualización
-- Optimización de hiperparámetros automática
-- Paralelización de entrenamiento
-
 ## Archivos Importantes para Revisión
 
 ### Configuración Principal
@@ -247,80 +240,17 @@ results = experimenter.evaluate_on_test_set(best_agent)
 
 Este proyecto implementa un sistema completo y modular de aprendizaje por refuerzo para Job Shop Scheduling, con arquitectura profesional, documentación extensa y múltiples características avanzadas.
 
-## Problema con BatchNorm en Instancias Grandes (50x20 y 100x20)
+python -m jobshop_rl.main --mode batch --train-problem "tai20_15_01, tai20_15_02, tai20_15_03,tai20_15_04" --eval-problem "tai20_15_05,tai20_15_06,tai20_15_07,tai20_15_08,tai20_15_09,tai20_15_10" --episodes 50 --reward adaptive --output-dir outputs/taillard_15x15_experiment --csv-logging --visualize --save-plots --use-ortools --seed 2
+Archivos con configuración:
+large_problem_config.py
+network_settings.py
+network_config.py
+main.py
+Problemas: 
+- valores por defecto en main
+- valores configurados en main
+- network setting y network config redundantes
 
-### Descripción del Problema
-Al entrenar en problemas grandes (50x20 y 100x20), se observó alta variabilidad en los resultados:
-- Con algunas semillas: Excelentes resultados tanto en entrenamiento como en test
-- Con otras semillas: Resultados mucho peores en test que en entrenamiento
-- La variabilidad era excesiva e impredecible
 
-### Posible causa
-Las capas BatchNorm (Batch Normalization) causaban inestabilidad debido a:
-1. **Estadísticas de batch pequeño**: Durante el entrenamiento con PPO, a veces se procesan pocos ejemplos
-2. **Cambio de distribución**: Las estadísticas aprendidas en un problema no se generalizan bien a otros
-3. **Modo train vs eval**: Diferencias significativas entre las estadísticas del entrenamiento y evaluación
 
-### Solución Temporal Implementada
-Se reemplazó BatchNorm con LayerNorm, lo cual:
-- ✅ Eliminó la variabilidad extrema
-- ❌ Redujo el rendimiento máximo posible
-- ❌ Los resultados son más estables pero no tan buenos como los mejores con BatchNorm
 
-### Solución Propuesta para Reimplementar BatchNorm
-
-#### 1. **BatchNorm Estabilizado**
-```python
-class StabilizedBatchNorm1d(nn.Module):
-    def __init__(self, num_features, momentum=0.01, eps=1e-3):
-        # Usar momentum muy bajo (0.01) para estadísticas más estables
-        # Aumentar eps para evitar divisiones problemáticas
-```
-
-#### 2. **Tamaño de Batch Mínimo Garantizado**
-- Problemas pequeños (≤20x20): min_batch_size = 8
-- Problemas medianos (≤50x20): min_batch_size = 16-32  
-- Problemas grandes (100x20): min_batch_size = 64
-- Acumular experiencias si es necesario antes de actualizar
-
-#### 3. **Manejo Especial para Batch Size = 1**
-```python
-if batch_size == 1 and self.training:
-    # Usar Instance Normalization o modo eval temporalmente
-    # No actualizar running stats con un solo ejemplo
-```
-
-#### 4. **Reset de Estadísticas Entre Problemas**
-```python
-def reset_batch_norm_stats(self):
-    for module in self.modules():
-        if isinstance(module, nn.BatchNorm1d):
-            module.reset_running_stats()
-            module.momentum = 0.01  # Momentum bajo
-```
-
-#### 5. **Gradient Accumulation**
-Para problemas grandes, acumular gradientes sobre múltiples mini-batches:
-- 50x20: accumulation_steps = 4
-- 100x20: accumulation_steps = 8
-
-#### 6. **Warmup del Learning Rate**
-Implementar warmup para estabilizar el inicio del entrenamiento:
-```python
-if episode < warmup_episodes:
-    lr = base_lr * (episode / warmup_episodes) ** 2
-```
-
-### Implementación Recomendada
-
-1. **Crear una versión mejorada de BatchNorm** que maneje automáticamente casos edge
-2. **Modificar el PPOAgent** para garantizar tamaños de batch mínimos
-3. **Añadir configuración adaptativa** según el tamaño del problema
-4. **Implementar warmup y gradient accumulation** para estabilidad
-5. **Mantener LayerNorm como opción** para problemas donde BatchNorm falle
-
-### Resultados Esperados
-- Mantener los buenos resultados que BatchNorm puede dar
-- Eliminar la variabilidad entre semillas
-- Mejorar la estabilidad sin sacrificar rendimiento
-- Resultados consistentes en problemas grandes

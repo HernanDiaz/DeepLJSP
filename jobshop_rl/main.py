@@ -82,6 +82,10 @@ def parse_args():
                        help='Nombre del archivo CSV para logging de métricas')
     parser.add_argument('--experiment-name', type=str, default=None,
                        help='Nombre del experimento (para identificación y reproducibilidad)')
+    parser.add_argument('--save-config', action='store_true', default=True,
+                       help='Guardar configuración del experimento en JSON (activado por defecto)')
+    parser.add_argument('--no-save-config', action='store_true',
+                       help='Deshabilitar guardado de configuración')
     
     return parser.parse_args()
 
@@ -169,7 +173,8 @@ def run_single_experiment(args):
         evaluate_other_problem=evaluate_other_problem,
         evaluation_problem_id=args.eval_problem,
         use_ortools=args.use_ortools,
-        ortools_time_limit=args.ortools_time_limit
+        ortools_time_limit=args.ortools_time_limit,
+        save_config=not args.no_save_config
     )
     
     total_time = time.time() - start_time
@@ -332,6 +337,14 @@ def run_batch_experiment(args):
         seed=args.seed
     )
     
+    # Configurar nombre del experimento si se proporcionó
+    if args.experiment_name:
+        experimenter.experiment_name = args.experiment_name
+    
+    # Configurar guardado de configuración
+    if args.no_save_config:
+        experimenter.save_config = False
+    
     # Si tenemos problemas cargados por ID, sobreescribir los problemas del experimentador
     if training_problems:
         experimenter.training_problems = training_problems
@@ -340,6 +353,10 @@ def run_batch_experiment(args):
     if test_problems:
         experimenter.test_problems = test_problems
         logging.info(f"Usando {len(test_problems)} problemas específicos para evaluación")
+    
+    # Guardar configuración del experimento DESPUÉS de asignar los problemas
+    if not args.no_save_config:
+        experimenter.save_batch_config()
     
     # Verificar que haya problemas para entrenar
     if not experimenter.training_problems:
