@@ -531,6 +531,13 @@ class BatchExperimenter:
         
         logger.info(f"Guardando configuración: {len(self.training_problems)} problemas de entrenamiento, {len(self.test_problems)} problemas de test")
         
+        # Generar nombre de experimento PRIMERO
+        if self.experiment_name:
+            experiment_name = self.experiment_name
+        else:
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            experiment_name = f"batch_experiment_{timestamp}"
+        
         # Para capturar parámetros adaptive, necesitamos crear un entorno de ejemplo
         sample_env = None
         final_config = {}
@@ -592,13 +599,6 @@ class BatchExperimenter:
             name = problem.get('name') or problem.get('problem_id') or 'unknown'
             test_problem_names.append(name)
         final_config['test_problems'] = test_problem_names
-        
-        # Generar nombre de experimento
-        if self.experiment_name:
-            experiment_name = self.experiment_name
-        else:
-            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            experiment_name = f"batch_experiment_{timestamp}"
         
         # Usar directamente ExperimentConfig.save_config()
         try:
