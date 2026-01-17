@@ -252,7 +252,6 @@ The project includes several scripts to simplify experimentation:
 ## 📚 References
 
 - [PPO Tutorial](https://spinningup.openai.com/en/latest/algorithms/ppo.html)  
-- [Job Shop Scheduling Visualization](https://www.youtube.com/watch?v=lbCrQ7iqRuo)  
 
 ## 📄 License
 
@@ -264,9 +263,9 @@ If you use this code in your research, please cite it:
 
 ```
 @software{jobshop_rl,
-  author = {Your Name},
-  title = {JobShopRL: A Modular Reinforcement Learning System for Job Shop Scheduling},
-  year = {2023},
-  url = {https://github.com/username/jobshop_rl}
+  author = {Hernán Díaz Rodríguez},
+  title = {DeepL JSP: A Modular Reinforcement Learning System for Job Shop Scheduling},
+  year = {2025},
+  url = {https://github.com/HernanDiaz/DeepLJSP}
 }
 ```
