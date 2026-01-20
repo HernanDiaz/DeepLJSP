@@ -60,7 +60,14 @@ class TrainingLogger:
                 self.filename = f"{self.filename}.csv"
         
         self.data = []
-        self.header = ['episode', 'current_makespan', 'best_makespan', 'avg_makespan_30', 'training_time']
+        # Header expandido para soportar intervalos
+        self.header = [
+            'episode', 
+            'current_makespan_lower', 'current_makespan_upper',
+            'best_makespan_lower', 'best_makespan_upper',
+            'avg_makespan_lower', 'avg_makespan_upper',
+            'training_time'
+        ]
         
         logger.info(f"TrainingLogger inicializado. Datos se guardarán en: {self.filename}")
         
@@ -84,19 +91,60 @@ class TrainingLogger:
                 writer = csv.writer(f)
                 writer.writerow(self.header)
     
-    def log_step(self, episode: int, current_makespan: float, best_makespan: float, 
-                 avg_makespan: float, training_time: float):
+    def log_step(self, episode: int, 
+                 current_makespan: float = None,  # Mantener para compatibilidad
+                 best_makespan: float = None,     # Mantener para compatibilidad
+                 avg_makespan: float = None,      # Mantener para compatibilidad
+                 current_makespan_lower: float = None,
+                 current_makespan_upper: float = None,
+                 best_makespan_lower: float = None,
+                 best_makespan_upper: float = None,
+                 avg_makespan_lower: float = None,
+                 avg_makespan_upper: float = None,
+                 training_time: float = 0.0):
         """
         Registra los datos de un paso de entrenamiento.
+        Soporta tanto valores escalares (para compatibilidad) como intervalos.
         
         Args:
             episode: Número de episodio
-            current_makespan: Makespan del episodio actual
-            best_makespan: Mejor makespan encontrado hasta el momento
-            avg_makespan: Makespan promedio de los últimos N episodios
+            current_makespan: Makespan del episodio actual (escalar, para compatibilidad)
+            best_makespan: Mejor makespan encontrado (escalar, para compatibilidad)
+            avg_makespan: Makespan promedio (escalar, para compatibilidad)
+            current_makespan_lower: Límite inferior del makespan actual
+            current_makespan_upper: Límite superior del makespan actual
+            best_makespan_lower: Límite inferior del mejor makespan
+            best_makespan_upper: Límite superior del mejor makespan
+            avg_makespan_lower: Límite inferior del makespan promedio
+            avg_makespan_upper: Límite superior del makespan promedio
             training_time: Tiempo de entrenamiento transcurrido en segundos
         """
-        row = [episode, current_makespan, best_makespan, avg_makespan, training_time]
+        # Compatibilidad hacia atrás: si se pasan valores escalares, usarlos para ambos límites
+        if current_makespan_lower is None and current_makespan is not None:
+            current_makespan_lower = current_makespan
+            current_makespan_upper = current_makespan
+        if best_makespan_lower is None and best_makespan is not None:
+            best_makespan_lower = best_makespan
+            best_makespan_upper = best_makespan
+        if avg_makespan_lower is None and avg_makespan is not None:
+            avg_makespan_lower = avg_makespan
+            avg_makespan_upper = avg_makespan
+        
+        # Valores por defecto si no se proporciona nada
+        current_makespan_lower = current_makespan_lower or 0.0
+        current_makespan_upper = current_makespan_upper or 0.0
+        best_makespan_lower = best_makespan_lower or 0.0
+        best_makespan_upper = best_makespan_upper or 0.0
+        avg_makespan_lower = avg_makespan_lower or 0.0
+        avg_makespan_upper = avg_makespan_upper or 0.0
+        
+        row = [
+            episode, 
+            current_makespan_lower, current_makespan_upper,
+            best_makespan_lower, best_makespan_upper,
+            avg_makespan_lower, avg_makespan_upper,
+            training_time
+        ]
         self.data.append(row)
         
         # Cada 10 registros o múltiplo de 10, guardar a disco

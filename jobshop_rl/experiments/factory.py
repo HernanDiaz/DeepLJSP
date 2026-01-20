@@ -158,9 +158,12 @@ class AgentFactory:
         Returns:
             Agente PPO configurado
         """
+        # Detectar automáticamente el tamaño de características basándose en si el problema tiene intervalos
+        feature_dim = 10 if env.has_intervals else 7
+        
         # Parámetros por defecto
         default_params = {
-            "feature_dim": 7,
+            "feature_dim": feature_dim,
             "hidden_dim": 128,
             "lr": 0.0003,
             "gamma": 0.99,

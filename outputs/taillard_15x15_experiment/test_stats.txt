@@ -1,0 +1,15 @@
+Total problemas evaluados: 6
+Tiempo total de evaluación: 12.18 segundos
+Makespan promedio: 2603.33
+
+===== Comparación con heurísticas =====
+vs LPT: 73.31% de mejora promedio
+vs MOR: -21.35% de mejora promedio
+vs MWKR: -13.97% de mejora promedio
+vs OR-Tools: 72.13% de mejora promedio
+vs Random: 21.54% de mejora promedio
+vs SPT: 72.13% de mejora promedio
+
+===== Comparación con OR-Tools =====
+Gap promedio vs OR-Tools: -72.13%
+El modelo fue mejor o igual que OR-Tools en 6/6 casos

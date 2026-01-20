@@ -269,3 +269,5 @@ If you use this code in your research, please cite it:
   url = {https://github.com/HernanDiaz/DeepLJSP}
 }
 ```
+
+python -m jobshop_rl.main --mode batch --train-problem "tai20_15_01, tai20_15_02, tai20_15_03,tai20_15_04" --eval-problem "tai20_15_05,tai20_15_06,tai20_15_07,tai20_15_08,tai20_15_09,tai20_15_10" --episodes 50 --reward adaptive --output-dir outputs/taillard_15x15_experiment --csv-logging --visualize --save-plots --use-ortools --seed 1

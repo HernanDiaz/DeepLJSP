@@ -4,6 +4,7 @@ Paquete de datos para problemas de Job Shop Scheduling.
 
 # Problemas estándar
 from jobshop_rl.data.ft10 import get_ft10_problem
+from jobshop_rl.data.ft10_interval import get_ft10_interval_problem
 from jobshop_rl.data.ft20 import get_ft20_problem
 
 # Problemas ABZ
@@ -30,6 +31,7 @@ from jobshop_rl.data.problem_loader import ProblemLoader
 # Diccionario para registrar todos los problemas
 PROBLEM_REGISTRY = {
     'ft10': get_ft10_problem,
+    'ft10_interval': get_ft10_interval_problem,
     'ft20': get_ft20_problem,
     'abz7': get_abz7_problem,
     'abz8': get_abz8_problem,
@@ -107,9 +109,47 @@ def register_special_problem(filename):
 
 # Cargar problemas especiales (.F.15_01)
 import os
-for filename in os.listdir(os.path.dirname(__file__)):
+data_dir = os.path.dirname(__file__)
+
+# Registrar archivos con .F.15_01
+for filename in os.listdir(data_dir):
     if filename.endswith('.py') and '.F.15_01' in filename:
         register_special_problem(filename)
+
+# AUTO-REGISTRO: Cargar todos los archivos *_interval.py automáticamente
+print("Registrando problemas con intervalos...")
+for filename in os.listdir(data_dir):
+    if filename.endswith('_interval.py') and not filename.startswith('__'):
+        try:
+            # Extraer el nombre del módulo (sin .py)
+            module_name = filename[:-3]
+            
+            # Crear el ID del problema (sin el sufijo _interval)
+            problem_id = module_name.replace('_interval', '')
+            
+            # Si ya está registrado, usar el nombre con _interval
+            if problem_id in PROBLEM_REGISTRY:
+                problem_id = module_name  # Usar nombre completo con _interval
+            
+            # Nombre de la función getter
+            func_name = f"get_{module_name}_problem"
+            
+            # Importar dinámicamente el módulo
+            import importlib
+            module = importlib.import_module(f'jobshop_rl.data.{module_name}')
+            
+            # Obtener la función getter
+            if hasattr(module, func_name):
+                getter_func = getattr(module, func_name)
+                PROBLEM_REGISTRY[problem_id] = getter_func
+                print(f"  ✓ Registrado: {problem_id}")
+            else:
+                print(f"  ⚠️  No se encontró {func_name} en {filename}")
+                
+        except Exception as e:
+            print(f"  ❌ Error registrando {filename}: {str(e)}")
+
+print(f"Total de problemas registrados: {len(PROBLEM_REGISTRY)}")
 
 # Lista de exportación
 __all__ = ['ProblemLoader', 'PROBLEM_REGISTRY'] + list(filter(lambda x: x.startswith('get_') and x.endswith('_problem'), globals().keys()))

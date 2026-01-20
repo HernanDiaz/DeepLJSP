@@ -41,6 +41,8 @@ class HeuristicEvaluator:
         Returns:
             Tupla con (makespan resultante, tiempo de ejecución en segundos)
         """
+        from jobshop_rl.models.interval import Interval
+        
         # Crear una copia del entorno para no afectar a otros experimentos
         env_copy = deepcopy(self.env)
         state = env_copy.reset()
@@ -63,7 +65,16 @@ class HeuristicEvaluator:
                 state = next_state
         
         execution_time = time.time() - start_time
-        makespan = max(env_copy.job_completion_time) if done else float('inf')
+        
+        if done:
+            max_time = max(env_copy.job_completion_time)
+            # Manejar tanto valores escalares como intervalos
+            if isinstance(max_time, Interval):
+                makespan = float(max_time.upper)  # Usar límite superior
+            else:
+                makespan = float(max_time)
+        else:
+            makespan = float('inf')
         
         self.results[name] = makespan
         self.execution_times[name] = execution_time

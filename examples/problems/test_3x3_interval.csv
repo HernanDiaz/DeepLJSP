@@ -1,0 +1,4 @@
+machine_0,duration_0_min,duration_0_max,machine_1,duration_1_min,duration_1_max,machine_2,duration_2_min,duration_2_max
+0,5,7,1,3,5,2,8,10
+1,4,5,0,7,8,2,2,3
+2,3,9,1,5,7,0,6,10

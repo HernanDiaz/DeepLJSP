@@ -291,8 +291,14 @@ class BatchExperimenter:
             
             # Transferir el modelo al nuevo entorno
             test_agent = AgentFactory.create_agent(env, **self.agent_params)
-            test_agent.policy.load_state_dict(agent.policy.state_dict())
-            test_agent.value.load_state_dict(agent.value.state_dict())
+            
+            # Cargar el mejor modelo guardado durante el entrenamiento
+            if hasattr(agent, 'best_model_state') and agent.best_model_state:
+                test_agent.policy.load_state_dict(agent.best_model_state["policy"])
+                test_agent.value.load_state_dict(agent.best_model_state["value"])
+            else:
+                test_agent.policy.load_state_dict(agent.policy.state_dict())
+                test_agent.value.load_state_dict(agent.value.state_dict())
             
             # Evaluar
             start_time = time.time()
@@ -338,7 +344,7 @@ class BatchExperimenter:
             if schedule:
                 try:
                     # Ordenar el schedule por tiempo de inicio
-                    sorted_schedule = sorted(schedule, key=lambda x: x.get('start', 0))
+                    sorted_schedule = sorted(schedule, key=lambda x: x.get('start', 0) if not hasattr(x.get('start', 0), 'lower') else x.get('start', 0).lower)
                     
                     # Crear una representación del orden de tareas como string para el CSV
                     task_order = []
@@ -350,18 +356,48 @@ class BatchExperimenter:
                         machine = task.get('machine', '?')
                         start = task.get('start', '?')
                         end = task.get('end', '?')
-                        task_order.append(f"(J{job_id}-O{op_id}-M{machine}:{start}-{end})")
+                        
+                        # Convertir intervalos a string para el CSV
+                        if hasattr(start, 'lower'):
+                            start_str = f"[{start.lower},{start.upper}]"
+                        else:
+                            start_str = str(start)
+                        
+                        if hasattr(end, 'lower'):
+                            end_str = f"[{end.lower},{end.upper}]"
+                        else:
+                            end_str = str(end)
+                            
+                        task_order.append(f"(J{job_id}-O{op_id}-M{machine}:{start_str}-{end_str})")
                     
                     result['task_order'] = ",".join(task_order)
                     
-                    # También guardar un archivo JSON con la planificación completa para más detalle
+                    # Convertir schedule a formato JSON-serializable
+                    json_schedule = []
+                    for task in schedule:
+                        json_task = {}
+                        for key, value in task.items():
+                            if hasattr(value, 'lower'):
+                                # Es un Interval - convertir a dict
+                                json_task[key] = {
+                                    'lower': float(value.lower),
+                                    'upper': float(value.upper)
+                                }
+                            else:
+                                # Valor normal
+                                json_task[key] = value
+                        json_schedule.append(json_task)
+                    
+                    # Guardar el archivo JSON con la planificación completa
                     import json
                     schedule_file = os.path.join(plots_dir, f"{problem_name}_schedule.json")
                     with open(schedule_file, 'w') as f:
-                        json.dump(schedule, f, indent=2)
+                        json.dump(json_schedule, f, indent=2)
                 except Exception as e:
                     # Si hay algún error, registrarlo pero continuar con la evaluación
                     logger.error(f"Error al procesar el orden de tareas: {str(e)}")
+                    import traceback
+                    logger.error(traceback.format_exc())
                     # Guardar el schedule como está, sin procesamiento
                     result['task_order'] = "Error al procesar el orden de tareas"
             

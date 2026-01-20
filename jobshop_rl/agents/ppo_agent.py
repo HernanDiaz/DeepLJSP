@@ -155,6 +155,7 @@ class PPOAgent(Agent):
 
         # Tracking del rendimiento
         self.best_makespan = float('inf')
+        self.best_makespan_lower = float('inf')  # Para problemas con intervalos
         self.best_schedule = None
         self.best_makespan_history = None
         self.best_model_state = None  # Para guardar el estado del mejor modelo
@@ -179,12 +180,42 @@ class PPOAgent(Agent):
         self.checkpoint_manager = CheckpointManager()
 
     def _state_to_value_input(self, state: Dict) -> torch.Tensor:
-        """Convierte el estado a un tensor para la red de valor"""
+        """
+        Convierte el estado a un tensor para la red de valor.
+        Maneja tanto valores escalares como intervalos.
+        """
+        from jobshop_rl.models.interval import Interval
+        
         feature_vector = np.zeros(self.state_dim)
+        
+        # Job status (siempre escalar)
         feature_vector[:self.env.num_jobs] = state['job_status']
-        feature_vector[self.env.num_jobs:self.env.num_jobs+self.env.num_machines] = state['machine_completion_time']
-        feature_vector[-2] = max(state['machine_completion_time'])
-        feature_vector[-1] = sum(state['machine_completion_time']) / self.env.num_machines
+        
+        # Machine completion times (pueden ser intervalos)
+        machine_times = state['machine_completion_time']
+        for i, time in enumerate(machine_times):
+            if isinstance(time, Interval):
+                # Usar el límite superior para ser conservador
+                feature_vector[self.env.num_jobs + i] = float(time.upper)
+            else:
+                feature_vector[self.env.num_jobs + i] = float(time)
+        
+        # Max machine completion time
+        max_time = max(machine_times)
+        if isinstance(max_time, Interval):
+            feature_vector[-2] = float(max_time.upper)
+        else:
+            feature_vector[-2] = float(max_time)
+        
+        # Average machine completion time
+        total_time = 0.0
+        for time in machine_times:
+            if isinstance(time, Interval):
+                total_time += float(time.upper)
+            else:
+                total_time += float(time)
+        feature_vector[-1] = total_time / self.env.num_machines
+        
         return torch.FloatTensor(feature_vector)
 
     def select_action(self, state: Dict, training: bool = True) -> Tuple[Optional[int], Optional[torch.Tensor], Optional[torch.Tensor]]:
@@ -293,16 +324,29 @@ class PPOAgent(Agent):
             return 0.0
             
         # Calcular promedios sobre los últimos log_interval episodios
-        avg_makespan = sum(self.training_makespan_history[-log_interval:]) / min(log_interval, len(self.training_makespan_history[-log_interval:]))
+        recent_makespans = self.training_makespan_history[-log_interval:]
+        avg_makespan_lower = sum(m[0] for m in recent_makespans) / len(recent_makespans)
+        avg_makespan_upper = sum(m[1] for m in recent_makespans) / len(recent_makespans)
         avg_reward = sum(self.episode_rewards[-log_interval:]) / min(log_interval, len(self.episode_rewards[-log_interval:]))
         
         training_time = time.time() - self.training_start_time
         
+        # Determinar si mostrar como intervalo o como escalar
+        if avg_makespan_lower == avg_makespan_upper:
+            # Problema escalar
+            makespan_str = f"{avg_makespan_upper:.2f}"
+            best_str = f"{self.best_makespan}"
+        else:
+            # Problema con intervalos
+            makespan_str = f"[{avg_makespan_lower:.1f}, {avg_makespan_upper:.1f}]"
+            best_lower = getattr(self, 'best_makespan_lower', self.best_makespan)
+            best_str = f"[{best_lower:.1f}, {self.best_makespan:.1f}]"
+        
         # Registrar progreso
         logger.info(f"Episodio {current_episode}/{total_episodes}, "
                     f"Recompensa promedio: {avg_reward:.4f}, "
-                    f"Makespan promedio: {avg_makespan:.2f}, "
-                    f"Mejor: {self.best_makespan}, "
+                    f"Makespan promedio: {makespan_str}, "
+                    f"Mejor: {best_str}, "
                     f"Tiempo: {training_time:.2f}s")
         
         return avg_reward
@@ -525,15 +569,39 @@ class PPOAgent(Agent):
             info: Información del último step
             done: Si el episodio terminó correctamente
         """
+        from jobshop_rl.models.interval import Interval
+        
         # Registrar makespan si el episodio terminó correctamente
         if done and info.get('makespan') is not None:
             makespan = info['makespan']
-            self.training_makespan_history.append(makespan)
+            
+            # Manejar tanto Interval como valores escalares
+            if isinstance(makespan, Interval):
+                makespan_lower = float(makespan.lower)
+                makespan_upper = float(makespan.upper)
+                makespan_str = f"[{makespan_lower:.1f}, {makespan_upper:.1f}]"
+            else:
+                makespan_lower = float(makespan)
+                makespan_upper = float(makespan)
+                makespan_str = f"{makespan}"
+            
+            # Guardar el intervalo completo como tupla (lower, upper)
+            self.training_makespan_history.append((makespan_lower, makespan_upper))
 
-            if makespan < self.best_makespan:
-                self.best_makespan = makespan
+            # Para comparar, usar el límite superior (peor caso = conservador)
+            if makespan_upper < self.best_makespan:
+                self.best_makespan = makespan_upper
+                self.best_makespan_lower = makespan_lower
                 self.best_schedule = deepcopy(self.env.schedule_history)
-                self.best_makespan_history = deepcopy(self.env.makespan_history)
+                
+                # Convertir makespan_history a tuplas si contiene intervalos
+                converted_history = []
+                for m in self.env.makespan_history:
+                    if isinstance(m, Interval):
+                        converted_history.append((float(m.lower), float(m.upper)))
+                    else:
+                        converted_history.append((float(m), float(m)))
+                self.best_makespan_history = converted_history
                 
                 # Guardar también el estado del modelo para uso futuro
                 self.best_model_state = {
@@ -541,7 +609,7 @@ class PPOAgent(Agent):
                     "value": deepcopy(self.value.state_dict())
                 }
                 
-                logger.info(f"Nuevo mejor makespan: {makespan}")
+                logger.info(f"Nuevo mejor makespan: {makespan_str}")
                 
                 # Comentado el guardado del mejor checkpoint para mejorar eficiencia
                 # self.save_best_checkpoint()
@@ -572,9 +640,12 @@ class PPOAgent(Agent):
                 # Calcular makespan promedio de los últimos 30 episodios (o menos si no hay suficientes)
                 window_size = min(30, len(self.training_makespan_history))
                 if window_size > 0:
-                    avg_makespan = sum(self.training_makespan_history[-window_size:]) / window_size
+                    recent_makespans = self.training_makespan_history[-window_size:]
+                    avg_makespan_lower = sum(m[0] for m in recent_makespans) / window_size
+                    avg_makespan_upper = sum(m[1] for m in recent_makespans) / window_size
                 else:
-                    avg_makespan = 0
+                    avg_makespan_lower = 0
+                    avg_makespan_upper = 0
                     
                 # Calcular tiempo transcurrido
                 if self.training_start_time:
@@ -582,12 +653,21 @@ class PPOAgent(Agent):
                 else:
                     training_time = 0
                     
-                current_makespan = self.training_makespan_history[-1] if self.training_makespan_history else 0
+                if self.training_makespan_history:
+                    current_makespan_lower, current_makespan_upper = self.training_makespan_history[-1]
+                else:
+                    current_makespan_lower = 0
+                    current_makespan_upper = 0
+                
+                # Log con información de intervalos
                 self.csv_logger.log_step(
                     episode=self.total_episodes,
-                    current_makespan=current_makespan,
-                    best_makespan=self.best_makespan,
-                    avg_makespan=avg_makespan,
+                    current_makespan_lower=current_makespan_lower,
+                    current_makespan_upper=current_makespan_upper,
+                    best_makespan_lower=getattr(self, 'best_makespan_lower', self.best_makespan),
+                    best_makespan_upper=self.best_makespan,
+                    avg_makespan_lower=avg_makespan_lower,
+                    avg_makespan_upper=avg_makespan_upper,
                     training_time=training_time
                 )
     
@@ -727,23 +807,6 @@ class PPOAgent(Agent):
         if self.best_model_state:
             logger.info(f"Guardando el mejor modelo encontrado (makespan: {self.best_makespan})")
             self.save_best_checkpoint()
-            
-            # Cargar el mejor modelo para la evaluación final
-            policy_backup = self.policy.state_dict().copy()
-            value_backup = self.value.state_dict().copy()
-            
-            # Cargar el mejor modelo
-            self.policy.load_state_dict(self.best_model_state["policy"])
-            self.value.load_state_dict(self.best_model_state["value"])
-            
-            # Evaluación final con el mejor modelo
-            logger.info("Evaluando el mejor modelo encontrado...")
-            best_makespan, best_schedule, _, _ = self.evaluate_policy()
-            logger.info(f"Makespan con el mejor modelo: {best_makespan}")
-            
-            # Restaurar el modelo actual
-            self.policy.load_state_dict(policy_backup)
-            self.value.load_state_dict(value_backup)
         
         # Registrar el registro final en el CSV si está configurado
         if self.csv_logger:
@@ -834,11 +897,22 @@ class PPOAgent(Agent):
 
     def evaluate_policy(self) -> Tuple[float, List[Dict], List[float], float]:
         """Evalúa la política actual en un episodio completo"""
+        from jobshop_rl.models.interval import Interval
+        
         start_time = time.time()
         done, info = self._run_episode_without_training()
         execution_time = time.time() - start_time
         
-        makespan = max(self.env.job_completion_time) if done else float('inf')
+        if done:
+            # Manejar tanto valores escalares como intervalos
+            max_time = max(self.env.job_completion_time)
+            if isinstance(max_time, Interval):
+                makespan = float(max_time.upper)  # Usar límite superior
+            else:
+                makespan = float(max_time)
+        else:
+            makespan = float('inf')
+            
         return makespan, self.env.schedule_history, self.env.makespan_history, execution_time
 
     def plot_training_history(self, optimal_makespan: Optional[int] = 930):
@@ -939,11 +1013,25 @@ class PPOAgent(Agent):
         Returns:
             Figura de matplotlib con la visualización
         """
+        from jobshop_rl.models.interval import Interval
+        
         if not self.best_makespan_history:
             return None
+        
+        # Convertir Intervals a tuplas (lower, upper) para la visualización
+        converted_history = []
+        for item in self.best_makespan_history:
+            if isinstance(item, Interval):
+                converted_history.append((float(item.lower), float(item.upper)))
+            elif isinstance(item, (tuple, list)) and len(item) == 2:
+                # Ya es tupla
+                converted_history.append(item)
+            else:
+                # Escalar - convertir a tupla (value, value)
+                converted_history.append((float(item), float(item)))
             
         return plot_makespan_history(
-            makespan_history=self.best_makespan_history,
+            makespan_history=converted_history,
             title='Evolución del Makespan de la Mejor Solución',
             optimal_makespan=optimal_makespan
         )
