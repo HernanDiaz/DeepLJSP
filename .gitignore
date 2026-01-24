@@ -1,0 +1,78 @@
+############################
+# IDEs
+############################
+
+.idea/
+.vscode/
+*.iml
+
+
+############################
+# Python
+############################
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Entornos virtuales
+venv/
+.venv/
+env/
+ENV/
+
+
+############################
+# Testing / coverage
+############################
+
+.pytest_cache/
+.coverage
+htmlcov/
+
+
+############################
+# Jupyter
+############################
+
+.ipynb_checkpoints/
+
+
+############################
+# Experimentos / resultados
+############################
+
+# Logs, checkpoints, métricas, plots, resultados
+outputs/
+logs/
+runs/
+checkpoints/
+
+# Modelos entrenados
+*.pt
+*.pth
+*.ckpt
+
+
+############################
+# Datos generados
+############################
+
+# Si en el futuro generas datasets derivados
+data/processed/
+data/interim/
+
+
+############################
+# Sistema
+############################
+
+.DS_Store
+Thumbs.db
+
+
+############################
+# Otros
+############################
+
+*.log

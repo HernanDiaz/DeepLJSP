@@ -1,3 +1,0 @@
-Total problemas entrenados: 4
-Tiempo total de entrenamiento: 1318.24 segundos
-Mejor makespan global: 2798.0
