@@ -63,8 +63,8 @@ class LocalImprovementRewardComponent(RewardComponent):
         Calcula la recompensa basada en la mejora local.
         
         Para problemas con intervalos:
-        - Usa comparación lexicográfica para determinar mejoras
-        - Usa upper bound para el cálculo numérico de la recompensa
+        - Usa upper bound para comparar (peor caso)
+        - PENALIZA empeoramientos 2x más fuerte que recompensa mejoras
         """
         if action is None or not state['eligible_ops']:
             return 0
@@ -77,18 +77,28 @@ class LocalImprovementRewardComponent(RewardComponent):
         
         # Mejora relativa desde la última acción
         if self.last_projected_makespan is not None:
-            # Check if there's an improvement (lexicographic for intervals)
-            if self.last_projected_makespan > current_projected_makespan:
-                # Convert to scalars for reward calculation
-                last_value = self._get_scalar_value(self.last_projected_makespan)
-                current_value = self._get_scalar_value(current_projected_makespan)
+            # Usar upper bound para comparar (peor caso)
+            if isinstance(self.last_projected_makespan, Interval):
+                last_upper = self.last_projected_makespan.upper
+            else:
+                last_upper = float(self.last_projected_makespan)
                 
-                improvement = last_value - current_value
-                
-                # Normalizar y solo recompensar mejoras
-                if improvement > 0:
-                    local_reward = improvement / (self.makespan_scale / 10)
-                    reward = self.weight * local_reward
+            if isinstance(current_projected_makespan, Interval):
+                current_upper = current_projected_makespan.upper
+            else:
+                current_upper = float(current_projected_makespan)
+            
+            # Calcular cambio (positivo = mejora, negativo = empeoramiento)
+            change = last_upper - current_upper
+            
+            # RECOMPENSAR mejoras, PENALIZAR empeoramientos
+            if change != 0:
+                normalized_change = change / (self.makespan_scale / 10)
+                # Penalizar empeoramientos 2x más que recompensar mejoras
+                if change < 0:  # Empeoró
+                    reward = self.weight * normalized_change * 2.0
+                else:  # Mejoró
+                    reward = self.weight * normalized_change
         
         # Actualizar para el próximo cálculo
         self.last_projected_makespan = current_projected_makespan

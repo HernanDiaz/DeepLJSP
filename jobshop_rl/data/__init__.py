@@ -116,38 +116,7 @@ for filename in os.listdir(data_dir):
     if filename.endswith('.py') and '.F.15_01' in filename:
         register_special_problem(filename)
 
-# AUTO-REGISTRO: Cargar todos los archivos *_interval.py automáticamente
-print("Registrando problemas con intervalos...")
-for filename in os.listdir(data_dir):
-    if filename.endswith('_interval.py') and not filename.startswith('__'):
-        try:
-            # Extraer el nombre del módulo (sin .py)
-            module_name = filename[:-3]
-            
-            # Crear el ID del problema (sin el sufijo _interval)
-            problem_id = module_name.replace('_interval', '')
-            
-            # Si ya está registrado, usar el nombre con _interval
-            if problem_id in PROBLEM_REGISTRY:
-                problem_id = module_name  # Usar nombre completo con _interval
-            
-            # Nombre de la función getter
-            func_name = f"get_{module_name}_problem"
-            
-            # Importar dinámicamente el módulo
-            import importlib
-            module = importlib.import_module(f'jobshop_rl.data.{module_name}')
-            
-            # Obtener la función getter
-            if hasattr(module, func_name):
-                getter_func = getattr(module, func_name)
-                PROBLEM_REGISTRY[problem_id] = getter_func
-                print(f"  ✓ Registrado: {problem_id}")
-            else:
-                print(f"  ⚠️  No se encontró {func_name} en {filename}")
-                
-        except Exception as e:
-            print(f"  ❌ Error registrando {filename}: {str(e)}")
+# Los problemas con intervalos se cargan mediante el método register_special_problem anterior
 
 print(f"Total de problemas registrados: {len(PROBLEM_REGISTRY)}")
 

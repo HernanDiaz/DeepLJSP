@@ -495,39 +495,150 @@ class BatchExperimenter:
             makespan = result['makespan']
             heuristic_results = result['heuristic_results']
             
+            # Detectar si el problema usa intervalos (basándose en el nombre del problema)
+            is_interval_problem = 'INTERVAL' in problem_name.upper() or '_interval' in problem_name.lower()
+            
+            # Si es un problema con intervalos, excluir OR-Tools
+            if is_interval_problem and 'OR-Tools' in heuristic_results:
+                heuristic_results = {k: v for k, v in heuristic_results.items() if k != 'OR-Tools'}
+                logger.info(f"Excluyendo OR-Tools del gráfico de comparación para {problem_name} (problema con intervalos)")
+            
             # Preparar datos para el gráfico
             methods = ['RL'] + list(heuristic_results.keys())
-            makespans = [makespan] + list(heuristic_results.values())
             
-            # Crear gráfico
-            plt.figure(figsize=(12, 6))
-            bars = plt.bar(methods, makespans)
+            # Determinar si el makespan del RL es un intervalo
+            from jobshop_rl.models.interval import Interval
+            rl_is_interval = isinstance(makespan, Interval)
             
-            # Colorear la barra del modelo RL
-            bars[0].set_color('green')
+            # Crear gráfico con diferentes estilos según si hay intervalos
+            plt.figure(figsize=(14, 7))
             
-            # Si OR-Tools está presente, colorear su barra
-            if 'OR-Tools' in heuristic_results:
-                ort_idx = methods.index('OR-Tools')
-                bars[ort_idx].set_color('red')
+            if rl_is_interval or is_interval_problem:
+                # Para problemas con intervalos, mostrar límite inferior, superior y punto medio para cada método
+                x_positions = range(len(methods))
+                
+                # Listas para almacenar los datos de cada método
+                lower_bounds = []
+                upper_bounds = []
+                midpoints = []
+                
+                # Procesar makespan de RL
+                if rl_is_interval:
+                    lower_bounds.append(makespan.lower)
+                    upper_bounds.append(makespan.upper)
+                    midpoints.append(makespan.midpoint)
+                else:
+                    # Si no es Interval pero el problema tiene intervalos, tratar como degenerate
+                    lower_bounds.append(makespan)
+                    upper_bounds.append(makespan)
+                    midpoints.append(makespan)
+                
+                # Procesar resultados de heurísticas
+                for method in methods[1:]:  # Skip 'RL' que ya procesamos
+                    value = heuristic_results[method]
+                    if isinstance(value, Interval):
+                        lower_bounds.append(value.lower)
+                        upper_bounds.append(value.upper)
+                        midpoints.append(value.midpoint)
+                    else:
+                        # Valor escalar - usar el mismo valor para todos
+                        lower_bounds.append(value)
+                        upper_bounds.append(value)
+                        midpoints.append(value)
+                
+                # Calcular errores para error bars (distancia desde el punto medio)
+                errors_lower = [mid - low for mid, low in zip(midpoints, lower_bounds)]
+                errors_upper = [up - mid for up, mid in zip(upper_bounds, midpoints)]
+                
+                # Crear gráfico con error bars
+                # El punto medio se muestra con un marcador, y las barras de error muestran el rango
+                colors = ['green' if i == 0 else 'steelblue' for i in range(len(methods))]
+                
+                plt.errorbar(x_positions, midpoints, 
+                           yerr=[errors_lower, errors_upper],
+                           fmt='o',  # Formato: círculos para los puntos medios
+                           markersize=10,
+                           capsize=8,  # Tamaño de las "tapas" de las barras de error
+                           capthick=2,
+                           elinewidth=2,
+                           color='black',
+                           ecolor='gray',
+                           label='Rango del intervalo')
+                
+                # Añadir marcadores adicionales para los límites
+                for i, (x, lower, upper, mid) in enumerate(zip(x_positions, lower_bounds, upper_bounds, midpoints)):
+                    # Marcador para límite inferior
+                    plt.scatter(x, lower, color='blue', marker='_', s=200, linewidths=3, zorder=5)
+                    # Marcador para límite superior
+                    plt.scatter(x, upper, color='red', marker='_', s=200, linewidths=3, zorder=5)
+                    # Marcador para punto medio (ya dibujado por errorbar, pero lo destacamos)
+                    plt.scatter(x, mid, color=colors[i], marker='o', s=150, zorder=6, edgecolors='black', linewidths=2)
+                    
+                    # Añadir etiquetas de valores
+                    offset = (upper - lower) * 0.05 if upper != lower else 1
+                    
+                    # Solo mostrar tres valores si el intervalo no es degenerado
+                    if abs(upper - lower) > 0.01:
+                        plt.text(x, upper + offset, f'{upper:.1f}', 
+                                ha='center', va='bottom', fontsize=9, color='red', fontweight='bold')
+                        plt.text(x, lower - offset, f'{lower:.1f}', 
+                                ha='center', va='top', fontsize=9, color='blue', fontweight='bold')
+                        plt.text(x + 0.15, mid, f'{mid:.1f}', 
+                                ha='left', va='center', fontsize=9, color='darkgreen', fontweight='bold',
+                                bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.3))
+                    else:
+                        # Intervalo degenerado, solo mostrar un valor
+                        plt.text(x, mid + offset, f'{mid:.1f}', 
+                                ha='center', va='bottom', fontsize=9, fontweight='bold')
+                
+                # Configurar ejes y leyenda
+                plt.xticks(x_positions, methods, rotation=45, ha='right')
+                
+                # Crear leyenda personalizada
+                from matplotlib.lines import Line2D
+                legend_elements = [
+                    Line2D([0], [0], color='red', marker='_', markersize=10, linewidth=3, 
+                           label='Límite superior'),
+                    Line2D([0], [0], color='blue', marker='_', markersize=10, linewidth=3, 
+                           label='Límite inferior'),
+                    Line2D([0], [0], color='darkgreen', marker='o', markersize=8, linewidth=0,
+                           markerfacecolor='darkgreen', markeredgecolor='black', markeredgewidth=1,
+                           label='Punto medio'),
+                    Line2D([0], [0], color='gray', linewidth=2, label='Rango')
+                ]
+                plt.legend(handles=legend_elements, loc='upper left')
+                
+            else:
+                # Para problemas determinísticos, usar gráfico de barras tradicional
+                makespans = [makespan] + list(heuristic_results.values())
+                bars = plt.bar(methods, makespans)
+                
+                # Colorear la barra del modelo RL
+                bars[0].set_color('green')
+                
+                # Si OR-Tools está presente, colorear su barra
+                if 'OR-Tools' in heuristic_results:
+                    ort_idx = methods.index('OR-Tools')
+                    bars[ort_idx].set_color('red')
+                
+                plt.xticks(rotation=45, ha='right')
+                
+                # Añadir valores encima de las barras
+                for bar in bars:
+                    height = bar.get_height()
+                    plt.text(bar.get_x() + bar.get_width()/2., height,
+                            f'{int(height)}',
+                            ha='center', va='bottom')
             
-            plt.title(f'Comparación de Makespan para {problem_name}')
-            plt.xlabel('Método')
-            plt.ylabel('Makespan')
-            plt.xticks(rotation=45, ha='right')
-            
-            # Añadir valores encima de las barras
-            for bar in bars:
-                height = bar.get_height()
-                plt.text(bar.get_x() + bar.get_width()/2., height,
-                        f'{int(height)}',
-                        ha='center', va='bottom')
-            
+            plt.title(f'Comparación de Makespan para {problem_name}', fontsize=14, fontweight='bold')
+            plt.xlabel('Método', fontsize=12)
+            plt.ylabel('Makespan', fontsize=12)
+            plt.grid(axis='y', alpha=0.3, linestyle='--')
             plt.tight_layout()
             
             # Guardar gráfico
             plots_dir = ensure_dir(join_paths(self.output_dir, "plots", "comparisons"))
-            plt.savefig(join_paths(plots_dir, f"{problem_name}_comparison.png"))
+            plt.savefig(join_paths(plots_dir, f"{problem_name}_comparison.png"), dpi=150)
             plt.close()
     
     def _create_comparison_chart(self, results_df: pd.DataFrame):

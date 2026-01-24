@@ -22,16 +22,18 @@ class ProgressRewardComponent(RewardComponent):
         self.weight = weight
     
     def calculate(self, env, state, next_state, action, done, info) -> float:
-        """Calcula la recompensa basada en el progreso"""
+        """
+        Calcula la recompensa por completar una operación.
+        
+        Da una recompensa fija normalizada por operación completada,
+        en lugar de basarse en el progreso total acumulado.
+        """
         if action is None or not state['eligible_ops'] or done:
             return 0
         
-        # Calcular proporción de operaciones completadas
+        # Recompensa fija por completar una operación
+        # Normalizada para que completar todas las operaciones sume a 1.0
         total_ops = env.num_jobs * env.num_machines
-        completed_ops = sum(state['job_status'])
-        progress = completed_ops / total_ops
+        reward_per_op = 1.0 / total_ops if total_ops > 0 else 0
         
-        # Recompensa pequeña por avanzar en el plan
-        progress_reward = progress * 0.1
-        
-        return self.weight * progress_reward
+        return self.weight * reward_per_op

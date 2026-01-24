@@ -19,14 +19,14 @@ class AdaptiveRewardStrategy(RewardStrategy):
     def __init__(self, problem_analysis: Optional[Dict] = None, **kwargs):
         super().__init__(problem_analysis)
         
-        # Pesos iniciales
+        # Pesos ajustados para dar más señal durante el episodio
         self.weights = {
             "makespan_weight": 1.0,
-            "idle_weight": 0.2,
-            "critical_weight": 0.1,
-            "balance_weight": 0.05,
-            "progress_weight": 0.2,
-            "local_improvement_weight": 0.15
+            "idle_weight": 0.15,              # Reducido de 0.2
+            "critical_weight": 0.05,          # Reducido de 0.1
+            "balance_weight": 0.15,           # Aumentado de 0.05
+            "progress_weight": 0.05,          # Reducido de 0.2
+            "local_improvement_weight": 0.4   # Aumentado de 0.15 - señal clave
         }
         
         # Sobrescribir pesos con parámetros proporcionados
