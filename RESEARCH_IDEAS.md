@@ -35,12 +35,19 @@ aquí con su resultado, se acepte o no.**
 
 | ID | Fecha | Idea | Quick (dif. media) | Full (dif. media) | Decisión | Commit |
 |----|-------|------|--------------------|-------------------|----------|--------|
-| — | — | (ninguna probada aún) | — | — | — | — |
+| idea-01 | 2026-07-03 | Suelo del decaimiento de entropía 10% → 30% (ppo_agent.py:403, factor 0.9→0.7) | **+9.87%** (peor en 2/2) | no ejecutado | **Descartada (quick)** | — |
+
+Notas idea-01: con 30 episodios más entropía final = menos explotación, así que
+el quick puede estar sesgado contra ideas que aumentan exploración; aún así el
++9.9% es demasiado grande para justificar 3h de full. Si se retoma, considerar
+probarla directamente en full.
 
 ## Backlog de ideas candidatas (orientativo, no vinculante)
 
-- **Pesos del reward adaptive**: tras corregir la fuga de estado, el peso 0.4
-  de local_improvement puede estar sobredimensionado; probar 0.15-0.2.
+- ~~Pesos del reward adaptive: reducir local_improvement de 0.4~~ **Moot**: en
+  modo batch main.py ya sobreescribe los pesos (local_improvement=0.15); el 0.4
+  del código solo aplica cuando no se pasan parámetros explícitos. Una variante
+  válida sería barrer los pesos que main.py pasa (p.ej. local_improvement 0.15→0.3).
 - **Suelo y forma del decaimiento de entropía**: hoy lineal hasta 10%; probar
   suelo más alto (20-30%) o decaimiento coseno.
 - **Barrido de gae_lambda**: 0.90 / 0.98 (ahora que la rama gae_lambda=0
