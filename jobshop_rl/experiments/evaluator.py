@@ -30,27 +30,17 @@ class HeuristicEvaluator:
         self.results = {}
         self.execution_times = {}
 
-    def evaluate_heuristic(self, heuristic: HeuristicStrategy, name: str) -> Tuple[float, float]:
+    @staticmethod
+    def _run_episode(env_copy: JobShopEnv, heuristic: HeuristicStrategy) -> float:
         """
-        Evalúa una heurística específica.
-        
-        Args:
-            heuristic: Estrategia heurística a evaluar
-            name: Nombre identificativo de la heurística
-            
-        Returns:
-            Tupla con (makespan resultante, tiempo de ejecución en segundos)
+        Ejecuta un episodio completo con la heurística dada sobre el entorno
+        (ya copiado) y devuelve el makespan escalar (peor caso para intervalos).
         """
         from jobshop_rl.models.interval import Interval
-        
-        # Crear una copia del entorno para no afectar a otros experimentos
-        env_copy = deepcopy(self.env)
+
         state = env_copy.reset()
         done = False
-        
-        # Medir tiempo de ejecución
-        start_time = time.time()
-        
+
         while not done:
             eligible_ops = state['eligible_ops']
             if not eligible_ops:
@@ -58,29 +48,72 @@ class HeuristicEvaluator:
 
             features = env_copy.get_features(state)
 
-            if len(eligible_ops) > 0:
-                action_idx = heuristic.select_action(eligible_ops, features)
-                action_idx = min(action_idx, len(eligible_ops)-1)  # Asegurar índice válido
-                next_state, _, done, _ = env_copy.step(action_idx)
-                state = next_state
-        
-        execution_time = time.time() - start_time
-        
+            action_idx = heuristic.select_action(eligible_ops, features)
+            action_idx = min(action_idx, len(eligible_ops)-1)  # Asegurar índice válido
+            next_state, _, done, _ = env_copy.step(action_idx)
+            state = next_state
+
         if done:
             max_time = max(env_copy.job_completion_time)
             # Manejar tanto valores escalares como intervalos
             if isinstance(max_time, Interval):
-                makespan = float(max_time.upper)  # Usar límite superior
-            else:
-                makespan = float(max_time)
-        else:
-            makespan = float('inf')
-        
+                return float(max_time.upper)  # Usar límite superior
+            return float(max_time)
+        return float('inf')
+
+    def evaluate_heuristic(self, heuristic: HeuristicStrategy, name: str) -> Tuple[float, float]:
+        """
+        Evalúa una heurística específica.
+
+        Args:
+            heuristic: Estrategia heurística a evaluar
+            name: Nombre identificativo de la heurística
+
+        Returns:
+            Tupla con (makespan resultante, tiempo de ejecución en segundos)
+        """
+        # Crear una copia del entorno para no afectar a otros experimentos
+        env_copy = deepcopy(self.env)
+
+        start_time = time.time()
+        makespan = self._run_episode(env_copy, heuristic)
+        execution_time = time.time() - start_time
+
         self.results[name] = makespan
         self.execution_times[name] = execution_time
-        
+
         logger.info(f"{name}: Makespan = {makespan}, Tiempo = {execution_time:.4f} segundos")
         return makespan, execution_time
+
+    def evaluate_random(self, n_runs: int = 250) -> Tuple[float, float]:
+        """
+        Evalúa la heurística aleatoria con múltiples ejecuciones para obtener
+        una estimación representativa (una sola ejecución aleatoria es puro azar).
+
+        Args:
+            n_runs: Número de soluciones aleatorias a generar
+
+        Returns:
+            Tupla con (makespan medio, mejor makespan)
+        """
+        heuristic = RandomHeuristic()
+        env_copy = deepcopy(self.env)
+
+        start_time = time.time()
+        makespans = [self._run_episode(env_copy, heuristic) for _ in range(n_runs)]
+        execution_time = time.time() - start_time
+
+        mean_makespan = sum(makespans) / len(makespans)
+        best_makespan = min(makespans)
+
+        self.results["Random (media)"] = mean_makespan
+        self.results["Random (mejor)"] = best_makespan
+        self.execution_times["Random (media)"] = execution_time
+        self.execution_times["Random (mejor)"] = execution_time
+
+        logger.info(f"Random ({n_runs} soluciones): media = {mean_makespan:.1f}, "
+                    f"mejor = {best_makespan:.1f}, Tiempo total = {execution_time:.4f} segundos")
+        return mean_makespan, best_makespan
 
     def evaluate_all(self, return_times: bool = False, use_ortools: bool = True) -> Dict[str, float]:
         """
@@ -98,7 +131,8 @@ class HeuristicEvaluator:
         self.evaluate_heuristic(LPTHeuristic(), "LPT")
         self.evaluate_heuristic(MORHeuristic(), "MOR")
         self.evaluate_heuristic(MWKRHeuristic(), "MWKR")
-        self.evaluate_heuristic(RandomHeuristic(), "Random")
+        # Random se evalúa con múltiples soluciones (media y mejor)
+        self.evaluate_random(n_runs=250)
         
         # Evaluar con OR-Tools solo si no hay intervalos
         if use_ortools:
@@ -203,10 +237,10 @@ class AgentEvaluator:
         Returns:
             Diccionario con los resultados de la evaluación
         """
-        from jobshop_rl.experiments.factory import ExperimentFactory
-        
+        from jobshop_rl.experiments.factory import EnvironmentFactory
+
         # Configurar entorno para este problema
-        test_env = ExperimentFactory.create_env_from_problem(problem_data)
+        test_env = EnvironmentFactory.create_from_problem(problem_data)
         
         # Crear un agente para evaluación que comparta el modelo con el agente original
         test_agent = PPOAgent(test_env)
@@ -275,8 +309,8 @@ class AgentEvaluator:
         Returns:
             Diccionario con comparativas para cada problema
         """
-        from jobshop_rl.experiments.factory import ExperimentFactory
-        
+        from jobshop_rl.experiments.factory import EnvironmentFactory
+
         comparisons = {}
         
         for i, problem in enumerate(problems):
@@ -290,7 +324,7 @@ class AgentEvaluator:
             agent_makespan = self.results[problem_name]['makespan']
             
             # Evaluar heurísticas
-            test_env = ExperimentFactory.create_env_from_problem(problem)
+            test_env = EnvironmentFactory.create_from_problem(problem)
             evaluator = HeuristicEvaluator(test_env)
             heuristic_results = evaluator.evaluate_all()
             
