@@ -12,8 +12,8 @@ Uso:
 
 Niveles:
     quick: 1 problema de entrenamiento, 2 de evaluación, 30 episodios, 1 semilla (~10 min)
-    full:  el experimento estándar (4 train 20x15, 6 eval 20x15) + evaluación
-           zero-shot en 2 instancias 15x15, 100 episodios, 3 semillas (~horas)
+    full:  el experimento estándar (4 train 20x15, 6 eval 20x15),
+           100 episodios, 3 semillas (~horas)
 """
 
 import argparse
@@ -42,9 +42,10 @@ TIERS = {
         "eval": [
             "int__tai20_15_05", "int__tai20_15_06", "int__tai20_15_07",
             "int__tai20_15_08", "int__tai20_15_09", "int__tai20_15_10",
-            # Evaluación zero-shot en otro tamaño para detectar sobreajuste
-            # al tamaño de problema (mismo num_machines para que carguen los pesos)
-            "int__tai15_15_01", "int__tai15_15_02",
+            # NOTA: la evaluación zero-shot en otros tamaños (p.ej. 15x15) no es
+            # posible hoy: la entrada de la red de valor depende de num_jobs y
+            # num_machines, así que los pesos no cargan entre tamaños distintos.
+            # Requeriría una representación de estado independiente del tamaño.
         ],
         "episodes": 100,
         "seeds": [2, 3, 4],
