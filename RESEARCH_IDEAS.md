@@ -36,11 +36,18 @@ aquí con su resultado, se acepte o no.**
 | ID | Fecha | Idea | Quick (dif. media) | Full (dif. media) | Decisión | Commit |
 |----|-------|------|--------------------|-------------------|----------|--------|
 | idea-01 | 2026-07-03 | Suelo del decaimiento de entropía 10% → 30% (ppo_agent.py:403, factor 0.9→0.7) | **+9.87%** (peor en 2/2) | no ejecutado | **Descartada (quick)** | — |
+| idea-02 | 2026-07-03 | gae_lambda 0.95 → 0.98 (main.py agent_params, modo batch) | **+88.44%** (peor en 2/2, std ±2500: divergencia) | no ejecutado | **Descartada (quick)** | — |
 
 Notas idea-01: con 30 episodios más entropía final = menos explotación, así que
 el quick puede estar sesgado contra ideas que aumentan exploración; aún así el
 +9.9% es demasiado grande para justificar 3h de full. Si se retoma, considerar
 probarla directamente en full.
+
+Notas idea-02: degradación catastrófica (+88%, std ±2500) — no parece ruido sino
+divergencia del entrenamiento en al menos una semilla: λ alto aumenta la varianza
+de las ventajas y este agente no tiene clipping de value loss. Si se quiere
+retomar el eje de gae_lambda, probar hacia abajo (0.90) o añadir antes
+estabilización del value update.
 
 ## Backlog de ideas candidatas (orientativo, no vinculante)
 
