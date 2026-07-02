@@ -65,10 +65,16 @@ def get_git_info():
 
 def run_seed(tier_config, seed, episodes, output_name):
     """Lanza una ejecución batch completa para una semilla y devuelve sus métricas."""
+    # Coma final si hay un solo problema: las versiones antiguas del código
+    # solo cargan problemas por ID cuando la lista contiene una coma
+    train_arg = ",".join(tier_config["train"])
+    if len(tier_config["train"]) == 1:
+        train_arg += ","
+
     cmd = [
         sys.executable, "-m", "jobshop_rl.main",
         "--mode", "batch",
-        "--train-problem", ",".join(tier_config["train"]),
+        "--train-problem", train_arg,
         "--eval-problem", ",".join(tier_config["eval"]),
         "--episodes", str(episodes),
         "--reward", "adaptive",
