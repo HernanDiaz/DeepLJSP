@@ -183,21 +183,15 @@ class AdaptiveNormalization(nn.Module):
         Returns:
             Tensor normalizado
         """
-        # Para problemas muy grandes en modo eval, preferir LayerNorm
-        if not self.training and self.problem_size > 1500:
+        # En entrenamiento, BatchNorm es inestable con batches pequeños:
+        # usar LayerNorm. En evaluación la norma primaria usa las estadísticas
+        # running acumuladas y es válida para cualquier tamaño de batch;
+        # desviarse al fallback aplicaría una transformación nunca entrenada.
+        if self.training and x.dim() == 2 and x.size(0) < self.min_batch_size:
             return self.fallback_norm(x)
-            
-        # Si el batch es muy pequeño, usar LayerNorm directamente
-        if x.dim() == 2 and x.size(0) < self.min_batch_size:
-            return self.fallback_norm(x)
-            
+
         # Intentar usar la normalización primaria
         try:
-            # Para BatchNorm estándar con batch pequeño en training, usar fallback
-            if (isinstance(self.primary_norm, nn.BatchNorm1d) and 
-                self.training and x.dim() == 2 and x.size(0) < 2):
-                return self.fallback_norm(x)
-                
             return self.primary_norm(x)
         except (RuntimeError, ValueError) as e:
             # Si falla por cualquier razón, usar fallback

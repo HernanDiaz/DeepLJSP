@@ -581,7 +581,7 @@ class ExperimentFactory:
         # Guardar configuración del experimento DESPUÉS de aplicar modificaciones adaptive
         if save_config:
             # Extraer TODOS los parámetros para reproducibilidad exacta
-            final_config = self._extract_complete_configuration(
+            final_config = ExperimentFactory._extract_complete_configuration(
                 env, agent, experiment_name, episodes, reward_strategy, problem_id, 
                 seed, visualize, save_plots, csv_logging
             )
@@ -806,9 +806,9 @@ class ExperimentFactory:
         # ==================== INFORMACIÓN DEL ENTORNO ====================
         config['environment_info'] = {
             'class_name': env.__class__.__name__,
-            'action_space_size': len(env.get_features({'job_status': [0]*env.num_jobs, 
-                                                      'machine_completion_time': [0]*env.num_machines})) 
-                                  if hasattr(env, 'get_features') else 'unknown'
+            # En el estado inicial todos los trabajos son elegibles, por lo que
+            # el espacio de acciones equivale al número de trabajos
+            'action_space_size': env.num_jobs if hasattr(env, 'num_jobs') else 'unknown'
         }
         
         # ==================== INFORMACIÓN DEL SISTEMA ====================

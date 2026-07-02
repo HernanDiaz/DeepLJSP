@@ -376,8 +376,10 @@ class ORToolsHeuristic(HeuristicStrategy):
         self.time_limit_seconds = time_limit_seconds
         self.has_intervals = has_intervals
         self.solved = False
+        self.solve_attempted = False
         self.solution = []
         self.makespan = float('inf')
+        self.operation_sequence = []
         
         # Verificar disponibilidad de OR-Tools
         if not hasattr(self, 'ortools_available'):
@@ -399,6 +401,8 @@ class ORToolsHeuristic(HeuristicStrategy):
     
     def _solve_problem(self):
         """Resuelve el problema utilizando OR-Tools y almacena la solución"""
+        self.solve_attempted = True
+
         # Check for intervals first
         if self.has_intervals:
             logger.warning("Cannot solve interval problems with OR-Tools. Using fallback heuristic.")
@@ -422,15 +426,22 @@ class ORToolsHeuristic(HeuristicStrategy):
             self.time_limit_seconds
         )
         
-        # Guardar la solución
+        # Guardar la solución; solo marcar como resuelto si el solver
+        # devolvió una solución válida (con time limit puede terminar en
+        # UNKNOWN/INFEASIBLE con makespan infinito y schedule vacío)
         self.makespan = makespan
         self.solution = schedule
-        self.solved = True
+        self.solved = bool(schedule) and makespan != float('inf')
         self.execution_time = execution_time
-        
+
+        if not self.solved:
+            logger.warning(f"OR-Tools no encontró solución (makespan={makespan}). "
+                           f"Se usará la heurística de fallback.")
+            return
+
         # Convertir la solución a un plan de acción
         self._create_action_plan()
-        
+
         logger.info(f"Problema resuelto con OR-Tools. Makespan: {makespan}, Tiempo: {execution_time:.4f}s")
         
     def _create_action_plan(self):
@@ -467,8 +478,9 @@ class ORToolsHeuristic(HeuristicStrategy):
             logger.debug("Using SPT fallback for interval problem")
             return SPTHeuristic().select_action(eligible_ops, features)
         
-        # Si no hemos resuelto el problema aún, resolverlo primero
-        if not self.solved:
+        # Si no hemos intentado resolver el problema aún, resolverlo primero
+        # (solo un intento: si OR-Tools falla, no relanzarlo en cada acción)
+        if not self.solved and not self.solve_attempted:
             self._solve_problem()
             
         # Si no tenemos solución, usar una heurística como fallback

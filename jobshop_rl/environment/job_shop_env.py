@@ -94,6 +94,12 @@ class JobShopEnv:
 
     def reset(self) -> Dict:
         """Reinicia el entorno a su estado inicial"""
+        # Reiniciar el estado interno de la estrategia de recompensa para que
+        # componentes con estado (p.ej. last_projected_makespan) no filtren
+        # información del episodio anterior
+        if hasattr(self.reward_strategy, 'reset') and callable(getattr(self.reward_strategy, 'reset')):
+            self.reward_strategy.reset()
+
         # Estado de cada trabajo: posición actual en su secuencia
         self.job_status = [0] * self.num_jobs
 

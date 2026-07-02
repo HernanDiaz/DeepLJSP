@@ -63,7 +63,9 @@ class PPOMemory:
         if self.is_empty():
             raise ValueError("La memoria está vacía, no se pueden calcular los tensores")
         
-        if self.gae_lambda > 0:
+        # gae_lambda=0 es un valor válido (TD(0)); solo None desactiva GAE
+        # y cae al método tradicional de retornos descontados
+        if self.gae_lambda is not None:
             returns, advantages = self._calculate_gae()
             returns = torch.tensor(returns, dtype=torch.float32)
             advantages = torch.tensor(advantages, dtype=torch.float32)

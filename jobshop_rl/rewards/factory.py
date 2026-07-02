@@ -2,6 +2,7 @@
 Fábrica y registro para estrategias de recompensa.
 """
 
+import inspect
 from typing import Dict, Optional, Any, List, Tuple, Type
 
 from jobshop_rl.rewards.base import RewardStrategy
@@ -9,6 +10,7 @@ from jobshop_rl.rewards.strategies.basic import BasicRewardStrategy
 from jobshop_rl.rewards.strategies.advanced import AdvancedRewardStrategy
 from jobshop_rl.rewards.strategies.adaptive import AdaptiveRewardStrategy
 from jobshop_rl.rewards.strategies.combined import CombinedRewardStrategy
+from jobshop_rl.rewards.strategies.sparse import SparseRewardStrategy
 
 class RewardStrategyRegistry:
     """Registro de estrategias de recompensa disponibles"""
@@ -18,7 +20,8 @@ class RewardStrategyRegistry:
         "basic": BasicRewardStrategy,
         "advanced": AdvancedRewardStrategy,
         "adaptive": AdaptiveRewardStrategy,
-        "combined": CombinedRewardStrategy
+        "combined": CombinedRewardStrategy,
+        "sparse": SparseRewardStrategy
     }
     
     @classmethod
@@ -56,13 +59,12 @@ class RewardStrategyFactory:
                     strat_name = strat_config[0]
                     strat_weight = strat_config[1]
                     strat_params = strat_config[2] if len(strat_config) > 2 else {}
-                    
-                    # Pasar el problema_analysis a cada estrategia
-                    if problem_analysis:
-                        strat_params['problem_analysis'] = problem_analysis
-                    
+                    # problem_analysis se pasa como keyword explícito; no debe
+                    # duplicarse dentro de strat_params
+                    strat_params.pop('problem_analysis', None)
+
                     strategy = RewardStrategyFactory.create_strategy(
-                        strat_name, 
+                        strat_name,
                         problem_analysis=problem_analysis,
                         **strat_params
                     )
@@ -78,4 +80,14 @@ class RewardStrategyFactory:
             filtered_kwargs = {k: v for k, v in kwargs.items() if k in valid_params}
             return strategy_class(problem_analysis=problem_analysis, **filtered_kwargs)
         else:
+            # Filtrar los kwargs a los parámetros que el constructor de la
+            # estrategia realmente acepta (main.py siempre envía los pesos,
+            # pero no todas las estrategias los usan)
+            signature = inspect.signature(strategy_class.__init__)
+            accepts_var_keyword = any(
+                p.kind == inspect.Parameter.VAR_KEYWORD
+                for p in signature.parameters.values()
+            )
+            if not accepts_var_keyword:
+                kwargs = {k: v for k, v in kwargs.items() if k in signature.parameters}
             return strategy_class(problem_analysis=problem_analysis, **kwargs)

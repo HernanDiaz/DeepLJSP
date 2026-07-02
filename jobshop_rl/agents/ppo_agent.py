@@ -145,7 +145,8 @@ class PPOAgent(Agent):
             self.gradient_accumulator = GradientAccumulator(
                 self.accumulation_steps,
                 [self.policy, self.value],
-                [self.optimizer_policy, self.optimizer_value]
+                [self.optimizer_policy, self.optimizer_value],
+                max_grad_norm=0.5 if self.use_grad_clip else None
             )
         else:
             self.gradient_accumulator = None
@@ -400,7 +401,7 @@ class PPOAgent(Agent):
 
         # Ajuste dinámico del coeficiente de entropía
         progress = current_episode / total_episodes
-        self.entropy_coef = max(0.001, self.entropy_coef * (1 - progress * 0.9))  # Mínimo 10% del original
+        self.entropy_coef = max(0.001, self.initial_entropy_coef * (1 - progress * 0.9))  # Mínimo 10% del original
     
     def _update_networks(self) -> Tuple[float, float]:
         """
@@ -510,7 +511,12 @@ class PPOAgent(Agent):
                 if epoch_policy_losses:
                     policy_losses.extend(epoch_policy_losses)
                     value_losses.extend(epoch_value_losses)
-                    
+
+            # Aplicar los gradientes parciales que queden pendientes para que
+            # no contaminen la actualización del episodio siguiente
+            if self.gradient_accumulator:
+                self.gradient_accumulator.flush()
+
         else:
             # Si no estamos usando redes avanzadas o hay pocos ejemplos, usar el enfoque original
             # pero con mejoras para estabilidad

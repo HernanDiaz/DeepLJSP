@@ -13,6 +13,7 @@ import numpy as np
 import torch
 
 from jobshop_rl.experiments.factory import ExperimentFactory
+from jobshop_rl.models.interval import Interval
 from jobshop_rl.experiments.batch_experimenter import BatchExperimenter
 from jobshop_rl.data.problem_loader import ProblemLoader
 from jobshop_rl.utils.logging import TrainingLogger
@@ -191,6 +192,10 @@ def run_single_experiment(args):
     if hasattr(agent, 'env') and hasattr(agent.env, 'problem_analysis'):
         problem_analysis = agent.env.problem_analysis
         best_lower_bound = problem_analysis.get('best_lower_bound', 0)
+        # Para problemas con intervalos el límite es un Interval; usar el
+        # peor caso (upper) para el cálculo escalar del gap
+        if isinstance(best_lower_bound, Interval):
+            best_lower_bound = best_lower_bound.upper
         if best_lower_bound > 0:
             gap = ((agent.best_makespan - best_lower_bound) / best_lower_bound) * 100
             print(f"Mejor límite inferior: {best_lower_bound}")
@@ -269,14 +274,14 @@ def run_batch_experiment(args):
     training_problems = []
     test_problems = []
     
-    # Cargar problemas por IDs si se proporcionaron
-    if ',' in args.train_problem:
-        # Lista de IDs de problemas separados por comas
+    # Cargar problemas por IDs si se proporcionaron (uno solo o lista
+    # separada por comas, igual que los problemas de evaluación)
+    if args.train_problem:
         train_problem_ids = [p.strip() for p in args.train_problem.split(',')]
-        
+
         from jobshop_rl.data import PROBLEM_REGISTRY
         logging.info(f"Cargando problemas de entrenamiento por ID: {train_problem_ids}")
-        
+
         for problem_id in train_problem_ids:
             if problem_id in PROBLEM_REGISTRY:
                 try:

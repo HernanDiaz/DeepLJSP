@@ -7,9 +7,26 @@ import os
 import datetime
 from typing import Dict, Any, Optional
 
+from jobshop_rl.models.interval import Interval
+
+def _json_default(obj: Any):
+    """
+    Serializador de respaldo para tipos no soportados por JSON.
+
+    Los Interval (problemas con incertidumbre) se guardan como
+    {"lower": x, "upper": y}; cualquier otro tipo se guarda como str
+    para no perder la configuración completa por un solo campo.
+    """
+    if isinstance(obj, Interval):
+        return {'lower': obj.lower, 'upper': obj.upper}
+    if hasattr(obj, 'item'):  # escalares de numpy/torch
+        return obj.item()
+    return str(obj)
+
+
 class ExperimentConfig:
     """Clase para manejar la configuración de experimentos"""
-    
+
     @staticmethod
     def save_config(config: Dict[str, Any], experiment_name: Optional[str] = None, output_dir: str = "outputs/configs"):
         """
@@ -40,9 +57,9 @@ class ExperimentConfig:
         filename = f"{experiment_name}.json"
         filepath = os.path.join(output_dir, filename)
         
-        # Guardar configuración
+        # Guardar configuración (default maneja Interval y otros tipos no JSON)
         with open(filepath, 'w') as f:
-            json.dump(config_with_meta, f, indent=4)
+            json.dump(config_with_meta, f, indent=4, default=_json_default)
             
         return filepath
     

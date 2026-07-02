@@ -16,19 +16,23 @@ class GradientAccumulator:
     Gestiona la acumulación de gradientes para entrenar con batches efectivos más grandes.
     """
     
-    def __init__(self, 
+    def __init__(self,
                  accumulation_steps: int,
                  models: List[torch.nn.Module],
-                 optimizers: List[torch.optim.Optimizer]):
+                 optimizers: List[torch.optim.Optimizer],
+                 max_grad_norm: Optional[float] = None):
         """
         Args:
             accumulation_steps: Número de pasos de acumulación antes de actualizar
             models: Lista de modelos a entrenar
             optimizers: Lista de optimizadores correspondientes
+            max_grad_norm: Si se especifica, aplica clipping de gradientes
+                antes de cada actualización de pesos
         """
         self.accumulation_steps = accumulation_steps
         self.models = models
         self.optimizers = optimizers
+        self.max_grad_norm = max_grad_norm
         self.current_step = 0
         
     def zero_grad(self):
@@ -51,22 +55,35 @@ class GradientAccumulator:
     def step(self) -> bool:
         """
         Incrementa el contador y actualiza los optimizadores si es necesario.
-        
+
         Returns:
             bool: True si se realizó una actualización de pesos
         """
         self.current_step += 1
-        
+
         if self.current_step >= self.accumulation_steps:
-            # Realizar la actualización
-            for optimizer in self.optimizers:
-                optimizer.step()
-            
-            # Reset para el siguiente ciclo
-            self.current_step = 0
+            self._apply_step()
             return True
-            
+
         return False
+
+    def _apply_step(self):
+        """Aplica los gradientes acumulados: clipping, step y reset del ciclo."""
+        if self.max_grad_norm is not None:
+            for model in self.models:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), self.max_grad_norm)
+        for optimizer in self.optimizers:
+            optimizer.step()
+        self.current_step = 0
+
+    def flush(self):
+        """
+        Aplica los gradientes parciales pendientes al final de un ciclo de
+        actualización. Sin esto, los gradientes de un ciclo incompleto quedan
+        acumulados y contaminan la primera actualización del episodio siguiente.
+        """
+        if self.current_step > 0:
+            self._apply_step()
         
     def should_accumulate(self) -> bool:
         """Indica si debemos acumular gradientes."""
