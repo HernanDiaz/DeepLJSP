@@ -48,6 +48,23 @@ idea-04-full__c263095 (hasta idea-05).
 | idea-09 | 2026-07-03 | K_epochs 4 → 8 | **+61.51%** (peor en 2/2) | no ejecutado | **Descartada (quick)** | — |
 | idea-10 | 2026-07-03 | Conectar GapPenaltyComponent a adaptive (peso 0.1) | **+24.36%** (peor en 2/2) | no ejecutado | **Descartada (quick)** | — |
 | idea-11 | 2026-07-03 | Propuesta A: anexar 4 features de incertidumbre (widths + midpoint, índices 10-13) | **+9.11%** (peor en 2/2; anclas idénticas) | no ejecutado | **Descartada (quick)** | — |
+| idea-12 | 2026-07-03 | A2 parte 1: normalizar features temporales por el límite inferior del problema | **+112.65%** (peor en 2/2, aprendizaje colapsado) | no ejecutado | **Descartada (quick)** | — |
+
+## Conclusión tras 12 iteraciones (2026-07-03)
+
+El sistema es un óptimo local FUERTEMENTE CO-ADAPTADO: inicialización, learning
+rate, régimen de updates por muestra y escala cruda de las features encajan
+entre sí. Cualquier perturbación aislada de escala (normalizar features:
++112%), de volumen de updates (batching/K_epochs: +48% a +92%) o de señal
+(entropía, gap penalty: +9% a +27%) lo rompe. Las únicas mejoras vinieron de
+ajustar la MEZCLA de recompensas dentro del régimen existente (idea-04/05,
+−7% acumulado).
+
+Implicación: no quedan mejoras de una variable. El siguiente salto requiere
+un REDISEÑO CONJUNTO (features normalizadas + arquitectura con capa de
+normalización de entrada + lr y updates re-tuneados a la vez), que es un
+mini-proyecto con barrido propio, no una iteración del bucle. Ver
+RESEARCH_PROPOSALS.md — decisión y presupuesto del usuario.
 
 Notas idea-11: el diseño de compatibilidad funcionó (anclas idénticas con ancho
 14), pero LECCIÓN CLAVE: las 4 features eran combinaciones LINEALES de features
