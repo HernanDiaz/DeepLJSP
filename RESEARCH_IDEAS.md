@@ -50,7 +50,14 @@ idea-04-full__c263095 (hasta idea-05).
 | idea-11 | 2026-07-03 | Propuesta A: anexar 4 features de incertidumbre (widths + midpoint, índices 10-13) | **+9.11%** (peor en 2/2; anclas idénticas) | no ejecutado | **Descartada (quick)** | — |
 | idea-12 | 2026-07-03 | A2 parte 1: normalizar features temporales por el límite inferior del problema | **+112.65%** (peor en 2/2, aprendizaje colapsado) | no ejecutado | **Descartada (quick)** | — |
 
-## Conclusión tras 12 iteraciones (2026-07-03)
+| idea-13 | 2026-07-03 | Rediseño conjunto: mini-batches 32 + lr compensado (a: lr 1e-3 → **+14.75%**; b: lr 3e-3 → **+232%**, divergencia) | peor en 2/2 en ambas configs | no ejecutado | **Descartada (quick, barrido acotado)** | — |
+
+Notas idea-13: el barrido acota la ventana — 1e-3 aprende lento, 3e-3 explota;
+el mejor punto intermedio como mucho EMPATA con el régimen actual, y empatar no
+supera el umbral de aceptación. El rediseño conjunto del update queda cerrado:
+el régimen por muestra actual no es un accidente, es competitivo.
+
+## Conclusión tras 13 iteraciones (2026-07-03)
 
 El sistema es un óptimo local FUERTEMENTE CO-ADAPTADO: inicialización, learning
 rate, régimen de updates por muestra y escala cruda de las features encajan
