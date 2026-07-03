@@ -142,6 +142,14 @@ el presupuesto aún paga. Sonda de 1000 episodios lanzada para mapear el techo.
 (Nota: el primer intento de esta sonda fue inválido — quirk de --episodes 300
 en main.py, corregido en run_benchmark con --episodes-per-problem.)
 
+**Curva completa (1000 eps, 2026-07-03)**: RE 13.4% media / 12.3% mejor
+semilla. La curva 100→28.0%, 300→16.4%, 1000→13.4% muestra rendimientos
+decrecientes claros (×3.3 cómputo → −3 puntos, vs −11.6 del salto anterior):
+el techo del presupuesto puro ronda ~11-12%. **El gatillo de la fase 2 se
+activa**: para seguir bajando hacen falta expresividad (atención), datos
+(mixto multi-tamaño) o hibridación (sembrar el TS con soluciones del v2).
+Decisión de dirección pendiente del usuario.
+
 ## Cross-size ampliado (2026-07-03, checkpoint 300 eps entrenado solo en 20×15)
 
 Zero-shot, best-of-64, RE por E[Cmax] vs LB crisp: 15×15 → 11-14.5%,
