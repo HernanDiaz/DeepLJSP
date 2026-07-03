@@ -184,6 +184,25 @@ class AgentV2:
             "AgentV2 no expone evaluate() por muestra; el update vive en PPOTrainerV2")
 
     # ------------------------------------------------------------------
+    # Visualización (superficie que usa BatchExperimenter)
+    # ------------------------------------------------------------------
+
+    def plot_training_history(self, optimal_makespan=None):
+        from jobshop_rl.utils.visualization import plot_makespan_history
+        return plot_makespan_history(
+            makespan_history=self.training_makespan_history,
+            title="Evolución del Makespan durante el entrenamiento (agente v2)",
+            optimal_makespan=optimal_makespan,
+        )
+
+    def plot_best_solution_makespan(self):
+        from jobshop_rl.utils.visualization import plot_makespan_history
+        return plot_makespan_history(
+            makespan_history=self.best_makespan_history,
+            title="Makespan de la mejor solución (agente v2)",
+        )
+
+    # ------------------------------------------------------------------
     # Persistencia
     # ------------------------------------------------------------------
 

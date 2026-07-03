@@ -158,6 +158,15 @@ class AgentFactory:
         Returns:
             Agente PPO configurado
         """
+        # Selección de versión del agente. "v2" usa la representación
+        # invariante al tamaño (jobshop_rl/agents_v2) con sus propios
+        # hiperparámetros co-diseñados: los parámetros del v1 no se le
+        # aplican (solo la semilla).
+        agent_version = agent_params.pop("agent_version", "v1")
+        if agent_version == "v2":
+            from jobshop_rl.agents_v2 import AgentV2
+            return AgentV2(env, csv_logger=csv_logger, seed=agent_params.get("seed"))
+
         # Detectar automáticamente el tamaño de características basándose en si el problema tiene intervalos
         feature_dim = 10 if env.has_intervals else 7
         

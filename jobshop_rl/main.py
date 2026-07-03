@@ -268,7 +268,10 @@ def run_batch_experiment(args):
         "use_lr_decay": True,
         "use_grad_clip": True,
         "advantage_normalization": True,
-        "gae_lambda": 0.95
+        "gae_lambda": 0.95,
+        # DEEPLJSP_AGENT=v2 selecciona el agente invariante al tamaño
+        # (agents_v2); por defecto se usa el agente v1
+        "agent_version": os.environ.get("DEEPLJSP_AGENT", "v1")
     }
     
     # Verificar si hay IDs de problemas específicos para usar
