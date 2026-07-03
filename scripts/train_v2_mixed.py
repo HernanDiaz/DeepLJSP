@@ -40,13 +40,20 @@ def main():
     parser.add_argument("--episodes", type=int, default=400)
     parser.add_argument("--seed", type=int, default=2)
     parser.add_argument("--tag", type=str, default="v2-mixed")
+    parser.add_argument("--train-ids", type=str, default=",".join(TRAIN_IDS),
+                        help="IDs de instancias de entrenamiento separadas por comas (admite tamaños mezclados)")
+    parser.add_argument("--eval-ids", type=str, default=",".join(EVAL_IDS),
+                        help="IDs de instancias de evaluación separadas por comas")
     args = parser.parse_args()
+
+    train_ids = [p.strip() for p in args.train_ids.split(",") if p.strip()]
+    eval_ids = [p.strip() for p in args.eval_ids.split(",") if p.strip()]
 
     set_random_seed(args.seed)
     rng = random.Random(args.seed)
 
     train_envs = [EnvironmentFactory.create_from_problem(PROBLEM_REGISTRY[pid](), "adaptive", seed=args.seed)
-                  for pid in TRAIN_IDS]
+                  for pid in train_ids]
     encoders = [StateEncoder(env) for env in train_envs]
 
     agent = AgentV2(train_envs[0], seed=args.seed)
@@ -85,7 +92,7 @@ def main():
     results = {}
     print(f"\n{'Instancia':<18} {'LB lit.':>7} {'makespan (up)':>13} {'RE (up)':>8}")
     print("-" * 52)
-    for pid in EVAL_IDS:
+    for pid in eval_ids:
         env = EnvironmentFactory.create_from_problem(PROBLEM_REGISTRY[pid](), "adaptive", seed=args.seed)
         agent.env = env
         agent.encoder = StateEncoder(env)

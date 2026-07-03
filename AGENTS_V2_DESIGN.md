@@ -161,6 +161,14 @@ la literatura baja a RE ~0-2%), así que la distancia al estado del arte allí
 es mayor de lo que sugiere el RE. La variante multi-tamaño del entrenamiento
 mixto queda como palanca natural para cerrar la brecha en 30×20.
 
+## Cross-size con checkpoint 1000 eps (2026-07-03)
+
+Mejora casi en todo respecto al de 300 eps: 15×15 → 7.0-14.4%, 20×20 → 9.6%,
+30×15 → 13.9%, 30×20 → 24.5% (antes 32.3%), 50×20 → 15.1%. Más entrenamiento
+in-size también mejora la transferencia. El 30×20 sigue siendo el punto débil
+→ objetivo del experimento B (mixto multi-tamaño), decidido con el usuario:
+B antes que A (atención), con la hibridación al final.
+
 ## Sonda: entrenamiento mixto (2026-07-03)
 
 Mismo presupuesto (400 episodios), muestreo de instancia por episodio, 3
