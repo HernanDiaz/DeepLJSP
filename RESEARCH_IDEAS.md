@@ -41,7 +41,12 @@ idea-04-full__c263095 (hasta idea-05).
 | idea-02 | 2026-07-03 | gae_lambda 0.95 → 0.98 (main.py agent_params, modo batch) | **+88.44%** (peor en 2/2, std ±2500: divergencia) | no ejecutado | **Descartada (quick)** | — |
 | idea-03 | 2026-07-03 | Value loss MSE → Huber/SmoothL1 (ppo_agent.py, ambas rutas de update) | −2.85% (pasó el filtro; std ±752→±397) | **+7.59%** (peor en 5/6) | **Descartada (full)** | — |
 | idea-04 | 2026-07-03 | local_improvement_weight 0.15 → 0.3 (main.py reward_params, modo batch) | **−7.74%** (mejor en 2/2) | **−1.89%** (mejor en 3/6, peor en 0) | **ACEPTADA** (regla: ≥3 mejor, 0 peor) | 1a20609 |
-| idea-05 | 2026-07-03 | Alinear resto de pesos batch con adaptive.py (idle 0.15, critical 0.05, balance 0.15, progress 0.05) | **−6.82%** (mejor en 2/2) | **−5.10%** (mejor en 5/6, peor en 0) | **ACEPTADA** | ver commit |
+| idea-05 | 2026-07-03 | Alinear resto de pesos batch con adaptive.py (idle 0.15, critical 0.05, balance 0.15, progress 0.05) | **−6.82%** (mejor en 2/2) | **−5.10%** (mejor en 5/6, peor en 0) | **ACEPTADA** | e010e08 |
+| idea-06 | 2026-07-03 | local_improvement_weight 0.3 → 0.4 | **+26.92%** (peor en 2/2) | no ejecutado | **Descartada (quick)** | — |
+
+Notas idea-06: la relación no es monótona — 0.4 es claramente peor que 0.3.
+El óptimo del peso de local_improvement está alrededor de 0.3; este eje queda
+explorado (0.15 < 0.3 > 0.4) y no merece más barridos finos por ahora.
 
 Notas idea-04/05: el eje ganador es el reward shaping — los pesos que main.py
 pasaba en batch eran anteriores al ajuste de adaptive.py. Con ambas aceptadas,
