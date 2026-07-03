@@ -51,6 +51,12 @@ idea-04-full__c263095 (hasta idea-05).
 | idea-12 | 2026-07-03 | A2 parte 1: normalizar features temporales por el límite inferior del problema | **+112.65%** (peor en 2/2, aprendizaje colapsado) | no ejecutado | **Descartada (quick)** | — |
 
 | idea-13 | 2026-07-03 | Rediseño conjunto: mini-batches 32 + lr compensado (a: lr 1e-3 → **+14.75%**; b: lr 3e-3 → **+232%**, divergencia) | peor en 2/2 en ambas configs | no ejecutado | **Descartada (quick, barrido acotado)** | — |
+| idea-14 | 2026-07-03 | gamma 0.99 → 0.999 (señal terminal del makespan: 0.99^300 ≈ 0.05 la borra) | **+3.96%** (borderline: peor en 1, ruido en 1) | no ejecutado | **Descartada (quick)** | — |
+
+Notas idea-14: el fallo más suave de todos los ejes nuevos — la teoría es sólida
+(el descuento borra la señal terminal en episodios de 300 pasos) pero 0.999
+también multiplica ~5× la escala de los retornos que ve el crítico. Probar la
+dosis intermedia 0.995 (señal ×0.22 en vez de ×0.05, escala más contenida) → idea-15.
 
 Notas idea-13: el barrido acota la ventana — 1e-3 aprende lento, 3e-3 explota;
 el mejor punto intermedio como mucho EMPATA con el régimen actual, y empatar no
