@@ -25,12 +25,13 @@ aquí con su resultado, se acepte o no.**
 
 ## Referencia actual
 
-- **Full**: `benchmarks/idea-04-full__c263095__*.json`
-  (research + idea-04; makespan medio por problema ≈ 2106–2439)
-- **Quick**: `benchmarks/idea-04-quick__c263095__*.json`
+- **Full**: `benchmarks/idea-05-full__1a20609__*.json`
+  (research + idea-05; makespan medio por problema ≈ 1994–2238)
+- **Quick**: `benchmarks/idea-05-quick__1a20609__*.json`
   (semillas 2,3; 30 episodios)
 
-Referencias anteriores: candidato-fixes-full__7805b6e (hasta idea-04).
+Referencias anteriores: candidato-fixes-full__7805b6e (hasta idea-04),
+idea-04-full__c263095 (hasta idea-05).
 
 ## Historial de ideas
 
@@ -39,7 +40,13 @@ Referencias anteriores: candidato-fixes-full__7805b6e (hasta idea-04).
 | idea-01 | 2026-07-03 | Suelo del decaimiento de entropía 10% → 30% (ppo_agent.py:403, factor 0.9→0.7) | **+9.87%** (peor en 2/2) | no ejecutado | **Descartada (quick)** | — |
 | idea-02 | 2026-07-03 | gae_lambda 0.95 → 0.98 (main.py agent_params, modo batch) | **+88.44%** (peor en 2/2, std ±2500: divergencia) | no ejecutado | **Descartada (quick)** | — |
 | idea-03 | 2026-07-03 | Value loss MSE → Huber/SmoothL1 (ppo_agent.py, ambas rutas de update) | −2.85% (pasó el filtro; std ±752→±397) | **+7.59%** (peor en 5/6) | **Descartada (full)** | — |
-| idea-04 | 2026-07-03 | local_improvement_weight 0.15 → 0.3 (main.py reward_params, modo batch) | **−7.74%** (mejor en 2/2) | **−1.89%** (mejor en 3/6, peor en 0) | **ACEPTADA** (regla: ≥3 mejor, 0 peor) | ver commit |
+| idea-04 | 2026-07-03 | local_improvement_weight 0.15 → 0.3 (main.py reward_params, modo batch) | **−7.74%** (mejor en 2/2) | **−1.89%** (mejor en 3/6, peor en 0) | **ACEPTADA** (regla: ≥3 mejor, 0 peor) | 1a20609 |
+| idea-05 | 2026-07-03 | Alinear resto de pesos batch con adaptive.py (idle 0.15, critical 0.05, balance 0.15, progress 0.05) | **−6.82%** (mejor en 2/2) | **−5.10%** (mejor en 5/6, peor en 0) | **ACEPTADA** | ver commit |
+
+Notas idea-04/05: el eje ganador es el reward shaping — los pesos que main.py
+pasaba en batch eran anteriores al ajuste de adaptive.py. Con ambas aceptadas,
+el makespan medio de referencia bajó de ≈2129–2397 a ≈1994–2238 (−7% acumulado
+aprox. respecto a la referencia post-fixes).
 
 Notas idea-01: con 30 episodios más entropía final = menos explotación, así que
 el quick puede estar sesgado contra ideas que aumentan exploración; aún así el

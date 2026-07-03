@@ -248,13 +248,14 @@ def run_batch_experiment(args):
     # Obtener el directorio de salida estandarizado para experimentos por lotes
     batch_output_dir = get_output_dir([os.path.basename(args.output_dir)])
     
-    # Los parámetros de recompensa se configurarán dinámicamente por problema
+    # Pesos alineados con los valores afinados de AdaptiveRewardStrategy
+    # (local_improvement en 0.3 validado por benchmark)
     reward_params = {
         "makespan_weight": 1.0,
-        "idle_weight": 0.2,
-        "critical_weight": 0.1,
-        "balance_weight": 0.05,
-        "progress_weight": 0.2,
+        "idle_weight": 0.15,
+        "critical_weight": 0.05,
+        "balance_weight": 0.15,
+        "progress_weight": 0.05,
         "local_improvement_weight": 0.3
     }
     
