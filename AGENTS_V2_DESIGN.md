@@ -129,6 +129,18 @@ tras el hito 4 no supera al v1, revisar antes de escalar a atención.
   muestreo de instancias (régimen nativo del diseño) y más episodios (el v2
   entrena ~5× más rápido y su curva de overfit no muestra plateau).
 
+## Sonda: entrenamiento mixto (2026-07-03)
+
+Mismo presupuesto (400 episodios), muestreo de instancia por episodio, 3
+semillas (scripts/train_v2_mixed.py): media global 1859.9 vs 1877.5 del
+secuencial por bloques → **paridad dentro del ruido** (−0.9%; mejor en 3/6,
+peor en 3/6). En instancias del MISMO tamaño el régimen mixto no aporta;
+el pipeline por bloques sigue siendo el estándar para el benchmark. La
+variante con potencial real es el mixto MULTI-TAMAÑO (15×15 + 20×15 juntos,
+solo posible con este régimen) — pendiente, con la vista puesta en mejorar
+el cross-size. Dato operativo: el entrenamiento mixto completo tarda ~6.5
+min (400 eps), útil para iteración rápida de hiperparámetros.
+
 ## Riesgos conocidos
 
 - El muestreo por episodio cambia la dinámica respecto al v1 (que entrena por
