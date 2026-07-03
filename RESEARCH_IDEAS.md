@@ -25,13 +25,13 @@ aquí con su resultado, se acepte o no.**
 
 ## Referencia actual
 
-- **Full**: `benchmarks/idea-05-full__1a20609__*.json`
-  (research + idea-05; makespan medio por problema ≈ 1994–2238)
-- **Quick**: `benchmarks/idea-05-quick__1a20609__*.json`
+- **Full**: `benchmarks/idea-16-full__059b4ee__*.json`
+  (research + idea-16 best-of-64; makespan medio por problema ≈ 1969–2106)
+- **Quick**: `benchmarks/idea-16-quick__059b4ee__*.json`
   (semillas 2,3; 30 episodios)
 
 Referencias anteriores: candidato-fixes-full__7805b6e (hasta idea-04),
-idea-04-full__c263095 (hasta idea-05).
+idea-04-full__c263095 (hasta idea-05), idea-05-full__1a20609 (hasta idea-16).
 
 ## Historial de ideas
 
@@ -64,6 +64,13 @@ supera el umbral de aceptación. El rediseño conjunto del update queda cerrado:
 el régimen por muestra actual no es un accidente, es competitivo.
 
 | idea-15 | 2026-07-03 | gamma 0.99 → 0.995 (dosis intermedia de idea-14) | **+14.70%** (peor en 2/2) | no ejecutado | **Descartada (quick)** | — |
+| idea-16 | 2026-07-03 | Inferencia best-of-64 en evaluación de test (1 greedy + 63 muestreos, mejor por peor caso) | **−6.26%** (mejor en 2/2) | **−3.64%** (mejor en 3/6, peor en 0; std ↓) | **ACEPTADA** | ver commit |
+
+Notas idea-16: cambia el procedimiento de INFERENCIA (más cómputo en test,
+estándar en neural CO), no el entrenamiento. Motivada por el hallazgo de que
+el mejor makespan solía venir de muestreos afortunados: la política estocástica
+vale más como distribución que como su argmax. En 2 problemas el best-of-64 no
+superó al greedy (0.00%) — coherente con ese diagnóstico.
 
 Notas idea-14/15: eje de gamma cerrado en ambas direcciones y sin monotonía
 (0.995 peor que 0.999) — el descuento 0.99 es otro parámetro co-adaptado: las

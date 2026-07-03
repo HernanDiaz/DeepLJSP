@@ -300,9 +300,10 @@ class BatchExperimenter:
                 test_agent.policy.load_state_dict(agent.policy.state_dict())
                 test_agent.value.load_state_dict(agent.value.state_dict())
             
-            # Evaluar
+            # Evaluar con inferencia best-of-N: la política es estocástica y
+            # su mejor muestreo supera con claridad a un único rollout greedy
             start_time = time.time()
-            makespan, schedule, makespan_history, _ = test_agent.evaluate_policy()
+            makespan, schedule, makespan_history, _ = test_agent.evaluate_policy(n_samples=64)
             eval_time = time.time() - start_time
             
             # Evaluar heurísticas para comparación

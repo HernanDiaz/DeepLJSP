@@ -257,23 +257,27 @@ class PPOAgent(Agent):
 
     # El método calculate_gae ha sido movido a la clase PPOMemory
 
-    def _run_episode_without_training(self) -> Tuple[bool, Dict]:
+    def _run_episode_without_training(self, sample: bool = False) -> Tuple[bool, Dict]:
         """
         Ejecuta un episodio completo sin entrenamiento para evaluación o recreación de soluciones.
-        
+
+        Args:
+            sample: Si True, muestrea la política (estocástico) en vez de
+                usar argmax (greedy). Útil para inferencia best-of-N.
+
         Returns:
             Tuple[bool, Dict]: Indicador de si el episodio terminó correctamente y la info del último step
         """
         # Poner las redes en modo de evaluación
         self.policy.eval()
         self.value.eval()
-        
+
         state = self.env.reset()
         done = False
         info = {}
 
         while not done:
-            action_idx, _, _ = self.select_action(state, training=False)
+            action_idx, _, _ = self.select_action(state, training=sample)
 
             if action_idx is None:
                 break
@@ -901,25 +905,45 @@ class PPOAgent(Agent):
         self.episode_rewards = checkpoint.get('episode_rewards', [])
         self.training_losses = checkpoint.get('training_losses', {"policy": [], "value": []})
 
-    def evaluate_policy(self) -> Tuple[float, List[Dict], List[float], float]:
-        """Evalúa la política actual en un episodio completo"""
+    def evaluate_policy(self, n_samples: int = 1) -> Tuple[float, List[Dict], List[float], float]:
+        """
+        Evalúa la política actual.
+
+        Con n_samples=1 (por defecto): un único rollout greedy (argmax),
+        comportamiento original.
+        Con n_samples>1: inferencia best-of-N — un rollout greedy más
+        n_samples-1 muestreos estocásticos de la política, devolviendo la
+        mejor solución encontrada (criterio: peor caso del makespan).
+        """
         from jobshop_rl.models.interval import Interval
-        
+
         start_time = time.time()
-        done, info = self._run_episode_without_training()
-        execution_time = time.time() - start_time
-        
-        if done:
-            # Manejar tanto valores escalares como intervalos
-            max_time = max(self.env.job_completion_time)
-            if isinstance(max_time, Interval):
-                makespan = float(max_time.upper)  # Usar límite superior
+
+        best_makespan = float('inf')
+        best_schedule: List[Dict] = []
+        best_history: List[float] = []
+
+        for i in range(max(1, n_samples)):
+            done, info = self._run_episode_without_training(sample=(i > 0))
+
+            if done:
+                # Manejar tanto valores escalares como intervalos
+                max_time = max(self.env.job_completion_time)
+                if isinstance(max_time, Interval):
+                    makespan = float(max_time.upper)  # Usar límite superior
+                else:
+                    makespan = float(max_time)
             else:
-                makespan = float(max_time)
-        else:
-            makespan = float('inf')
-            
-        return makespan, self.env.schedule_history, self.env.makespan_history, execution_time
+                makespan = float('inf')
+
+            if makespan < best_makespan or i == 0:
+                best_makespan = makespan
+                best_schedule = self.env.schedule_history
+                best_history = self.env.makespan_history
+
+        execution_time = time.time() - start_time
+
+        return best_makespan, best_schedule, best_history, execution_time
 
     def plot_training_history(self, optimal_makespan: Optional[int] = 930):
         """
