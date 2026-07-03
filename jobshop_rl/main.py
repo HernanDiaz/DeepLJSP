@@ -255,7 +255,7 @@ def run_batch_experiment(args):
         "critical_weight": 0.1,
         "balance_weight": 0.05,
         "progress_weight": 0.2,
-        "local_improvement_weight": 0.15
+        "local_improvement_weight": 0.3
     }
     
     # Los parámetros del agente también se pueden adaptar automáticamente
