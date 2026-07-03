@@ -169,6 +169,21 @@ in-size también mejora la transferencia. El 30×20 sigue siendo el punto débil
 → objetivo del experimento B (mixto multi-tamaño), decidido con el usuario:
 B antes que A (atención), con la hibridación al final.
 
+## Experimento B: mixto multi-tamaño (2026-07-04)
+
+3000 episodios sobre 12 instancias de 3 tamaños (15×15+20×15+20×20), 3
+semillas, vs especialista 1000ep (solo 20×15). **El especialista gana en
+TODO** (RE mid, mismas instancias): 15×15_05 8.7 vs 15.5; 20×20_05 15.9 vs
+20.0; 30×15_01 13.9 vs 19.6; 30×20_01 24.5 vs 30.6; 50×20_01 15.1 vs 19.2 —
+incluso en los tamaños que el multisize entrenó y el especialista no.
+Conclusión provisional: **profundidad por instancia > diversidad de tamaños**;
+la hipótesis "más diversidad de datos mejora también el in-size" queda
+refutada a este presupuesto (in-size: multisize +3.2% peor). Confounder
+pendiente: 250 eps/instancia vs 1000 — variante con presupuesto igualado
+(12000 eps) lanzada para cerrar B. Si se confirma, la fase 2 (atención)
+recupera el gatillo para el in-size, y el claim elegante del paper es el del
+especialista: "entrenado en un tamaño, generaliza a toda la parrilla".
+
 ## Sonda: entrenamiento mixto (2026-07-03)
 
 Mismo presupuesto (400 episodios), muestreo de instancia por episodio, 3
