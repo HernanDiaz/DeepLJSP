@@ -107,13 +107,13 @@ tras el hito 4 no supera al v1, revisar antes de escalar a atención.
 
 ## Hitos estimados
 
-| Hito | Contenido | Esfuerzo |
-|---|---|---|
-| 1 | Revisión de este diseño (usuario) | — |
-| 2 | encoder + networks + agent con interfaz v1 + tests de invarianza | 1 sesión |
-| 3 | ppo_trainer + sanity de overfit en 1 instancia | 1 sesión |
-| 4 | quick benchmark vs v1; iterar hiperparámetros base | 1-2 sesiones |
-| 5 | full + RE literatura + cross-size → decisión fase 2 (atención) | 1 sesión + ~3h máquina |
+| Hito | Contenido | Esfuerzo | Estado |
+|---|---|---|---|
+| 1 | Revisión de este diseño (usuario) | — | ✔ aprobado 2026-07-03 |
+| 2 | encoder + networks + agent con interfaz v1 + tests de invarianza | 1 sesión | ✔ commit 9bb52c2, 9/9 tests |
+| 3 | ppo_trainer + sanity de overfit en 1 instancia | 1 sesión | ✔ TA1 500 eps: best 1508 → RE 22.5% (upper) / ~14% (E[Cmax]); curva sana, loss_v 302→11 |
+| 4 | quick benchmark vs v1; iterar hiperparámetros base | 1-2 sesiones | pendiente (requiere hook en AgentFactory/main tras cerrar idea-16) |
+| 5 | full + RE literatura + cross-size → decisión fase 2 (atención) | 1 sesión + ~3h máquina | pendiente |
 
 ## Riesgos conocidos
 
