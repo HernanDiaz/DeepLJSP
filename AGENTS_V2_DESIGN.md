@@ -129,6 +129,19 @@ tras el hito 4 no supera al v1, revisar antes de escalar a atención.
   muestreo de instancias (régimen nativo del diseño) y más episodios (el v2
   entrena ~5× más rápido y su curva de overfit no muestra plateau).
 
+## Sonda: presupuesto de episodios (2026-07-03)
+
+300 episodios/problema (vs 100 del tier estándar), 3 semillas: −9.34% vs
+v2-full, **mejor en 6/6**, varianza ±13-24. **RE literatura: 16.4% media /
+15.5% mejor semilla** (100 eps: 28.0%). La curva de escalado no muestra
+plateau: 100→28.0%, 300→16.4%. El cross-size también mejora con el checkpoint
+de 300 eps: 15×15 → RE 11-14.5% (antes 18-25%), 30×15 → 19-27% (antes 26-38%).
+Contexto de literatura: fEABC ≈ 9.6% en TA15-20 — el constructivo queda a ~7
+puntos de una metaheurística ABC. Fase 2 (atención) sigue sin justificarse:
+el presupuesto aún paga. Sonda de 1000 episodios lanzada para mapear el techo.
+(Nota: el primer intento de esta sonda fue inválido — quirk de --episodes 300
+en main.py, corregido en run_benchmark con --episodes-per-problem.)
+
 ## Sonda: entrenamiento mixto (2026-07-03)
 
 Mismo presupuesto (400 episodios), muestreo de instancia por episodio, 3
