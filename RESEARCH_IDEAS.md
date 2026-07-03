@@ -47,6 +47,17 @@ idea-04-full__c263095 (hasta idea-05).
 | idea-08 | 2026-07-03 | K_epochs 4 → 2 | **+48.17%** (peor en 2/2) | no ejecutado | **Descartada (quick)** | — |
 | idea-09 | 2026-07-03 | K_epochs 4 → 8 | **+61.51%** (peor en 2/2) | no ejecutado | **Descartada (quick)** | — |
 | idea-10 | 2026-07-03 | Conectar GapPenaltyComponent a adaptive (peso 0.1) | **+24.36%** (peor en 2/2) | no ejecutado | **Descartada (quick)** | — |
+| idea-11 | 2026-07-03 | Propuesta A: anexar 4 features de incertidumbre (widths + midpoint, índices 10-13) | **+9.11%** (peor en 2/2; anclas idénticas) | no ejecutado | **Descartada (quick)** | — |
+
+Notas idea-11: el diseño de compatibilidad funcionó (anclas idénticas con ancho
+14), pero LECCIÓN CLAVE: las 4 features eran combinaciones LINEALES de features
+ya presentes (width = upper − lower; midpoint = (lower+upper)/2) — la primera
+capa de la red ya puede formarlas, así que no aportaban información, solo
+entradas redundantes que ralentizan el arranque (+9% a 30 episodios). Un retry
+con sentido necesita información NO derivable linealmente de la fila:
+ratios de incertidumbre relativa (width/midpoint) y/o normalización por el
+límite inferior del problema (contexto a nivel de problema que la fila no
+contiene). Requiere decisión del usuario (ver RESEARCH_PROPOSALS.md).
 
 Notas idea-10: penalizar huecos entra en conflicto con esperas estratégicas
 (dejar hueco para un trabajo crítico es a menudo lo correcto). La composición

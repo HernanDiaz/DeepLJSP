@@ -47,6 +47,16 @@ cargables en problemas con intervalos. Asumible en fase de investigación.
 científica del proyecto (decisiones conscientes de la incertidumbre), reutiliza
 código propio ya escrito y testeado, y es la más barata de las tres.
 
+**RESULTADO (idea-11, 2026-07-03)**: probada y descartada en quick (+9.11%).
+El diseño de compatibilidad funcionó (anclas idénticas), pero el análisis
+posterior mostró el fallo conceptual: widths y midpoint son combinaciones
+lineales de los bounds ya presentes — cero información nueva para la red.
+**Variante A2 con contenido real** (pendiente de decisión): (a) incertidumbre
+RELATIVA `width/midpoint` (no lineal), y (b) normalización de todas las
+features temporales por el límite inferior del problema (contexto que la fila
+no contiene y que además haría comparables las features entre los 4 problemas
+de entrenamiento, relevante porque el agente transfiere pesos entre ellos).
+
 ---
 
 ## Propuesta B — Rediseño del update con lr compensado
