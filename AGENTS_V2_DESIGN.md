@@ -142,6 +142,17 @@ el presupuesto aún paga. Sonda de 1000 episodios lanzada para mapear el techo.
 (Nota: el primer intento de esta sonda fue inválido — quirk de --episodes 300
 en main.py, corregido en run_benchmark con --episodes-per-problem.)
 
+## Cross-size ampliado (2026-07-03, checkpoint 300 eps entrenado solo en 20×15)
+
+Zero-shot, best-of-64, RE por E[Cmax] vs LB crisp: 15×15 → 11-14.5%,
+20×20 → 16.4%, 30×15 → 19-27%, 30×20 → 32.3%, 50×15 → 25.0%, 50×20 → 12.8%.
+**Gana a MOR en 10/10 instancias de 6 tamaños distintos** sin haberlos visto.
+Sin acantilado de degradación (episodios de 1000 ops OK, ~4 s/rollout).
+Matiz: en las clases 50×N los LB son relativamente más alcanzables (el TS de
+la literatura baja a RE ~0-2%), así que la distancia al estado del arte allí
+es mayor de lo que sugiere el RE. La variante multi-tamaño del entrenamiento
+mixto queda como palanca natural para cerrar la brecha en 30×20.
+
 ## Sonda: entrenamiento mixto (2026-07-03)
 
 Mismo presupuesto (400 episodios), muestreo de instancia por episodio, 3
