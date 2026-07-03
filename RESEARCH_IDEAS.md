@@ -46,6 +46,14 @@ idea-04-full__c263095 (hasta idea-05).
 | idea-07 | 2026-07-03 | Mini-batches de 32 en la ruta de update estándar (paso por batch en vez de por muestra) | **+92.46%** (peor en 2/2, aprendizaje casi nulo) | no ejecutado | **Descartada (quick)** | — |
 | idea-08 | 2026-07-03 | K_epochs 4 → 2 | **+48.17%** (peor en 2/2) | no ejecutado | **Descartada (quick)** | — |
 | idea-09 | 2026-07-03 | K_epochs 4 → 8 | **+61.51%** (peor en 2/2) | no ejecutado | **Descartada (quick)** | — |
+| idea-10 | 2026-07-03 | Conectar GapPenaltyComponent a adaptive (peso 0.1) | **+24.36%** (peor en 2/2) | no ejecutado | **Descartada (quick)** | — |
+
+Notas idea-10: penalizar huecos entra en conflicto con esperas estratégicas
+(dejar hueco para un trabajo crítico es a menudo lo correcto). La composición
+de reward actual (idea-05) parece un óptimo local robusto: añadir componentes
+o mover pesos individualmente lo empeora. Próximos pasos con mejor pinta son
+de diff mediano: features enriquecidas (sin romper índices de heurísticas),
+mini-batching con lr compensado, o reparar+conectar prioritized replay.
 
 Notas idea-07/08/09: EJE CERRADO — la mecánica de updates (K_epochs=4 con pasos
 por muestra) es un equilibrio muy fino: reducir el volumen de pasos (batches,
