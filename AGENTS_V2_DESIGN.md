@@ -112,8 +112,22 @@ tras el hito 4 no supera al v1, revisar antes de escalar a atención.
 | 1 | Revisión de este diseño (usuario) | — | ✔ aprobado 2026-07-03 |
 | 2 | encoder + networks + agent con interfaz v1 + tests de invarianza | 1 sesión | ✔ commit 9bb52c2, 9/9 tests |
 | 3 | ppo_trainer + sanity de overfit en 1 instancia | 1 sesión | ✔ TA1 500 eps: best 1508 → RE 22.5% (upper) / ~14% (E[Cmax]); curva sana, loss_v 302→11 |
-| 4 | quick benchmark vs v1; iterar hiperparámetros base | 1-2 sesiones | pendiente (requiere hook en AgentFactory/main tras cerrar idea-16) |
-| 5 | full + RE literatura + cross-size → decisión fase 2 (atención) | 1 sesión + ~3h máquina | pendiente |
+| 4 | quick benchmark vs v1; iterar hiperparámetros base | 1-2 sesiones | ✔ quick: −14.28% vs v1 (commit d15a325), sin tuning |
+| 5 | full + RE literatura + cross-size → decisión fase 2 (atención) | 1 sesión + ~3h máquina | ✔ **CRITERIO DE ÉXITO CUMPLIDO** — ver resultados |
+
+## Resultados del hito 5 (2026-07-03)
+
+- **Full vs v1 (idea-16-full)**: −7.41% de media, **mejor en 6/6** con 0 peores;
+  varianza entre semillas ±126-180 → ±22-57. Anclas idénticas.
+- **RE literatura (TA15-20)**: **28.0% media / 25.0% mejor semilla** (v1 final:
+  38.6%/29.7%; MOR ≈ 46%). Criterio pre-registrado (≤35%) cumplido con margen.
+- **Cross-size zero-shot** (checkpoint 20×15, best-of-64): 15×15 → RE 18-25%
+  (MOR 30-43%); 30×15 → RE 26-38% (MOR 34-56%). Gana a MOR en 6/6 tamaños no
+  vistos. Capacidad inexistente en v1.
+- **Decisión fase 2 (atención)**: NO necesaria por ahora — Deep Sets supera el
+  criterio. Siguientes palancas más baratas primero: entrenamiento mixto por
+  muestreo de instancias (régimen nativo del diseño) y más episodios (el v2
+  entrena ~5× más rápido y su curva de overfit no muestra plateau).
 
 ## Riesgos conocidos
 
