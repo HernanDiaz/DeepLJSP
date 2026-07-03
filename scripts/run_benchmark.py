@@ -77,7 +77,9 @@ def run_seed(tier_config, seed, episodes, output_name):
         "--mode", "batch",
         "--train-problem", train_arg,
         "--eval-problem", ",".join(tier_config["eval"]),
-        "--episodes", str(episodes),
+        # Usar el flag nativo del modo batch: --episodes tiene default 300 y
+        # main.py no distingue "300 explícito" del default (lo ignoraría)
+        "--episodes-per-problem", str(episodes),
         "--reward", "adaptive",
         "--output-dir", output_name,
         "--use-ortools",
