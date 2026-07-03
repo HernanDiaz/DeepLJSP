@@ -43,10 +43,18 @@ idea-04-full__c263095 (hasta idea-05).
 | idea-04 | 2026-07-03 | local_improvement_weight 0.15 → 0.3 (main.py reward_params, modo batch) | **−7.74%** (mejor en 2/2) | **−1.89%** (mejor en 3/6, peor en 0) | **ACEPTADA** (regla: ≥3 mejor, 0 peor) | 1a20609 |
 | idea-05 | 2026-07-03 | Alinear resto de pesos batch con adaptive.py (idle 0.15, critical 0.05, balance 0.15, progress 0.05) | **−6.82%** (mejor en 2/2) | **−5.10%** (mejor en 5/6, peor en 0) | **ACEPTADA** | e010e08 |
 | idea-06 | 2026-07-03 | local_improvement_weight 0.3 → 0.4 | **+26.92%** (peor en 2/2) | no ejecutado | **Descartada (quick)** | — |
+| idea-07 | 2026-07-03 | Mini-batches de 32 en la ruta de update estándar (paso por batch en vez de por muestra) | **+92.46%** (peor en 2/2, aprendizaje casi nulo) | no ejecutado | **Descartada (quick)** | — |
 
 Notas idea-06: la relación no es monótona — 0.4 es claramente peor que 0.3.
 El óptimo del peso de local_improvement está alrededor de 0.3; este eje queda
 explorado (0.15 < 0.3 > 0.4) y no merece más barridos finos por ahora.
+
+Notas idea-07: promediar en mini-batches de 32 redujo los pasos de optimizador
+por episodio de ~1200 a ~40 con el mismo lr → la magnitud efectiva de
+actualización cayó ~30× y el agente casi no aprende (+92%, makespans cerca de
+aleatorio). Variante pendiente si se retoma: mini-batches + lr escalado
+(p.ej. 1e-3) o batches pequeños (8). El paso por muestra actual actúa de facto
+como un lr efectivo alto.
 
 Notas idea-04/05: el eje ganador es el reward shaping — los pesos que main.py
 pasaba en batch eran anteriores al ajuste de adaptive.py. Con ambas aceptadas,
