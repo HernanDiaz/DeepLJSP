@@ -63,7 +63,14 @@ el mejor punto intermedio como mucho EMPATA con el régimen actual, y empatar no
 supera el umbral de aceptación. El rediseño conjunto del update queda cerrado:
 el régimen por muestra actual no es un accidente, es competitivo.
 
-## Conclusión tras 13 iteraciones (2026-07-03)
+| idea-15 | 2026-07-03 | gamma 0.99 → 0.995 (dosis intermedia de idea-14) | **+14.70%** (peor en 2/2) | no ejecutado | **Descartada (quick)** | — |
+
+Notas idea-14/15: eje de gamma cerrado en ambas direcciones y sin monotonía
+(0.995 peor que 0.999) — el descuento 0.99 es otro parámetro co-adaptado: las
+escalas de los componentes de recompensa (makespan_scale, etc.) y el crítico
+están calibrados alrededor de él. Refuerza la conclusión general de abajo.
+
+## Conclusión tras 15 iteraciones (2026-07-03)
 
 El sistema es un óptimo local FUERTEMENTE CO-ADAPTADO: inicialización, learning
 rate, régimen de updates por muestra y escala cruda de las features encajan
