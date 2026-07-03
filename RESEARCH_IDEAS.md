@@ -45,10 +45,13 @@ idea-04-full__c263095 (hasta idea-05).
 | idea-06 | 2026-07-03 | local_improvement_weight 0.3 → 0.4 | **+26.92%** (peor en 2/2) | no ejecutado | **Descartada (quick)** | — |
 | idea-07 | 2026-07-03 | Mini-batches de 32 en la ruta de update estándar (paso por batch en vez de por muestra) | **+92.46%** (peor en 2/2, aprendizaje casi nulo) | no ejecutado | **Descartada (quick)** | — |
 | idea-08 | 2026-07-03 | K_epochs 4 → 2 | **+48.17%** (peor en 2/2) | no ejecutado | **Descartada (quick)** | — |
+| idea-09 | 2026-07-03 | K_epochs 4 → 8 | **+61.51%** (peor en 2/2) | no ejecutado | **Descartada (quick)** | — |
 
-Notas idea-07/08: patrón consistente — el aprendizaje de este agente depende del
-VOLUMEN de pasos de gradiente por episodio (30× menos = catastrófico, 2× menos
-= +48%). Hipótesis derivada: más pasos (K_epochs 8) debería ayudar → idea-09.
+Notas idea-07/08/09: EJE CERRADO — la mecánica de updates (K_epochs=4 con pasos
+por muestra) es un equilibrio muy fino: reducir el volumen de pasos (batches,
+menos épocas) O aumentarlo (más épocas) degrada fuerte. No insistir en dials de
+K_epochs/batching sin rediseñar el update completo (lr, clipping y épocas a la
+vez). El eje productivo sigue siendo el reward shaping (idea-04/05 aceptadas).
 
 Notas idea-06: la relación no es monótona — 0.4 es claramente peor que 0.3.
 El óptimo del peso de local_improvement está alrededor de 0.3; este eje queda
