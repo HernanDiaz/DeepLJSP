@@ -150,6 +150,26 @@ activa**: para seguir bajando hacen falta expresividad (atención), datos
 (mixto multi-tamaño) o hibridación (sembrar el TS con soluciones del v2).
 Decisión de dirección pendiente del usuario.
 
+## FASE 2 (atención): VEREDICTO FINAL — no rentable a estos presupuestos (2026-07-04)
+
+Ablación limpia (mismo código, flag DEEPLJSP_V2_ATTENTION; 2 bloques pre-LN,
+4 cabezas), 3 semillas por punto:
+
+| Punto | Deep Sets | Atención | Veredicto |
+|---|---|---|---|
+| Overfit TA1 500 eps | 1508 | 1534 | ligeramente peor, curva sana |
+| Full 300 eps | RE 16.4% | RE 17.5% (+1.20%) | paridad (6/6 ruido) |
+| Full 1000 eps | RE 13.4% | RE 15.0% (+1.62%) | paridad-peor (5/6 ruido, 1 peor) |
+
+La hipótesis "la atención remonta con presupuesto" queda refutada: paridad o
+peor en ambos puntos de operación con ~30% más de coste por episodio. El
+pooling media+máx ya captura las interacciones necesarias a estas escalas.
+**Configuración final del v2: Deep Sets, 1000 eps/problema, best-of-64 →
+RE 13.4% media / 12.3% mejor semilla.** La implementación de atención queda
+en el código (flag) y en la rama phase2-attention para la comparativa del
+paper. Siguiente valor: hibridación con el TS del usuario (reservada al final
+por decisión suya).
+
 ## Cross-size ampliado (2026-07-03, checkpoint 300 eps entrenado solo en 20×15)
 
 Zero-shot, best-of-64, RE por E[Cmax] vs LB crisp: 15×15 → 11-14.5%,
