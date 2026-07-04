@@ -180,9 +180,16 @@ Conclusión provisional: **profundidad por instancia > diversidad de tamaños**;
 la hipótesis "más diversidad de datos mejora también el in-size" queda
 refutada a este presupuesto (in-size: multisize +3.2% peor). Confounder
 pendiente: 250 eps/instancia vs 1000 — variante con presupuesto igualado
-(12000 eps) lanzada para cerrar B. Si se confirma, la fase 2 (atención)
-recupera el gatillo para el in-size, y el claim elegante del paper es el del
-especialista: "entrenado en un tamaño, generaliza a toda la parrilla".
+(12000 eps) lanzada para cerrar B.
+
+**VEREDICTO FINAL B (2026-07-04, presupuesto igualado 1000 eps/instancia)**:
+el especialista sigue ganando en las 5 instancias de comparación (RE mid,
+multisize media de 3 semillas): 15×15_05 8.7 vs 9.5; 20×20_05 15.9 vs 18.5;
+30×15_01 13.9 vs 16.1; 30×20_01 24.5 vs 28.3; 50×20_01 15.1 vs 15.7. B
+cerrado sin confounders: la diversidad de tamaños no aporta; el claim del
+paper es el del especialista ("entrenado en un tamaño, generaliza a toda la
+parrilla"). La fase 2 (atención) recupera el gatillo → arrancada según el
+plan acordado con el usuario.
 
 ## Sonda: entrenamiento mixto (2026-07-03)
 
