@@ -92,6 +92,8 @@ def main():
                         help="rutas .pt separadas por comas (generator=v2)")
     parser.add_argument("--attention", type=int, default=0)
     parser.add_argument("--epsilon", type=float, default=0.1)
+    parser.add_argument("--rules", type=str, default="spt,lpt,mor,mwkr",
+                        help="reglas para el generador grasp, separadas por comas")
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--out", type=str, default="seeds")
     args = parser.parse_args()
@@ -121,7 +123,9 @@ def main():
                 perm, mk = rollout_v2(agent, env)
                 lines.append(" ".join(map(str, perm)) + ";" + mk)
     else:
-        rules = [SPTHeuristic(), LPTHeuristic(), MORHeuristic(), MWKRHeuristic()]
+        rule_map = {"spt": SPTHeuristic, "lpt": LPTHeuristic,
+                    "mor": MORHeuristic, "mwkr": MWKRHeuristic}
+        rules = [rule_map[r.strip().lower()]() for r in args.rules.split(",") if r.strip()]
         for _ in range(args.n):
             perm, mk = rollout_grasp(env, rules, args.epsilon, rng)
             lines.append(" ".join(map(str, perm)) + ";" + mk)
