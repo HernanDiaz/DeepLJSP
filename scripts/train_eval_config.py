@@ -43,7 +43,10 @@ def main():
     parser.add_argument("--gae", type=float, default=0.95)
     parser.add_argument("--hidden", type=int, default=128)
     parser.add_argument("--episodes", type=int, default=EPISODES_PER_INSTANCE)
+    parser.add_argument("--train-ids", type=str, default=",".join(TRAIN_IDS))
     args = parser.parse_args()
+
+    train_ids = [p.strip() for p in args.train_ids.split(",") if p.strip()]
 
     set_random_seed(args.seed)
 
@@ -58,7 +61,7 @@ def main():
 
     # Entrenamiento por bloques con transferencia de pesos (como el pipeline)
     agent = None
-    for pid in TRAIN_IDS:
+    for pid in train_ids:
         env = EnvironmentFactory.create_from_problem(
             PROBLEM_REGISTRY[pid](), "adaptive", seed=args.seed)
         if agent is None:

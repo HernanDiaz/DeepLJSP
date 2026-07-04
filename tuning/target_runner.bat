@@ -13,6 +13,6 @@ goto collect
 :run
 cd /d E:\PycharmProjects\DeepLJSP
 set LAST=999999
-for /f "delims=" %%i in ('venv\Scripts\python.exe scripts\train_eval_config.py --seed %TRAINSEED% !PARAMS! 2^>nul') do set LAST=%%i
+for /f "delims=" %%i in ('venv\Scripts\python.exe scripts\train_eval_config.py --seed %TRAINSEED% --train-ids int__tai20_15_01 !PARAMS! 2^>nul') do set LAST=%%i
 echo !LAST!
 endlocal & exit /b 0
