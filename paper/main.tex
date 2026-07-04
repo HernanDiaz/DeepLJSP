@@ -1,0 +1,398 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\hypersetup{colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue}
+
+\newcommand{\ECmax}{E[\mathbf{C}_{\max}]}
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+
+\title{\textbf{A Size-Invariant Deep Reinforcement Learning Policy\\
+for the Interval Job Shop Scheduling Problem}}
+
+\author{Hern\'an D\'iaz \and \todo{co-authors}}
+\date{Draft --- July 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We present a constructive deep reinforcement learning (DRL) policy for the
+Interval Job Shop Scheduling Problem (IJSP), in which task processing times
+are only known to lie within closed intervals. The policy scores eligible
+operations through a Deep Sets encoder over dimensionless, per-operation
+uncertainty-aware features combined with a pooled global context, making both
+the policy and value networks \emph{independent of the instance size}: a
+single trained network dispatches instances of any number of jobs and
+machines. Trained with PPO on only four $20{\times}15$ Taillard IJSP
+instances, the policy reaches a relative error of $13.4\%$ (mean of three
+seeds; $12.3\%$ best) with respect to the crisp Taillard lower bounds on
+unseen $20{\times}15$ instances, clearly outperforming the best priority
+dispatching rule (MOR, ${\approx}46\%$) while producing solutions in
+milliseconds. Zero-shot, the same network beats MOR on every tested instance
+of all seven Taillard size classes, from $15{\times}15$ to $50{\times}20$.
+Controlled ablations show that (i) sampling-based best-of-$N$ inference
+provides a consistent improvement, (ii) self-attention over the eligible
+operations does not improve over pooling at practical training budgets, and
+(iii) a specialist trained on a single size class generalizes better across
+sizes than a multi-size-trained counterpart, even at an equalized
+per-instance budget. Finally, we characterize the quality of the policy as a
+population initializer for a state-of-the-art tabu search, laying out a
+pre-registered hybridization study.
+\end{abstract}
+
+\section{Introduction}
+
+The Job Shop Scheduling Problem (JSP) is a classical NP-hard combinatorial
+optimization problem. In many practical settings, task durations are not
+known precisely at scheduling time; the \emph{interval} JSP (IJSP) models
+this uncertainty by specifying each processing time as a closed interval,
+and asks for a robust operation ordering evaluated under interval
+arithmetic~\cite{DiazICAE2023,DiazFEABC2023}. State-of-the-art IJSP solvers
+are metaheuristics---artificial bee colony variants~\cite{DiazFEABC2023,
+DiazICAE2023} and, more recently, tabu search with specialized
+neighbourhoods~\cite{DiazTS2026}---which optimize each instance individually
+under a per-instance search budget of minutes.
+
+An orthogonal line of research learns \emph{constructive} policies for
+scheduling with deep reinforcement learning (DRL)~\cite{Zhang2020L2D,
+Kool2019}. Such policies build a schedule in a single dispatching pass
+(milliseconds to seconds) and, once trained, amortize their cost across
+instances. To our knowledge, no learned constructive policy had been
+evaluated on the IJSP.
+
+This paper makes the following contributions:
+\begin{enumerate}
+  \item A \textbf{size-invariant DRL policy for the IJSP}: per-operation
+  features are dimensionless (normalized by an instance lower bound) and
+  uncertainty-aware; a Deep Sets~\cite{Zaheer2017} encoder with pooled
+  global context yields policy and value networks whose parameters are
+  independent of the numbers of jobs and machines.
+  \item An \textbf{empirical scaling and generalization study} on the
+  Taillard IJSP benchmark: the policy improves monotonically with training
+  budget on its training size class and transfers zero-shot to all seven
+  size classes, dominating the best dispatching rule everywhere.
+  \item \textbf{Controlled ablations} with paired seeds and deterministic
+  anchors: best-of-$N$ inference, self-attention versus pooling, and
+  specialist versus multi-size training.
+  \item A \textbf{pre-registered hybridization design} that uses the policy
+  to seed the initial population of a state-of-the-art tabu search,
+  including a characterization of seed-pool quality against randomized
+  dispatching baselines.
+\end{enumerate}
+
+\section{Related Work}
+
+\paragraph{Interval JSP.} The IJSP evaluates schedules with interval
+arithmetic and ranks interval makespans either by their expected value
+(midpoint) or lexicographically by upper bound~\cite{DiazICAE2023}.
+Population-based metaheuristics constitute the state of the art:
+\emph{fEABC}~\cite{DiazFEABC2023} and \emph{ESABC}~\cite{DiazICAE2023}
+report mean relative errors of roughly $5$--$14\%$ on the Taillard IJSP set,
+and irace-tuned tabu search reduces this to $0$--$12\%$ depending on the
+size class~\cite{DiazTS2026}.
+
+\paragraph{DRL for scheduling.} Learning-to-dispatch approaches encode the
+scheduling state and score eligible operations with neural networks trained
+by policy-gradient methods~\cite{Zhang2020L2D}; attention-based encoders
+are standard in neural combinatorial optimization~\cite{Kool2019}. Sampling
+multiple rollouts at inference (best-of-$N$) is a common, effective
+decoder~\cite{Kool2019}. Our work differs in the uncertainty setting
+(intervals), in the explicitly dimensionless feature design that yields
+size invariance for both heads, and in the systematic ablation methodology.
+
+\section{The Interval Job Shop Scheduling Problem}
+
+An IJSP instance consists of $n$ jobs and $m$ machines; each job is a fixed
+sequence of $m$ operations, one per machine, and each operation $o$ has an
+interval duration $\mathbf{p}_o=[p^L_o,\,p^U_o]$. A solution is an operation
+processing order compatible with job precedences; its \emph{semiactive}
+schedule assigns to each operation the earliest start compatible with its
+job and machine predecessors, computed with interval arithmetic:
+$\mathbf{s}_o=\max(\mathbf{c}_{jp(o)},\,\mathbf{c}_{mp(o)})$ with the
+component-wise maximum, and $\mathbf{c}_o=\mathbf{s}_o+\mathbf{p}_o$. The
+interval makespan $\mathbf{C}_{\max}$ is the lexicographic maximum (by upper
+bound, then lower) of job completions. Following~\cite{DiazICAE2023},
+solutions are ranked during optimization by the worst case $C^U_{\max}$
+(with the lower bound as tie-breaker), and reported using the expected
+makespan $\ECmax$ (interval midpoint) through the relative error
+\[
+\mathrm{RE}(\%) \;=\; \frac{\ECmax - \mathrm{LB}}{\mathrm{LB}} \times 100,
+\]
+where LB is the published lower bound of the crisp Taillard
+counterpart~\cite{Taillard1993}. As in prior IJSP work, these crisp bounds
+are an indicative, hardware-independent yardstick rather than a strict
+optimality gap.
+
+\section{Method}
+
+\subsection{Dispatching as a Markov decision process}
+
+A schedule is built in $nm$ steps. At each step the agent observes the set
+of \emph{eligible} operations (the next unscheduled operation of each
+unfinished job) and selects one; the environment appends it to the schedule
+and updates job and machine completion intervals. The reward combines a
+terminal makespan term with dense shaping components (idle time, load
+balance, local bound improvement) whose weights were tuned by a
+benchmark-gated search; all reward components collapse intervals by their
+worst case.
+
+\subsection{Size-invariant state representation}
+
+Each eligible operation is described by a $16$-dimensional vector of
+\emph{dimensionless} quantities: duration, earliest start and remaining job
+work (lower and upper bounds divided by the instance lower bound
+$\mathrm{LB}$), their relative interval widths, job progress, remaining
+operation count fraction, machine context (remaining machine load
+$/\mathrm{LB}$, potential idle gap $/\mathrm{LB}$, relative machine
+congestion), slack against the earliest eligible operation, and normalized
+machine/job completion times. A $12$-dimensional global context aggregates
+the schedule state exclusively through means, maxima and standard
+deviations of per-machine and per-job quantities, plus the pending relative
+uncertainty. No feature depends on $n$ or $m$ through its dimension.
+
+\subsection{Architecture}
+
+A shared MLP $\phi$ (two layers, width $128$, LayerNorm) embeds each
+eligible operation. The global embedding $g$ is an MLP over the
+concatenation of masked mean- and max-pooling of $\{\phi_i\}$ with the
+global features (a Deep Sets construction~\cite{Zaheer2017}). The policy
+head scores each candidate as $\mathrm{MLP}([\phi_i;g])$ followed by a
+masked softmax; the value head is an MLP over $g$ alone. Both heads are
+therefore size-invariant. An optional stack of pre-LN self-attention blocks
+over $\{\phi_i\}$ (evaluated in Section~\ref{sec:ablations}) can be
+inserted before pooling.
+
+\subsection{Training and inference}
+
+The agent is trained with PPO~\cite{Schulman2017} using minibatch updates
+(256 transitions, 4 epochs), GAE ($\lambda{=}0.95$), advantage
+normalization, gradient clipping, orthogonal initialization and
+$\gamma{=}1$ (finite horizon, terminal-dominated reward). Training
+alternates sampled episodes with periodic greedy evaluations used for model
+selection. At test time we use \textbf{best-of-$N$} inference: one greedy
+rollout plus $N{-}1$ policy samples, returning the best solution by worst
+case ($N{=}64$ throughout).
+
+\section{Experimental Setup}
+\label{sec:setup}
+
+\paragraph{Instances and data split.} We use the Taillard IJSP benchmark
+(TA1--TA70, seven size classes)~\cite{DiazICAE2023,Taillard1993}. The final
+model is trained on \textbf{TA11--TA14} only ($20{\times}15$);
+\textbf{TA15--TA20} served as the development set for all configuration
+decisions and are reported separately; all remaining instances are entirely
+unseen. Three independent training seeds are reported as mean and best.
+
+\paragraph{Protocol.} All comparisons run under a fixed benchmark harness
+with per-seed bit-reproducibility. Deterministic dispatching rules (SPT,
+LPT, MOR, MWKR) act as \emph{anchors}: their results are verified to be
+identical across all code versions, guaranteeing that improvements are
+attributable to learning and not to environment changes. Configuration
+changes were accepted only under a pre-registered two-stage rule (a cheap
+filter benchmark, then a full confirmation benchmark).
+
+\paragraph{Baselines.} Priority dispatching rules (best: MOR); published
+IJSP solvers fEABC~\cite{DiazFEABC2023}, ESABC~\cite{DiazICAE2023} and tabu
+search~\cite{DiazTS2026} as reference yardsticks (30 runs, minutes of
+search per instance, different computational class).
+
+\section{Results}
+
+\subsection{In-size performance and scaling}
+
+Figure~\ref{fig:scaling} and Table~\ref{tab:scaling} show the development
+of mean RE on TA15--TA20 as the per-instance training budget grows. The
+policy scales monotonically ($28.0\%$ at $100$ episodes, $16.4\%$ at $300$,
+$13.4\%$ at $1000$) with clearly diminishing returns at the last step,
+locating the pure-budget ceiling around $11$--$12\%$. Seed variance
+collapses with budget (e.g.\ per-instance standard deviations of
+$13$--$24$ makespan units at $300$ episodes). Best-of-$64$ inference
+contributes a consistent improvement over a single greedy rollout
+($-3.6\%$ mean makespan, better on 3/6 development instances with none
+worse, at its introduction point).
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=.72\linewidth]{figures/fig_scaling.pdf}
+  \caption{Mean RE on the development set (TA15--TA20) versus training
+  episodes per instance. Dotted lines: best dispatching rule (MOR) and
+  published metaheuristics (30 runs, minutes per instance) as reference
+  yardsticks.}
+  \label{fig:scaling}
+\end{figure}
+
+\begin{table}[t]
+  \centering\small
+  \caption{Mean [best-seed] RE (\%) on TA15--TA20 (development set).}
+  \label{tab:scaling}
+  \begin{tabular}{lccc}
+    \toprule
+    Configuration & 100 eps & 300 eps & 1000 eps \\
+    \midrule
+    v2 Deep Sets & 28.0 [25.0] & 16.4 [15.5] & \textbf{13.4} [\textbf{12.3}] \\
+    v2 + attention (2 blocks) & --- & 17.5 [16.1] & 15.0 [13.9] \\
+    \midrule
+    MOR (best rule) & \multicolumn{3}{c}{46.4} \\
+    fEABC~\cite{DiazFEABC2023} / TS-N$_2$~\cite{DiazTS2026} &
+    \multicolumn{3}{c}{9.6 / 3.9 (search-based reference)} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Zero-shot cross-size generalization}
+
+Because no network dimension depends on the instance size, the
+$20{\times}15$ specialist evaluates directly on any size class.
+Figure~\ref{fig:crosssize} reports RE on unseen instances of all seven
+classes: the policy beats MOR on \textbf{every} tested instance, with RE
+ranging from $7.0\%$ ($15{\times}15$) to $24.5$--$25.0\%$ on the hardest
+transfer classes ($30{\times}20$, $50{\times}15$), and no degradation cliff
+up to $1000$-operation episodes ($50{\times}20$: $15.1\%$ versus MOR's
+$48.7\%$).
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=.9\linewidth]{figures/fig_crosssize.pdf}
+  \caption{Zero-shot RE by instance for the $20{\times}15$-trained
+  specialist (best-of-64) versus the MOR dispatching rule.}
+  \label{fig:crosssize}
+\end{figure}
+
+\subsection{Ablations}
+\label{sec:ablations}
+
+\paragraph{Attention versus pooling.} Adding two self-attention blocks over
+the eligible operations---identical code path, one flag---yields parity at
+$300$ episodes ($+1.2\%$, all six development instances within noise) and
+parity-to-worse at $1000$ ($+1.6\%$, one instance significantly worse), at
+${\sim}30\%$ higher per-episode cost (Table~\ref{tab:scaling}). At these
+budgets, pooled context already captures the necessary interaction
+information.
+
+\paragraph{Specialist versus multi-size training.} Training one agent on
+twelve instances of three size classes ($15{\times}15$, $20{\times}15$,
+$20{\times}20$) loses to the single-size specialist on \emph{all} five
+common evaluation instances---including the size classes the multi-size
+agent itself trained on---both at matched total budget ($3000$ episodes)
+and at matched \emph{per-instance} budget ($12{,}000$ episodes; e.g.\
+$9.5$ vs.\ $8.7$ on TA5, $18.5$ vs.\ $15.9$ on TA25-class, $28.3$ vs.\
+$24.5$ on TA41-class). Per-instance depth dominates size diversity, and
+specialist generalization is the stronger phenomenon.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=.6\linewidth]{figures/fig_ablation.pdf}
+  \caption{In-size ablation summary (mean RE, TA15--TA20, 1000 episodes).
+  The tuned v1 flat-feature agent is shown for reference.}
+  \label{fig:ablation}
+\end{figure}
+
+\subsection{Positioning against search-based solvers}
+
+The learned policy occupies a distinct computational class: it constructs a
+solution in milliseconds (best-of-64: seconds) versus minutes of
+per-instance search for the metaheuristics. Its final in-size RE
+($13.4\%$) remains above fEABC ($9.6\%$) and far from tuned tabu search
+($3.9\%$); its value lies in amortized speed, in full cross-size
+generality from a single network, and---as explored next---as an
+initializer for search.
+
+\section{Toward Hybridization: Seeding Tabu Search Populations}
+\label{sec:hybrid}
+
+The tabu search of~\cite{DiazTS2026} starts each run from a population of
+$250$ individuals. We propose seeding a fraction $p$ of this population
+with policy samples. Figure~\ref{fig:pools} characterizes seed-pool quality
+on three clean pilot instances (excluded from RL training/development and
+from the TS irace tuning): the \emph{median} policy sample is better than
+the \emph{best} individual produced by randomized dispatching baselines
+(MOR with $\epsilon$-greedy noise, and a mixed-rule GRASP-style generator)
+by $15$--$25$ RE points.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=.95\linewidth]{figures/fig_pools.pdf}
+  \caption{Seed-pool quality (RE of $1024$ sampled solutions per generator)
+  on the three pilot instances.}
+  \label{fig:pools}
+\end{figure}
+
+The pre-registered pilot compares five arms (control; $p\in\{10,50,100\%\}$
+with policy seeds; $p{=}50\%$ with MOR-$\epsilon$ seeds) under paired RNG
+seeds, recording anytime curves. Hypotheses: (H1) policy seeding reduces
+time-to-target; (H2) the benefit exceeds that of heuristic seeding at equal
+$p$; (H3) an intermediate $p$ is optimal due to diversity loss at
+$p{=}100\%$. \todo{pilot results pending}
+
+\section{Conclusions}
+
+We introduced a size-invariant constructive DRL policy for the IJSP that
+dominates priority dispatching rules across the entire Taillard grid from a
+single network trained on four instances of one size class, and
+characterized its scaling, its inference-time sampling gains, and two
+negative results of methodological value (attention parity; specialist
+over multi-size training). The policy's sample distributions position it as
+a strong population initializer for state-of-the-art search, which the
+ongoing hybridization study quantifies. Future work includes training-time
+curricula exploiting the size invariance, uncertainty-heterogeneous
+instances where ranking criteria diverge, and end-to-end integration with
+neighbourhood search.
+
+\begin{thebibliography}{9}
+
+\bibitem{DiazFEABC2023}
+H.~D\'iaz, J.~J.~Palacios, I.~Gonz\'alez-Rodr\'iguez, C.~R.~Vela.
+\newblock Fast elitist {ABC} for makespan optimisation in interval {JSP}.
+\newblock \textit{Natural Computing}, 22(4):645--657, 2023.
+
+\bibitem{DiazICAE2023}
+H.~D\'iaz, J.~J.~Palacios, I.~Gonz\'alez-Rodr\'iguez, C.~R.~Vela.
+\newblock An elitist seasonal artificial bee colony algorithm for the
+  interval job shop.
+\newblock \textit{Integrated Computer-Aided Engineering}, 30(3):223--242, 2023.
+
+\bibitem{DiazTS2026}
+H.~D\'iaz et al.
+\newblock Neighbourhood structures and ranking operators for the interval
+  job shop scheduling problem.
+\newblock Under review, 2026.
+
+\bibitem{Taillard1993}
+E.~Taillard.
+\newblock Benchmarks for basic scheduling problems.
+\newblock \textit{European Journal of Operational Research}, 64(2):278--285, 1993.
+
+\bibitem{Zhang2020L2D}
+C.~Zhang, W.~Song, Z.~Cao, J.~Zhang, P.~S.~Tan, C.~Xu.
+\newblock Learning to dispatch for job shop scheduling via deep
+  reinforcement learning.
+\newblock \textit{NeurIPS}, 2020.
+
+\bibitem{Kool2019}
+W.~Kool, H.~van Hoof, M.~Welling.
+\newblock Attention, learn to solve routing problems!
+\newblock \textit{ICLR}, 2019.
+
+\bibitem{Zaheer2017}
+M.~Zaheer, S.~Kottur, S.~Ravanbakhsh, B.~P\'oczos, R.~Salakhutdinov,
+A.~Smola.
+\newblock Deep sets.
+\newblock \textit{NeurIPS}, 2017.
+
+\bibitem{Schulman2017}
+J.~Schulman, F.~Wolski, P.~Dhariwal, A.~Radford, O.~Klimov.
+\newblock Proximal policy optimization algorithms.
+\newblock \textit{arXiv:1707.06347}, 2017.
+
+\end{thebibliography}
+
+\end{document}

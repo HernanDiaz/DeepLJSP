@@ -82,3 +82,12 @@ seeds/
 
 # Excepcion: checkpoints finales del modelo
 !models/*.pt
+
+# LaTeX build
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.toc
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.synctex.gz
