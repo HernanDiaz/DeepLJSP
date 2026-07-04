@@ -76,3 +76,9 @@ Thumbs.db
 ############################
 
 *.log
+
+# Pools de semillas para el TS (reproducibles: script + checkpoint + seed)
+seeds/
+
+# Excepcion: checkpoints finales del modelo
+!models/*.pt
