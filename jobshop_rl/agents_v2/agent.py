@@ -29,14 +29,19 @@ class AgentV2:
                  eps_clip: float = 0.2, K_epochs: int = 4,
                  minibatch_size: int = 256, update_every_episodes: int = 4,
                  entropy_coef: float = 0.01, greedy_eval_every: int = 10,
-                 hidden_dim: int = 128, **_ignored_v1_params):
+                 hidden_dim: int = 128, attention_layers: int = 0,
+                 attention_heads: int = 4, **_ignored_v1_params):
         set_random_seed(seed)
 
         self.env = env
         self.csv_logger = csv_logger
         self.encoder = StateEncoder(env)
 
-        self.network = PolicyValueNetV2(hidden=hidden_dim)
+        self.network = PolicyValueNetV2(
+            hidden=hidden_dim,
+            num_attention_layers=attention_layers,
+            attention_heads=attention_heads,
+        )
         self.trainer = PPOTrainerV2(
             self.network, lr=lr, gamma=gamma, gae_lambda=gae_lambda,
             eps_clip=eps_clip, k_epochs=K_epochs,

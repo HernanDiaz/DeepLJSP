@@ -165,7 +165,10 @@ class AgentFactory:
         agent_version = agent_params.pop("agent_version", "v1")
         if agent_version == "v2":
             from jobshop_rl.agents_v2 import AgentV2
-            return AgentV2(env, csv_logger=csv_logger, seed=agent_params.get("seed"))
+            # DEEPLJSP_V2_ATTENTION=N activa N capas de atención (fase 2)
+            attention_layers = int(os.environ.get("DEEPLJSP_V2_ATTENTION", "0"))
+            return AgentV2(env, csv_logger=csv_logger, seed=agent_params.get("seed"),
+                           attention_layers=attention_layers)
 
         # Detectar automáticamente el tamaño de características basándose en si el problema tiene intervalos
         feature_dim = 10 if env.has_intervals else 7

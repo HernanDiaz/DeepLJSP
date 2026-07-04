@@ -67,7 +67,9 @@ def main():
         lb = lb_for_problem_name(pid)
 
         env = EnvironmentFactory.create_from_problem(problem, "adaptive", seed=1)
-        agent = AgentV2(env, seed=1)
+        import os
+        agent = AgentV2(env, seed=1,
+                        attention_layers=int(os.environ.get("DEEPLJSP_V2_ATTENTION", "0")))
         agent.load_checkpoint(checkpoint)
 
         start = time.time()

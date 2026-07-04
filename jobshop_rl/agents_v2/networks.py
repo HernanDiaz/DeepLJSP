@@ -33,13 +33,43 @@ def _mlp(dims, out_gain=None):
     return net
 
 
+class AttentionBlock(nn.Module):
+    """
+    Bloque transformer pre-LN sobre el conjunto de operaciones elegibles
+    (sin codificación posicional: el conjunto no tiene orden). Aporta las
+    interacciones POR PARES entre candidatas que el pooling no puede
+    expresar (fase 2 del diseño).
+    """
+
+    def __init__(self, hidden: int, heads: int = 4):
+        super().__init__()
+        self.norm_attn = nn.LayerNorm(hidden)
+        self.attn = nn.MultiheadAttention(hidden, heads, batch_first=True)
+        self.norm_ff = nn.LayerNorm(hidden)
+        self.ff = nn.Sequential(
+            nn.Linear(hidden, 2 * hidden), nn.ReLU(), nn.Linear(2 * hidden, hidden))
+
+    def forward(self, x: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
+        # mask: (B, M) con True = operación real; MultiheadAttention espera
+        # key_padding_mask con True = PADDING
+        h = self.norm_attn(x)
+        attended, _ = self.attn(h, h, h, key_padding_mask=~mask, need_weights=False)
+        x = x + attended
+        x = x + self.ff(self.norm_ff(x))
+        return x
+
+
 class PolicyValueNetV2(nn.Module):
 
     def __init__(self, op_dim: int = OP_FEATURE_DIM, global_dim: int = GLOBAL_FEATURE_DIM,
-                 hidden: int = 128):
+                 hidden: int = 128, num_attention_layers: int = 0,
+                 attention_heads: int = 4):
         super().__init__()
         self.hidden = hidden
         self.op_encoder = _mlp([op_dim, hidden, hidden])
+        # Fase 2 opcional: con 0 capas el forward es idéntico al Deep Sets base
+        self.attention = nn.ModuleList(
+            [AttentionBlock(hidden, attention_heads) for _ in range(num_attention_layers)])
         self.context = _mlp([2 * hidden + global_dim, hidden, hidden])
         # gain pequeño en la última capa de la política → logits iniciales ~0
         self.policy_head = _mlp([2 * hidden, hidden, 1], out_gain=0.01)
@@ -61,6 +91,9 @@ class PolicyValueNetV2(nn.Module):
                               device=op_feats.device)
 
         phi = self.op_encoder(op_feats)                       # (B, M, H)
+
+        for block in self.attention:
+            phi = block(phi, mask)
 
         mask_f = mask.unsqueeze(-1).float()
         counts = mask_f.sum(dim=1).clamp(min=1.0)

@@ -108,6 +108,62 @@ class TestNetworkSizeInvariance:
         assert torch.allclose(value_plain, value_pad, atol=1e-5)
 
 
+class TestAttentionPhase2:
+
+    def test_zero_layers_matches_base_architecture(self):
+        """Con 0 capas de atención, la red es la arquitectura base exacta."""
+        base = PolicyValueNetV2()
+        attn0 = PolicyValueNetV2(num_attention_layers=0)
+        assert (sum(p.numel() for p in base.parameters())
+                == sum(p.numel() for p in attn0.parameters()))
+
+    def test_attention_size_invariance(self):
+        """La misma red con atención procesa cualquier tamaño de problema."""
+        net = PolicyValueNetV2(num_attention_layers=2)
+        for problem in (get_test_3x3_interval(), get_ft10_interval_problem()):
+            env = _make_env(problem)
+            state = env.reset()
+            op_f, glob_f = StateEncoder(env).encode(state)
+            logits, value = net(torch.from_numpy(op_f).unsqueeze(0),
+                                torch.from_numpy(glob_f).unsqueeze(0))
+            assert logits.shape == (1, len(state["eligible_ops"]))
+            assert torch.isfinite(logits).all()
+
+    def test_attention_padding_mask_equivalence(self):
+        """El padding enmascarado no altera los logits de las ops reales."""
+        net = PolicyValueNetV2(num_attention_layers=2)
+        net.eval()
+        env = _make_env(get_test_3x3_interval())
+        state = env.reset()
+        op_f, glob_f = StateEncoder(env).encode(state)
+        n = op_f.shape[0]
+
+        with torch.no_grad():
+            logits_plain, value_plain = net(
+                torch.from_numpy(op_f).unsqueeze(0),
+                torch.from_numpy(glob_f).unsqueeze(0))
+
+            padded = np.zeros((1, n + 5, OP_FEATURE_DIM), dtype=np.float32)
+            padded[0, :n] = op_f
+            mask = np.zeros((1, n + 5), dtype=bool)
+            mask[0, :n] = True
+            logits_pad, value_pad = net(
+                torch.from_numpy(padded),
+                torch.from_numpy(glob_f).unsqueeze(0),
+                torch.from_numpy(mask))
+
+        assert torch.allclose(logits_plain[0], logits_pad[0, :n], atol=1e-5)
+        assert torch.allclose(value_plain, value_pad, atol=1e-5)
+
+    def test_attention_training_cycle(self):
+        env = _make_env(get_test_3x3_interval())
+        agent = AgentV2(env, seed=1, attention_layers=2,
+                        update_every_episodes=2, greedy_eval_every=4)
+        agent.train(episodes=4)
+        assert agent.best_makespan < float("inf")
+        assert len(agent.buffer) == 0
+
+
 class TestAgentV2:
 
     def test_actions_valid_and_episode_completes(self):
