@@ -1,0 +1,10 @@
+# Escenario irace para la configuracion del AgentV2
+parameterFile = "parameters.txt"
+trainInstancesDir = ""
+trainInstancesFile = "instances.txt"
+targetRunner = "./target_runner.bat"
+maxExperiments = 160
+firstTest = 6
+parallel = 4
+digits = 4
+seed = 20260704
