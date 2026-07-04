@@ -150,6 +150,23 @@ activa**: para seguir bajando hacen falta expresividad (atención), datos
 (mixto multi-tamaño) o hibridación (sembrar el TS con soluciones del v2).
 Decisión de dirección pendiente del usuario.
 
+## Datos del modelo final (política de exclusión para experimentos posteriores)
+
+- **Entrenamiento del checkpoint final** (especialista Deep Sets 1000 eps):
+  **TA11-TA14** (tai20_15_01..04) — únicas instancias que han generado
+  gradientes en el modelo final. Exclusión OBLIGATORIA en toda evaluación.
+- **Desarrollo/validación**: **TA15-TA20** (tai20_15_05..10) — nunca
+  entrenaron, pero TODAS las decisiones de configuración (16 ideas del bucle,
+  Deep Sets vs atención, presupuesto) se seleccionaron con su rendimiento
+  (test-set reuse). Exclusión RECOMENDADA de la evaluación principal; si se
+  reportan, etiquetar como conjunto de desarrollo.
+- Los modelos multisize (entrenaron además TA1-4 y TA21-24) y el sanity de
+  overfit (TA1) fueron DESCARTADOS y no forman parte del modelo final.
+- **Para el experimento híbrido con TS**: excluir además las 17 Taillard del
+  tuning irace del TS (TA3, TA8, TA12, TA17, TA21, TA24, TA29, TA32, TA36,
+  TA43, TA47, TA50, TA52, TA57, TA63, TA67, TA70). Conjunto limpio para ambos
+  métodos: ~45-48 instancias con los 7 tamaños representados.
+
 ## FASE 2 (atención): VEREDICTO FINAL — no rentable a estos presupuestos (2026-07-04)
 
 Ablación limpia (mismo código, flag DEEPLJSP_V2_ATTENTION; 2 bloques pre-LN,
