@@ -165,10 +165,25 @@ class AgentFactory:
         agent_version = agent_params.pop("agent_version", "v1")
         if agent_version == "v2":
             from jobshop_rl.agents_v2 import AgentV2
-            # DEEPLJSP_V2_ATTENTION=N activa N capas de atención (fase 2)
-            attention_layers = int(os.environ.get("DEEPLJSP_V2_ATTENTION", "0"))
-            return AgentV2(env, csv_logger=csv_logger, seed=agent_params.get("seed"),
-                           attention_layers=attention_layers)
+
+            def _env(name, cast, default):
+                value = os.environ.get(name)
+                return cast(value) if value not in (None, "") else default
+
+            # Hiperparámetros del v2 vía entorno (p.ej. configuración élite
+            # de irace); sin variables definidas se usan los defaults
+            return AgentV2(
+                env, csv_logger=csv_logger, seed=agent_params.get("seed"),
+                attention_layers=_env("DEEPLJSP_V2_ATTENTION", int, 0),
+                lr=_env("DEEPLJSP_V2_LR", float, 3e-4),
+                entropy_coef=_env("DEEPLJSP_V2_ENTROPY", float, 0.01),
+                eps_clip=_env("DEEPLJSP_V2_CLIP", float, 0.2),
+                K_epochs=_env("DEEPLJSP_V2_KEPOCHS", int, 4),
+                minibatch_size=_env("DEEPLJSP_V2_MINIBATCH", int, 256),
+                update_every_episodes=_env("DEEPLJSP_V2_UPDATE_EVERY", int, 4),
+                gae_lambda=_env("DEEPLJSP_V2_GAE", float, 0.95),
+                hidden_dim=_env("DEEPLJSP_V2_HIDDEN", int, 128),
+            )
 
         # Detectar automáticamente el tamaño de características basándose en si el problema tiene intervalos
         feature_dim = 10 if env.has_intervals else 7
