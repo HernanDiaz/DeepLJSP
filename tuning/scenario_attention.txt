@@ -1,0 +1,11 @@
+# Campana atencion: espacio ampliado (capas/cabezas) con la default sembrada
+parameterFile = "parameters_attention.txt"
+trainInstancesDir = ""
+trainInstancesFile = "instances.txt"
+configurationsFile = "configurations_attention.txt"
+targetRunner = "./target_runner.bat"
+maxExperiments = 400
+firstTest = 6
+parallel = 4
+seed = 20260705
+logFile = "irace_attention.Rdata"

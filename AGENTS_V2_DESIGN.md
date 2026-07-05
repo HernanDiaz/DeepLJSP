@@ -176,6 +176,24 @@ de sensibilidad valioso para el paper: el rendimiento del v2 no depende de
 tuning fino. La default sigue siendo la configuración final; los pools se
 completan con los checkpoints actuales.
 
+## Próxima fase (plan acordado con el usuario, 2026-07-05)
+
+1. **Doble campaña irace con default sembrada** (configurationsFile):
+   - Deep Sets: espacio estándar, default como candidata inicial
+     (scenario_deepsets.txt), 330 experimentos (~16 h).
+   - Atención: espacio ampliado con capas {1,2,3} y cabezas {2,4,8}, default
+     L=2/H=4 sembrada (scenario_attention.txt), 400 experimentos (~20-24 h,
+     sus evaluaciones son ~30% más lentas).
+   - Confirmación a 1000 eps de las top élites de CADA campaña, y después la
+     comparación arquitectónica final tuned-vs-tuned.
+   - Orden: tras completar los pools (competirían por CPU).
+2. **Habilitación GPU** (hay RTX 5060 Ti 16GB + torch CUDA sin usar): tarea
+   de ingeniería para la fase de cómputo pesado — rollouts vectorizados
+   (batchear los N episodios del best-of-N y los entornos de entrenamiento)
+   + red en GPU. Ganancia estimada ~2× en evaluación/pools y >1.5× en
+   entrenamiento; sin vectorización la GPU no compensa (forwards diminutos,
+   entorno Python secuencial).
+
 ## Datos del modelo final (política de exclusión para experimentos posteriores)
 
 - **Entrenamiento del checkpoint final** (especialista Deep Sets 1000 eps):

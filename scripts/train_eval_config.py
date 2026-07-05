@@ -42,6 +42,9 @@ def main():
     parser.add_argument("--update-every", type=int, default=4)
     parser.add_argument("--gae", type=float, default=0.95)
     parser.add_argument("--hidden", type=int, default=128)
+    parser.add_argument("--attention", type=int, default=0,
+                        help="capas de atención (campaña de la variante attention)")
+    parser.add_argument("--heads", type=int, default=4)
     parser.add_argument("--episodes", type=int, default=EPISODES_PER_INSTANCE)
     parser.add_argument("--train-ids", type=str, default=",".join(TRAIN_IDS))
     args = parser.parse_args()
@@ -57,6 +60,7 @@ def main():
             minibatch_size=args.minibatch,
             update_every_episodes=args.update_every,
             gae_lambda=args.gae, hidden_dim=args.hidden,
+            attention_layers=args.attention, attention_heads=args.heads,
         )
 
     # Entrenamiento por bloques con transferencia de pesos (como el pipeline)

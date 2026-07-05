@@ -1,0 +1,11 @@
+# Campana 2 Deep Sets: espacio estandar CON la configuracion default sembrada
+parameterFile = "parameters.txt"
+trainInstancesDir = ""
+trainInstancesFile = "instances.txt"
+configurationsFile = "configurations_deepsets.txt"
+targetRunner = "./target_runner.bat"
+maxExperiments = 330
+firstTest = 6
+parallel = 4
+seed = 20260705
+logFile = "irace_deepsets.Rdata"
