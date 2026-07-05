@@ -462,6 +462,31 @@ repository. This methodology caught, among others, thirteen
 superficially plausible single-factor modifications whose filter or
 confirmation results were clearly negative.
 
+\subsection{Hyperparameter configuration}
+\label{sec:hyperconfig}
+
+All reported results use the literature-standard hyperparameters of
+Table~\ref{tab:hyper} \emph{without problem-specific tuning}. To assess
+whether this leaves performance on the table, we ran an automatic
+configuration study with irace~\cite{LopezIbanez2016}---the same tool and
+methodology used to configure the tabu search
+of~\cite{DiazTS2026}---racing an 8-parameter space (learning rate, entropy
+coefficient, PPO clip, epochs, minibatch size, update period, GAE
+$\lambda$, hidden width) over a budget of $330$ tuning experiments at
+reduced fidelity ($1$ training instance, $300$ episodes, ${\sim}8$ minutes
+per evaluation), with training seeds as racing instances. The five elite
+configurations agreed on a coherent faster-learning regime (learning rate
+$7$--$9{\cdot}10^{-4}$, clip $0.3$, minibatch $128$, updates every $2$
+episodes, $\lambda{=}0.90$) and were insensitive to network width.
+However, at the full $1000$-episode operating budget the best elite scored
+$14.5\%$ mean RE versus $13.4\%$ for the defaults ($+1.66\%$ mean
+makespan; five of six development instances within noise, one
+significantly worse) at ${\sim}60\%$ higher training cost. Two
+conclusions follow: the low-fidelity optimum does not transfer to the
+operating budget---a caution for tuning-on-a-budget practices in
+DRL---and the defaults sit on the achievable performance plateau, i.e.\
+our results do not depend on fine tuning.
+
 \subsection{Baselines}
 
 Priority dispatching rules (SPT, LPT, MOR, MWKR, with interval-aware
@@ -800,6 +825,13 @@ J.~Schulman, F.~Wolski, P.~Dhariwal, A.~Radford, O.~Klimov.
 T.~A.~Feo, M.~G.~C.~Resende.
 \newblock Greedy randomized adaptive search procedures.
 \newblock \textit{Journal of Global Optimization}, 6:109--133, 1995.
+
+\bibitem{LopezIbanez2016}
+M.~L\'opez-Ib\'a\~nez, J.~Dubois-Lacoste, L.~P\'erez~C\'aceres,
+M.~Birattari, T.~St\"utzle.
+\newblock The irace package: Iterated racing for automatic algorithm
+  configuration.
+\newblock \textit{Operations Research Perspectives}, 3:43--58, 2016.
 
 \end{thebibliography}
 

@@ -167,6 +167,15 @@ kepochs 4, minibatch 128, update-every 2, gae 0.90, hidden 64.
 confirmación full (v2-elite27-1000ep vs v2-full-1000ep, regla estándar).
 Inyección vía env vars DEEPLJSP_V2_* (AgentFactory).
 
+**VEREDICTO CONFIRMACIÓN (2026-07-05)**: la élite #27 a 1000 eps da
++1.66% (5/6 ruido, 1 peor; RE 14.5% vs 13.4%) con entrenamiento ~60% más
+lento → NO se adopta. La advertencia se materializó: el óptimo de baja
+fidelidad no transfiere al punto de operación. **La configuración default
+(valores estándar de literatura) queda validada como robusta** — resultado
+de sensibilidad valioso para el paper: el rendimiento del v2 no depende de
+tuning fino. La default sigue siendo la configuración final; los pools se
+completan con los checkpoints actuales.
+
 ## Datos del modelo final (política de exclusión para experimentos posteriores)
 
 - **Entrenamiento del checkpoint final** (especialista Deep Sets 1000 eps):
