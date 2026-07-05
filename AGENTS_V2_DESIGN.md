@@ -150,6 +150,23 @@ activa**: para seguir bajando hacen falta expresividad (atención), datos
 (mixto multi-tamaño) o hibridación (sembrar el TS con soluciones del v2).
 Decisión de dirección pendiente del usuario.
 
+## Configuración paramétrica con irace (2026-07-05)
+
+Racing de 330 experimentos (irace 4.4.3, 8 parámetros, semillas como
+instancias, fidelidad 1×TA11×300 eps + eval TA15-17 best-of-16, 16.5 h).
+**Las 5 élites coinciden** en un régimen de aprendizaje más rápido que la
+default: lr 7-9e-4 (default 3e-4), clip 0.3 (0.2), minibatch 128 (256),
+update cada 2 episodios (4), GAE λ 0.90 (0.95); entropía ~0.004-0.017;
+ancho insensible (64/128/256 entre élites); K_epochs=4 confirmado.
+
+Élite #27 (mejor por suma de rangos): lr 8e-4, entropy 0.0171, clip 0.3,
+kepochs 4, minibatch 128, update-every 2, gae 0.90, hidden 64.
+
+**Advertencia pre-registrada**: óptimo a fidelidad de tuning ≠ óptimo a
+1000 eps (lección de la atención). La adopción depende EXCLUSIVAMENTE de la
+confirmación full (v2-elite27-1000ep vs v2-full-1000ep, regla estándar).
+Inyección vía env vars DEEPLJSP_V2_* (AgentFactory).
+
 ## Datos del modelo final (política de exclusión para experimentos posteriores)
 
 - **Entrenamiento del checkpoint final** (especialista Deep Sets 1000 eps):
