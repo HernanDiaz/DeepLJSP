@@ -3,6 +3,13 @@
 Documento de traspaso para ejecutar el piloto de siembra de la población
 inicial del TS con soluciones del agente RL (v2). Generado el 2026-07-04.
 
+**ACTUALIZACIÓN 2026-07-06**: el set COMPLETO está generado en `seeds/`
+(145 archivos): las 70 Taillard (TA1-TA70) + ft10_interval, cada una con
+pool v2 (1024 soluciones) y pool graspmor (MOR+ε, 1024), más los 3 pools
+graspmix del piloto. Mismo formato en todos. Para el experimento completo,
+recuerda la política de exclusión (AGENTS_V2_DESIGN.md): TA11-14
+(entrenamiento RL), TA15-20 (desarrollo RL) y las 17 del irace del TS.
+
 ---
 
 ## 1. Inventario de pools (directorio `seeds/`, fuera de git)
