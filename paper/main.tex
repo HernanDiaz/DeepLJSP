@@ -489,13 +489,22 @@ our results do not depend on fine tuning.
 
 \subsection{Baselines}
 
-Priority dispatching rules (SPT, LPT, MOR, MWKR, with interval-aware
-lexicographic comparisons; MOR is uniformly the strongest) provide the
-like-for-like constructive baseline. Published IJSP metaheuristics
-(fEABC~\cite{DiazFEABC2023}, ESABC~\cite{DiazICAE2023},
+Constructive baselines comprise priority dispatching rules (SPT, LPT, MOR,
+MWKR, with interval-aware lexicographic comparisons; MOR is uniformly the
+strongest rule) and the Giffler--Thompson active schedule
+generator~\cite{GifflerThompson1960} with rule tie-breaks inside the
+machine conflict set. G\&T with MWKR tie-break is the strongest
+deterministic constructive baseline on this benchmark: $29.4\%$ mean RE
+across the 70 instances, versus $45.4\%$ for plain MOR dispatching (the
+SPT tie-break variant performs poorly, $70.6\%$). Published IJSP
+metaheuristics (fEABC~\cite{DiazFEABC2023}, ESABC~\cite{DiazICAE2023},
 TS~\cite{DiazTS2026}; 30 runs and minutes of per-instance search on
 dedicated hardware) are included as reference yardsticks from a different
-computational class rather than as direct competitors.
+computational class rather than as direct competitors. For calibration
+across the full benchmark: best-of-$1024$ policy sampling attains $12.7\%$
+mean RE over the 70 instances---ahead of every deterministic constructive
+baseline on every instance, within $2.2$--$4.6$ points of the fEABC
+30-run average per class, and behind tuned tabu search everywhere.
 
 \section{Results}
 \label{sec:results}
@@ -825,6 +834,11 @@ J.~Schulman, F.~Wolski, P.~Dhariwal, A.~Radford, O.~Klimov.
 T.~A.~Feo, M.~G.~C.~Resende.
 \newblock Greedy randomized adaptive search procedures.
 \newblock \textit{Journal of Global Optimization}, 6:109--133, 1995.
+
+\bibitem{GifflerThompson1960}
+B.~Giffler, G.~L.~Thompson.
+\newblock Algorithms for solving production-scheduling problems.
+\newblock \textit{Operations Research}, 8(4):487--503, 1960.
 
 \bibitem{LopezIbanez2016}
 M.~L\'opez-Ib\'a\~nez, J.~Dubois-Lacoste, L.~P\'erez~C\'aceres,

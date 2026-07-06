@@ -343,6 +343,70 @@ class CRHeuristic(HeuristicStrategy):
         return np.argmin(critical_ratios)
 
 
+class GTHeuristic(HeuristicStrategy):
+    """
+    Heurística de Giffler & Thompson (1960): generación de schedules ACTIVOS.
+
+    En cada paso: (1) identifica la operación elegible c con menor tiempo de
+    finalización (est + duración, comparación lexicográfica interval-aware);
+    (2) restringe los candidatos al conflict set — las elegibles de la MISMA
+    máquina que c cuyo inicio es anterior a la finalización de c; (3) desempata
+    dentro del conflict set con una regla de prioridad (spt o mwkr).
+
+    Es el baseline constructivo canónico del JSP, más fuerte que las reglas
+    de despacho puras sobre el conjunto elegible completo.
+    """
+
+    def __init__(self, tiebreak: str = "spt"):
+        assert tiebreak in ("spt", "mwkr")
+        self.tiebreak = tiebreak
+
+    @staticmethod
+    def _add(a, b):
+        """Suma interval-aware de valores escalares o tuplas (lower, upper)."""
+        a = a if isinstance(a, tuple) else (a, a)
+        b = b if isinstance(b, tuple) else (b, b)
+        return (a[0] + b[0], a[1] + b[1])
+
+    def select_action(self, eligible_ops: List[int], features: np.ndarray) -> int:
+        if len(features) == 0:
+            return 0
+
+        n = len(features)
+        starts = [self._extract_earliest_start(features, i) for i in range(n)]
+        durations = [self._extract_duration(features, i) for i in range(n)]
+        completions = [self._add(starts[i], durations[i]) for i in range(n)]
+        machines = [int(features[i][2]) for i in range(n)]
+
+        # (1) operación con finalización mínima (lexicográfica por upper)
+        c = 0
+        for i in range(1, n):
+            if self._lexicographic_compare(completions[i], completions[c], minimize=True) == 0:
+                c = i
+
+        # (2) conflict set: misma máquina que c, con inicio anterior a la
+        # finalización de c (comparación lexicográfica)
+        conflict = [i for i in range(n)
+                    if machines[i] == machines[c]
+                    and self._lexicographic_compare(starts[i], completions[c], minimize=True) == 0]
+        if not conflict:
+            conflict = [c]
+
+        # (3) desempate dentro del conflict set
+        if self.tiebreak == "spt":
+            best = conflict[0]
+            for i in conflict[1:]:
+                if self._lexicographic_compare(durations[i], durations[best], minimize=True) == 0:
+                    best = i
+        else:  # mwkr
+            remaining = [self._extract_remaining_time(features, i) for i in range(n)]
+            best = conflict[0]
+            for i in conflict[1:]:
+                if self._lexicographic_compare(remaining[i], remaining[best], minimize=False) == 0:
+                    best = i
+        return best
+
+
 class RandomHeuristic(HeuristicStrategy):
     """Heurística aleatoria"""
 

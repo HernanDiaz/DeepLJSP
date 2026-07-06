@@ -9,8 +9,9 @@ from copy import deepcopy
 
 from jobshop_rl.environment.job_shop_env import JobShopEnv
 from jobshop_rl.heuristics.strategies import (
-    HeuristicStrategy, SPTHeuristic, LPTHeuristic, 
-    MORHeuristic, MWKRHeuristic, RandomHeuristic, ORToolsHeuristic
+    HeuristicStrategy, SPTHeuristic, LPTHeuristic,
+    MORHeuristic, MWKRHeuristic, RandomHeuristic, ORToolsHeuristic,
+    GTHeuristic,
 )
 from jobshop_rl.agents.ppo_agent import PPOAgent
 
@@ -131,6 +132,9 @@ class HeuristicEvaluator:
         self.evaluate_heuristic(LPTHeuristic(), "LPT")
         self.evaluate_heuristic(MORHeuristic(), "MOR")
         self.evaluate_heuristic(MWKRHeuristic(), "MWKR")
+        # G&T (schedules activos) con desempate MWKR: el baseline
+        # determinista más fuerte conocido en este benchmark
+        self.evaluate_heuristic(GTHeuristic("mwkr"), "GT-MWKR")
         # Random se evalúa con múltiples soluciones (media y mejor)
         self.evaluate_random(n_runs=250)
         
