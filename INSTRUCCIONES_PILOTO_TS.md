@@ -70,6 +70,14 @@ antes de seguir (instancia, línea, valor esperado y obtenido).
 
 (Opcional A5: graspmix@50% como baseline débil, si quieres la escala completa.)
 
+**A6 recomendado — baseline heurístico FUERTE (añadido 2026-07-06)**: pools
+`*_gtmwkr_pool.csv` con G&T aleatorizado (ruido ε=0.1 DENTRO del conflict
+set → cada individuo es un schedule activo). Calidad muy superior a MOR+ε
+(upper, mejor/mediana): TA5 1554/1705 vs 1632/1847; TA22 2068/2221 vs
+2245/2447; TA44 2672/2814 vs 2915/3145. Si el TS sembrado con v2 supera
+también a GT-ε@p, el resultado es inatacable. Mismo formato y misma
+asignación por bloques.
+
 **Runs**: 10 por brazo y por instancia (5 brazos × 3 instancias × 10 = 150
 runs). **Presupuesto**: tu estándar de 15 min/run si el cluster lo permite
 (≈37 h); con 5 min/run (≈12 h) el piloto sigue siendo informativo porque la
