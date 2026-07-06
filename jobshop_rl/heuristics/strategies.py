@@ -357,9 +357,20 @@ class GTHeuristic(HeuristicStrategy):
     de despacho puras sobre el conjunto elegible completo.
     """
 
-    def __init__(self, tiebreak: str = "spt"):
+    def __init__(self, tiebreak: str = "spt", epsilon: float = 0.0, rng=None):
+        """
+        Args:
+            tiebreak: regla de desempate dentro del conflict set (spt|mwkr)
+            epsilon: con probabilidad epsilon elige UNIFORME dentro del
+                conflict set (versión aleatorizada estilo GRASP; el ruido
+                interno preserva la propiedad de schedule activo). 0 =
+                determinista.
+            rng: instancia de random.Random para reproducibilidad
+        """
         assert tiebreak in ("spt", "mwkr")
         self.tiebreak = tiebreak
+        self.epsilon = epsilon
+        self.rng = rng if rng is not None else random.Random()
 
     @staticmethod
     def _add(a, b):
@@ -392,7 +403,12 @@ class GTHeuristic(HeuristicStrategy):
         if not conflict:
             conflict = [c]
 
-        # (3) desempate dentro del conflict set
+        # (3) aleatorización GRASP: uniforme dentro del conflict set
+        # (mantiene el schedule activo)
+        if self.epsilon > 0 and self.rng.random() < self.epsilon:
+            return self.rng.choice(conflict)
+
+        # (3b) desempate determinista dentro del conflict set
         if self.tiebreak == "spt":
             best = conflict[0]
             for i in conflict[1:]:

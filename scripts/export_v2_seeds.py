@@ -36,7 +36,7 @@ from jobshop_rl.agents_v2 import AgentV2  # noqa: E402
 from jobshop_rl.data import PROBLEM_REGISTRY  # noqa: E402
 from jobshop_rl.experiments.factory import EnvironmentFactory  # noqa: E402
 from jobshop_rl.heuristics.strategies import (  # noqa: E402
-    SPTHeuristic, LPTHeuristic, MORHeuristic, MWKRHeuristic,
+    SPTHeuristic, LPTHeuristic, MORHeuristic, MWKRHeuristic, GTHeuristic,
 )
 from jobshop_rl.models.interval import Interval  # noqa: E402
 from jobshop_rl.utils.seed_utils import set_random_seed  # noqa: E402
@@ -64,8 +64,13 @@ def rollout_v2(agent, env):
 
 
 def rollout_grasp(env, rules, epsilon, rng):
-    """Despacho aleatorizado: regla fija por individuo + ruido epsilon por paso."""
+    """
+    Despacho aleatorizado: regla fija por individuo + ruido epsilon por paso.
+    Si la regla lleva ruido interno (GTHeuristic con epsilon>0), no se aplica
+    ruido externo — la aleatorización ocurre dentro del conflict set.
+    """
     rule = rng.choice(rules)
+    internal_noise = getattr(rule, "epsilon", 0.0) > 0
     state = env.reset()
     permutation = []
     done = False
@@ -73,7 +78,7 @@ def rollout_grasp(env, rules, epsilon, rng):
         eligible = state["eligible_ops"]
         if not eligible:
             break
-        if rng.random() < epsilon:
+        if not internal_noise and rng.random() < epsilon:
             action_idx = rng.randrange(len(eligible))
         else:
             features = env.get_features(state)
@@ -124,8 +129,15 @@ def main():
                 lines.append(" ".join(map(str, perm)) + ";" + mk)
     else:
         rule_map = {"spt": SPTHeuristic, "lpt": LPTHeuristic,
-                    "mor": MORHeuristic, "mwkr": MWKRHeuristic}
-        rules = [rule_map[r.strip().lower()]() for r in args.rules.split(",") if r.strip()]
+                    "mor": MORHeuristic, "mwkr": MWKRHeuristic,
+                    # G&T aleatorizado: ruido interno al conflict set
+                    "gtmwkr": lambda: GTHeuristic("mwkr", epsilon=args.epsilon, rng=rng)}
+        rules = []
+        for r in args.rules.split(","):
+            r = r.strip().lower()
+            if r:
+                factory = rule_map[r]
+                rules.append(factory() if callable(factory) else factory)
         for _ in range(args.n):
             perm, mk = rollout_grasp(env, rules, args.epsilon, rng)
             lines.append(" ".join(map(str, perm)) + ";" + mk)
