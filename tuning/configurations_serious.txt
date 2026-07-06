@@ -1,0 +1,2 @@
+lr      entropy clip minibatch updateevery gae
+0.0003  0.01    0.2  256       4           0.95

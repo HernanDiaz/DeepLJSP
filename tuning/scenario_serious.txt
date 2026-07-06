@@ -1,0 +1,18 @@
+# Campana SERIA: tuning a fidelidad de operacion (1000 episodios/instancia).
+# Motivacion: dos campanas a fidelidad baja (300 eps) produjeron elites que
+# NO transfirieron al presupuesto completo. Esta campana evalua cada
+# configuracion directamente en el punto de operacion, habilitada por la
+# vectorizacion (batched_train/batched_eval, speedup 2-5x).
+# ANTES DE LANZAR: anadir a configurations_serious.txt las elites
+# supervivientes de la campana Deep Sets a fidelidad baja (ademas de la
+# default ya sembrada) y confirmar que kepochs/hidden siguen insensibles.
+parameterFile = "parameters_serious.txt"
+trainInstancesDir = ""
+trainInstancesFile = "instances.txt"
+configurationsFile = "configurations_serious.txt"
+targetRunner = "./target_runner_serious.bat"
+maxExperiments = 280
+firstTest = 6
+parallel = 4
+seed = 20260706
+logFile = "irace_serious.Rdata"

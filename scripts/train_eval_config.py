@@ -47,6 +47,12 @@ def main():
     parser.add_argument("--heads", type=int, default=4)
     parser.add_argument("--episodes", type=int, default=EPISODES_PER_INSTANCE)
     parser.add_argument("--train-ids", type=str, default=",".join(TRAIN_IDS))
+    parser.add_argument("--eval-samples", type=int, default=N_EVAL_SAMPLES)
+    parser.add_argument("--batched", action="store_true",
+                        help="rutas vectorizadas (batched_train/batched_eval); "
+                             "por defecto, caminos secuenciales originales")
+    parser.add_argument("--device", type=str, default=None,
+                        help="cpu|cuda para las rutas batcheadas (None = auto)")
     args = parser.parse_args()
 
     train_ids = [p.strip() for p in args.train_ids.split(",") if p.strip()]
@@ -74,7 +80,11 @@ def main():
             prev_state = agent.network.state_dict()
             agent = make_agent(env)
             agent.network.load_state_dict(prev_state)
-        agent.train(episodes=args.episodes)
+        if args.batched:
+            from jobshop_rl.agents_v2.batched_train import train_batched
+            train_batched(agent, episodes=args.episodes, device=args.device)
+        else:
+            agent.train(episodes=args.episodes)
 
     # Evaluación best-of-N en el conjunto de desarrollo reducido
     res = []
@@ -83,7 +93,12 @@ def main():
             PROBLEM_REGISTRY[pid](), "adaptive", seed=args.seed)
         agent.env = env
         agent.encoder = StateEncoder(env)
-        _, schedule, _, _ = agent.evaluate_policy(n_samples=N_EVAL_SAMPLES)
+        if args.batched:
+            from jobshop_rl.agents_v2.batched_eval import evaluate_policy_batched
+            _, schedule, _, _ = evaluate_policy_batched(
+                agent, args.eval_samples, device=args.device)
+        else:
+            _, schedule, _, _ = agent.evaluate_policy(n_samples=args.eval_samples)
         best = None
         for t in schedule:
             end = t.get("end")

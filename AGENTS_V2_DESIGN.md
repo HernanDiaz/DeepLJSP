@@ -238,12 +238,44 @@ completan con los checkpoints actuales.
      SPT/MOR/GT): integrarla en evaluador, gráficos o pools no requiere
      código nuevo. Pendiente menor: sección GP del paper (ablation de
      baselines aprendidos).
-3. **Habilitación GPU** (hay RTX 5060 Ti 16GB + torch CUDA sin usar): tarea
-   de ingeniería para la fase de cómputo pesado — rollouts vectorizados
-   (batchear los N episodios del best-of-N y los entornos de entrenamiento)
-   + red en GPU. Ganancia estimada ~2× en evaluación/pools y >1.5× en
-   entrenamiento; sin vectorización la GPU no compensa (forwards diminutos,
-   entorno Python secuencial).
+3. **COMPLETADO (2026-07-06) — Vectorización + GPU** (RTX 5060 Ti 16GB,
+   torch 2.9.1+cu130). Perfil del rollout secuencial: el forward de la red
+   (batch de 1) era el 64-77% del tiempo → batchear forwards es la palanca.
+   Módulos NUEVOS (caminos secuenciales intactos):
+   - jobshop_rl/agents_v2/batched_eval.py: best-of-N con N entornos en
+     lockstep, un forward (N, M_max, 16) por paso, CPU o GPU. Misma
+     semántica que evaluate_policy (muestra 0 greedy, resto estocásticas).
+   - jobshop_rl/agents_v2/batched_train.py: drop-in de agent.train que
+     recolecta los update_every episodios de cada ciclo PPO en lockstep
+     (mismo algoritmo on-policy: esos episodios ya compartían pesos);
+     buffer contiguo por episodio (requisito del GAE); greedy eval
+     periódica como fila extra del lockstep.
+   - **Verificación** (scripts/test_batched_eval.py, test_batched_train.py):
+     greedy batcheado == greedy secuencial BIT-IDÉNTICO en CPU y GPU en
+     15×15/20×15/30×20/50×20 (criterio bloqueante); calidad best-of-64 y
+     de entrenamiento equivalente (ruido de semilla).
+   - **Speedups medidos**: evaluación best-of-64: 5.5×/6.8× (CPU-batch/GPU)
+     en 15×15, 4.7×/5.5× en 20×15, 2.9×/3.3× en 30×20, 2.0×/2.3× en 50×20
+     (la fracción Python —encode+env.step— crece con el tamaño).
+     Entrenamiento (100 eps, TA11): 1.74× CPU-batch, **3.01× GPU**.
+   - scripts/train_eval_config.py acepta --batched/--device/--eval-samples
+     (default = caminos secuenciales; la campaña irace en curso no se ve
+     afectada).
+
+4. **PREPARADO — Campaña irace SERIA a fidelidad de operación**
+   (tuning/{scenario,parameters,configurations,target_runner}_serious.*):
+   motivada porque dos campañas a fidelidad baja (300 eps) produjeron
+   élites que no transfirieron a 1000 eps. Fidelidad: 2 instancias
+   (TA11+TA12) × 1000 episodios con rutas batcheadas en GPU + eval
+   best-of-64 en TA15-17; espacio reducido a 6 parámetros (kepochs=4 y
+   hidden=128 fijados por insensibilidad observada), default sembrada,
+   280 experimentos, ~1 día de cómputo estimado. ANTES DE LANZAR: sembrar
+   también las élites supervivientes de la campaña Deep Sets en curso y
+   revalidar que kepochs/hidden siguen insensibles en sus élites finales.
+   DECISIÓN (2026-07-06): NO se lanza la campaña attention a fidelidad
+   baja (scenario_attention.txt queda como referencia): el usuario pidió
+   configuración seria a 1000 eps y el patrón élite-no-transfiere ya se
+   observó dos veces; el presupuesto va a la campaña seria.
 
 ## Datos del modelo final (política de exclusión para experimentos posteriores)
 
