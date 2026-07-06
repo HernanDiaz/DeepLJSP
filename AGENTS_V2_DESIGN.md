@@ -194,6 +194,19 @@ completan con los checkpoints actuales.
    simbólico-vs-neuronal), sin tuning paramétrico (decisión: es un baseline
    y el v2 tampoco usa configuración afinada; salvaguarda de varianza entre
    semillas no activada).
+   - **Cómo funciona** (línea Branke et al., IEEE TEC 2016): un INDIVIDUO
+     es una regla de despacho completa = árbol de expresión que asigna
+     prioridad a cada operación elegible; se despacha la de MENOR
+     prioridad. Hojas = 9 terminales interval-aware por operación (PT,
+     PTW, EST, ESTW, WKR, WKRW, NOR, SLACK, ONE — las anchuras W hacen a
+     la regla sensible a la incertidumbre); nodos internos = +, −, ×,
+     división protegida, min, max, neg. SPT ≡ árbol `PT` y MWKR ≡
+     `neg(WKR)`: ambas se inyectan como individuos semilla. FITNESS = RE
+     medio del rollout determinista sobre TA11-14 (mismo entorno que el
+     RL). EVOLUCIÓN generacional: elitismo 2, selección por torneo de 4,
+     cruce de subárboles (p=0.8) o mutación de subárbol (p=0.2), y
+     control de bloat: >40 nodos ⇒ fitness ∞. La regla ganadora es
+     drop-in de HeuristicStrategy (misma interfaz que SPT/MOR/GT).
    - **Fitness entrenamiento (TA11-14)**: s1 15.60%, s2 15.62%, s3 15.87%
      — varianza entre semillas casi nula, settings convencionales bastan.
    - **Generalización a las 70 Taillard** (1 rollout determinista por
