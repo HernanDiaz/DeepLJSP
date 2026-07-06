@@ -187,7 +187,17 @@ completan con los checkpoints actuales.
    - Confirmación a 1000 eps de las top élites de CADA campaña, y después la
      comparación arquitectónica final tuned-vs-tuned.
    - Orden: tras completar los pools (competirían por CPU).
-2. **Habilitación GPU** (hay RTX 5060 Ti 16GB + torch CUDA sin usar): tarea
+2. **PENDIENTE — Baseline GP (hiper-heurística)**: infraestructura lista y
+   smoke test superado (jobshop_rl/heuristics/gp_rule.py +
+   scripts/evolve_gp_rule.py; pop 16 × 4 gens → 25.1% ya supera a sus
+   semillas clásicas). Falta la evolución completa
+   (`--pop 100 --gens 50 --seed 1`, ~1.5 h, mismas TA11-14 que el v2 para
+   la comparación justa simbólico-vs-neuronal) + evaluar la regla ganadora
+   en las 70 instancias + añadirla al paper como baseline aprendido
+   interpretable. La regla evolucionada es un drop-in de HeuristicStrategy
+   (misma interfaz que SPT/MOR/GT), así que integrarla en evaluador,
+   gráficos o generador de pools no requiere código nuevo.
+3. **Habilitación GPU** (hay RTX 5060 Ti 16GB + torch CUDA sin usar): tarea
    de ingeniería para la fase de cómputo pesado — rollouts vectorizados
    (batchear los N episodios del best-of-N y los entornos de entrenamiento)
    + red en GPU. Ganancia estimada ~2× en evaluación/pools y >1.5× en
