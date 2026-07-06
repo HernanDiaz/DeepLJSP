@@ -269,7 +269,10 @@ completan con los checkpoints actuales.
    (TA11+TA12) × 1000 episodios con rutas batcheadas en GPU + eval
    best-of-64 en TA15-17; espacio reducido a 6 parámetros (kepochs=4 y
    hidden=128 fijados por insensibilidad observada), default sembrada,
-   280 experimentos, ~1 día de cómputo estimado. ANTES DE LANZAR: sembrar
+   280 experimentos, ~1 día de cómputo estimado. Paridad de coste del
+   target runner validada extremo a extremo (fidelidad 300 eps, semillas
+   2/3): coste seq 33.7/23.1 vs batched 32.2/23.9 (ruido de semilla) con
+   2.9× de speedup. ANTES DE LANZAR: sembrar
    también las élites supervivientes de la campaña Deep Sets en curso y
    revalidar que kepochs/hidden siguen insensibles en sus élites finales.
    DECISIÓN (2026-07-06): NO se lanza la campaña attention a fidelidad
