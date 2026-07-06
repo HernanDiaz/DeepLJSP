@@ -185,6 +185,13 @@ formalized as Deep Sets~\cite{Zaheer2017}; attention is their natural
 strict generalization. Our architecture deliberately starts from the
 simpler Deep Sets construction and evaluates attention as a controlled
 ablation---a comparison that, at our budgets, favours the simpler model.
+An older, complementary line of \emph{learned} constructive heuristics is
+the automated design of dispatching rules by genetic programming
+(GP)~\cite{Branke2016,Nguyen2017}, which evolves interpretable priority
+expressions over hand-crafted attributes. We include a GP hyper-heuristic
+trained on the same instances as our policy as a learned symbolic
+baseline, quantifying what the neural representation adds over the best
+evolvable closed-form rule.
 
 \subsection{Hybrid learning and search}
 
@@ -500,7 +507,22 @@ SPT tie-break variant performs poorly, $70.6\%$). Published IJSP
 metaheuristics (fEABC~\cite{DiazFEABC2023}, ESABC~\cite{DiazICAE2023},
 TS~\cite{DiazTS2026}; 30 runs and minutes of per-instance search on
 dedicated hardware) are included as reference yardsticks from a different
-computational class rather than as direct competitors. For calibration
+computational class rather than as direct competitors.
+
+As a \emph{learned symbolic} baseline we evolve dispatching rules by
+genetic programming~\cite{Branke2016}: expression trees over
+interval-aware operation attributes (worst-case processing time, earliest
+start, work remaining, remaining operations, slack, and the interval
+widths of the first three), with protected arithmetic, $\min$/$\max$ and
+negation as functions. The GP uses the \emph{same} four training
+instances as the policy (TA11--TA14) and mean RE of the deterministic
+rollout as fitness; population $100$, $50$ generations, tournament
+selection of size $4$, subtree crossover ($0.8$) and mutation, elitism
+$2$, tree size capped at $40$ nodes, and SPT and MWKR injected as seed
+individuals. Following the baseline-symmetry principle of
+Section~\ref{sec:hyperconfig}, its parameters are conventional literature
+settings without tuning; three independent seeds converged to
+$15.60$--$15.87\%$ training RE, so no tuning safeguard was triggered. For calibration
 across the full benchmark: best-of-$1024$ policy sampling attains $12.7\%$
 mean RE over the 70 instances---ahead of every deterministic constructive
 baseline on every instance, within $2.2$--$4.6$ points of the fEABC
@@ -653,6 +675,45 @@ features that are linear combinations of existing ones, or retrofitting
 input normalization onto a system co-adapted to raw scales, degraded
 performance by $9$--$113\%$; representation changes must be co-designed
 with optimization.
+
+\subsection{Learned symbolic baseline: GP-evolved rules}
+\label{sec:results-gp}
+
+Table~\ref{tab:gp} reports the generalization of the three GP-evolved
+rules to all 70 Taillard instances (a single deterministic rollout per
+instance; the rules were evolved on $20{\times}15$ only). The best rule
+attains $18.5\%$ mean RE---beating G\&T-MWKR ($29.4\%$) by ${\approx}11$
+points and every fixed dispatching rule by a wide margin---and transfers
+across sizes without retraining; its best class is in fact the unseen
+$50{\times}15$. Structurally, the evolved expressions are recognizable as
+MWKR corrected by earliest-start and slack$\times$processing-time terms.
+This places the strongest interpretable learned baseline $5$--$6$ points
+behind the neural policy ($12.7\%$ best-of-1024 on the same 70
+instances), and the full baseline ladder becomes: fixed rules
+($45.4\%$ for MOR) $<$ G\&T-MWKR ($29.4\%$) $<$ GP-evolved rule
+($18.5\%$) $<$ neural policy ($12.7\%$). The residual gap is the net
+contribution of the neural representation and sampling-based inference,
+beyond what closed-form priority functions over the same attribute
+vocabulary can express.
+
+\begin{table}[t]
+\centering\small
+\caption{GP-evolved rules: mean RE (\%) per size class over all 70
+Taillard instances, single deterministic rollout, three GP seeds.}
+\label{tab:gp}
+\begin{tabular}{lccccccc|c}
+\toprule
+Rule & $15{\times}15$ & $20{\times}15$ & $20{\times}20$ &
+$30{\times}15$ & $30{\times}20$ & $50{\times}15$ & $50{\times}20$ &
+All \\
+\midrule
+GP seed 1 & 16.0 & 18.7 & 19.4 & 20.9 & 25.0 & \textbf{14.5} & 15.1 &
+\textbf{18.5} \\
+GP seed 2 & 16.5 & 18.4 & 21.2 & 21.8 & 26.9 & 15.1 & 16.3 & 19.5 \\
+GP seed 3 & 18.6 & 18.5 & 20.0 & 22.7 & 25.7 & 15.2 & 15.7 & 19.5 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Positioning and computational cost}
 
@@ -839,6 +900,19 @@ T.~A.~Feo, M.~G.~C.~Resende.
 B.~Giffler, G.~L.~Thompson.
 \newblock Algorithms for solving production-scheduling problems.
 \newblock \textit{Operations Research}, 8(4):487--503, 1960.
+
+\bibitem{Branke2016}
+J.~Branke, S.~Nguyen, C.~W.~Pickardt, M.~Zhang.
+\newblock Automated design of production scheduling heuristics: a review.
+\newblock \textit{IEEE Transactions on Evolutionary Computation},
+  20(1):110--124, 2016.
+
+\bibitem{Nguyen2017}
+S.~Nguyen, Y.~Mei, M.~Zhang.
+\newblock Genetic programming for production scheduling: a survey with a
+  unified framework.
+\newblock \textit{Complex \& Intelligent Systems}, 3(1):41--66, 2017.
+  \todo{verificar volumen/p\'aginas}
 
 \bibitem{LopezIbanez2016}
 M.~L\'opez-Ib\'a\~nez, J.~Dubois-Lacoste, L.~P\'erez~C\'aceres,
