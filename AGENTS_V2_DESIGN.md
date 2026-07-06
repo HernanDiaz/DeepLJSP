@@ -187,16 +187,44 @@ completan con los checkpoints actuales.
    - Confirmación a 1000 eps de las top élites de CADA campaña, y después la
      comparación arquitectónica final tuned-vs-tuned.
    - Orden: tras completar los pools (competirían por CPU).
-2. **PENDIENTE — Baseline GP (hiper-heurística)**: infraestructura lista y
-   smoke test superado (jobshop_rl/heuristics/gp_rule.py +
-   scripts/evolve_gp_rule.py; pop 16 × 4 gens → 25.1% ya supera a sus
-   semillas clásicas). Falta la evolución completa
-   (`--pop 100 --gens 50 --seed 1`, ~1.5 h, mismas TA11-14 que el v2 para
-   la comparación justa simbólico-vs-neuronal) + evaluar la regla ganadora
-   en las 70 instancias + añadirla al paper como baseline aprendido
-   interpretable. La regla evolucionada es un drop-in de HeuristicStrategy
-   (misma interfaz que SPT/MOR/GT), así que integrarla en evaluador,
-   gráficos o generador de pools no requiere código nuevo.
+2. **COMPLETADO (2026-07-06) — Baseline GP (hiper-heurística)**:
+   infraestructura en jobshop_rl/heuristics/gp_rule.py +
+   scripts/evolve_gp_rule.py. Evolución completa: pop 100 × 50 gens,
+   3 semillas, mismas TA11-14 que el v2 (comparación justa
+   simbólico-vs-neuronal), sin tuning paramétrico (decisión: es un baseline
+   y el v2 tampoco usa configuración afinada; salvaguarda de varianza entre
+   semillas no activada).
+   - **Fitness entrenamiento (TA11-14)**: s1 15.60%, s2 15.62%, s3 15.87%
+     — varianza entre semillas casi nula, settings convencionales bastan.
+   - **Generalización a las 70 Taillard** (1 rollout determinista por
+     instancia, RE por punto medio):
+
+     | Clase | GP s1 | GP s2 | GP s3 |
+     |---|---|---|---|
+     | 15×15 | 16.0% | 16.5% | 18.6% |
+     | 20×15 | 18.7% | 18.4% | 18.5% |
+     | 20×20 | 19.4% | 21.2% | 20.0% |
+     | 30×15 | 20.9% | 21.8% | 22.7% |
+     | 30×20 | 25.0% | 26.9% | 25.7% |
+     | 50×15 | 14.5% | 15.1% | 15.2% |
+     | 50×20 | 15.1% | 16.3% | 15.7% |
+     | **Global** | **18.5%** | 19.5% | 19.5% |
+
+   - **Lectura**: la regla s1 (18.5% global, UN solo rollout determinista)
+     bate a GT-MWKR (29.4%) en ~11 puntos y a todas las reglas fijas;
+     generaliza cross-size sin reentrenar (entrenó solo en 20×15 y su mejor
+     clase es 50×15). La escalera de baselines queda: reglas fijas (45.4%
+     MOR) < GT-MWKR (29.4%) < **GP evolucionado (18.5%)** < v2
+     best-of-1024 (12.7%). El v2 mantiene ~6 puntos de ventaja sobre el
+     mejor baseline aprendido interpretable — ese margen es la contribución
+     neta de la red + best-of-N para el paper.
+   - Mejor regla (s1, benchmarks/gp_rule_seed1.json; s2/s3 en JSONs
+     hermanos): árbol de 40 nodos dominado por WKR/EST/SLACK×PT — MWKR
+     corregido por inicio temprano y holgura.
+   - La regla es drop-in de HeuristicStrategy (misma interfaz que
+     SPT/MOR/GT): integrarla en evaluador, gráficos o pools no requiere
+     código nuevo. Pendiente menor: sección GP del paper (ablation de
+     baselines aprendidos).
 3. **Habilitación GPU** (hay RTX 5060 Ti 16GB + torch CUDA sin usar): tarea
    de ingeniería para la fase de cómputo pesado — rollouts vectorizados
    (batchear los N episodios del best-of-N y los entornos de entrenamiento)
