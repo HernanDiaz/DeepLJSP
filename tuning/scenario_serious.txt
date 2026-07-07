@@ -3,15 +3,16 @@
 # NO transfirieron al presupuesto completo. Esta campana evalua cada
 # configuracion directamente en el punto de operacion, habilitada por la
 # vectorizacion (batched_train/batched_eval, speedup 2-5x).
-# ANTES DE LANZAR: anadir a configurations_serious.txt las elites
-# supervivientes de la campana Deep Sets a fidelidad baja (ademas de la
-# default ya sembrada) y confirmar que kepochs/hidden siguen insensibles.
+# Sembrada con la default + las 3 elites finales de la campana a fidelidad
+# baja (#26, #38, #25). Fijos por consenso unanime: minibatch=256,
+# update-every=4. kepochs/hidden devueltos al espacio (las elites
+# contradijeron el plan de fijarlos: todas kepochs=8, hidden 128/256).
 parameterFile = "parameters_serious.txt"
 trainInstancesDir = ""
 trainInstancesFile = "instances.txt"
 configurationsFile = "configurations_serious.txt"
 targetRunner = "./target_runner_serious.bat"
-maxExperiments = 280
+maxExperiments = 300
 firstTest = 6
 parallel = 4
 seed = 20260706

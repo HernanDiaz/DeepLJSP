@@ -178,6 +178,19 @@ completan con los checkpoints actuales.
 
 ## Próxima fase (plan acordado con el usuario, 2026-07-05)
 
+0. **COMPLETADA (2026-07-07) — Campaña Deep Sets sembrada a fidelidad
+   baja** (330 exps, 6 iteraciones, ~21.8h, log tuning/irace_deepsets.log).
+   La default sembrada NO sobrevivió la primera criba. Élites finales:
+   #26 (lr 3e-4, entropy 0.0069, clip 0.3, kepochs 8, mb 256, ue 4,
+   gae 0.90, hidden 128; coste 17.07), #38 y #25 (lr 7e-4, hidden 256,
+   resto igual). CONSENSO unánime de élites: clip 0.3, kepochs 8,
+   minibatch 256, update-every 4, gae 0.90 — otra vez gae 0.90 como la
+   fallida élite #27, y kepochs 8 contradice el plan de fijar kepochs=4.
+   Mapa de sensibilidad aplicado a la campaña seria: minibatch y
+   update-every se fijan (consenso élites+default); kepochs y hidden
+   vuelven al espacio. Las 3 élites + default sembradas en
+   configurations_serious.txt. Recordatorio pre-registrado: este coste es
+   a 300 eps — la adopción real la decide SOLO la campaña seria a 1000.
 1. **Doble campaña irace con default sembrada** (configurationsFile):
    - Deep Sets: espacio estándar, default como candidata inicial
      (scenario_deepsets.txt), 330 experimentos (~16 h).
