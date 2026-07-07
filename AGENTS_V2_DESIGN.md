@@ -236,8 +236,31 @@ completan con los checkpoints actuales.
      corregido por inicio temprano y holgura.
    - La regla es drop-in de HeuristicStrategy (misma interfaz que
      SPT/MOR/GT): integrarla en evaluador, gráficos o pools no requiere
-     código nuevo. Pendiente menor: sección GP del paper (ablation de
-     baselines aprendidos).
+     código nuevo.
+   - **MATRIZ JUSTA GP-vs-v2 (2026-07-07)** — respuesta a la objeción de
+     presupuesto desigual. Presupuesto de ENTRENAMIENTO ya emparejado
+     (GP: 20.400 rollouts/~49 min; v2: 4.000 rollouts/~80 min; mismas
+     TA11-14). Presupuesto de INFERENCIA igualado midiendo ambos en
+     single-shot y en best-of-1024 (GP-ε: regla s1 + ε=0.1 estilo GRASP,
+     muestra 0 determinista — espejo del protocolo v2; v2: muestreo de su
+     propia política, pool de los 3 checkpoints). RE global (70 Taillard):
+
+     | Método | best-of-1 | @16 | @64 | @256 | best-of-1024 |
+     |---|---|---|---|---|---|
+     | GP (s1) / GP-ε | 18.5% | 17.1% | 15.9% | 14.9% | 14.1% |
+     | v2 greedy / muestreo | 19.4% | — | — | — | **12.7%** |
+
+     (curva completa GP-ε en benchmarks/fair_gp_eps.csv; v2 greedy en
+     benchmarks/fair_v2_greedy.csv)
+   - **Lectura**: (i) single-shot, la fórmula GP EMPATA/GANA al greedy
+     neural (18.5 vs 19.4) — el modo greedy de la red no es su valor;
+     (ii) a igual N=1024, el v2 gana 12.7 vs 14.1: su distribución de
+     muestreo aprendida rinde −6.7 pts en 10 duplicaciones de N frente a
+     −4.4 del ruido uniforme sobre la mejor fórmula. La contribución neta
+     del RL es la CALIDAD DE LA DISTRIBUCIÓN, no la política puntual.
+     Matiz honesto (va en el paper): el pool v2 mezcla 3 checkpoints
+     (semillas) y el GP-ε usa solo la regla s1; las 3 reglas GP son casi
+     idénticas (15.60-15.87% train), efecto menor.
 3. **COMPLETADO (2026-07-06) — Vectorización + GPU** (RTX 5060 Ti 16GB,
    torch 2.9.1+cu130). Perfil del rollout secuencial: el forward de la red
    (batch de 1) era el 64-77% del tiempo → batchear forwards es la palanca.

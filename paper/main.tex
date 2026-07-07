@@ -687,14 +687,48 @@ points and every fixed dispatching rule by a wide margin---and transfers
 across sizes without retraining; its best class is in fact the unseen
 $50{\times}15$. Structurally, the evolved expressions are recognizable as
 MWKR corrected by earliest-start and slack$\times$processing-time terms.
-This places the strongest interpretable learned baseline $5$--$6$ points
-behind the neural policy ($12.7\%$ best-of-1024 on the same 70
-instances), and the full baseline ladder becomes: fixed rules
-($45.4\%$ for MOR) $<$ G\&T-MWKR ($29.4\%$) $<$ GP-evolved rule
-($18.5\%$) $<$ neural policy ($12.7\%$). The residual gap is the net
-contribution of the neural representation and sampling-based inference,
-beyond what closed-form priority functions over the same attribute
-vocabulary can express.
+
+Because training budgets are already comparable (GP: $20{,}400$ fitness
+rollouts in ${\approx}49$ min/seed; policy: $4{,}000$ training episodes
+in ${\approx}80$ min/seed; identical training instances), the remaining
+axis to equalize is \emph{inference} budget. Table~\ref{tab:fairmatrix}
+compares both learners single-shot and at matched best-of-$1024$; for
+the GP rule, sampling uses GRASP-style $\epsilon{=}0.1$ randomization
+(sample $0$ deterministic, mirroring the policy protocol). Two findings.
+First, \emph{single-shot, the interpretable rule matches the neural
+policy}: $18.5\%$ versus $19.4\%$ for the greedy policy---the policy's
+point estimate is not where its value lies. Second, under an equal
+sampling budget the ranking reverses and the gap reopens: the policy
+converts $1024$ samples into a $6.7$-point improvement, uniform noise
+around the best evolvable formula only $4.4$ points. The net
+contribution of deep RL in this domain is therefore the \emph{quality of
+the learned sampling distribution}, not a stronger greedy heuristic---
+consistent with the best-of-$N$ ablation of
+Section~\ref{sec:ablations-bon}. (The policy pool mixes three training
+seeds while GP-$\epsilon$ uses the single best rule; the three evolved
+rules are near-identical, $15.60$--$15.87\%$ training RE, so the effect
+of this asymmetry is minor.)
+
+\begin{table}[t]
+\centering\small
+\caption{Matched-budget comparison over all 70 instances: mean RE (\%)
+at equal inference budget. GP-$\epsilon$: best rule with
+$\epsilon{=}0.1$ randomization.}
+\label{tab:fairmatrix}
+\begin{tabular}{lccccc}
+\toprule
+Method & best-of-1 & @16 & @64 & @256 & best-of-1024 \\
+\midrule
+GP rule / GP-$\epsilon$ & 18.5 & 17.1 & 15.9 & 14.9 & 14.1 \\
+Policy (greedy / sampled) & 19.4 & --- & --- & --- & \textbf{12.7} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The full single-shot baseline ladder thus reads: fixed rules ($45.4\%$
+for MOR) $<$ G\&T-MWKR ($29.4\%$) $<$ GP-evolved rule ($18.5\%$)
+${\approx}$ greedy policy ($19.4\%$); and at matched best-of-$1024$:
+GP-$\epsilon$ ($14.1\%$) $<$ neural policy ($12.7\%$).
 
 \begin{table}[t]
 \centering\small
