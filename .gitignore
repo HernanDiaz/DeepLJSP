@@ -93,3 +93,5 @@ paper/*.fdb_latexmk
 paper/*.synctex.gz
 
 tuning/runner_logs/
+tuning/rdata_backups/
+tuning/bad_rdata/

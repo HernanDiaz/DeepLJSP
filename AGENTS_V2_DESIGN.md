@@ -308,7 +308,28 @@ completan con los checkpoints actuales.
    280 experimentos, ~1 día de cómputo estimado. Paridad de coste del
    target runner validada extremo a extremo (fidelidad 300 eps, semillas
    2/3): coste seq 33.7/23.1 vs batched 32.2/23.9 (ruido de semilla) con
-   2.9× de speedup. ANTES DE LANZAR: sembrar
+   2.9× de speedup.
+
+   **INCIDENTE 2026-07-08 (freeze de la máquina + lección de recursos)**:
+   la campaña seria a parallel=4 congeló el equipo tras ~16h (hard reboot).
+   Causa raíz: train_eval_config.py NO limitaba los hilos de torch → cada
+   worker abría 8 hilos por defecto × 4 workers = 32 hilos en 4 núcleos
+   FÍSICOS (8 lógicos). Sobresuscripción 8×. FIX: os.environ OMP/MKL=2 +
+   torch.set_num_threads(2) al inicio del script (antes de importar torch),
+   y parallel bajado a 3 por seguridad extra (3×2=6 hilos + bucles de
+   entorno, holgura en 8 lógicos). LECCIÓN de recuperación de irace: el
+   checkpoint automático (.Rdata) recupera por paso-de-race (~por hora),
+   PERO al copiar el .Rdata como archivo de recuperación hay que hacerlo de
+   un estado ESTABLE (fin de iteración), no del instante transitorio
+   "Recovery completed" — un .Rdata capturado ahí falla con "Cannot find
+   instance/configuration in recovery info". Se perdió la iteración 1
+   (~10h) por sobrescribir el .Rdata bueno de 02:54 antes de dejar que la
+   primera recuperación consolidara un checkpoint limpio. Mitigación
+   añadida: daemon de backup rotado (tuning/rdata_backups/, copia cada
+   10 min, guarda las 6 últimas) que protege también contra corrupción del
+   .Rdata si un freeze ocurre a mitad de escritura. Campaña RELANZADA
+   LIMPIA (parallel=3, hilos limitados) 2026-07-08 ~08:50.
+   ANTES DE LANZAR (nota histórica ya resuelta): sembrar
    también las élites supervivientes de la campaña Deep Sets en curso y
    revalidar que kepochs/hidden siguen insensibles en sus élites finales.
    DECISIÓN (2026-07-06): NO se lanza la campaña attention a fidelidad

@@ -14,6 +14,6 @@ configurationsFile = "configurations_serious.txt"
 targetRunner = "./target_runner_serious.bat"
 maxExperiments = 300
 firstTest = 6
-parallel = 4
+parallel = 3
 seed = 20260706
 logFile = "irace_serious.Rdata"

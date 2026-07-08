@@ -13,9 +13,19 @@ Uso (los nombres de flag coinciden con parameters.txt de irace):
 """
 
 import argparse
+import os
 import sys
 
 sys.path.insert(0, ".")
+
+# Limitar hilos ANTES de importar torch: con varios workers de irace en
+# paralelo, el intra-op parallelism por defecto de torch (= n. de logicos)
+# sobresuscribe la CPU (4 nucleos fisicos aqui) y llega a congelar la
+# maquina. 2 hilos/worker deja holgura al SO y a los entornos Python.
+os.environ.setdefault("OMP_NUM_THREADS", "2")
+os.environ.setdefault("MKL_NUM_THREADS", "2")
+import torch
+torch.set_num_threads(2)
 
 from jobshop_rl.agents_v2 import AgentV2
 from jobshop_rl.agents_v2.state_encoder import StateEncoder
