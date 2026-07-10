@@ -95,3 +95,5 @@ paper/*.synctex.gz
 tuning/runner_logs/
 tuning/rdata_backups/
 tuning/bad_rdata/
+tuning/gp/runner_logs/
+tuning/gp/rdata_backups/

@@ -15,9 +15,16 @@ Uso (evolución completa):
 
 import argparse
 import json
+import os
 import random
 import sys
 import time
+
+# GP es CPU-bound (numpy sobre vectores diminutos): con varios workers de
+# irace en paralelo, limitar los hilos de BLAS evita sobresuscripción.
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+os.environ.setdefault("MKL_NUM_THREADS", "1")
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
 
 sys.path.insert(0, ".")
 
@@ -33,7 +40,6 @@ from jobshop_rl.heuristics.gp_rule import (
 from jobshop_rl.models.interval import Interval
 
 DEFAULT_TRAIN = "int__tai20_15_01,int__tai20_15_02,int__tai20_15_03,int__tai20_15_04"
-MAX_TREE_SIZE = 40
 
 
 def rollout_re(env, heuristic, lb) -> float:
@@ -55,7 +61,17 @@ def main():
     parser.add_argument("--gens", type=int, default=50)
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--tournament", type=int, default=4)
+    parser.add_argument("--crossover", type=float, default=0.8,
+                        help="prob. de cruce (1-crossover = prob. de mutación)")
+    parser.add_argument("--maxtree", type=int, default=40,
+                        help="cap de nodos del árbol (control de bloat)")
+    parser.add_argument("--elitism", type=int, default=2,
+                        help="n. de mejores que pasan intactos por generación")
     parser.add_argument("--train-ids", type=str, default=DEFAULT_TRAIN)
+    parser.add_argument("--eval-ids", type=str, default="",
+                        help="si se da: tras evolucionar, evalúa la mejor regla "
+                             "en estas instancias e imprime el RE medio como "
+                             "última línea (coste para irace); no guarda JSON")
     parser.add_argument("--out", type=str, default="benchmarks/gp_rule_best.json")
     args = parser.parse_args()
 
@@ -66,7 +82,7 @@ def main():
              for pid in (p.strip() for p in args.train_ids.split(",")) if pid]
 
     def fitness(tree) -> float:
-        if tree_size(tree) > MAX_TREE_SIZE:
+        if tree_size(tree) > args.maxtree:
             return float("inf")
         h = GPRuleHeuristic(tree)
         return sum(rollout_re(env, h, lb) for _, env, lb in train) / len(train)
@@ -77,18 +93,20 @@ def main():
     population.append("PT")     # SPT
     population.append(("neg", "WKR"))  # MWKR
 
+    # Progreso a stderr: así en modo --eval-ids el stdout queda limpio para
+    # que irace lea el coste como última (y única relevante) línea.
     start = time.time()
     scored = sorted(((fitness(t), t) for t in population), key=lambda x: x[0])
     print(f"gen  0 | mejor={scored[0][0]:.2f}% | media={sum(s for s, _ in scored)/len(scored):.1f}% "
-          f"| {time.time()-start:.0f}s", flush=True)
+          f"| {time.time()-start:.0f}s", flush=True, file=sys.stderr)
 
     for gen in range(1, args.gens + 1):
-        elite = [t for _, t in scored[:2]]
+        elite = [t for _, t in scored[:args.elitism]]
         children = list(elite)
         while len(children) < args.pop:
             def pick():
                 return min(rng.sample(scored, args.tournament), key=lambda x: x[0])[1]
-            if rng.random() < 0.8:
+            if rng.random() < args.crossover:
                 child = crossover(rng, pick(), pick())
             else:
                 child = mutate(rng, pick())
@@ -97,9 +115,24 @@ def main():
         print(f"gen {gen:>2} | mejor={scored[0][0]:.2f}% | "
               f"media={sum(s for s, _ in scored)/len(scored):.1f}% "
               f"| mejor regla: {tree_str(scored[0][1])} | {time.time()-start:.0f}s",
-              flush=True)
+              flush=True, file=sys.stderr)
 
     best_fit, best_tree = scored[0]
+
+    # Modo tuning (irace): evaluar la mejor regla en el conjunto de validación
+    # e imprimir el RE medio como coste. NO se guarda JSON (es una corrida más
+    # del racing, no un artefacto final).
+    eval_ids = [p.strip() for p in args.eval_ids.split(",") if p.strip()]
+    if eval_ids:
+        h = GPRuleHeuristic(best_tree)
+        re_val = []
+        for pid in eval_ids:
+            env = EnvironmentFactory.create_from_problem(
+                PROBLEM_REGISTRY[pid](), "basic", seed=args.seed)
+            re_val.append(rollout_re(env, h, lb_for_problem_name(pid)))
+        print(f"{sum(re_val) / len(re_val):.4f}")
+        return
+
     with open(args.out, "w", encoding="utf-8") as f:
         json.dump({"fitness_re": best_fit, "rule": tree_str(best_tree),
                    "tree": best_tree, "pop": args.pop, "gens": args.gens,

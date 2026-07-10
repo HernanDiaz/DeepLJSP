@@ -1,0 +1,9 @@
+# Espacio de hiperparametros del GP hiper-heuristico para irace.
+# pop y gens quedan FIJOS en el target runner (presupuesto de evolucion
+# emparejado con el entrenamiento del RL, ~wall-clock comparable); irace
+# tunea solo los knobs algoritmicos cualitativos.
+# nombre     switch          tipo  rango/valores
+tournament   "--tournament " c     (2, 3, 4, 5, 7)
+crossover    "--crossover "  r     (0.5, 0.95)
+maxtree      "--maxtree "    c     (20, 30, 40, 60)
+elitism      "--elitism "    c     (1, 2, 4)

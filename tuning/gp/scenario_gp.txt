@@ -1,0 +1,15 @@
+# Campana de tuning del GP hiper-heuristico (paper GP).
+# Mismo protocolo que las campanas del RL: irace, racing sobre semillas,
+# default sembrada. Presupuesto de busqueda ~emparejado con el RL en cuanto
+# a metodologia; espacio reducido (4 knobs cualitativos, pop/gens fijos).
+# GP es CPU-bound single-core por worker -> parallel=3 en 4 nucleos, seguro.
+parameterFile = "parameters_gp.txt"
+trainInstancesDir = ""
+trainInstancesFile = "instances.txt"
+configurationsFile = "configurations_gp.txt"
+targetRunner = "./target_runner_gp.bat"
+maxExperiments = 160
+firstTest = 6
+parallel = 3
+seed = 20260710
+logFile = "irace_gp.Rdata"
