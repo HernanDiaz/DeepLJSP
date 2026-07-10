@@ -329,6 +329,30 @@ completan con los checkpoints actuales.
    10 min, guarda las 6 últimas) que protege también contra corrupción del
    .Rdata si un freeze ocurre a mitad de escritura. Campaña RELANZADA
    LIMPIA (parallel=3, hilos limitados) 2026-07-08 ~08:50.
+   **RESULTADO DE LA CAMPAÑA SERIA (2026-07-10, 295/300 exps, ~30h reales
+   incluyendo recuperaciones)**: convergió de forma consistente a una
+   región DISTINTA de la default, y la default fue eliminada (a diferencia
+   de las campañas de fidelidad baja). Élites finales (ranking por suma de
+   rangos), consenso muy marcado:
+   | # | lr | entropy | clip | kepochs | gae | hidden |
+   |---|---|---|---|---|---|---|
+   | 22 (ganadora) | 7e-4 | 0.0063 | 0.1 | 8 | 0.90 | 256 |
+   | 25 | 5e-4 | 0.0057 | 0.1 | 8 | 0.90 | 128 |
+   | 30 | 9e-4 | 0.0071 | 0.1 | 8 | 0.90 | 256 |
+   | 31 | 6e-4 | 0.0051 | 0.1 | 8 | 0.95 | 256 |
+   Las 4 coinciden en clip=0.1 (default 0.2), kepochs=8 (default 4),
+   gae=0.90 (default 0.95), hidden mayoritariamente 256 (default 128), lr
+   alto 5-9e-4 (default 3e-4). Coste líder ~13.0% en dev reducido
+   (TA15-17) vs ~13.4% de la default en TA15-20 — NO comparables aún.
+   Ganadora por post-selección: **#22**
+   (--lr 0.0007 --entropy 0.0063 --clip 0.1 --kepochs 8 --gae 0.90
+   --hidden 256). PENDIENTE: confirmación pre-registrada #22 vs default a
+   presupuesto completo (TA11-14 × 1000 eps × 3 semillas, eval TA15-20);
+   solo se adopta si gana con la regla estándar. A diferencia de la élite
+   #27 (fidelidad baja, no transfirió), esta se seleccionó EN el punto de
+   operación, así que el riesgo de no-transferencia está eliminado por
+   diseño — pero la regla manda igual.
+
    ANTES DE LANZAR (nota histórica ya resuelta): sembrar
    también las élites supervivientes de la campaña Deep Sets en curso y
    revalidar que kepochs/hidden siguen insensibles en sus élites finales.
