@@ -353,6 +353,26 @@ completan con los checkpoints actuales.
    operación, así que el riesgo de no-transferencia está eliminado por
    diseño — pero la regla manda igual.
 
+   **VEREDICTO CONFIRMACIÓN (2026-07-10)**: la #22 NO mejora la default.
+   Entrenada a presupuesto completo (TA11-14 × 1000 eps × 3 semillas,
+   scripts/confirm_elite22.py) y evaluada contra los checkpoints default
+   con el MISMO evaluador batcheado (best-of-64, TA15-20):
+   | semilla | #22 | default |
+   |---|---|---|
+   | 2 | 14.63 | 12.93 |
+   | 3 | 14.61 | 13.99 |
+   | 4 | 14.94 | 13.63 |
+   | **media** | **14.73** | **13.52** |
+   +1.21 puntos peor; #22 mejor en 2 instancias, peor en 4. VEREDICTO:
+   **MANTENER DEFAULT** (gana en las 3 semillas). Resultado CLAVE para el
+   paper: ni el tuning a fidelidad de operación supera la configuración
+   estándar — el patrón racing-óptimo ≠ confirmación-óptimo se repite
+   (coste de una sola corrida demasiado ruidoso para separar configs casi
+   equivalentes). Modelos finales siguen siendo
+   v2_final_deepsets_1000ep_seed{2,3,4} (default); checkpoints #22
+   descartados. Sección del paper (hyperconfig) actualizada con ambas
+   campañas.
+
    ANTES DE LANZAR (nota histórica ya resuelta): sembrar
    también las élites supervivientes de la campaña Deep Sets en curso y
    revalidar que kepochs/hidden siguen insensibles en sus élites finales.
