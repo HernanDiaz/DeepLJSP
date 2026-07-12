@@ -174,36 +174,76 @@ $\mathrm{neg}(\mathit{WKR})$---and both are injected as seed individuals.
 
 \begin{table}[t]
 \centering\small
-\caption{Interval-aware terminal set. W-suffixed terminals expose the
-widths of the uncertain quantities, allowing rules to react to
-uncertainty itself.}
+\caption{Interval-aware terminal set, with exact definitions. For an
+eligible operation $o$ of job $j$ on machine $m$: $p_o =
+[\underline{p}_o, \overline{p}_o]$ is its duration interval; $C_j$ and
+$C_m$ are the (interval) completion times of the last scheduled operation
+of job $j$ and machine $m$; $\mathcal{R}_o$ is the set of operations of
+$j$ after $o$; $\mathcal{E}$ is the current eligible set. Terminals are
+evaluated on \emph{raw} (unnormalized) values.}
 \label{tab:terminals}
 \begin{tabular}{lll}
 \toprule
-Terminal & Meaning & Uncertainty view \\
+Terminal & Definition & Role \\
 \midrule
-PT   & processing time (worst case) & upper bound \\
-PTW  & processing-time width & $\overline{p}-\underline{p}$ \\
-EST  & earliest start (worst case) & upper bound \\
-ESTW & earliest-start width & interval width \\
-WKR  & work remaining in job (worst case) & upper bound \\
-WKRW & work-remaining width & interval width \\
-NOR  & operations remaining in job & crisp \\
-SLACK& start slack vs.\ earliest eligible & upper bound \\
-ONE  & constant $1$ & --- \\
+PT   & $\overline{p}_o$ & worst-case processing time \\
+PTW  & $\overline{p}_o-\underline{p}_o$ & duration uncertainty \\
+EST  & $\overline{e}_o = \max(\overline{C}_j, \overline{C}_m)$ &
+worst-case earliest start \\
+ESTW & $\overline{e}_o - \underline{e}_o$, with
+$\underline{e}_o=\max(\underline{C}_j,\underline{C}_m)$ &
+start uncertainty \\
+WKR  & $\sum_{q\in\mathcal{R}_o}\overline{p}_q$ & worst-case work
+remaining \\
+WKRW & $\sum_{q\in\mathcal{R}_o}(\overline{p}_q-\underline{p}_q)$ &
+remaining-work uncertainty \\
+NOR  & $|\mathcal{R}_o|$ & operations remaining \\
+SLACK& $\overline{e}_o - \min_{o'\in\mathcal{E}}\overline{e}_{o'}$ &
+start slack within eligible set \\
+ONE  & $1$ & constant \\
 \bottomrule
 \end{tabular}
 \end{table}
 
+Protected division is defined as $a \div_p b = a/b$ if $|b| > 10^{-9}$
+and $a$ otherwise. Priority ties at dispatch time are broken by eligible
+set order (lowest job index first), which is deterministic; hence a rule
+maps each instance to exactly one schedule.
+
 \subsection{Evolution}
-Generational GP with: ramped half-and-half initialization plus the two
-classic seeds; tournament selection; subtree crossover (probability
-$0.8$) or subtree mutation; elitism of $2$; and a hard cap of $40$ nodes
-as bloat control (oversized offspring receive fitness $\infty$). Fitness
-of a rule is the mean $\RE$ of its deterministic rollout over the
-training instances---the same environment, decoder and evaluator used by
-all baselines and by the companion DRL agent, which eliminates evaluator
-mismatch as a confound.
+Generational GP with the operators and parameters of
+Table~\ref{tab:gpparams}. Initialization is ramped half-and-half over
+depths $2$--$4$ (grow trees terminate early with probability $0.3$ per
+node), with SPT and MWKR injected as two additional seed individuals.
+Each generation, the elite passes unchanged and the remainder is produced
+by tournament selection followed by subtree crossover (a uniformly random
+node of parent A is replaced by a uniformly random subtree of parent B)
+or, with the complementary probability, subtree mutation (a uniformly
+random node is replaced by a fresh grow tree of depth $\le 3$). Offspring
+exceeding the node cap receive fitness $\infty$ (bloat control). Fitness
+of a rule is the mean $\RE$ of its deterministic rollout over the four
+training instances---computed with the same environment, decoder and
+evaluator used by all baselines and by the companion DRL agent, which
+eliminates evaluator mismatch as a confound.
+
+\begin{table}[t]
+\centering\small
+\caption{Evolution parameters (conventional settings; see
+Section~\ref{sec:tuning} for the sensitivity study).}
+\label{tab:gpparams}
+\begin{tabular}{ll}
+\toprule
+Population / generations & $100$ / $50$ \\
+Initialization & ramped half-and-half, depths $2$--$4$ + \{SPT, MWKR\} \\
+Selection & tournament, size $4$ \\
+Crossover / mutation prob. & $0.8$ / $0.2$ (subtree; mutation depth $\le 3$) \\
+Elitism & $2$ \\
+Tree-size cap & $40$ nodes (violations: fitness $\infty$) \\
+Fitness & mean RE, deterministic rollout, TA11--TA14 \\
+Seeds & $\{1, 2, 3\}$ (RNG of evolution and environment) \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Randomized multi-start extension}
 A deterministic rule produces one schedule. For matched comparisons with
