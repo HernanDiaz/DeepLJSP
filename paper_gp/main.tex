@@ -1,0 +1,383 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage[margin=2.6cm]{geometry}
+\usepackage{hyperref}
+\usepackage{multirow}
+
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+\newcommand{\RE}{\mathrm{RE}}
+
+\title{Genetic Programming Hyper-Heuristics for the Job Shop Scheduling
+Problem with Interval Durations: Interpretable Rules that Generalize
+Across Instance Sizes}
+
+\author{Hern\'an D\'iaz \and \todo{co-authors}}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Dispatching rules remain the method of choice for scheduling under tight
+time budgets, but hand-crafted rules leave substantial performance
+unexploited, and the automated design of rules has scarcely been explored
+for scheduling problems with non-deterministic processing times. We present
+a genetic programming (GP) hyper-heuristic for the job shop scheduling
+problem with interval durations (IJSP), in which operation durations are
+known only to lie within an interval and schedules are evaluated by
+interval arithmetic. The GP evolves priority expressions over an
+\emph{interval-aware} terminal set that exposes both the worst-case values
+and the widths of the uncertain quantities, so that evolved rules can react
+to uncertainty itself. On the 70 interval versions of Taillard's benchmark,
+the best evolved rule attains a mean relative error of $18.5\%$ with a
+single deterministic rollout of negligible cost---improving on the
+strongest deterministic constructive baseline (Giffler--Thompson with MWKR
+tie-breaking, $29.4\%$) by over ten points---and generalizes zero-shot
+across all seven instance size classes despite being evolved on a single
+class. Embedded in a GRASP-style randomized scheme, the evolved rule
+converts sampling budget into solution quality ($14.1\%$ at best-of-1024).
+Evolved rules are compact, human-readable expressions, and an automatic
+configuration study with irace shows the approach is robust to its own
+hyperparameters, with a preference for \emph{smaller} expression trees at
+no performance cost. We position the method against fixed rules, active
+schedule generators, published metaheuristics, and a deep reinforcement
+learning policy trained on the same instances, characterizing when
+symbolic rules match neural constructive methods and when they do not.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+Real manufacturing environments rarely know the exact duration of an
+operation in advance. The interval job shop scheduling problem (IJSP)
+models this uncertainty in a minimal, distribution-free way: each
+processing time is only assumed to lie within a known interval, schedules
+are built and evaluated with interval arithmetic, and solutions are
+compared by their worst-case (upper-bound) makespan. Population
+metaheuristics for the IJSP---artificial bee colony variants and tabu
+search among them---achieve strong results at the cost of minutes of
+per-instance search~\cite{DiazFEABC2023,DiazICAE2023,DiazTS2026}.
+
+At the opposite end of the computational spectrum live \emph{dispatching
+rules}: priority functions that build a schedule in milliseconds by
+repeatedly selecting the next operation to start. Their appeal is
+threefold---speed, interpretability, and trivial deployment---but
+hand-crafted rules (SPT, MOR, MWKR and relatives) leave a large quality
+gap: on the benchmark used in this paper the best fixed rule averages
+$45.4\%$ relative error, versus $4$--$10\%$ for metaheuristics.
+
+For \emph{deterministic} scheduling, a rich literature has shown that this
+gap can be narrowed substantially by evolving rules automatically with
+genetic programming (GP)~\cite{Branke2016,Nguyen2017}. For scheduling
+under interval uncertainty, however, the automated design of dispatching
+rules remains, to the best of our knowledge, unexplored. It is not obvious
+a priori what an evolved rule should do with uncertainty: ignore it and
+rank by worst case, hedge against wide intervals, or exploit width
+information in a structured way. Making this possible requires exposing
+uncertainty to the rule as first-class attributes.
+
+This paper makes the following contributions:
+\begin{enumerate}
+\item A GP hyper-heuristic for the IJSP whose terminal set is
+  \emph{interval-aware}: alongside worst-case processing time, earliest
+  start and work remaining, rules can read the \emph{widths} of these
+  quantities, enabling uncertainty-sensitive prioritization
+  (Section~\ref{sec:method}).
+\item An empirical study on the 70 interval Taillard instances showing
+  that evolved rules (i) beat every deterministic constructive baseline by
+  a wide margin at equal cost, (ii) generalize zero-shot across instance
+  sizes---evolved on $20{\times}15$, best class $50{\times}15$---and
+  (iii) extend naturally to a randomized multi-start regime with monotone
+  quality gains up to best-of-1024 (Section~\ref{sec:results}).
+\item An automatic configuration study (irace, 200 experiments) of the
+  evolutionary hyperparameters, showing robustness of the method to its
+  own knobs and a mild preference for smaller trees, which favours
+  interpretability at no cost (Section~\ref{sec:tuning}).
+  \todo{actualizar con los resultados finales de la campaña (en curso)}
+\item A controlled comparison against a deep reinforcement learning
+  constructive policy trained on the same instances (companion
+  work~\cite{DiazRL2026}), with training and inference budgets matched:
+  single-shot, the interpretable rule matches the neural policy; under
+  equal sampling budgets the learned sampling distribution of the policy
+  retains an advantage (Section~\ref{sec:vs-rl}).
+\end{enumerate}
+
+\todo{párrafo final con la estructura del paper}
+
+\section{Related Work}
+\label{sec:related}
+
+\subsection{Job shop scheduling under interval uncertainty}
+Interval durations offer a distribution-free uncertainty model requiring
+only bounds, in contrast to stochastic and fuzzy
+approaches~\cite{FuzzyJSPRef}. Prior IJSP work is dominated by
+population-based metaheuristics: an elitist artificial bee colony with
+interval ranking~\cite{DiazFEABC2023}, its ensemble-ranking
+successor~\cite{DiazICAE2023}, and a population-based tabu search that
+currently defines the state of the art~\cite{DiazTS2026}. All operate in
+the minutes-per-instance regime. Fast constructive methods for the IJSP
+have received far less attention; dispatching rules with interval-aware
+lexicographic comparisons are the de facto baseline.
+
+\subsection{Automated design of dispatching rules}
+GP hyper-heuristics evolve priority expressions over scheduling
+attributes, and constitute the standard approach to automated rule design
+for production scheduling~\cite{Branke2016,Nguyen2017}. Evolved rules
+have been shown to outperform hand-crafted ones across job shop variants,
+with active research on surrogate fitness, feature selection, and
+multi-objective formulations. This literature almost universally assumes
+deterministic (or sampled stochastic) processing times; evolving rules
+whose \emph{inputs} are interval attributes appears to be new.
+\todo{verificar afirmación de novedad con búsqueda bibliográfica dirigida}
+
+\subsection{Learned constructive heuristics}
+Deep reinforcement learning provides an alternative family of learned
+constructive methods for the JSP~\cite{Zhang2020L2D,Park2021GNN}. Our
+companion work~\cite{DiazRL2026} develops a size-invariant DRL policy for
+the IJSP trained on the same instances used here, enabling the matched
+comparison of Section~\ref{sec:vs-rl}. GP rules and DRL policies occupy
+the same computational class at deployment (milliseconds per decision),
+which makes the comparison informative in both directions.
+
+\section{The Interval Job Shop Scheduling Problem}
+\label{sec:problem}
+
+\todo{Formalización completa: jobs, máquinas, precedencias; duraciones
+$p_{ij} = [\underline{p}_{ij}, \overline{p}_{ij}]$; aritmética de
+intervalos (suma, máximo componente a componente); schedules semiactivos
+por decodificación de secuencias; ranking lexicográfico por upper bound;
+E[Cmax] = punto medio para el reporte. Reutilizar la formalización del
+companion adaptada — misma semántica exacta del evaluador (mismo código).}
+
+Performance is reported as relative error against the crisp Taillard
+lower bounds: $\RE = (E[C_{\max}] - LB)/LB \times 100$, where
+$E[C_{\max}]$ is the midpoint of the interval makespan.
+
+\section{GP Hyper-Heuristic for the IJSP}
+\label{sec:method}
+
+\subsection{Rule representation}
+An individual is a priority expression tree. Leaves are drawn from the
+interval-aware terminal set of Table~\ref{tab:terminals}; internal nodes
+from $\{+, -, \times, \div_p, \min, \max, \mathrm{neg}\}$ with protected
+division. At each scheduling decision the tree is evaluated (vectorized)
+over all eligible operations and the operation with \emph{lowest}
+priority is dispatched, yielding a semiactive schedule. Classic rules are
+points of this search space---SPT is the tree $\mathit{PT}$ and MWKR is
+$\mathrm{neg}(\mathit{WKR})$---and both are injected as seed individuals.
+
+\begin{table}[t]
+\centering\small
+\caption{Interval-aware terminal set. W-suffixed terminals expose the
+widths of the uncertain quantities, allowing rules to react to
+uncertainty itself.}
+\label{tab:terminals}
+\begin{tabular}{lll}
+\toprule
+Terminal & Meaning & Uncertainty view \\
+\midrule
+PT   & processing time (worst case) & upper bound \\
+PTW  & processing-time width & $\overline{p}-\underline{p}$ \\
+EST  & earliest start (worst case) & upper bound \\
+ESTW & earliest-start width & interval width \\
+WKR  & work remaining in job (worst case) & upper bound \\
+WKRW & work-remaining width & interval width \\
+NOR  & operations remaining in job & crisp \\
+SLACK& start slack vs.\ earliest eligible & upper bound \\
+ONE  & constant $1$ & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Evolution}
+Generational GP with: ramped half-and-half initialization plus the two
+classic seeds; tournament selection; subtree crossover (probability
+$0.8$) or subtree mutation; elitism of $2$; and a hard cap of $40$ nodes
+as bloat control (oversized offspring receive fitness $\infty$). Fitness
+of a rule is the mean $\RE$ of its deterministic rollout over the
+training instances---the same environment, decoder and evaluator used by
+all baselines and by the companion DRL agent, which eliminates evaluator
+mismatch as a confound.
+
+\subsection{Randomized multi-start extension}
+A deterministic rule produces one schedule. For matched comparisons with
+sampling-based methods we wrap the evolved rule in GRASP-style
+randomization: with probability $\varepsilon{=}0.1$ the dispatched
+operation is drawn uniformly from the eligible set, otherwise the rule
+decides; sample $0$ remains deterministic. Best-of-$N$ then reports the
+lexicographically best schedule.
+
+\section{Experimental Setup}
+\label{sec:setup}
+
+\textbf{Instances.} The 70 interval versions of Taillard's instances
+(TA1--TA70, seven size classes from $15{\times}15$ to $50{\times}20$),
+with crisp Taillard lower bounds as the $\RE$ reference.
+\todo{describir generación de los intervalos de las instancias}
+
+\textbf{Data split and exclusions.} Rules are evolved on TA11--TA14
+($20{\times}15$)---identical to the training set of the companion DRL
+policy---with TA15--TA20 as development set; all remaining 60 instances
+are unseen. \todo{política de exclusión completa, copiar del companion}
+
+\textbf{Budgets.} Population $100$, $50$ generations: ${\sim}20{,}400$
+fitness rollouts (${\approx}49$ min single-core) per seed; three
+independent seeds.
+
+\textbf{Baselines.} Fixed rules (SPT, LPT, MOR, MWKR) with interval-aware
+lexicographic comparison; the Giffler--Thompson active-schedule generator
+with rule tie-breaks (deterministic and $\varepsilon$-randomized inside
+the conflict set); published IJSP metaheuristics
+(fEABC~\cite{DiazFEABC2023}, ESABC~\cite{DiazICAE2023},
+TS~\cite{DiazTS2026}) as yardsticks of the search-based computational
+class; and the companion DRL policy~\cite{DiazRL2026}.
+
+\section{Results}
+\label{sec:results}
+
+\subsection{Evolution behaviour and seed stability}
+Three seeds converge to training $\RE$ of $15.60\%$, $15.62\%$ and
+$15.87\%$---a spread of $0.27$ points---with convergence typically by
+generation $25$--$30$. The best evolved rules are structurally
+recognizable: MWKR corrected by earliest-start and
+slack$\times$processing-time terms.
+\todo{figura: curva mejor-fitness por generación, 3 semillas; y las
+expresiones de las 3 reglas simplificadas}
+
+\subsection{Generalization to the full benchmark}
+Table~\ref{tab:gp70} reports single-rollout $\RE$ per size class over all
+70 instances. The best rule attains $18.5\%$ global mean---evolved only
+on $20{\times}15$, its best class is the unseen $50{\times}15$
+($14.5\%$). Because all terminals are per-operation attributes with no
+size-bound quantities, transfer requires no retraining or rescaling.
+
+\begin{table}[t]
+\centering\small
+\caption{Mean RE (\%) per size class, single deterministic rollout,
+three GP seeds; all 70 Taillard interval instances.}
+\label{tab:gp70}
+\begin{tabular}{lccccccc|c}
+\toprule
+Rule & $15{\times}15$ & $20{\times}15$ & $20{\times}20$ &
+$30{\times}15$ & $30{\times}20$ & $50{\times}15$ & $50{\times}20$ & All \\
+\midrule
+GP seed 1 & 16.0 & 18.7 & 19.4 & 20.9 & 25.0 & \textbf{14.5} & 15.1 &
+\textbf{18.5} \\
+GP seed 2 & 16.5 & 18.4 & 21.2 & 21.8 & 26.9 & 15.1 & 16.3 & 19.5 \\
+GP seed 3 & 18.6 & 18.5 & 20.0 & 22.7 & 25.7 & 15.2 & 15.7 & 19.5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Position among constructive methods}
+At equal cost (one deterministic rollout): MOR $45.4\%$, G\&T-MWKR
+$29.4\%$, evolved rule $18.5\%$. The evolved rule improves on the
+strongest deterministic constructive baseline by $10.9$ points while
+remaining a closed-form, human-readable expression.
+\todo{tabla/figura escalera completa, incluir GT-$\varepsilon$ y
+metaheurísticas como referencia de clase}
+
+\subsection{Sampling behaviour (GP-$\varepsilon$)}
+Best-of-$N$ over all 70 instances: $18.5\%$ ($N{=}1$, deterministic),
+$17.1\%$ ($16$), $15.9\%$ ($64$), $14.9\%$ ($256$), $14.1\%$ ($1024$)---
+$-4.4$ points over ten doublings, closing most of the gap to
+population-based methods while retaining millisecond-class construction.
+\todo{figura: curva best-of-N (existe en el companion, versión propia)}
+
+\subsection{Hyperparameter study}
+\label{sec:tuning}
+We tune the four qualitative knobs of the evolution (tournament size,
+crossover probability, tree-size cap, elitism) with irace over a budget
+of 200 experiments, each a full evolution evaluated on validation
+instances, with the conventional configuration seeded.
+\todo{RESULTADOS PENDIENTES: la campaña termina hoy. Preliminar:
+diferencias estadísticamente débiles entre configuraciones (robustez);
+las élites prefieren maxtree 20 frente a 40 — reglas a mitad de tamaño
+sin coste de rendimiento, hallazgo pro-interpretabilidad. Confirmar con
+la evaluación de la regla ganadora en las 70 instancias vs el GP
+default.}
+
+\subsection{Comparison with a neural constructive policy}
+\label{sec:vs-rl}
+The companion DRL policy~\cite{DiazRL2026} is trained on the same four
+instances with a comparable wall-clock budget and evaluated with the same
+protocol. Single-shot, the evolved rule \emph{matches} the neural policy
+($18.5\%$ vs.\ $19.4\%$ greedy); at matched best-of-1024 the policy leads
+($12.7\%$ vs.\ $14.1\%$), converting samples into quality faster
+($-6.7$ vs.\ $-4.4$ points per ten doublings). The net advantage of deep
+RL in this domain is therefore the quality of its learned sampling
+distribution rather than a stronger point heuristic---while the GP rule
+offers interpretability, zero-dependency deployment, and training two
+orders of magnitude cheaper.
+\todo{tabla matched-budget completa (existe en el companion)}
+
+\section{Conclusions and Future Work}
+\label{sec:conclusions}
+
+\todo{Redactar: (i) primera GP hiper-heurística interval-aware para IJSP;
+(ii) bate a todo constructivo determinista con coste despreciable y
+generaliza cross-size; (iii) robusta a sus hiperparámetros, prefiere
+árboles pequeños; (iv) empata single-shot con DRL, cede bajo muestreo.
+Futuro: ablación de terminales de incertidumbre (¿usan las reglas las
+anchuras?), ensembles de reglas, co-evolución, GP para el ranking de
+intervalos, integración como generador de poblaciones iniciales para
+metaheurísticas (enlaza con el experimento de siembra del TS).}
+
+\section*{Reproducibility}
+\todo{URL/DOI del repositorio (separado del companion) al publicar}
+
+\begin{thebibliography}{10}
+
+\bibitem{DiazFEABC2023}
+H.~D\'iaz et al.
+\newblock \todo{referencia completa fEABC}
+
+\bibitem{DiazICAE2023}
+H.~D\'iaz et al.
+\newblock \todo{referencia completa ESABC}
+
+\bibitem{DiazTS2026}
+H.~D\'iaz et al.
+\newblock \todo{referencia completa TS}
+
+\bibitem{DiazRL2026}
+H.~D\'iaz et al.
+\newblock Size-invariant deep reinforcement learning for the interval job
+  shop scheduling problem.
+\newblock \todo{companion paper — actualizar estado (submitted/preprint)}
+
+\bibitem{Branke2016}
+J.~Branke, S.~Nguyen, C.~W.~Pickardt, M.~Zhang.
+\newblock Automated design of production scheduling heuristics: a review.
+\newblock \textit{IEEE Transactions on Evolutionary Computation},
+  20(1):110--124, 2016.
+
+\bibitem{Nguyen2017}
+S.~Nguyen, Y.~Mei, M.~Zhang.
+\newblock Genetic programming for production scheduling: a survey with a
+  unified framework.
+\newblock \textit{Complex \& Intelligent Systems}, 3(1):41--66, 2017.
+  \todo{verificar volumen/p\'aginas}
+
+\bibitem{Zhang2020L2D}
+C.~Zhang, W.~Song, Z.~Cao, J.~Zhang, P.~S.~Tan, C.~Xu.
+\newblock Learning to dispatch for job shop scheduling via deep
+  reinforcement learning.
+\newblock \textit{NeurIPS}, 2020.
+
+\bibitem{Park2021GNN}
+J.~Park et al.
+\newblock \todo{referencia completa Park 2021}
+
+\bibitem{FuzzyJSPRef}
+\todo{referencia fuzzy/robust JSP}
+
+\end{thebibliography}
+
+\end{document}

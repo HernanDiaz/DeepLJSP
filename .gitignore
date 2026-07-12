@@ -97,3 +97,8 @@ tuning/rdata_backups/
 tuning/bad_rdata/
 tuning/gp/runner_logs/
 tuning/gp/rdata_backups/
+
+paper_gp/*.aux
+paper_gp/*.log
+paper_gp/*.out
+paper_gp/*.toc
