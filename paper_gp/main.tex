@@ -96,10 +96,11 @@ This paper makes the following contributions:
   (iii) extend naturally to a randomized multi-start regime with monotone
   quality gains up to best-of-1024 (Section~\ref{sec:results}).
 \item An automatic configuration study (irace, 200 experiments) of the
-  evolutionary hyperparameters, showing robustness of the method to its
-  own knobs and a mild preference for smaller trees, which favours
-  interpretability at no cost (Section~\ref{sec:tuning}).
-  \todo{actualizar con los resultados finales de la campaña (en curso)}
+  evolutionary hyperparameters, showing the method is robust to its own
+  knobs: tuning yields only a modest, within-noise gain (from higher
+  selection pressure), in instructive contrast with the companion neural
+  policy, for which operating-point tuning yields none
+  (Section~\ref{sec:tuning}).
 \item A controlled comparison against a deep reinforcement learning
   constructive policy trained on the same instances (companion
   work~\cite{DiazRL2026}), with training and inference budgets matched:
@@ -108,7 +109,14 @@ This paper makes the following contributions:
   retains an advantage (Section~\ref{sec:vs-rl}).
 \end{enumerate}
 
-\todo{párrafo final con la estructura del paper}
+The remainder of the paper is organized as follows.
+Section~\ref{sec:related} reviews related work.
+Section~\ref{sec:problem} formalizes the IJSP.
+Section~\ref{sec:method} presents the GP hyper-heuristic and its
+interval-aware terminal set. Section~\ref{sec:setup} details the
+experimental protocol, and Section~\ref{sec:results} the empirical study,
+including the hyperparameter analysis and the comparison with the neural
+policy. Section~\ref{sec:conclusions} concludes.
 
 \section{Related Work}
 \label{sec:related}
@@ -148,12 +156,30 @@ which makes the comparison informative in both directions.
 \section{The Interval Job Shop Scheduling Problem}
 \label{sec:problem}
 
-\todo{Formalización completa: jobs, máquinas, precedencias; duraciones
-$p_{ij} = [\underline{p}_{ij}, \overline{p}_{ij}]$; aritmética de
-intervalos (suma, máximo componente a componente); schedules semiactivos
-por decodificación de secuencias; ranking lexicográfico por upper bound;
-E[Cmax] = punto medio para el reporte. Reutilizar la formalización del
-companion adaptada — misma semántica exacta del evaluador (mismo código).}
+An IJSP instance consists of $n$ jobs and $m$ machines. Job $j$ is a
+chain of $m$ operations $o_{j1} \prec o_{j2} \prec \cdots \prec o_{jm}$,
+each requiring a distinct machine $\mu(o_{jk})$ exclusively and
+non-preemptively. The duration of operation $o$ is an interval
+$p_o = [\underline{p}_o, \overline{p}_o]$ with
+$0 < \underline{p}_o \le \overline{p}_o$: the only assumption is that the
+realized duration lies within these bounds.
+
+Schedule construction uses interval arithmetic. For intervals
+$a=[\underline{a},\overline{a}]$ and $b=[\underline{b},\overline{b}]$:
+$a + b = [\underline{a}+\underline{b},\, \overline{a}+\overline{b}]$ and
+$\max(a,b) = [\max(\underline{a},\underline{b}),\,
+\max(\overline{a},\overline{b})]$ (component-wise). Given an operation
+processing order (a permutation with repetition of jobs, decoded left to
+right), the \emph{semiactive} schedule starts each operation at
+$s_o = \max(C_{\mathrm{job}}, C_{\mathrm{mach}})$---the component-wise
+maximum of the completion intervals of its job predecessor and machine
+predecessor---and completes at $C_o = s_o + p_o$. The makespan
+$C_{\max} = \max_j C_{o_{jm}}$ is itself an interval; following the IJSP
+literature~\cite{Lei2012,DiazICAE2023}, schedules are ranked
+lexicographically by upper bound (worst case) first. All methods in this
+paper---the GP rules, every baseline, and the companion DRL
+policy---share one implementation of this decoder and evaluator, so
+reported differences cannot stem from evaluator discrepancies.
 
 Performance is reported as relative error against the crisp Taillard
 lower bounds: $\RE = (E[C_{\max}] - LB)/LB \times 100$, where
@@ -263,8 +289,13 @@ with crisp Taillard lower bounds as the $\RE$ reference.
 
 \textbf{Data split and exclusions.} Rules are evolved on TA11--TA14
 ($20{\times}15$)---identical to the training set of the companion DRL
-policy---with TA15--TA20 as development set; all remaining 60 instances
-are unseen. \todo{política de exclusión completa, copiar del companion}
+policy, enabling the matched comparison of Section~\ref{sec:vs-rl}---and
+TA15--TA20 serve as development set: they never contribute to fitness,
+but design and configuration decisions (including the irace study of
+Section~\ref{sec:tuning}) were selected on their performance, so we flag
+them as subject to development reuse. The remaining 60 instances are
+fully unseen by every design decision and constitute the honest
+generalization test.
 
 \textbf{Budgets.} Population $100$, $50$ generations: ${\sim}20{,}400$
 fitness rollouts (${\approx}49$ min single-core) per seed; three
@@ -283,12 +314,23 @@ class; and the companion DRL policy~\cite{DiazRL2026}.
 
 \subsection{Evolution behaviour and seed stability}
 Three seeds converge to training $\RE$ of $15.60\%$, $15.62\%$ and
-$15.87\%$---a spread of $0.27$ points---with convergence typically by
-generation $25$--$30$. The best evolved rules are structurally
-recognizable: MWKR corrected by earliest-start and
-slack$\times$processing-time terms.
-\todo{figura: curva mejor-fitness por generación, 3 semillas; y las
-expresiones de las 3 reglas simplificadas}
+$15.87\%$---a spread of $0.27$ points---with most of the improvement
+realized by generation $25$--$30$ (Figure~\ref{fig:convergence}). The
+best evolved rules are structurally recognizable: MWKR corrected by
+earliest-start and slack$\times$processing-time terms. For example, the
+best rule of seed~1 is, after simplification, of the form
+$-\big(\mathit{WKR} - f(\mathit{NOR},\mathit{PT},\mathit{PTW})\big) +
+\mathit{EST} + \mathit{SLACK}\cdot\mathit{PT}$: maximize work remaining,
+penalize late earliest starts, and penalize slack weighted by processing
+time.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=.8\linewidth]{figures/fig_convergence.pdf}
+\caption{Best training fitness per generation for the three evolution
+seeds (default configuration).}
+\label{fig:convergence}
+\end{figure}
 
 \subsection{Generalization to the full benchmark}
 Table~\ref{tab:gp70} reports single-rollout $\RE$ per size class over all
@@ -317,18 +359,37 @@ GP seed 3 & 18.6 & 18.5 & 20.0 & 22.7 & 25.7 & 15.2 & 15.7 & 19.5 \\
 
 \subsection{Position among constructive methods}
 At equal cost (one deterministic rollout): MOR $45.4\%$, G\&T-MWKR
-$29.4\%$, evolved rule $18.5\%$. The evolved rule improves on the
-strongest deterministic constructive baseline by $10.9$ points while
-remaining a closed-form, human-readable expression.
-\todo{tabla/figura escalera completa, incluir GT-$\varepsilon$ y
-metaheurísticas como referencia de clase}
+$29.4\%$, evolved rule $18.5\%$ (tuned configuration: $17.7\%$,
+Section~\ref{sec:tuning}). The evolved rule improves on the strongest
+deterministic constructive baseline by $10.9$ points while remaining a
+closed-form, human-readable expression. Figure~\ref{fig:ladder} places
+these results on the full method ladder, including the published tabu
+search~\cite{DiazTS2026} as the yardstick of the search-based
+computational class (minutes per instance versus milliseconds).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=.85\linewidth]{figures/fig_ladder.pdf}
+\caption{Constructive-method ladder on the 70 interval Taillard
+instances. Bars are single-solution methods except where noted.}
+\label{fig:ladder}
+\end{figure}
 
 \subsection{Sampling behaviour (GP-$\varepsilon$)}
 Best-of-$N$ over all 70 instances: $18.5\%$ ($N{=}1$, deterministic),
-$17.1\%$ ($16$), $15.9\%$ ($64$), $14.9\%$ ($256$), $14.1\%$ ($1024$)---
-$-4.4$ points over ten doublings, closing most of the gap to
+$17.1\%$ ($16$), $15.9\%$ ($64$), $14.9\%$ ($256$), $14.1\%$
+($1024$)---$-4.4$ points over ten doublings
+(Figure~\ref{fig:bestofn})---closing a substantial part of the gap to
 population-based methods while retaining millisecond-class construction.
-\todo{figura: curva best-of-N (existe en el companion, versión propia)}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=.8\linewidth]{figures/fig_bestofN.pdf}
+\caption{Best-of-$N$ curves at matched inference budgets: the evolved
+rule with uniform $\varepsilon$-randomization versus the companion DRL
+policy sampling from its learned distribution.}
+\label{fig:bestofn}
+\end{figure}
 
 \subsection{Hyperparameter study}
 \label{sec:tuning}
@@ -373,20 +434,60 @@ protocol. Single-shot, the evolved rule \emph{matches} the neural policy
 RL in this domain is therefore the quality of its learned sampling
 distribution rather than a stronger point heuristic---while the GP rule
 offers interpretability, zero-dependency deployment, and training two
-orders of magnitude cheaper.
-\todo{tabla matched-budget completa (existe en el companion)}
+orders of magnitude cheaper. With the tuned configuration of
+Section~\ref{sec:tuning} the single-shot advantage of the rule widens
+slightly ($17.7\%$ versus $19.4\%$). Table~\ref{tab:matched} summarizes
+the matched-budget comparison.
+
+\begin{table}[t]
+\centering\small
+\caption{Matched-budget comparison over the 70 instances: mean RE (\%).
+Training budgets are comparable (GP: ${\sim}20{,}400$ rollouts,
+${\approx}49$ min; DRL: $4{,}000$ episodes, ${\approx}80$ min; identical
+training instances).}
+\label{tab:matched}
+\begin{tabular}{lcc}
+\toprule
+Method & best-of-1 & best-of-1024 \\
+\midrule
+GP rule (default) / GP-$\varepsilon$ & 18.5 & 14.1 \\
+GP rule (tuned) & \textbf{17.7} & --- \\
+DRL policy (greedy / sampled) & 19.4 & \textbf{12.7} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section{Conclusions and Future Work}
 \label{sec:conclusions}
 
-\todo{Redactar: (i) primera GP hiper-heurística interval-aware para IJSP;
-(ii) bate a todo constructivo determinista con coste despreciable y
-generaliza cross-size; (iii) robusta a sus hiperparámetros, prefiere
-árboles pequeños; (iv) empata single-shot con DRL, cede bajo muestreo.
-Futuro: ablación de terminales de incertidumbre (¿usan las reglas las
-anchuras?), ensembles de reglas, co-evolución, GP para el ranking de
-intervalos, integración como generador de poblaciones iniciales para
-metaheurísticas (enlaza con el experimento de siembra del TS).}
+We presented what is, to the best of our knowledge, the first GP
+hyper-heuristic for job shop scheduling with interval durations, built on
+a terminal set that exposes interval widths as first-class attributes.
+The empirical conclusions are four. (i)~Evolved rules dominate every
+deterministic constructive baseline on the 70-instance benchmark by a
+wide margin ($18.5\%$ versus $29.4\%$ for the strongest one) at
+negligible cost, and (ii)~they generalize zero-shot across all size
+classes---evolved on $20{\times}15$, best on the unseen
+$50{\times}15$---because the representation contains no size-bound
+quantities. (iii)~The method is robust to its evolutionary
+hyperparameters: a 200-experiment irace study yields only a modest,
+within-noise gain over conventional settings, from higher selection
+pressure; notably, this small gain contrasts with the companion DRL
+policy, for which operating-fidelity tuning yielded none. (iv)~Against
+that neural policy under matched budgets, the interpretable rule matches
+or beats it single-shot, and cedes ground only when both methods are
+granted large sampling budgets, where the learned sampling distribution
+of the policy is more efficient than uniform randomization.
+
+Future work follows three lines. First, a terminal ablation to quantify
+how much the evolved rules actually exploit the interval widths---the
+distinctive ingredient of this setting. Second, richer symbolic models:
+ensembles of complementary rules and co-evolution of construction and
+tie-breaking. Third, using evolved rules as cheap, high-quality
+population initializers for the metaheuristics that define the state of
+the art in the IJSP, where preliminary pools built from randomized rule
+rollouts are already compatible with the seeding protocol
+of~\cite{DiazTS2026}.
 
 \section*{Reproducibility}
 \todo{URL/DOI del repositorio (separado del companion) al publicar}
@@ -394,16 +495,28 @@ metaheurísticas (enlaza con el experimento de siembra del TS).}
 \begin{thebibliography}{10}
 
 \bibitem{DiazFEABC2023}
-H.~D\'iaz et al.
-\newblock \todo{referencia completa fEABC}
+H.~D\'iaz, J.~J.~Palacios, I.~Gonz\'alez-Rodr\'iguez, C.~R.~Vela.
+\newblock Fast elitist {ABC} for makespan optimisation in interval {JSP}.
+\newblock \textit{Natural Computing}, 22(4):645--657, 2023.
 
 \bibitem{DiazICAE2023}
-H.~D\'iaz et al.
-\newblock \todo{referencia completa ESABC}
+H.~D\'iaz, J.~J.~Palacios, I.~Gonz\'alez-Rodr\'iguez, C.~R.~Vela.
+\newblock An elitist seasonal artificial bee colony algorithm for the
+  interval job shop.
+\newblock \textit{Integrated Computer-Aided Engineering}, 30(3):223--242, 2023.
 
 \bibitem{DiazTS2026}
 H.~D\'iaz et al.
-\newblock \todo{referencia completa TS}
+\newblock Neighbourhood structures and ranking operators for the interval
+  job shop scheduling problem.
+\newblock Under review, 2026.
+
+\bibitem{Lei2012}
+D.~Lei.
+\newblock Population-based neighborhood search for job shop scheduling
+  with interval processing time.
+\newblock \textit{Computers \& Industrial Engineering}, 62(4):1200--1208,
+  2012.
 
 \bibitem{DiazRL2026}
 H.~D\'iaz et al.
@@ -431,11 +544,17 @@ C.~Zhang, W.~Song, Z.~Cao, J.~Zhang, P.~S.~Tan, C.~Xu.
 \newblock \textit{NeurIPS}, 2020.
 
 \bibitem{Park2021GNN}
-J.~Park et al.
-\newblock \todo{referencia completa Park 2021}
+J.~Park, J.~Chun, S.~H.~Kim, Y.~Kim, J.~Park.
+\newblock Learning to schedule job-shop problems: representation and
+  policy learning using graph neural network and reinforcement learning.
+\newblock \textit{International Journal of Production Research},
+  59(11):3360--3377, 2021.
 
 \bibitem{FuzzyJSPRef}
-\todo{referencia fuzzy/robust JSP}
+J.~J.~Palacios, I.~Gonz\'alez-Rodr\'iguez, C.~R.~Vela, J.~Puente.
+\newblock Coevolutionary makespan optimisation through different ranking
+  methods for the fuzzy flexible job shop.
+\newblock \textit{Fuzzy Sets and Systems}, 278:81--97, 2015.
 
 \end{thebibliography}
 

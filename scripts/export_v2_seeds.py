@@ -100,6 +100,11 @@ def main():
     parser.add_argument("--rules", type=str, default="spt,lpt,mor,mwkr",
                         help="reglas para el generador grasp, separadas por comas")
     parser.add_argument("--seed", type=int, default=1)
+    parser.add_argument("--gp-json", type=str,
+                        default="benchmarks/gp_tuned_seed3.json",
+                        help="regla GP para --rules gp (JSON con 'tree')")
+    parser.add_argument("--suffix", type=str, default="",
+                        help="sufijo del nombre del pool (p.ej. 'gp' -> _gp_pool.csv)")
     parser.add_argument("--out", type=str, default="seeds")
     args = parser.parse_args()
 
@@ -110,7 +115,8 @@ def main():
     env = EnvironmentFactory.create_from_problem(problem, "adaptive", seed=args.seed)
 
     os.makedirs(args.out, exist_ok=True)
-    out_path = os.path.join(args.out, f"{args.instance}_{args.generator}_pool.csv")
+    tag = args.suffix if args.suffix else args.generator
+    out_path = os.path.join(args.out, f"{args.instance}_{tag}_pool.csv")
 
     start = time.time()
     lines = []
@@ -128,10 +134,22 @@ def main():
                 perm, mk = rollout_v2(agent, env)
                 lines.append(" ".join(map(str, perm)) + ";" + mk)
     else:
+        def _gp_rule():
+            # regla GP evolucionada (drop-in determinista; el ruido epsilon
+            # externo del grasp la aleatoriza, espejo del protocolo GP-eps)
+            import json
+            from jobshop_rl.heuristics.gp_rule import GPRuleHeuristic
+
+            def to_tuple(t):
+                return tuple(to_tuple(x) for x in t) if isinstance(t, list) else t
+            data = json.load(open(args.gp_json, encoding="utf-8"))
+            return GPRuleHeuristic(to_tuple(data["tree"]))
+
         rule_map = {"spt": SPTHeuristic, "lpt": LPTHeuristic,
                     "mor": MORHeuristic, "mwkr": MWKRHeuristic,
                     # G&T aleatorizado: ruido interno al conflict set
-                    "gtmwkr": lambda: GTHeuristic("mwkr", epsilon=args.epsilon, rng=rng)}
+                    "gtmwkr": lambda: GTHeuristic("mwkr", epsilon=args.epsilon, rng=rng),
+                    "gp": _gp_rule}
         rules = []
         for r in args.rules.split(","):
             r = r.strip().lower()
