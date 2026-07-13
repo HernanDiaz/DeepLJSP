@@ -1,0 +1,18 @@
+# Campana SERIA de la variante ATENCION a fidelidad de operacion (1000 eps).
+# Cierra la comparativa arquitectonica tuned-vs-tuned del paper (Deep Sets
+# ya tiene su campana seria: default validada robusta). La ablacion previa
+# ya favorece Deep Sets a los dos presupuestos (+1.2% @300, +1.6% @1000);
+# esta campana da a la atencion su mejor oportunidad afinada, por completitud.
+# Espacio 8 params (6 Deep Sets + capas/cabezas), default L=2/H=4 sembrada +
+# 2 elites Deep Sets adaptadas. Fijos: minibatch=256, update-every=4.
+# maxExperiments 400 por el espacio mayor (8 params).
+parameterFile = "parameters_serious_attn.txt"
+trainInstancesDir = ""
+trainInstancesFile = "instances.txt"
+configurationsFile = "configurations_serious_attn.txt"
+targetRunner = "./target_runner_serious_attn.bat"
+maxExperiments = 400
+firstTest = 6
+parallel = 3
+seed = 20260713
+logFile = "irace_serious_attn.Rdata"

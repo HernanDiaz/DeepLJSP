@@ -102,3 +102,6 @@ paper_gp/*.aux
 paper_gp/*.log
 paper_gp/*.out
 paper_gp/*.toc
+
+tuning/runner_logs_attn/
+tuning/rdata_backups_attn/
