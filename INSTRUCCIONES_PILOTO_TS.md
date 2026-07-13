@@ -3,34 +3,45 @@
 Documento de traspaso para ejecutar el piloto de siembra de la población
 inicial del TS con soluciones del agente RL (v2). Generado el 2026-07-04.
 
-**ACTUALIZACIÓN 2026-07-06**: el set COMPLETO está generado en `seeds/`
-(145 archivos): las 70 Taillard (TA1-TA70) + ft10_interval, cada una con
-pool v2 (1024 soluciones) y pool graspmor (MOR+ε, 1024), más los 3 pools
-graspmix del piloto. Mismo formato en todos. Para el experimento completo,
-recuerda la política de exclusión (AGENTS_V2_DESIGN.md): TA11-14
-(entrenamiento RL), TA15-20 (desarrollo RL) y las 17 del irace del TS.
+**ACTUALIZACIÓN 2026-07-13**: el set para el EXPERIMENTO COMPLETO cubre
+las 70 Taillard (TA1-TA70) + ft10_interval con CUATRO generadores por
+instancia (escalera de calidad completa). Estado por generador:
+
+| Generador | Qué es | Pools | Estado |
+|---|---|---|---|
+| `v2` | política RL (3 checkpoints default) | 71/71 | ✅ completo |
+| `graspmor` | MOR + ε=0.1 | 71/71 | ✅ completo |
+| `gtmwkr` | Giffler-Thompson + ε en el conflict set | 71/71 | ⏳ generándose 2026-07-13 (workers desacoplados; ver seeds_gen_*.log) |
+| `gp` | regla GP evolucionada y tuneada + ε | 71/71 | ⏳ generándose 2026-07-13 (ídem) |
+| `graspmix` | mixto débil | solo 3 piloto | ❌ DESCARTADO (decisión 2026-07-13: no hace falta) |
+
+Todos con 1024 soluciones por pool y el mismo formato. Para el experimento
+completo, recuerda la política de exclusión (AGENTS_V2_DESIGN.md): TA11-14
+(entrenamiento RL+GP), TA15-20 (desarrollo RL+GP, incluye el tuning de
+ambos) y las 17 del irace del TS.
 
 ---
 
-## 1. Inventario de pools (directorio `seeds/`, fuera de git)
+## 1. Inventario del piloto (directorio `seeds/`, fuera de git)
 
-3 instancias piloto × 3 generadores = 9 archivos, 1024 soluciones cada uno:
+Calidad de los pools en las 3 instancias piloto (E[Cmax] mejor/media, RE):
 
 | Archivo | Generador | Best E[Cmax] (RE) | Media (RE) |
 |---|---|---|---|
 | `int__tai15_15_05_v2_pool.csv` | política v2 | 1323 (8.1%) | 1426 (16.5%) |
 | `int__tai15_15_05_graspmor_pool.csv` | MOR + ε=0.1 | 1632 (33.4%) | 1847 (50.9%) |
-| `int__tai15_15_05_graspmix_pool.csv` | regla aleatoria + ε | 1630 (33.2%) | 3931 (221%) |
 | `int__tai20_20_02_v2_pool.csv` | política v2 | 1768 (13.2%) | 1918 (22.9%) |
 | `int__tai20_20_02_graspmor_pool.csv` | MOR + ε | 2245 (43.8%) | 2447 (56.8%) |
-| `int__tai20_20_02_graspmix_pool.csv` | mixto + ε | 2244 (43.8%) | 6010 (285%) |
 | `int__tai30_20_04_v2_pool.csv` | política v2 | 2308 (18.5%) | 2464 (26.5%) |
 | `int__tai30_20_04_graspmor_pool.csv` | MOR + ε | 2915 (49.6%) | 3145 (61.5%) |
-| `int__tai30_20_04_graspmix_pool.csv` | mixto + ε | 2972 (52.6%) | 8551 (339%) |
 
-Instancias (limpias para ambos métodos — ni entrenamiento/desarrollo del RL
-ni tuning irace del TS): **TA5** = tai15_15_05 (LB 1224), **TA22** =
-tai20_20_02 (LB 1561), **TA44** = tai30_20_04 (LB 1948).
+(los pools gtmwkr y gp del piloto están medidos por upper mejor/mediana en
+los bloques A6/A7 de la sección 4; los graspmix del piloto siguen en disco
+pero el brazo está descartado)
+
+Instancias piloto (limpias para ambos métodos — ni entrenamiento/desarrollo
+del RL/GP ni tuning irace del TS): **TA5** = tai15_15_05 (LB 1224),
+**TA22** = tai20_20_02 (LB 1561), **TA44** = tai30_20_04 (LB 1948).
 
 ## 2. Formato de cada línea
 
@@ -68,7 +79,8 @@ antes de seguir (instancia, línea, valor esperado y obtenido).
 | A3 v2@100% | 250 del pool v2 |
 | A4 MOR@50% | 125 del pool graspmor + 125 aleatorios |
 
-(Opcional A5: graspmix@50% como baseline débil, si quieres la escala completa.)
+(A5 graspmix: DESCARTADO 2026-07-13 — no aporta sobre la escalera
+MOR-ε < GT-ε < GP-ε.)
 
 **A6 recomendado — baseline heurístico FUERTE (añadido 2026-07-06)**: pools
 `*_gtmwkr_pool.csv` con G&T aleatorizado (ruido ε=0.1 DENTRO del conflict
@@ -152,11 +164,23 @@ presupuestos {10 s, 1 min, fin}, y los Wilcoxon pareados.
 Cada pool se regenera bit a bit desde este repo (rama `research`):
 
 ```
+# v2 (política RL)
 python scripts/export_v2_seeds.py --instance <id> --n 1024 --generator v2 \
     --checkpoints models/v2_final_deepsets_1000ep_seed2.pt,models/v2_final_deepsets_1000ep_seed3.pt,models/v2_final_deepsets_1000ep_seed4.pt \
     --seed 1 --out seeds
+# graspmor (MOR + eps)
 python scripts/export_v2_seeds.py --instance <id> --n 1024 --generator grasp \
-    --rules mor --epsilon 0.1 --seed 1 --out seeds        # renombrar a _graspmor
+    --rules mor --epsilon 0.1 --suffix graspmor --seed 1 --out seeds
+# gtmwkr (G&T + eps interno)
+python scripts/export_v2_seeds.py --instance <id> --n 1024 --generator grasp \
+    --rules gtmwkr --epsilon 0.1 --suffix gtmwkr --seed 1 --out seeds
+# gp (regla GP tuneada + eps; regla en benchmarks/gp_tuned_seed3.json)
+python scripts/export_v2_seeds.py --instance <id> --n 1024 --generator grasp \
+    --rules gp --epsilon 0.1 --suffix gp --seed 1 --out seeds
+
+# regeneración masiva de lo que falte (reanudable, salta existentes):
+python scripts/gen_missing_pools.py --classes 15_15,20_15,20_20,30_15,30_20,50_15,50_20 \
+    --generators gp,gtmwkr --ft10
 ```
 
 Checkpoints del modelo final versionados en `models/` (entrenados SOLO en
