@@ -78,6 +78,21 @@ set → cada individuo es un schedule activo). Calidad muy superior a MOR+ε
 también a GT-ε@p, el resultado es inatacable. Mismo formato y misma
 asignación por bloques.
 
+**A7 — el baseline heurístico MÁS fuerte (añadido 2026-07-13)**: pools
+`*_gp_pool.csv` con la regla GP evolucionada y TUNEADA (paper_gp, config
+irace #15) + ruido ε=0.1 estilo GRASP. Bate a GT-ε en las 3 instancias
+(upper, mejor/mediana): TA5 **1400/1539** vs 1554/1705; TA22
+**1903/2032** vs 2068/2221; TA44 **2429/2600** vs 2672/2814. Es el
+generador heurístico más fuerte disponible: si v2@p supera también a
+GP-ε@p, el claim de que el valor viene de la política aprendida (y no de
+"cualquier buen constructivo") queda blindado. Mismo formato y asignación.
+Regeneración:
+```
+python scripts/export_v2_seeds.py --instance <id> --n 1024 --generator grasp \
+    --rules gp --epsilon 0.1 --suffix gp --seed 1 --out seeds
+```
+(la regla se carga de benchmarks/gp_tuned_seed3.json vía --gp-json)
+
 **Runs**: 10 por brazo y por instancia (5 brazos × 3 instancias × 10 = 150
 runs). **Presupuesto**: tu estándar de 15 min/run si el cluster lo permite
 (≈37 h); con 5 min/run (≈12 h) el piloto sigue siendo informativo porque la
