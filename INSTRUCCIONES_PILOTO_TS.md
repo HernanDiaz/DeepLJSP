@@ -11,14 +11,32 @@ instancia (escalera de calidad completa). Estado por generador:
 |---|---|---|---|
 | `v2` | política RL (3 checkpoints default) | 71/71 | ✅ completo |
 | `graspmor` | MOR + ε=0.1 | 71/71 | ✅ completo |
-| `gtmwkr` | Giffler-Thompson + ε en el conflict set | 71/71 | ⏳ generándose 2026-07-13 (workers desacoplados; ver seeds_gen_*.log) |
-| `gp` | regla GP evolucionada y tuneada + ε | 71/71 | ⏳ generándose 2026-07-13 (ídem) |
+| `gtmwkr` | Giffler-Thompson + ε en el conflict set | 71/71 | ✅ completo (2026-07-13) |
+| `gp` | regla GP evolucionada y tuneada + ε | 71/71 | ✅ completo (2026-07-13) |
 | `graspmix` | mixto débil | solo 3 piloto | ❌ DESCARTADO (decisión 2026-07-13: no hace falta) |
 
 Todos con 1024 soluciones por pool y el mismo formato. Para el experimento
 completo, recuerda la política de exclusión (AGENTS_V2_DESIGN.md): TA11-14
 (entrenamiento RL+GP), TA15-20 (desarrollo RL+GP, incluye el tuning de
 ambos) y las 17 del irace del TS.
+
+**Calidad y diversidad de los generadores** (medias globales, 71 instancias;
+`benchmarks/generators_comparison.csv` y `pool_diversity.csv`;
+scripts `compare_generators.py` y `pool_diversity.py`):
+
+| Generador | RE medio | RE mejor | σ_RE | dist. estructural | dominancia |
+|---|---|---|---|---|---|
+| graspmor | 51.1% | 38.3% | 5.56 | 0.78 | 0/71 |
+| gtmwkr | 30.3% | 22.7% | 2.56 | 0.88 | 0/71 |
+| gp | 21.4% | 13.2% | 3.22 | 0.92 | 34/71 |
+| v2 | 21.2% | 12.6% | 3.29 | 0.95 | 37/71 |
+
+Lecturas clave: (i) escalera limpia MOR-ε < GT-ε < {GP-ε ≈ v2}; (ii) GP-ε y
+v2 EMPATAN en calidad (dominancia 34 vs 37) y **GP-ε GANA en las clases
+grandes 50×N** (v2 es especialista 20×15, el GP es invariante al tamaño);
+(iii) el v2 aporta la mayor diversidad estructural (0.95 vs 0.92) por ser
+política estocástica vs regla+ruido. Sin duplicados en ningún pool
+(unicidad ≈ 1.00). → El brazo A7 (GP-ε) es co-protagonista, no solo baseline.
 
 ---
 
