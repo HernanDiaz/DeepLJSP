@@ -34,6 +34,25 @@ Tres hallazgos:
 Conclusión: los generadores entrenados en intervalo (v2 y GP) sirven
 directamente para inicializar algoritmos crisp — sin reentrenar, sin pérdida.
 
+## Resultado FUZZY (2026-07-13) — transferencia SIN pérdida (Mitad A)
+
+TFN por operación = (lo_intervalo, valor_crisp, up_intervalo): soporte = el
+intervalo, modal = el valor crisp. `run_fuzzy_transfer.py` → RE del valor
+esperado E[C]=(A+2B+C)/4 vs LB crisp. `benchmarks/fuzzy_transfer.csv`.
+
+Resultado aún más limpio que crisp: escalera IDÉNTICA (v2 12.6%, gp 13.2%
+mejor E[C], global — los mismos números que en intervalo), precio de
+robustez ~−0.16 (menor que crisp, E[C] pondera el modal), y correlación de
+rankings intervalo→fuzzy **~0.998** (más alta que crisp). El GP vuelve a
+ganar en las clases grandes (50×N). Figura conjunta:
+`benchmarks/figures/fig_transfer_summary.png`.
+
+**Síntesis Mitad A**: las secuencias optimizadas para el peor caso en
+intervalo transfieren a crisp Y a fuzzy esencialmente sin pérdida
+(Spearman 0.995–0.998), sin penalización de robustez. Los generadores de
+intervalo (v2, GP) inicializan los tres modelos de incertidumbre — un
+resultado de generalización fuerte para los dos papers.
+
 ## EXPERIMENTOS PENDIENTES (apuntados 2026-07-13)
 
 Ordenados de más barato a más caro. El resultado crisp actual (transferencia
@@ -58,11 +77,13 @@ pocas por clase — NO las 71). Responde "¿tan buenos como los nativos?".
   incertidumbre quedan a 0), ~4h/3 semillas. Luego generar pools crisp y
   comparar best/mean RE + dominancia contra los transferidos.
 
-### P3 — Mitad A y B FUZZY (requiere decisión de modelado)
-- Generar instancias TFN (a,b,c): decisión de modelado del spread (p.ej.
-  modal=crisp, a/c a ±X%; línea Palacios/González-Rodríguez). Script pequeño.
-- Re-decodificar los pools bajo aritmética TFN (`decode_tfn` ya implementado)
-  y medir RE fuzzy + correlación de rankings intervalo→fuzzy.
-- Mitad B fuzzy: regla GP directa sobre fuzzy (terminales desde el TFN).
-- OJO: la referencia fuzzy (LB o mejor conocido) hay que definirla; y el max
-  fuzzy tiene el mismo problema de dependencia del lower que el intervalo.
+### P3 — Mitad A FUZZY: HECHA (ver arriba). Pendiente Mitad B fuzzy
+- Mitad A fuzzy COMPLETADA (transferencia de semillas sin pérdida).
+- Pendiente Mitad B fuzzy: aplicar la regla GP directa sobre fuzzy
+  (terminales derivados del TFN) como método vivo — junto con P1 (crisp).
+- Nota de modelado: se usó el TFN natural (lo, crisp, up); si se quiere
+  explorar otros spreads/asimetrías, `build_tfn` en run_fuzzy_transfer.py es
+  el punto de cambio. El max fuzzy tiene el mismo problema de dependencia del
+  lower (A) que el intervalo, pero E[C] pondera A solo 1/4 y el modal (B, la
+  parte exacta) 1/2, así que el efecto en el ranking es despreciable
+  (Spearman 0.998).

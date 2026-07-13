@@ -67,7 +67,14 @@ def _tmax(a, b):
     return (max(a[0], b[0]), max(a[1], b[1]), max(a[2], b[2]))
 
 
+def _tfn_expected(t):
+    """Valor esperado de un TFN (a,b,c): E = (a + 2b + c)/4 (defuzzificación
+    estándar). Se usa para rankear el max final sobre trabajos."""
+    return (t[0] + 2 * t[1] + t[2]) / 4
+
+
 def decode_tfn(seq, durations, machine_seq):
-    """durations[j][k] = (a,b,c) triangular. Devuelve makespan TFN."""
+    """durations[j][k] = (a,b,c) triangular. Devuelve makespan TFN, con el
+    max final sobre trabajos rankeado por valor esperado."""
     return _decode(seq, durations, machine_seq, (0, 0, 0),
-                   _tadd, _tmax, key=lambda t: (t[1], t[2], t[0]))
+                   _tadd, _tmax, key=_tfn_expected)
