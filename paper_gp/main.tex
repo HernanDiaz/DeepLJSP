@@ -334,14 +334,33 @@ population-based methods while retaining millisecond-class construction.
 \label{sec:tuning}
 We tune the four qualitative knobs of the evolution (tournament size,
 crossover probability, tree-size cap, elitism) with irace over a budget
-of 200 experiments, each a full evolution evaluated on validation
-instances, with the conventional configuration seeded.
-\todo{RESULTADOS PENDIENTES: la campaña termina hoy. Preliminar:
-diferencias estadísticamente débiles entre configuraciones (robustez);
-las élites prefieren maxtree 20 frente a 40 — reglas a mitad de tamaño
-sin coste de rendimiento, hallazgo pro-interpretabilidad. Confirmar con
-la evaluación de la regla ganadora en las 70 instancias vs el GP
-default.}
+of 200 experiments, each a full evolution (population $100$, $50$
+generations) on the training instances evaluated on the development set,
+with the conventional configuration seeded. The four elite
+configurations agree on a higher selection pressure than the default
+(tournament size $7$ versus $4$) and a crossover probability close to the
+default ($0.72$--$0.77$ versus $0.8$); the tree-size cap, by contrast,
+does not discriminate (surviving elites span caps of $20$, $30$ and
+$40$), indicating the method is insensitive to bloat control within this
+range. Throughout the race the statistical tests discard configurations
+only weakly, itself evidence that performance is largely flat over the
+hyperparameter space.
+
+Under the same pre-registered confirmation applied to every design
+decision---the winning configuration re-evolved over three independent
+seeds and each resulting rule evaluated on all 70 instances---the tuned
+configuration is \emph{marginally} better than the untuned default:
+$17.67\%$ versus $18.5\%$ best-of-three-seeds ($18.68\%$ versus $19.17\%$
+mean). The improvement of $0.5$--$0.8$ points is consistent in direction
+across both statistics but lies within the seed-to-seed variance
+(${\approx}2$ points), so we report it as a modest gain rather than a
+decisive one, and characterize the method as robust to its
+hyperparameters with a mild benefit from stronger selection pressure.
+This contrasts instructively with the neural policy of the companion
+work, for which operating-fidelity tuning did \emph{not} improve on the
+literature defaults at all: the flatter, lower-dimensional search space
+of the GP admits a small tuning gain where the co-adapted neural
+optimizer does not.
 
 \subsection{Comparison with a neural constructive policy}
 \label{sec:vs-rl}

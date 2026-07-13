@@ -267,9 +267,20 @@ completan con los checkpoints actuales.
      en la iteración 3 el líder era #6 (maxtree 20) y anoté "preferencia
      por árboles pequeños"; NO sobrevivió — las élites finales abarcan
      maxtree 20/30/40, así que maxtree NO es una señal fuerte. Ganadora
-     #15 usa maxtree 30. Confirmación pre-registrada (config #15 × 3
-     semillas evolucionadas + eval en las 70) EN CURSO
-     (scripts/confirm_gp_tuned.py); veredicto pendiente.
+     #15 usa maxtree 30.
+   - **VEREDICTO CONFIRMACIÓN GP (2026-07-13)**: config tuneada #15 vs
+     default, evolucionadas ×3 semillas y evaluadas en las 70 (RE global):
+     tuned 18.44/19.93/17.67 (best 17.67, media 18.68); default
+     18.5/19.5/19.5 (best 18.5, media 19.17). La tuneada es MARGINALMENTE
+     mejor (−0.83 best, −0.49 media), consistente en dirección pero DENTRO
+     del ruido de semilla (~2 pts, y la tuneada tiene MÁS varianza). Se
+     reporta como mejora modesta, no decisiva. CONTRASTE con el RL: allí el
+     tuning a fidelidad de operación NO batió al default; aquí sí da una
+     ganancia pequeña — el espacio del GP (4 knobs, más plano) admite algo
+     de tuning donde el optimizador neuronal co-adaptado no. Para el
+     paper_gp: config tuneada (#15) como "GP tuneado bajo protocolo
+     emparejado"; single-shot GP tuneado 17.67% vs RL greedy 19.4%. Reglas
+     en benchmarks/gp_tuned_seed*. sec:tuning de paper_gp actualizada.
    - **MATRIZ JUSTA GP-vs-v2 (2026-07-07)** — respuesta a la objeción de
      presupuesto desigual. Presupuesto de ENTRENAMIENTO ya emparejado
      (GP: 20.400 rollouts/~49 min; v2: 4.000 rollouts/~80 min; mismas

@@ -1,0 +1,68 @@
+{
+  "fitness_re": 15.40743947987555,
+  "rule": "((SLACK * SLACK) - ((-PT) + ((-PT) + (WKRW + max(max(((WKRW / (-max(NOR, WKR))) + (min((-WKR), PT) + NOR)), WKR), NOR)))))",
+  "tree": [
+    "sub",
+    [
+      "mul",
+      "SLACK",
+      "SLACK"
+    ],
+    [
+      "add",
+      [
+        "neg",
+        "PT"
+      ],
+      [
+        "add",
+        [
+          "neg",
+          "PT"
+        ],
+        [
+          "add",
+          "WKRW",
+          [
+            "max",
+            [
+              "max",
+              [
+                "add",
+                [
+                  "div",
+                  "WKRW",
+                  [
+                    "neg",
+                    [
+                      "max",
+                      "NOR",
+                      "WKR"
+                    ]
+                  ]
+                ],
+                [
+                  "add",
+                  [
+                    "min",
+                    [
+                      "neg",
+                      "WKR"
+                    ],
+                    "PT"
+                  ],
+                  "NOR"
+                ]
+              ],
+              "WKR"
+            ],
+            "NOR"
+          ]
+        ]
+      ]
+    ]
+  ],
+  "global_re_70": 17.674272715748106,
+  "seed": 3,
+  "config": "irace15_t7_c0.77_m30_e2"
+}
