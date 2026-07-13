@@ -41,6 +41,32 @@ sistemática para objetivos riesgo-aversos. Es la primera transferencia con
 una diferencia REAL (no una interpolación sin tensión como crisp/fuzzy), y
 conecta con la literatura de robust/stochastic scheduling.
 
+## Espectro de riesgo completo (run_spectrum.py, 2026-07-13)
+
+Añadida la cola OPTIMISTA (media del mejor 5%) para completar el gradiente.
+Correlación intervalo(upper)→objetivo (Spearman global), por generador:
+
+| generador | optimista | esperado | CVaR-95 |
+|---|---|---|---|
+| graspmor | 0.985 | 0.990 | 0.993 |
+| gtmwkr | 0.951 | 0.965 | 0.974 |
+| gp | 0.972 | 0.981 | 0.986 |
+| v2 | 0.972 | 0.980 | 0.986 |
+
+**Predicción CONFIRMADA en los 4 generadores**: la correlación crece
+monótonamente de optimista → esperado → CVaR. No es una diferencia de dos
+puntos: es un gradiente limpio y consistente. El alineamiento de las semillas
+de intervalo con un objetivo escala con cuánto de riesgo-averso sea
+(fig_risk_spectrum.png). RE del mejor por objetivo (v2): optimista 11.6% <
+esperado 13.1% < CVaR 14.6%.
+
+**El "bonus" (bordes del intervalo ↔ colas) NO se sostuvo** — honestamente:
+predije que rankear por el LOWER del intervalo se alinearía mejor con la cola
+optimista que rankear por el upper. Salió al revés: upper→optimista=0.972 vs
+lower→optimista=0.968. El upper es simplemente mejor rankeador de la calidad
+en TODOS los objetivos (domina la estructura del makespan); el lower es más
+ruidoso. La simetría elegante era demasiado bonita para ser cierta.
+
 ## Decisiones de modelado y límites
 - Distribución: uniforme en [lo,up] (opción por defecto sin compromisos).
   `sample_durations` en decode_vec.py es el punto de cambio para otras
