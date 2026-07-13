@@ -250,6 +250,26 @@ completan con los checkpoints actuales.
    - La regla es drop-in de HeuristicStrategy (misma interfaz que
      SPT/MOR/GT): integrarla en evaluador, gráficos o pools no requiere
      código nuevo.
+   - **TUNING irace del GP (2026-07-13, para paper_gp)**: campaña de
+     200 exps sobre 4 knobs (tournament, crossover, maxtree, elitism),
+     pop/gens fijos 100×50, default sembrada, ~30h reales (con 2
+     recuperaciones desde checkpoint por reinicios de sesión — el
+     lanzamiento desacoplado + daemon de backup funcionaron). Élites
+     finales:
+     | # | tournament | crossover | maxtree | elitism |
+     |---|---|---|---|---|
+     | 15 (ganadora) | 7 | 0.77 | 30 | 2 |
+     | 10 | 7 | 0.73 | 40 | 4 |
+     | 13 | 4 | 0.72 | 20 | 4 |
+     | 19 | 7 | 0.77 | 30 | 4 |
+     Consenso: tournament 7 (default 4, más presión selectiva), crossover
+     ~0.72-0.77 (≈ default 0.8). **CORRECCIÓN de la lectura preliminar**:
+     en la iteración 3 el líder era #6 (maxtree 20) y anoté "preferencia
+     por árboles pequeños"; NO sobrevivió — las élites finales abarcan
+     maxtree 20/30/40, así que maxtree NO es una señal fuerte. Ganadora
+     #15 usa maxtree 30. Confirmación pre-registrada (config #15 × 3
+     semillas evolucionadas + eval en las 70) EN CURSO
+     (scripts/confirm_gp_tuned.py); veredicto pendiente.
    - **MATRIZ JUSTA GP-vs-v2 (2026-07-07)** — respuesta a la objeción de
      presupuesto desigual. Presupuesto de ENTRENAMIENTO ya emparejado
      (GP: 20.400 rollouts/~49 min; v2: 4.000 rollouts/~80 min; mismas
