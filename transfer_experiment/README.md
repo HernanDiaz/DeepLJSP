@@ -34,12 +34,35 @@ Tres hallazgos:
 Conclusión: los generadores entrenados en intervalo (v2 y GP) sirven
 directamente para inicializar algoritmos crisp — sin reentrenar, sin pérdida.
 
-## Pendiente — MITAD A (fuzzy) y MITAD B (método vivo)
-- **Fuzzy**: falta generar las instancias TFN (decisión de modelado del
-  spread; `decode_tfn` ya implementado en decode.py) y re-decodificar los
-  pools bajo aritmética TFN. Comparar RE fuzzy y correlación de rankings.
-- **Mitad B (método como regla viva)**: aplicar la regla GP directamente
-  sobre instancias crisp/fuzzy (los terminales de anchura → 0 en crisp) y
-  medir vs re-evolucionar nativo; aplicar el v2 en crisp (features OOD) para
-  cuantificar su degradación. Requiere cablear un entorno crisp/fuzzy para
-  el cómputo de features.
+## EXPERIMENTOS PENDIENTES (apuntados 2026-07-13)
+
+Ordenados de más barato a más caro. El resultado crisp actual (transferencia
+de semillas sin pérdida) ya se sostiene solo; lo de abajo lo refuerza.
+
+### P1 — Regla GP directa sobre crisp (GRATIS, sin entrenar) — Mitad B / GP
+Aplicar la regla GP evolucionada en intervalo DIRECTAMENTE sobre instancias
+crisp: los terminales de anchura (PTW, ESTW, WKRW) valen 0, la fórmula sigue
+dando un ranking válido. Comparar su RE crisp (rollout determinista) con
+reglas crisp nativas (MOR, MWKR). Si iguala o gana → el GP es un heurístico
+PORTABLE entre modelos de incertidumbre sin reentrenar. Requiere cablear el
+cómputo de features/terminales sobre una instancia crisp (aritmética escalar;
+`decode_crisp` ya existe). ~1 tarde, 0 cómputo pesado.
+
+### P2 — vs generadores CRISP-NATIVOS (barato, sobre subconjunto)
+Comparar los seeds de intervalo transferidos contra seeds generados
+nativamente en crisp, sobre un subconjunto representativo (dev set o unas
+pocas por clase — NO las 71). Responde "¿tan buenos como los nativos?".
+- GP nativo: re-evolucionar en crisp (fitness crisp), ~50 min/semilla.
+- v2 nativo: reentrenar el PPO en Taillard crisp representadas como
+  intervalos degenerados [d,d] (sin código de entorno nuevo; las features de
+  incertidumbre quedan a 0), ~4h/3 semillas. Luego generar pools crisp y
+  comparar best/mean RE + dominancia contra los transferidos.
+
+### P3 — Mitad A y B FUZZY (requiere decisión de modelado)
+- Generar instancias TFN (a,b,c): decisión de modelado del spread (p.ej.
+  modal=crisp, a/c a ±X%; línea Palacios/González-Rodríguez). Script pequeño.
+- Re-decodificar los pools bajo aritmética TFN (`decode_tfn` ya implementado)
+  y medir RE fuzzy + correlación de rankings intervalo→fuzzy.
+- Mitad B fuzzy: regla GP directa sobre fuzzy (terminales desde el TFN).
+- OJO: la referencia fuzzy (LB o mejor conocido) hay que definirla; y el max
+  fuzzy tiene el mismo problema de dependencia del lower que el intervalo.
