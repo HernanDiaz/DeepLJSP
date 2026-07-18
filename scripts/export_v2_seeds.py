@@ -38,12 +38,14 @@ from jobshop_rl.experiments.factory import EnvironmentFactory  # noqa: E402
 from jobshop_rl.heuristics.strategies import (  # noqa: E402
     SPTHeuristic, LPTHeuristic, MORHeuristic, MWKRHeuristic, GTHeuristic,
 )
-from jobshop_rl.models.interval import Interval  # noqa: E402
+from jobshop_rl.models.interval import Interval, final_makespan  # noqa: E402
 from jobshop_rl.utils.seed_utils import set_random_seed  # noqa: E402
 
 
 def _makespan_str(env) -> str:
-    m = max(env.job_completion_time)
+    # Agregacion componente a componente (NO max() lexicografico): asi el lower
+    # guardado es la cota real, no el lower del trabajo de mayor upper.
+    m = final_makespan(env.job_completion_time)
     if isinstance(m, Interval):
         return f"[{int(m.lower)}, {int(m.upper)}]"
     return f"[{int(m)}, {int(m)}]"

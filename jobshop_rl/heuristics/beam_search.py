@@ -23,7 +23,7 @@ baseline constructivo determinista más fuerte que GT-MWKR.
 from copy import deepcopy
 from typing import List, Tuple
 
-from jobshop_rl.models.interval import Interval
+from jobshop_rl.models.interval import Interval, final_makespan
 
 
 def _up(x) -> float:
@@ -117,7 +117,9 @@ def beam_search(env, width: int = 10):
         candidates.sort(key=lambda c: c[0])
         beam = [(c[1], c[2]) for c in candidates[:width]]
 
+    # Makespan componente a componente ([max lowers, max uppers]); ordenar por
+    # (upper, lower) de esa agregacion, no por el max() lexicografico.
     best_env, best_perm = min(
-        beam, key=lambda n: (_up(max(n[0].job_completion_time)),
-                             _lo(max(n[0].job_completion_time))))
-    return max(best_env.job_completion_time), best_perm
+        beam, key=lambda n: (_up(final_makespan(n[0].job_completion_time)),
+                             _lo(final_makespan(n[0].job_completion_time))))
+    return final_makespan(best_env.job_completion_time), best_perm

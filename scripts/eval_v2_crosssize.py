@@ -23,7 +23,7 @@ from jobshop_rl.data import PROBLEM_REGISTRY  # noqa: E402
 from jobshop_rl.data.literature_bounds import lb_for_problem_name  # noqa: E402
 from jobshop_rl.experiments.factory import EnvironmentFactory  # noqa: E402
 from jobshop_rl.heuristics.strategies import MORHeuristic  # noqa: E402
-from jobshop_rl.models.interval import Interval  # noqa: E402
+from jobshop_rl.models.interval import Interval, final_makespan  # noqa: E402
 
 DEFAULT_INSTANCES = [
     "int__tai15_15_01", "int__tai15_15_02", "int__tai15_15_03",
@@ -47,7 +47,7 @@ def run_mor(env):
         a = min(heuristic.select_action(state["eligible_ops"], features),
                 len(state["eligible_ops"]) - 1)
         state, _, done, _ = env.step(a)
-    return _mid_up(max(env.job_completion_time))
+    return _mid_up(final_makespan(env.job_completion_time))
 
 
 def main():

@@ -37,7 +37,7 @@ from jobshop_rl.experiments.factory import EnvironmentFactory
 from jobshop_rl.heuristics.gp_rule import (
     GPRuleHeuristic, crossover, mutate, random_tree, tree_size, tree_str,
 )
-from jobshop_rl.models.interval import Interval
+from jobshop_rl.models.interval import Interval, final_makespan
 
 DEFAULT_TRAIN = "int__tai20_15_01,int__tai20_15_02,int__tai20_15_03,int__tai20_15_04"
 
@@ -50,7 +50,7 @@ def rollout_re(env, heuristic, lb) -> float:
         a = min(heuristic.select_action(state["eligible_ops"], f),
                 len(state["eligible_ops"]) - 1)
         state, _, done, _ = env.step(a)
-    m = max(env.job_completion_time)
+    m = final_makespan(env.job_completion_time)
     mid = m.midpoint if isinstance(m, Interval) else float(m)
     return (mid - lb) / lb * 100
 

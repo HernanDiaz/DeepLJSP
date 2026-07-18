@@ -19,12 +19,13 @@ duración y las operaciones + y max.
 from jobshop_rl.models.interval import Interval
 
 
-def _decode(seq, durations, machine_seq, zero, add, mx, key):
+def _decode(seq, durations, machine_seq, zero, add, mx, final):
     """
     Esqueleto genérico. seq: lista 1-based de trabajos. durations[j][k]:
     duración de la k-ésima op del trabajo j. machine_seq[j][k]: máquina de esa
-    op. zero: elemento neutro (t=0). add/mx: suma y máximo del tipo. key: para
-    el max final del makespan (p.ej. lambda x: x.upper en intervalo).
+    op. zero: elemento neutro (t=0). add/mx: suma y máximo del tipo. final:
+    agregador del makespan sobre la lista de fines de trabajo (componente a
+    componente en intervalo/TFN, NO el fin del trabajo de mayor upper).
     """
     nj = len(durations)
     nm = len(machine_seq[0])
@@ -40,12 +41,12 @@ def _decode(seq, durations, machine_seq, zero, add, mx, key):
         job_end[j] = end
         mach_end[m] = end
         op_idx[j] = k + 1
-    return max(job_end, key=key)
+    return final(job_end)
 
 
 def decode_crisp(seq, durations, machine_seq):
     return _decode(seq, durations, machine_seq, 0,
-                   lambda a, b: a + b, max, key=lambda x: x)
+                   lambda a, b: a + b, max, final=max)
 
 
 def _imax(a, b):
@@ -53,8 +54,13 @@ def _imax(a, b):
 
 
 def decode_interval(seq, durations, machine_seq):
+    # Makespan de intervalo COMPONENTE A COMPONENTE ([max lowers, max uppers]),
+    # igual que el entorno y EvaluationIJSP_Makespan. (Antes se tomaba el fin
+    # del trabajo de mayor upper -> lower demasiado bajo, causaba mismatches
+    # al validar contra el [lo,up] guardado en los pools.)
     mk = _decode(seq, durations, machine_seq, Interval(0, 0),
-                 lambda a, b: a + b, _imax, key=lambda x: x.upper)
+                 lambda a, b: a + b, _imax,
+                 final=lambda ends: Interval.max(*ends))
     return mk
 
 
@@ -77,4 +83,4 @@ def decode_tfn(seq, durations, machine_seq):
     """durations[j][k] = (a,b,c) triangular. Devuelve makespan TFN, con el
     max final sobre trabajos rankeado por valor esperado."""
     return _decode(seq, durations, machine_seq, (0, 0, 0),
-                   _tadd, _tmax, key=_tfn_expected)
+                   _tadd, _tmax, final=lambda ends: max(ends, key=_tfn_expected))

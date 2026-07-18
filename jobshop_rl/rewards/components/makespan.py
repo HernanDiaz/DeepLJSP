@@ -8,7 +8,7 @@ incertidumbre (intervalos) en los tiempos de procesamiento.
 from typing import Dict, Optional, Union
 
 from jobshop_rl.rewards.base import RewardComponent
-from jobshop_rl.models.interval import Interval
+from jobshop_rl.models.interval import Interval, final_makespan
 
 
 class MakespanRewardComponent(RewardComponent):
@@ -69,8 +69,8 @@ class MakespanRewardComponent(RewardComponent):
         if not done:
             return 0
         
-        # Get makespan (can be scalar or Interval)
-        makespan = max(env.job_completion_time)
+        # Get makespan (can be scalar or Interval) — componente a componente.
+        makespan = final_makespan(env.job_completion_time)
         
         # Actualizar mejor makespan visto (usando comparación lexicográfica)
         if self.best_seen_makespan is None or makespan < self.best_seen_makespan:

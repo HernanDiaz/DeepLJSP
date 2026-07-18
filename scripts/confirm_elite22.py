@@ -34,7 +34,7 @@ from jobshop_rl.agents_v2.state_encoder import StateEncoder
 from jobshop_rl.data import PROBLEM_REGISTRY
 from jobshop_rl.data.literature_bounds import lb_for_problem_name
 from jobshop_rl.experiments.factory import EnvironmentFactory
-from jobshop_rl.models.interval import Interval
+from jobshop_rl.models.interval import Interval, final_makespan
 from jobshop_rl.utils.seed_utils import set_random_seed
 
 TRAIN_IDS = ["int__tai20_15_01", "int__tai20_15_02",
@@ -87,15 +87,19 @@ def eval_dev(agent):
         agent.encoder = StateEncoder(env)
         _, sched, _, _ = evaluate_policy_batched(agent, N_EVAL,
                                                  device="cuda", seed=1)
-        best = None
+        # Makespan componente a componente sobre los fines de operacion:
+        # [max lowers, max uppers]. (No tomar el midpoint de la operacion de
+        # mayor upper: eso es la agregacion lexicografica sesgada.)
+        max_lo = max_up = None
         for t in sched:
             end = t.get("end")
+            lo = float(end.lower) if isinstance(end, Interval) else float(end)
             up = float(end.upper) if isinstance(end, Interval) else float(end)
-            mid = end.midpoint if isinstance(end, Interval) else float(end)
-            if best is None or up > best[1]:
-                best = (mid, up)
+            max_lo = lo if max_lo is None else max(max_lo, lo)
+            max_up = up if max_up is None else max(max_up, up)
         lb = lb_for_problem_name(pid)
-        out[pid] = (best[0] - lb) / lb * 100
+        mid = (max_lo + max_up) / 2
+        out[pid] = (mid - lb) / lb * 100
     return out
 
 

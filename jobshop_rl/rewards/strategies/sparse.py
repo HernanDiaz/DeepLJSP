@@ -8,7 +8,7 @@ basada en qué tan bueno es el makespan comparado con el mejor visto.
 from typing import Dict, Optional, Union
 
 from jobshop_rl.rewards.base import RewardStrategy
-from jobshop_rl.models.interval import Interval
+from jobshop_rl.models.interval import Interval, final_makespan
 
 
 class SparseRewardStrategy(RewardStrategy):
@@ -56,8 +56,9 @@ class SparseRewardStrategy(RewardStrategy):
         if not done:
             return 0.0
         
-        # Calcular makespan final
-        makespan = max(env.job_completion_time)
+        # Calcular makespan final (componente a componente: el midpoint usa el
+        # lower, que con max() lexicografico saldria sesgado hacia abajo).
+        makespan = final_makespan(env.job_completion_time)
         current_midpoint = self._get_midpoint(makespan)
         
         # Inicializar mejor si es necesario

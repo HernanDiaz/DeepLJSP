@@ -402,3 +402,21 @@ def ensure_interval(value: Union[Interval, float, int]) -> Interval:
         return Interval(value, value)
     else:
         raise TypeError(f"Cannot convert {type(value)} to Interval")
+
+
+def final_makespan(completions):
+    """Agregacion CORRECTA del makespan final sobre las terminaciones de trabajo.
+
+    Componente a componente para intervalos ([max lowers, max uppers]),
+    max normal para escalares. Devuelve Interval (o float si es degenerado).
+
+    USAR SIEMPRE ESTO en vez de `max(completions)` cuando las terminaciones
+    puedan ser Intervalos. `max()` sobre Intervalos usa Interval.__lt__ (orden
+    lexicografico por upper) y devuelve el intervalo del trabajo de mayor upper
+    -> su lower es demasiado bajo (no es la cota real). Por monotonia del
+    makespan en las duraciones, las cotas reales son las esquinas todo-lower
+    y todo-upper, es decir [max_j lower_j, max_j upper_j] = Interval.max.
+
+    Debe coincidir con EvaluationIJSP_Makespan (M_COMPONENT) del repositorio.
+    """
+    return Interval.max(*completions)
