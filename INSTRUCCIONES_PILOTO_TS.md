@@ -74,8 +74,15 @@ j1 j2 j3 ... jN;[lower, upper]
   permutación, con aritmética de intervalos: inicio de cada operación =
   máximo componente a componente entre el fin de la operación anterior del
   trabajo y el fin de la anterior en la máquina (`[max lowers, max uppers]`);
-  fin = inicio + duración. Makespan = máx lexicográfico (por upper) de las
-  finalizaciones de trabajo.
+  fin = inicio + duración. Makespan final = **componente a componente** sobre
+  las finalizaciones de trabajo: `lower = máx_j lower_j`, `upper = máx_j
+  upper_j` (los dos máximos independientes, = `EvaluationIJSP_Makespan` /
+  `Interval.max`). Es la agregación correcta: por monotonía del makespan en las
+  duraciones, las cotas verdaderas son las esquinas todo-lower y todo-upper.
+  (Los pools se regeneraron con esta convención el 2026-07-18; antes el lower
+  se guardaba lexicográfico-por-upper — el lower del trabajo de mayor upper,
+  demasiado bajo en el 11,4 % de casos. El **upper es idéntico** en ambas
+  convenciones, así que ningún ranking cambió.)
 
 ## 3. PASO PREVIO OBLIGATORIO — test de consistencia del decodificador
 
@@ -84,6 +91,13 @@ con tu constructor semiactivo y comprueba que reproduces **exactamente** el
 `[lower, upper]` de cada línea. Si alguna no cuadra, hay discrepancia
 semántica entre evaluadores y los resultados no serían comparables — repórtala
 antes de seguir (instancia, línea, valor esperado y obtenido).
+
+Ojo con la agregación final del makespan (§2): debe ser **componente a
+componente** (`lower = máx_j lower_j`, `upper = máx_j upper_j`), no
+lexicográfica por upper. En nuestro repo esto se verificó al 100 % sobre las
+293.888 soluciones de los 287 pools con `scripts/recompute_pool_makespan.py`.
+Si tu evaluador agrega lexicográfico-por-upper cuadrará el upper pero no el
+lower en ~11 % de líneas: usa la convención componente a componente.
 
 ## 4. Diseño experimental del piloto
 

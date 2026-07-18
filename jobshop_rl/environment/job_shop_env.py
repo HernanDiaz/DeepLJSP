@@ -276,8 +276,13 @@ class JobShopEnv:
 
         # Actualizar makespan history
         if self.has_intervals:
-            # Use lexicographic max for intervals
-            current_makespan = max(self.job_completion_time)
+            # Makespan de intervalo COMPONENTE A COMPONENTE ([max lowers,
+            # max uppers]): son las cotas reales del makespan (min con todas
+            # las duraciones en su lower, max con todas en su upper), por
+            # monotonía. El antiguo max() lexicografico-por-upper daba el
+            # lower del trabajo de mayor upper, que es un lower demasiado bajo.
+            # El upper es identico en ambas convenciones (no cambia el ranking).
+            current_makespan = Interval.max(*self.job_completion_time)
         else:
             current_makespan = max(self.job_completion_time)
         
@@ -292,7 +297,7 @@ class JobShopEnv:
         # Información adicional (makespan)
         if done:
             if self.has_intervals:
-                info = {'makespan': max(self.job_completion_time)}
+                info = {'makespan': Interval.max(*self.job_completion_time)}
             else:
                 info = {'makespan': max(self.job_completion_time)}
         else:
