@@ -3,7 +3,8 @@
 
 Fig 1: convergencia de la evolución (mejor fitness por generación, 3 semillas)
 Fig 2: escalera de métodos constructivos (RE global, 70 instancias)
-Fig 3: curva best-of-N (GP-eps vs política RL del companion)
+Fig 3: curva best-of-N (GP-eps; la comparación con el DRL se movió al
+       tercer paper — paper_seeding/PARKED_gp_vs_rl.tex)
 """
 
 import json
@@ -70,7 +71,7 @@ metodos = [
     ("G&T + MWKR", 29.4, GRIS),
     ("GP rule (default config)", 18.5, AMBAR),
     ("GP rule (tuned config)", 17.7, AMBAR),
-    ("DRL policy, best-of-1024", 12.7, AZUL),
+    ("GP-$\\varepsilon$, best-of-1024", 14.1, AMBAR),
     ("Tabu search (30 runs, minutes)", 3.9, TEAL),
 ]
 fig, ax = plt.subplots(figsize=(6.4, 3.4))
@@ -97,8 +98,6 @@ re_gp = [18.5, 17.1, 15.9, 14.9, 14.1]
 fig, ax = plt.subplots(figsize=(6.4, 3.8))
 ax.plot(n_gp, re_gp, "-o", color=AMBAR, linewidth=2,
         label="GP-$\\varepsilon$ (uniform noise)")
-ax.plot([1, 1024], [19.4, 12.7], "--s", color=AZUL, linewidth=2,
-        label="DRL policy (learned distribution)")
 ax.set_xscale("log", base=2)
 ax.set_xticks(n_gp)
 ax.set_xticklabels([str(n) for n in n_gp])

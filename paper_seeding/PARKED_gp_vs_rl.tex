@@ -1,0 +1,85 @@
+% ============================================================
+% MATERIAL APARCADO PARA EL TERCER PAPER (siembra/hibridación)
+% Extraído de paper_gp/main.tex el 2026-07-24 (cirugía: el paper
+% del GP queda autocontenido, sin comparación con el DRL).
+%
+% ATENCIÓN: los números aquí son los de la convención VIEJA del
+% makespan (pre-fix). Antes de reutilizar: pasada con los valores
+% corregidos (ver paper_gp/AUDIT_MAKESPAN_FIX.md):
+%   - GP single-shot 18.5 -> 18.6 ; tuned 17.67 -> 17.7
+%   - best-of-1024 desde pools corregidos: GP 13.69, DRL 13.08
+%     (la brecha publicada 14.1 vs 12.7 = 1.4 pts pasa a 0.6 pts)
+%   - DRL greedy 19.4: pendiente de auditar (rollout de checkpoint)
+% ============================================================
+
+% ---------- Contribución (era la 4 de la intro del paper GP) ----------
+% \item A controlled comparison against a deep reinforcement learning
+%   constructive policy trained on the same instances (companion
+%   work~\cite{DiazRL2026}), with training and inference budgets matched:
+%   single-shot, the interpretable rule matches the neural policy; under
+%   equal sampling budgets the learned sampling distribution of the policy
+%   retains an advantage (Section~\ref{sec:vs-rl}). Head-to-head
+%   evaluations of the two learning paradigms under common protocols are
+%   precisely what the recent survey of learned optimisation for the job
+%   shop identifies as missing~\cite{Xu2025}; ours is, in addition, the
+%   first in a scheduling setting with interval uncertainty.
+
+% ---------- Contraste de tuning (era el cierre de §tuning) ----------
+% This contrasts instructively with the neural policy of the companion
+% work, for which operating-fidelity tuning did \emph{not} improve on the
+% literature defaults at all: the flatter, lower-dimensional search space
+% of the GP admits a small tuning gain where the co-adapted neural
+% optimizer does not.
+
+% ---------- Sección completa (era §vs-rl del paper GP) ----------
+\subsection{Comparison with a neural constructive policy}
+\label{sec:vs-rl}
+GP rules and DRL policies are the two dominant learning paradigms for
+constructive scheduling, yet controlled comparisons between them---same
+instances, same evaluator, matched budgets---remain scarce, a gap
+highlighted by the recent survey of Xu et al.~\cite{Xu2025}. This section
+provides such a comparison for the IJSP. The companion DRL
+policy~\cite{DiazRL2026} is trained on the same four
+instances with a comparable wall-clock budget and evaluated with the same
+protocol. Single-shot, the evolved rule \emph{matches} the neural policy
+($18.5\%$ vs.\ $19.4\%$ greedy); at matched best-of-1024 the policy leads
+($12.7\%$ vs.\ $14.1\%$), converting samples into quality faster
+($-6.7$ vs.\ $-4.4$ points per ten doublings). The net advantage of deep
+RL in this domain is therefore the quality of its learned sampling
+distribution rather than a stronger point heuristic---while the GP rule
+offers interpretability, zero-dependency deployment, and training two
+orders of magnitude cheaper. With the tuned configuration of
+Section~\ref{sec:tuning} the single-shot advantage of the rule widens
+slightly ($17.7\%$ versus $19.4\%$). Table~\ref{tab:matched} summarizes
+the matched-budget comparison.
+
+\begin{table}[t]
+\centering\small
+\caption{Matched-budget comparison over the 70 instances: mean RE (\%).
+Training budgets are comparable (GP: ${\sim}20{,}400$ rollouts,
+${\approx}49$ min; DRL: $4{,}000$ episodes, ${\approx}80$ min; identical
+training instances).}
+\label{tab:matched}
+\begin{tabular}{lcc}
+\toprule
+Method & best-of-1 & best-of-1024 \\
+\midrule
+GP rule (default) / GP-$\varepsilon$ & 18.5 & 14.1 \\
+GP rule (tuned) & \textbf{17.7} & --- \\
+DRL policy (greedy / sampled) & 19.4 & \textbf{12.7} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ---------- Conclusión (era la (iv) del paper GP) ----------
+% (iv)~Against that neural policy under matched budgets, the interpretable
+% rule matches or beats it single-shot, and cedes ground only when both
+% methods are granted large sampling budgets, where the learned sampling
+% distribution of the policy is more efficient than uniform randomization.
+
+% ---------- Bibliografía asociada ----------
+% \bibitem{DiazRL2026}
+% H.~D\'iaz et al.
+% \newblock Size-invariant deep reinforcement learning for the interval job
+%   shop scheduling problem.
+% \newblock (estado por decidir al preparar el tercer paper)
