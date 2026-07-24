@@ -106,7 +106,11 @@ This paper makes the following contributions:
   work~\cite{DiazRL2026}), with training and inference budgets matched:
   single-shot, the interpretable rule matches the neural policy; under
   equal sampling budgets the learned sampling distribution of the policy
-  retains an advantage (Section~\ref{sec:vs-rl}).
+  retains an advantage (Section~\ref{sec:vs-rl}). Head-to-head
+  evaluations of the two learning paradigms under common protocols are
+  precisely what the recent survey of learned optimisation for the job
+  shop identifies as missing~\cite{Xu2025}; ours is, in addition, the
+  first in a scheduling setting with interval uncertainty.
 \end{enumerate}
 
 The remainder of the paper is organized as follows.
@@ -446,7 +450,12 @@ optimizer does not.
 
 \subsection{Comparison with a neural constructive policy}
 \label{sec:vs-rl}
-The companion DRL policy~\cite{DiazRL2026} is trained on the same four
+GP rules and DRL policies are the two dominant learning paradigms for
+constructive scheduling, yet controlled comparisons between them---same
+instances, same evaluator, matched budgets---remain scarce, a gap
+highlighted by the recent survey of Xu et al.~\cite{Xu2025}. This section
+provides such a comparison for the IJSP. The companion DRL
+policy~\cite{DiazRL2026} is trained on the same four
 instances with a comparable wall-clock budget and evaluated with the same
 protocol. Single-shot, the evolved rule \emph{matches} the neural policy
 ($18.5\%$ vs.\ $19.4\%$ greedy); at matched best-of-1024 the policy leads
