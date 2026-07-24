@@ -116,10 +116,10 @@ concludes.
 Interval durations offer a distribution-free uncertainty model requiring
 only bounds, in contrast to stochastic and fuzzy
 approaches~\cite{FuzzyJSPRef}. Prior IJSP work is dominated by
-population-based metaheuristics: an elitist artificial bee colony with
-interval ranking~\cite{DiazFEABC2023}, its ensemble-ranking
-successor~\cite{DiazICAE2023}, and a population-based tabu search that
-currently defines the state of the art~\cite{DiazTS2026}. All operate in
+population-based metaheuristics: a genetic algorithm with a systematic
+study of interval rankings~\cite{DiazGA2020}, artificial bee colony
+variants~\cite{DiazFEABC2023,DiazICAE2023}, and a population-based tabu
+search that currently defines the state of the art~\cite{DiazTS2026}. All operate in
 the minutes-per-instance regime. Fast constructive methods for the IJSP
 have received far less attention; dispatching rules with interval-aware
 lexicographic comparisons are the de facto baseline.
@@ -174,9 +174,15 @@ right), the \emph{semiactive} schedule starts each operation at
 $s_o = \max(C_{\mathrm{job}}, C_{\mathrm{mach}})$---the component-wise
 maximum of the completion intervals of its job predecessor and machine
 predecessor---and completes at $C_o = s_o + p_o$. The makespan
-$C_{\max} = \max_j C_{o_{jm}}$ is itself an interval; following the IJSP
-literature~\cite{Lei2012,DiazICAE2023}, schedules are ranked
-lexicographically by upper bound (worst case) first. All methods in this
+$C_{\max} = \max_j C_{o_{jm}}$ (component-wise maximum) is itself an
+interval. Since intervals admit no natural total order, schedules are
+compared with an interval ranking: we use the lexicographic order
+$\leq_{Lex2}$ (upper bound first, lower bound as tie-break), one of the
+standard rankings of the IJSP literature and the one found
+in~\cite{DiazGA2020} to yield the most robust schedules; the midpoint
+ranking $\leq_{MP}$---equivalent to the possibility-degree method
+of~\cite{Lei2012}---underlies the $E[C_{\max}]$ metric in which results
+are reported. All methods in this
 paper---the GP rules and every baseline---share one implementation of
 this decoder and evaluator, so reported differences cannot stem from
 evaluator discrepancies.
@@ -285,19 +291,21 @@ lexicographically best schedule.
 \textbf{Instances.} The 70 interval versions of Taillard's instances
 (TA1--TA70, seven size classes from $15{\times}15$ to $50{\times}20$),
 with crisp Taillard lower bounds as the $\RE$ reference. Each interval
-instance is derived from its crisp counterpart by replacing every duration
-$p$ with an integer interval $[p-d,\, p+d]$ symmetric around it, with
-half-width bounded by $d \le 0.15\,p$ (maximum deviation $15\%$); machine
-routes are unchanged. The midpoint of every interval thus equals the
-original duration---the crisp instance is exactly the midpoint scenario of
-its interval version---which makes the crisp Taillard bounds a meaningful
+instance is derived from its crisp counterpart with the generation scheme
+introduced in~\cite{DiazGA2020}: every duration $p$ is replaced by the
+integer interval $[p-\delta,\, p+\delta]$, with $\delta$ drawn uniformly
+in $[0,\, 0.15\,p]$ (maximum deviation $15\%$); machine routes are
+unchanged. The midpoint of every interval thus equals the original
+duration---the crisp instance is exactly the midpoint scenario of its
+interval version---which makes the crisp Taillard bounds a meaningful
 reference for $E[C_{\max}]$. After integer rounding, ${\approx}20\%$ of
 operations end up degenerate (deterministic), and the mean relative width
-is ${\approx}13\%$. This is the same $\pm15\%$ generation scheme used
-throughout our prior work on the
-IJSP~\cite{DiazFEABC2023,DiazICAE2023,DiazTS2026}, which makes the
-comparison against those published metaheuristics an exact one (identical
-uncertainty model and benchmark).
+is ${\approx}13\%$. The same scheme underlies the benchmark of the
+published IJSP
+metaheuristics~\cite{DiazGA2020,DiazFEABC2023,DiazICAE2023}, and the
+interval Taillard set is the one used in~\cite{DiazTS2026}, which makes
+the comparison against those methods an exact one (identical uncertainty
+model and benchmark).
 
 \textbf{Data split and exclusions.} Rules are evolved on TA11--TA14
 ($20{\times}15$), and TA15--TA20 serve as development set: they never contribute to fitness,
@@ -462,6 +470,14 @@ literature~\cite{Xu2025} identifies as missing.
 \todo{URL/DOI del repositorio al publicar}
 
 \begin{thebibliography}{10}
+
+\bibitem{DiazGA2020}
+H.~D\'iaz, I.~Gonz\'alez-Rodr\'iguez, J.~J.~Palacios, I.~D\'iaz,
+C.~R.~Vela.
+\newblock A genetic approach to the job shop scheduling problem with
+  interval uncertainty.
+\newblock In \textit{Information Processing and Management of Uncertainty
+  in Knowledge-Based Systems (IPMU)}, pages 663--676. Springer, 2020.
 
 \bibitem{DiazFEABC2023}
 H.~D\'iaz, J.~J.~Palacios, I.~Gonz\'alez-Rodr\'iguez, C.~R.~Vela.
