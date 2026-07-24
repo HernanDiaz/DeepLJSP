@@ -139,14 +139,23 @@ attributes, and constitute the standard approach to automated rule design
 for production scheduling~\cite{Branke2016,Nguyen2017}. Evolved rules
 have been shown to outperform hand-crafted ones across job shop variants,
 with active research on surrogate fitness, feature selection, and
-multi-objective formulations. This literature almost universally assumes
-deterministic (or sampled stochastic) processing times; evolving rules
-whose \emph{inputs} are interval attributes appears to be new.
-\todo{verificar afirmación de novedad con búsqueda bibliográfica dirigida}
+multi-objective formulations. Closest to our setting, Karunakaran et
+al.~\cite{Karunakaran2017} evolve rules for dynamic job shops with
+uncertain processing times, exposing summary statistics of observed
+deviations (an exponential moving average) to the rule; uncertainty there
+is realized stochastically during simulation, and rules are evaluated on
+sampled scenarios. A recent survey of learned optimisation for the job
+shop~\cite{Xu2025}, covering both GP and DRL constructive approaches,
+records no work on interval-valued processing times. To the best of our
+knowledge, evolving rules whose \emph{inputs} are interval
+attributes---and whose fitness is computed by interval arithmetic rather
+than by sampling realizations---has not been explored before.
 
 \subsection{Learned constructive heuristics}
 Deep reinforcement learning provides an alternative family of learned
-constructive methods for the JSP~\cite{Zhang2020L2D,Park2021GNN}. Our
+constructive methods for the JSP~\cite{Zhang2020L2D,Park2021GNN}; GP
+rules and DRL policies are increasingly studied as competing
+learning paradigms for the same construction task~\cite{Xu2025}. Our
 companion work~\cite{DiazRL2026} develops a size-invariant DRL policy for
 the IJSP trained on the same instances used here, enabling the matched
 comparison of Section~\ref{sec:vs-rl}. GP rules and DRL policies occupy
@@ -284,8 +293,17 @@ lexicographically best schedule.
 
 \textbf{Instances.} The 70 interval versions of Taillard's instances
 (TA1--TA70, seven size classes from $15{\times}15$ to $50{\times}20$),
-with crisp Taillard lower bounds as the $\RE$ reference.
-\todo{describir generación de los intervalos de las instancias}
+with crisp Taillard lower bounds as the $\RE$ reference. Each interval
+instance is derived from its crisp counterpart by replacing every duration
+$p$ with an integer interval $[p-d,\, p+d]$ symmetric around it, with
+half-width bounded by $d \le 0.15\,p$ (maximum deviation $15\%$); machine
+routes are unchanged. The midpoint of every interval thus equals the
+original duration---the crisp instance is exactly the midpoint scenario of
+its interval version---which makes the crisp Taillard bounds a meaningful
+reference for $E[C_{\max}]$. After integer rounding, ${\approx}20\%$ of
+operations end up degenerate (deterministic), and the mean relative width
+is ${\approx}13\%$.
+\todo{confirmar cita del conjunto de instancias publicado (fEABC/ESABC/TS)}
 
 \textbf{Data split and exclusions.} Rules are evolved on TA11--TA14
 ($20{\times}15$)---identical to the training set of the companion DRL
@@ -535,7 +553,19 @@ S.~Nguyen, Y.~Mei, M.~Zhang.
 \newblock Genetic programming for production scheduling: a survey with a
   unified framework.
 \newblock \textit{Complex \& Intelligent Systems}, 3(1):41--66, 2017.
-  \todo{verificar volumen/p\'aginas}
+
+\bibitem{Karunakaran2017}
+D.~Karunakaran, Y.~Mei, G.~Chen, M.~Zhang.
+\newblock Dynamic job shop scheduling under uncertainty using genetic
+  programming.
+\newblock In \textit{Intelligent and Evolutionary Systems}, pages
+  195--210. Springer, 2017.
+
+\bibitem{Xu2025}
+M.~Xu, Y.~Mei, F.~Zhang, M.~Zhang.
+\newblock Learn to optimise for job shop scheduling: a survey with
+  comparison between genetic programming and reinforcement learning.
+\newblock \textit{Artificial Intelligence Review}, 58:160, 2025.
 
 \bibitem{Zhang2020L2D}
 C.~Zhang, W.~Song, Z.~Cao, J.~Zhang, P.~S.~Tan, C.~Xu.
