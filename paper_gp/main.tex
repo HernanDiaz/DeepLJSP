@@ -467,6 +467,10 @@ budgets---the head-to-head evaluation that the recent
 literature~\cite{Xu2025} identifies as missing.
 
 \section*{Reproducibility}
+The GP hyper-heuristic is implemented from scratch in pure Python/NumPy,
+with no evolutionary-computation dependencies; evolved rules are stored
+as plain JSON expression trees and evaluated as drop-in dispatching
+strategies by the same environment used by every baseline.
 \todo{URL/DOI del repositorio al publicar}
 
 \begin{thebibliography}{10}
