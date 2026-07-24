@@ -130,7 +130,15 @@ attributes, and constitute the standard approach to automated rule design
 for production scheduling~\cite{Branke2016,Nguyen2017}. Evolved rules
 have been shown to outperform hand-crafted ones across job shop variants,
 with active research on surrogate fitness, feature selection, and
-multi-objective formulations. Closest to our setting, Karunakaran et
+multi-objective formulations. Beyond single rules, a productive line
+combines several evolved rules into \emph{ensembles} that jointly
+construct or vote on a solution~\cite{GilGala2021Ensembles}, and recent
+work explores alternatives to evolutionary search for the same design
+task---systematic tree search over the space of expression
+trees~\cite{GilGala2025SSHE}---reporting rules of comparable quality but
+smaller size and better readability. All of this work targets
+deterministic (or dynamic-stochastic) settings. Closest to our setting,
+Karunakaran et
 al.~\cite{Karunakaran2017} evolve rules for dynamic job shops with
 uncertain processing times, exposing summary statistics of observed
 deviations (an exponential moving average) to the rule; uncertainty there
@@ -283,7 +291,11 @@ sampling-based methods we wrap the evolved rule in GRASP-style
 randomization: with probability $\varepsilon{=}0.1$ the dispatched
 operation is drawn uniformly from the eligible set, otherwise the rule
 decides; sample $0$ remains deterministic. Best-of-$N$ then reports the
-lexicographically best schedule.
+lexicographically best schedule. This uniform perturbation of a single
+rule is the simplest member of a broader family of randomized rule-based
+builders; a richer alternative, orthogonal to our contribution, swaps
+among a \emph{set} of evolved rules during
+construction~\cite{GilGala2025GRASB}.
 
 \section{Experimental Setup}
 \label{sec:setup}
@@ -456,8 +468,8 @@ pressure.
 Future work follows four lines. First, a terminal ablation to quantify
 how much the evolved rules actually exploit the interval widths---the
 distinctive ingredient of this setting. Second, richer symbolic models:
-ensembles of complementary rules and co-evolution of construction and
-tie-breaking. Third, using evolved rules as cheap, high-quality
+ensembles of complementary rules~\cite{GilGala2021Ensembles} and
+co-evolution of construction and tie-breaking. Third, using evolved rules as cheap, high-quality
 population initializers for the metaheuristics that define the state of
 the art in the IJSP, where preliminary pools built from randomized rule
 rollouts are already compatible with the seeding protocol
@@ -531,6 +543,26 @@ M.~Xu, Y.~Mei, F.~Zhang, M.~Zhang.
 \newblock Learn to optimise for job shop scheduling: a survey with
   comparison between genetic programming and reinforcement learning.
 \newblock \textit{Artificial Intelligence Review}, 58:160, 2025.
+
+\bibitem{GilGala2021Ensembles}
+F.~J.~Gil-Gala, C.~Menc\'ia, M.~R.~Sierra, R.~Varela.
+\newblock Learning ensembles of priority rules for online scheduling by
+  hybrid evolutionary algorithms.
+\newblock \textit{Integrated Computer-Aided Engineering}, 28(1):65--80,
+  2021.
+
+\bibitem{GilGala2025SSHE}
+F.~J.~Gil-Gala, M.~\DJ ura\v{s}evi\'c, M.~R.~Sierra, R.~Varela.
+\newblock Tree search hyper-heuristic with application to combinatorial
+  optimization.
+\newblock \textit{Journal of Heuristics}, 31:25, 2025.
+
+\bibitem{GilGala2025GRASB}
+F.~J.~Gil-Gala, M.~\DJ ura\v{s}evi\'c, M.~R.~Sierra, J.~Puente.
+\newblock Greedy randomised adaptive solution builder using priority
+  rules.
+\newblock In \textit{Proc. Genetic and Evolutionary Computation Conference
+  Companion (GECCO '25)}, pages 211--214. ACM, 2025.
 
 \bibitem{Zhang2020L2D}
 C.~Zhang, W.~Song, Z.~Cao, J.~Zhang, P.~S.~Tan, C.~Xu.
