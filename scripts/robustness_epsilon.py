@@ -73,8 +73,8 @@ def widen(lo, up, w):
     return nlo, nup
 
 
-def predicted_midpoint(seq, lo, up, mseq):
-    """E[C_max] = midpoint del makespan de intervalo (componente a componente)."""
+def predicted_interval(seq, lo, up, mseq):
+    """Makespan de intervalo predicho [C_lo, C_up] (componente a componente)."""
     nj = len(lo); nm = len(mseq[0])
     jlo = [0.0] * nj; jup = [0.0] * nj
     mlo = [0.0] * nm; mup = [0.0] * nm
@@ -85,7 +85,13 @@ def predicted_midpoint(seq, lo, up, mseq):
         elo = slo + lo[j][k]; eup = sup + up[j][k]
         jlo[j] = elo; jup[j] = eup; mlo[m] = elo; mup[m] = eup
         oi[j] = k + 1
-    return (max(jlo) + max(jup)) / 2.0
+    return max(jlo), max(jup)
+
+
+def predicted_midpoint(seq, lo, up, mseq):
+    """E[C_max] = midpoint del makespan de intervalo."""
+    clo, cup = predicted_interval(seq, lo, up, mseq)
+    return (clo + cup) / 2.0
 
 
 def heuristic_sequence(env, heuristic):
@@ -131,10 +137,9 @@ def main():
     instances = [p for p in sorted(PROBLEM_REGISTRY)
                  if re.match(r"int__tai\d+_\d+_\d+$", p)]
 
-    rng = np.random.default_rng(0)     # números comunes: misma nube por instancia
     rows = []
     hist = {}
-    for pid in instances:
+    for i, pid in enumerate(instances):
         if lb_for_problem_name(pid) is None:
             continue
         lo0, up0, mseq = instance_arrays(pid)
@@ -143,22 +148,30 @@ def main():
             PROBLEM_REGISTRY[pid](), "basic", seed=0)
         seqs = {name: heuristic_sequence(env, h) for name, h in methods.items()}
         for name, seq in seqs.items():
-            for w in WIDTHS:
+            # Ancho relativo del intervalo de makespan predicho (a-priori, nominal):
+            # rel_width = (C_up - C_lo) / midpoint * 100. Más estrecho = mejor.
+            clo, cup = predicted_interval(seq, lo0, up0, mseq)
+            rel_width = (cup - clo) / ((clo + cup) / 2.0) * 100.0
+            for wi, w in enumerate(WIDTHS):
                 lo, up = widen(lo0, up0, w) if w != 1.0 else (lo0, up0)
-                eb, e_mid, cmax = eps_bar(seq, lo, up, mseq,
-                                          np.random.default_rng(hash((pid, w)) % 2**32))
+                # semilla determinista por (instancia, anchura): reproducible y
+                # con números comunes entre métodos (misma nube por instancia).
+                rng = np.random.default_rng(1000 * i + wi)
+                eb, e_mid, cmax = eps_bar(seq, lo, up, mseq, rng)
                 rows.append({"instance": pid, "cls": cls, "method": name,
-                             "width": w, "eps_bar": eb})
+                             "width": w, "eps_bar": eb,
+                             "rel_width": rel_width if w == 1.0 else float("nan")})
                 if pid == args.hist_instance:
                     hist[(name, w)] = (cmax, e_mid)
         print(".", end="", flush=True)
     print()
 
     with open(args.out, "w", encoding="utf-8") as f:
-        f.write("instance,cls,method,width,eps_bar\n")
+        f.write("instance,cls,method,width,eps_bar,rel_width\n")
         for r in rows:
+            rw = f"{r['rel_width']:.4f}" if r["rel_width"] == r["rel_width"] else ""
             f.write(f"{r['instance']},{r['cls']},{r['method']},"
-                    f"{r['width']:.1f},{r['eps_bar']*1000:.4f}\n")   # x1000 como el grupo
+                    f"{r['width']:.1f},{r['eps_bar']*1000:.4f},{rw}\n")
 
     # Resumen: eps-barra media (x1000) por método y anchura
     print("\n=== eps-barra media (x1000) por método y anchura ===")
@@ -170,6 +183,13 @@ def main():
                     if r["method"] == name and r["width"] == w]
             line += f"{1000*sum(vals)/len(vals):>10.2f}"
         print(line)
+
+    # Resumen: ancho relativo del intervalo de makespan predicho (%, nominal)
+    print("\n=== ancho relativo del intervalo de makespan (%, más estrecho=mejor) ===")
+    for name in methods:
+        vals = [r["rel_width"] for r in rows if r["method"] == name
+                and r["width"] == 1.0 and r["rel_width"] == r["rel_width"]]
+        print(f"  {name:<12}: {sum(vals)/len(vals):.2f}%")
 
     _figures(rows, hist, methods)
     print(f"\nCSV: {args.out}")

@@ -489,30 +489,39 @@ by $+20\%$ and $+40\%$ (clipping negative bounds to zero), re-evaluating
 the same processing orders.
 
 The evolved rule does not merely produce lower-makespan schedules---it
-produces \emph{more robust} ones. Table~\ref{tab:robustness} reports mean
-$\bar\varepsilon$ ($\times10^3$) over the 70 instances: the GP rule is more
-robust than both constructive baselines at the nominal width
-($5.8$ versus $6.5$ for MOR and $6.3$ for G\&T-MWKR), and its advantage
-\emph{widens} as uncertainty grows (at $+40\%$: $7.7$ versus $8.9$ and
-$8.6$). Because the rule can read interval widths, it favours dispatching
-decisions whose realized outcome is less sensitive to how the durations
-materialize. Figure~\ref{fig:robustness} shows the per-instance
+produces \emph{more robust} ones, on two complementary measures
+(Table~\ref{tab:robustness}). First, its predicted makespan interval is
+the \emph{tightest}: a relative width of $12.6\%$ against $13.8\%$
+(G\&T-MWKR) and $14.4\%$ (MOR), so the a-priori uncertainty attached to
+the schedule is smaller. Second, and more tellingly, its executed
+makespan tracks the prediction most closely: $\bar\varepsilon$ is lower
+than for both baselines at the nominal width ($5.8$ versus $6.5$ for MOR
+and $6.3$ for G\&T-MWKR), and its advantage \emph{widens} as uncertainty
+grows (at $+40\%$: $7.7$ versus $8.9$ and $8.6$). Because the rule can
+read interval widths, it favours dispatching decisions whose realized
+outcome is less sensitive to how the durations materialize.
+Figure~\ref{fig:robustness} shows the per-instance $\bar\varepsilon$
 distributions.
 
 \begin{table}[t]
 \centering\small
-\caption{Mean $\bar\varepsilon$ robustness ($\times10^3$, lower is better)
-over the 70 instances, at nominal interval widths and widened by $+20\%$
-and $+40\%$. Monte Carlo with $K{=}1000$ realizations per instance,
-common random numbers across methods.}
+\caption{Robustness over the 70 instances (lower is better on both
+measures). \emph{Rel.\ width}: relative width of the predicted makespan
+interval, $(\overline{C}_{\max}-\underline{C}_{\max})/E[C_{\max}]$ (\%).
+$\bar\varepsilon$ ($\times10^3$): mean deviation of the executed makespan
+from its prediction, at nominal interval widths and widened by $+20\%$ and
+$+40\%$ (Monte Carlo, $K{=}1000$ realizations, common random numbers
+across methods).}
 \label{tab:robustness}
-\begin{tabular}{lccc}
+\begin{tabular}{lcccc}
 \toprule
-Method & $+0\%$ & $+20\%$ & $+40\%$ \\
+& & \multicolumn{3}{c}{$\bar\varepsilon$ ($\times10^3$)} \\
+\cmidrule(l){3-5}
+Method & Rel.\ width (\%) & $+0\%$ & $+20\%$ & $+40\%$ \\
 \midrule
-GP rule & \textbf{5.8} & \textbf{6.8} & \textbf{7.7} \\
-G\&T-MWKR & 6.3 & 7.4 & 8.6 \\
-MOR & 6.5 & 7.7 & 8.9 \\
+GP rule & \textbf{12.6} & \textbf{5.8} & \textbf{6.8} & \textbf{7.7} \\
+G\&T-MWKR & 13.8 & 6.3 & 7.5 & 8.6 \\
+MOR & 14.4 & 6.5 & 7.7 & 8.9 \\
 \bottomrule
 \end{tabular}
 \end{table}
