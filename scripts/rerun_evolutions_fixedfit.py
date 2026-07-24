@@ -1,20 +1,23 @@
 """
-RE-EVOLUCIÓN con el fitness corregido (makespan componente a componente).
+CAMPAÑA DE 30+30 EVOLUCIONES con el fitness corregido (componente a comp.).
 
-Contexto: las 6 evoluciones del paper_gp (3 default + 3 tuned) usaron como
-fitness el midpoint bajo la convención vieja (lex-por-upper). Tras el fix,
-evolve_gp_rule.py ya usa final_makespan. Este driver re-evoluciona los 6
-seeds con el fitness corregido para verificar que las reglas resultantes son
-equivalentes (y blindar el paper): si lo son, se mantienen las reglas
-publicadas con su reevaluación corregida; si alguna mejora claramente, se
-adopta.
+Doble objetivo:
+  (a) Fitness corregido: las evoluciones del paper usaron el midpoint bajo
+      la convención vieja (lex-por-upper); evolve_gp_rule.py ya está
+      corregido.
+  (b) Rigor estadístico: el estándar EC son 30 ejecuciones independientes
+      con media±desviación (no 3). 30 seeds default + 30 tuned permiten
+      además un test pareado (Wilcoxon signed-rank, mismos seeds) para la
+      afirmación de tuning del paper.
 
-Fases (auto-contenido, pensado para correr de noche):
-  1. 6 evoluciones (pop 100, gens 50), máx. 3 procesos en paralelo
-     (CPU-bound, 4 núcleos físicos; hilos BLAS ya limitados a 1 por proceso).
-     Salidas en benchmarks/reevo_fixedfit/ (NO pisa los JSON publicados).
-  2. Evaluación de cada regla nueva: rollout determinista en las 70 Taillard
-     con el evaluador corregido -> summary.csv + VEREDICTO.md.
+Fases (auto-contenido, ~16 h evolución + ~3 h evaluación con 3 workers):
+  1. 60 evoluciones (pop 100, gens 50), máx. 3 procesos en paralelo
+     (CPU-bound, 4 núcleos físicos; hilos BLAS a 1 por proceso -> la
+     máquina queda usable). Salidas en benchmarks/reevo_fixedfit/
+     (NO pisa los JSON publicados).
+  2. Evaluación de cada regla: rollout determinista en las 70 Taillard con
+     el evaluador corregido -> summary.csv + VEREDICTO.md con media±std,
+     mejor seed, y Wilcoxon pareado default-vs-tuned.
 
 Uso:
   python scripts/rerun_evolutions_fixedfit.py          # todo
@@ -39,18 +42,14 @@ LOG_DIR = "logs/reevo"
 PY = sys.executable
 
 # (nombre, args extra de evolve_gp_rule.py)
+N_SEEDS = 30                                        # estándar EC: 30 runs
 DEFAULT_CFG = []                                    # defaults del script
 TUNED_CFG = ["--tournament", "7", "--crossover", "0.7695",
              "--maxtree", "30", "--elitism", "2"]   # ganadora irace #15
 JOBS = ([("gp_rule_seed%d" % s, ["--seed", str(s)] + DEFAULT_CFG)
-         for s in (1, 2, 3)] +
+         for s in range(1, N_SEEDS + 1)] +
         [("gp_tuned_seed%d" % s, ["--seed", str(s)] + TUNED_CFG)
-         for s in (1, 2, 3)])
-
-# Referencia: reglas publicadas reevaluadas con la convención corregida
-# (benchmarks/audit_gp_numbers.csv, 2026-07-24).
-REF = {"gp_rule_seed1": 18.59, "gp_rule_seed2": 19.50, "gp_rule_seed3": 19.54,
-       "gp_tuned_seed1": 18.49, "gp_tuned_seed2": 19.98, "gp_tuned_seed3": 17.71}
+         for s in range(1, N_SEEDS + 1)])
 
 
 def run_one(name, extra):
@@ -112,26 +111,62 @@ def evaluate_rules():
         v = [r["re"] for r in rows if r["method"] == m]
         return sum(v) / len(v) if v else float("nan")
 
-    lines = ["# Veredicto re-evolución con fitness corregido", "",
-             "| Regla | Publicada (reevaluada) | Re-evolucionada | Δ |",
-             "|---|---|---|---|"]
-    for name, _ in JOBS:
-        new = avg(name)
-        ref = REF.get(name, float("nan"))
-        lines.append(f"| {name} | {ref:.2f} | {new:.2f} | {new-ref:+.2f} |")
-    news_d = [avg(f"gp_rule_seed{s}") for s in (1, 2, 3)]
-    news_t = [avg(f"gp_tuned_seed{s}") for s in (1, 2, 3)]
-    lines += ["",
-              f"Default: best-of-3 {min(news_d):.2f} (ref 18.59), "
-              f"media {sum(news_d)/3:.2f} (ref 19.21)",
-              f"Tuned:   best-of-3 {min(news_t):.2f} (ref 17.71), "
-              f"media {sum(news_t)/3:.2f} (ref 18.73)",
-              "",
-              "Regla de decisión (pre-registrada): si |Δ| del best-of-3 <= el",
-              "spread entre seeds (~2 pts), las reglas publicadas se MANTIENEN",
-              "(el fix no afecta materialmente a la evolución) y el paper usa",
-              "su reevaluación corregida. Solo si la re-evolución mejora el",
-              "best-of-3 en más de 2 pts se considera adoptar las nuevas."]
+    def stats(vals):
+        vals = [v for v in vals if v == v]
+        n = len(vals)
+        mu = sum(vals) / n
+        sd = (sum((v - mu) ** 2 for v in vals) / (n - 1)) ** 0.5 if n > 1 else 0.0
+        return mu, sd, min(vals), n
+
+    def wilcoxon_signed(pairs):
+        """Wilcoxon signed-rank pareado, aproximación normal. -> (W, z)."""
+        diffs = [(a - b) for a, b in pairs if abs(a - b) > 1e-12]
+        n = len(diffs)
+        if n < 6:
+            return float("nan"), float("nan")
+        ranked = sorted(diffs, key=lambda d: abs(d))
+        # rangos con empates promediados
+        ranks = {}
+        i = 0
+        while i < n:
+            j = i
+            while j + 1 < n and abs(abs(ranked[j + 1]) - abs(ranked[i])) < 1e-12:
+                j += 1
+            r = (i + j) / 2 + 1
+            for k in range(i, j + 1):
+                ranks[id(ranked[k])] = r
+            i = j + 1
+        w_pos = sum(ranks[id(d)] for d in ranked if d > 0)
+        mu_w = n * (n + 1) / 4
+        sd_w = (n * (n + 1) * (2 * n + 1) / 24) ** 0.5
+        z = (w_pos - mu_w) / sd_w if sd_w else float("nan")
+        return w_pos, z
+
+    seeds = range(1, N_SEEDS + 1)
+    news_d = [avg(f"gp_rule_seed{s}") for s in seeds]
+    news_t = [avg(f"gp_tuned_seed{s}") for s in seeds]
+    mu_d, sd_d, best_d, n_d = stats(news_d)
+    mu_t, sd_t, best_t, n_t = stats(news_t)
+    pairs = [(d, t) for d, t in zip(news_d, news_t) if d == d and t == t]
+    w, z = wilcoxon_signed(pairs)
+
+    lines = ["# Veredicto campaña 30+30 con fitness corregido", "",
+             f"| Config | n | media±std RE global | mejor seed |",
+             "|---|---|---|---|",
+             f"| default | {n_d} | {mu_d:.2f} ± {sd_d:.2f} | {best_d:.2f} |",
+             f"| tuned (irace #15) | {n_t} | {mu_t:.2f} ± {sd_t:.2f} | {best_t:.2f} |",
+             "",
+             f"Wilcoxon signed-rank pareado (mismos seeds, n={len(pairs)}): "
+             f"W+={w:.1f}, z={z:.2f} "
+             f"(|z|>1.96 -> diferencia significativa al 5%)",
+             "",
+             "Referencia (3 seeds publicados, reevaluados con convención "
+             "corregida): default best 18.59 / media 19.21; tuned best 17.71 "
+             "/ media 18.73.",
+             "",
+             "Para el paper: reportar media±std sobre las 30 ejecuciones, el",
+             "mejor individuo, y el test pareado para la afirmación de tuning.",
+             "Los detalles por seed están en summary.csv."]
     text = "\n".join(lines)
     with open(f"{OUT_DIR}/VEREDICTO.md", "w", encoding="utf-8") as f:
         f.write(text + "\n")
@@ -148,7 +183,8 @@ def main():
                  f"{OUT_DIR}/{name}.json"] + extra))
         return
     t0 = time.time()
-    print(f"[fase 1] 6 evoluciones, 3 en paralelo ({time.ctime()})", flush=True)
+    print(f"[fase 1] {len(JOBS)} evoluciones, 3 en paralelo ({time.ctime()})",
+          flush=True)
     with ThreadPoolExecutor(max_workers=3) as ex:
         results = list(ex.map(lambda j: run_one(*j), JOBS))
     fails = [n for n, s in results if s != "OK"]
