@@ -94,6 +94,13 @@ This paper makes the following contributions:
   sizes---evolved on $20{\times}15$, best class $50{\times}15$---and
   (iii) extend naturally to a randomized multi-start regime with monotone
   quality gains up to best-of-1024 (Section~\ref{sec:results}).
+\item An analysis of \emph{why} the rules work: an anatomy of the evolved
+  expressions (Section~\ref{sec:anatomy}), an ablation isolating the
+  contribution of the interval-width terminals
+  (Section~\ref{sec:ablation}), and an executional-robustness study showing
+  that the evolved rule yields schedules whose realized makespan deviates
+  less from its prediction than the baselines', increasingly so as
+  uncertainty grows (Section~\ref{sec:robustness}).
 \item An automatic configuration study (irace, 200 experiments) of the
   evolutionary hyperparameters, showing the method is robust to its own
   knobs: tuning yields only a modest, within-noise gain, from higher
@@ -362,6 +369,36 @@ seeds (default configuration).}
 \label{fig:convergence}
 \end{figure}
 
+\subsection{Rule anatomy and interpretability}
+\label{sec:anatomy}
+A practical appeal of GP over neural policies is that its output is a
+readable expression. Evolved rules are compact---mean tree size
+${\approx}32$ nodes, mean depth ${\approx}11$---so a rule can be inspected
+and simplified by hand. Figure~\ref{fig:terminals} reports how often each
+terminal is used across the evolved rules. The backbone is the classical
+scheduling triad---work remaining (\textit{WKR}), earliest start
+(\textit{EST}) and slack (\textit{SLACK})---together with worst-case
+processing time (\textit{PT}), confirming that the evolution rediscovers
+and refines known dispatching logic rather than exploiting benchmark
+artefacts. Crucially, the \emph{interval-width} terminals
+(\textit{PTW}, \textit{ESTW}, \textit{WKRW}) account for ${\approx}19\%$
+of all terminal usage and appear in \emph{every} evolved rule: the
+evolution consistently reaches for uncertainty information, even though
+worst-case bounds carry the larger share of the signal. Whether that
+width information translates into better schedules is quantified by the
+ablation of Section~\ref{sec:ablation} and the robustness analysis of
+Section~\ref{sec:robustness}.
+\todo{cifras de anatomía sobre el conjunto de 30 semillas tras la campaña}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=.8\linewidth]{figures/fig_terminals.pdf}
+\caption{Terminal usage across the evolved rules, as a share of all
+terminals. Interval-width terminals (amber) expose the magnitude of the
+uncertainty to the rule.}
+\label{fig:terminals}
+\end{figure}
+
 \subsection{Generalization to the full benchmark}
 Table~\ref{tab:gp70} reports single-rollout $\RE$ per size class over all
 70 instances. The best rule attains $18.5\%$ global mean---evolved only
@@ -386,6 +423,19 @@ GP seed 3 & 18.6 & 18.5 & 20.0 & 22.7 & 25.7 & 15.2 & 15.7 & 19.5 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\subsection{The value of interval-awareness: terminal ablation}
+\label{sec:ablation}
+The interval-width terminals are the distinctive ingredient of this
+setting, so we isolate their contribution. We re-run the full
+evolution---30 independent seeds per configuration---with and without the
+width terminals (\textit{PTW}, \textit{ESTW}, \textit{WKRW}) in the
+terminal set, everything else held fixed, and compare the resulting
+mean $\RE$ over the 70 instances with a paired Wilcoxon signed-rank test
+on the shared seeds.
+\todo{rellenar con la campaña 30$\times$3: media$\pm$std no-width vs full,
+$\Delta$RE, y el estadístico de Wilcoxon. Redacción segun el signo del
+efecto (paga / cotas de peor caso bastan).}
 
 \subsection{Position among constructive methods}
 At equal cost (one deterministic rollout): MOR $45.4\%$, G\&T-MWKR
@@ -420,6 +470,63 @@ $\varepsilon$-randomization ($\varepsilon{=}0.1$): mean RE over the 70
 instances as the sampling budget doubles.}
 \label{fig:bestofn}
 \end{figure}
+
+\subsection{Robustness under executional uncertainty}
+\label{sec:robustness}
+Relative error measures a-priori quality, but for the IJSP a schedule is
+ultimately \emph{executed} under one realization of the durations. A good
+predictive schedule is one whose executed makespan stays close to its
+a-priori prediction. We quantify this with the $\bar\varepsilon$
+robustness of~\cite{DiazGA2020}: for a schedule with fixed processing
+order and predicted expected makespan $E[C_{\max}]$ (interval midpoint),
+we draw $K{=}1000$ realizations of the durations (uniform on each
+operation's interval), execute the fixed order, and average the relative
+deviation of the executed makespan $C^{ex}_{\max}$ from the prediction,
+$\bar\varepsilon = \frac1K\sum_k |C^{ex,k}_{\max}-E[C_{\max}]| /
+E[C_{\max}]$. Lower is more robust. To probe behaviour under growing
+uncertainty we also widen every interval symmetrically about its midpoint
+by $+20\%$ and $+40\%$ (clipping negative bounds to zero), re-evaluating
+the same processing orders.
+
+The evolved rule does not merely produce lower-makespan schedules---it
+produces \emph{more robust} ones. Table~\ref{tab:robustness} reports mean
+$\bar\varepsilon$ ($\times10^3$) over the 70 instances: the GP rule is more
+robust than both constructive baselines at the nominal width
+($5.8$ versus $6.5$ for MOR and $6.3$ for G\&T-MWKR), and its advantage
+\emph{widens} as uncertainty grows (at $+40\%$: $7.7$ versus $8.9$ and
+$8.6$). Because the rule can read interval widths, it favours dispatching
+decisions whose realized outcome is less sensitive to how the durations
+materialize. Figure~\ref{fig:robustness} shows the per-instance
+distributions.
+
+\begin{table}[t]
+\centering\small
+\caption{Mean $\bar\varepsilon$ robustness ($\times10^3$, lower is better)
+over the 70 instances, at nominal interval widths and widened by $+20\%$
+and $+40\%$. Monte Carlo with $K{=}1000$ realizations per instance,
+common random numbers across methods.}
+\label{tab:robustness}
+\begin{tabular}{lccc}
+\toprule
+Method & $+0\%$ & $+20\%$ & $+40\%$ \\
+\midrule
+GP rule & \textbf{5.8} & \textbf{6.8} & \textbf{7.7} \\
+G\&T-MWKR & 6.3 & 7.4 & 8.6 \\
+MOR & 6.5 & 7.7 & 8.9 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_robustness_box.pdf}
+\caption{Per-instance $\bar\varepsilon$ robustness by method at each
+uncertainty level (lower is better). The evolved rule's robustness
+advantage over the constructive baselines grows with interval width.}
+\label{fig:robustness}
+\end{figure}
+\todo{tras la campaña: rehacer con la mejor regla de 30 semillas y anadir
+el brazo no-width (robustez interval-aware vs ablacion); test estadistico.}
 
 \subsection{Hyperparameter study}
 \label{sec:tuning}

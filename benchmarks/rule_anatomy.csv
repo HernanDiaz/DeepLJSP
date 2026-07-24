@@ -1,0 +1,7 @@
+rule,size,depth,n_terminals,width_terms
+gp_rule_seed1.json,38,14,18,2
+gp_rule_seed2.json,40,12,18,4
+gp_rule_seed3.json,28,11,14,6
+gp_tuned_seed1.json,26,8,12,2
+gp_tuned_seed2.json,29,10,13,1
+gp_tuned_seed3.json,29,11,13,2
