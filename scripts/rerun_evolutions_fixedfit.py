@@ -1,23 +1,28 @@
 """
-CAMPAÑA DE 30+30 EVOLUCIONES con el fitness corregido (componente a comp.).
+CAMPAÑA DE 30×3 EVOLUCIONES con el fitness corregido (componente a comp.).
 
-Doble objetivo:
+Triple objetivo:
   (a) Fitness corregido: las evoluciones del paper usaron el midpoint bajo
       la convención vieja (lex-por-upper); evolve_gp_rule.py ya está
       corregido.
   (b) Rigor estadístico: el estándar EC son 30 ejecuciones independientes
-      con media±desviación (no 3). 30 seeds default + 30 tuned permiten
-      además un test pareado (Wilcoxon signed-rank, mismos seeds) para la
-      afirmación de tuning del paper.
+      con media±desviación (no 3). 30 seeds por configuración + test pareado
+      (Wilcoxon signed-rank, mismos seeds).
+  (c) Ablación de interval-awareness (LA NOVEDAD): un tercer brazo sin los
+      terminales de anchura (--no-width, sin PTW/ESTW/WKRW). Comparado con
+      el default cuantifica cuánto aporta explotar la incertidumbre del
+      intervalo — resultado que ahora mismo el paper solo promete.
 
-Fases (auto-contenido, ~16 h evolución + ~3 h evaluación con 3 workers):
-  1. 60 evoluciones (pop 100, gens 50), máx. 3 procesos en paralelo
+Los tres brazos (default, tuned irace#15, no-width), 30 seeds cada uno = 90.
+
+Fases (auto-contenido, ~24 h evolución + ~4 h evaluación con 3 workers):
+  1. 90 evoluciones (pop 100, gens 50), máx. 3 procesos en paralelo
      (CPU-bound, 4 núcleos físicos; hilos BLAS a 1 por proceso -> la
      máquina queda usable). Salidas en benchmarks/reevo_fixedfit/
      (NO pisa los JSON publicados).
   2. Evaluación de cada regla: rollout determinista en las 70 Taillard con
      el evaluador corregido -> summary.csv + VEREDICTO.md con media±std,
-     mejor seed, y Wilcoxon pareado default-vs-tuned.
+     mejor seed, y Wilcoxon pareado (tuning y ablación).
 
 Uso:
   python scripts/rerun_evolutions_fixedfit.py          # todo
@@ -46,9 +51,12 @@ N_SEEDS = 30                                        # estándar EC: 30 runs
 DEFAULT_CFG = []                                    # defaults del script
 TUNED_CFG = ["--tournament", "7", "--crossover", "0.7695",
              "--maxtree", "30", "--elitism", "2"]   # ganadora irace #15
+NOWIDTH_CFG = ["--no-width"]                         # ablación: sin PTW/ESTW/WKRW
 JOBS = ([("gp_rule_seed%d" % s, ["--seed", str(s)] + DEFAULT_CFG)
          for s in range(1, N_SEEDS + 1)] +
         [("gp_tuned_seed%d" % s, ["--seed", str(s)] + TUNED_CFG)
+         for s in range(1, N_SEEDS + 1)] +
+        [("gp_nowidth_seed%d" % s, ["--seed", str(s)] + NOWIDTH_CFG)
          for s in range(1, N_SEEDS + 1)])
 
 
@@ -145,28 +153,38 @@ def evaluate_rules():
     seeds = range(1, N_SEEDS + 1)
     news_d = [avg(f"gp_rule_seed{s}") for s in seeds]
     news_t = [avg(f"gp_tuned_seed{s}") for s in seeds]
+    news_w = [avg(f"gp_nowidth_seed{s}") for s in seeds]
     mu_d, sd_d, best_d, n_d = stats(news_d)
     mu_t, sd_t, best_t, n_t = stats(news_t)
-    pairs = [(d, t) for d, t in zip(news_d, news_t) if d == d and t == t]
-    w, z = wilcoxon_signed(pairs)
+    mu_w, sd_w, best_w, n_w = stats(news_w)
+    pairs_t = [(d, t) for d, t in zip(news_d, news_t) if d == d and t == t]
+    pairs_w = [(d, x) for d, x in zip(news_d, news_w) if d == d and x == x]
+    wt, zt = wilcoxon_signed(pairs_t)
+    ww, zw = wilcoxon_signed(pairs_w)
 
-    lines = ["# Veredicto campaña 30+30 con fitness corregido", "",
+    lines = ["# Veredicto campaña 30×3 con fitness corregido", "",
              f"| Config | n | media±std RE global | mejor seed |",
              "|---|---|---|---|",
-             f"| default | {n_d} | {mu_d:.2f} ± {sd_d:.2f} | {best_d:.2f} |",
+             f"| default (full terminals) | {n_d} | {mu_d:.2f} ± {sd_d:.2f} | {best_d:.2f} |",
              f"| tuned (irace #15) | {n_t} | {mu_t:.2f} ± {sd_t:.2f} | {best_t:.2f} |",
+             f"| ablación no-width | {n_w} | {mu_w:.2f} ± {sd_w:.2f} | {best_w:.2f} |",
              "",
-             f"Wilcoxon signed-rank pareado (mismos seeds, n={len(pairs)}): "
-             f"W+={w:.1f}, z={z:.2f} "
-             f"(|z|>1.96 -> diferencia significativa al 5%)",
+             "## Tests de Wilcoxon signed-rank pareados (mismos seeds)",
+             f"- tuning: default vs tuned (n={len(pairs_t)}): W+={wt:.1f}, z={zt:.2f}",
+             f"- interval-awareness: default vs no-width (n={len(pairs_w)}): "
+             f"W+={ww:.1f}, z={zw:.2f}",
+             "  (|z|>1.96 -> significativo al 5%; el signo de z indica la dirección)",
              "",
-             "Referencia (3 seeds publicados, reevaluados con convención "
-             "corregida): default best 18.59 / media 19.21; tuned best 17.71 "
-             "/ media 18.73.",
+             f"## Lectura de la ablación (LA NOVEDAD)",
+             f"Δ = no-width − full = {mu_w - mu_d:+.2f} pts de RE global.",
+             "Si no-width es PEOR (Δ>0) y significativo -> los terminales de",
+             "anchura (PTW/ESTW/WKRW) aportan: la interval-awareness paga.",
+             "Si Δ≈0 -> las cotas de peor caso portan casi toda la señal (hallazgo",
+             "honesto: primer estudio que lo cuantifica).",
              "",
-             "Para el paper: reportar media±std sobre las 30 ejecuciones, el",
-             "mejor individuo, y el test pareado para la afirmación de tuning.",
-             "Los detalles por seed están en summary.csv."]
+             "Referencia (3 seeds publicados, convención corregida): default",
+             "best 18.59 / media 19.21; tuned best 17.71 / media 18.73.",
+             "Detalles por seed en summary.csv."]
     text = "\n".join(lines)
     with open(f"{OUT_DIR}/VEREDICTO.md", "w", encoding="utf-8") as f:
         f.write(text + "\n")

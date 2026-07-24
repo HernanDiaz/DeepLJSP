@@ -67,6 +67,10 @@ def main():
                         help="cap de nodos del árbol (control de bloat)")
     parser.add_argument("--elitism", type=int, default=2,
                         help="n. de mejores que pasan intactos por generación")
+    parser.add_argument("--no-width", action="store_true",
+                        help="ABLACIÓN: excluye los terminales de anchura de "
+                             "intervalo (PTW, ESTW, WKRW) del conjunto. Mide "
+                             "cuánto aporta la información de incertidumbre.")
     parser.add_argument("--train-ids", type=str, default=DEFAULT_TRAIN)
     parser.add_argument("--eval-ids", type=str, default="",
                         help="si se da: tras evolucionar, evalúa la mejor regla "
@@ -81,6 +85,12 @@ def main():
               lb_for_problem_name(pid))
              for pid in (p.strip() for p in args.train_ids.split(",")) if pid]
 
+    # Conjunto de terminales (ablación --no-width: sin PTW/ESTW/WKRW).
+    from jobshop_rl.heuristics.gp_rule import TERMINALS
+    WIDTH = {"PTW", "ESTW", "WKRW"}
+    terminals = [t for t in TERMINALS if t not in WIDTH] if args.no_width \
+        else list(TERMINALS)
+
     def fitness(tree) -> float:
         if tree_size(tree) > args.maxtree:
             return float("inf")
@@ -88,7 +98,8 @@ def main():
         return sum(rollout_re(env, h, lb) for _, env, lb in train) / len(train)
 
     # Población inicial: ramped half-and-half + las reglas clásicas como semillas
-    population = [random_tree(rng, depth=rng.choice([2, 3, 4]), full=rng.random() < 0.5)
+    population = [random_tree(rng, depth=rng.choice([2, 3, 4]),
+                              full=rng.random() < 0.5, terminals=terminals)
                   for _ in range(args.pop - 2)]
     population.append("PT")     # SPT
     population.append(("neg", "WKR"))  # MWKR
@@ -109,7 +120,7 @@ def main():
             if rng.random() < args.crossover:
                 child = crossover(rng, pick(), pick())
             else:
-                child = mutate(rng, pick())
+                child = mutate(rng, pick(), terminals=terminals)
             children.append(child)
         scored = sorted(((fitness(t), t) for t in children), key=lambda x: x[0])
         print(f"gen {gen:>2} | mejor={scored[0][0]:.2f}% | "

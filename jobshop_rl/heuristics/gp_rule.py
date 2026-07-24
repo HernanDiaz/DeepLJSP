@@ -102,12 +102,14 @@ def tree_size(tree) -> int:
     return 1 + sum(tree_size(c) for c in tree[1:])
 
 
-def random_tree(rng: random.Random, depth: int, full: bool):
+def random_tree(rng: random.Random, depth: int, full: bool, terminals=None):
+    terminals = terminals if terminals is not None else TERMINALS
     if depth <= 0 or (not full and rng.random() < 0.3):
-        return rng.choice(TERMINALS)
+        return rng.choice(terminals)
     op = rng.choice(list(FUNCTIONS))
     arity = FUNCTIONS[op]
-    return tuple([op] + [random_tree(rng, depth - 1, full) for _ in range(arity)])
+    return tuple([op] + [random_tree(rng, depth - 1, full, terminals)
+                         for _ in range(arity)])
 
 
 def _collect(tree, path=()):
@@ -132,9 +134,10 @@ def crossover(rng: random.Random, a, b):
     return _replace(a, pa, sb)
 
 
-def mutate(rng: random.Random, tree, depth: int = 3):
+def mutate(rng: random.Random, tree, depth: int = 3, terminals=None):
     path, _ = rng.choice(list(_collect(tree)))
-    return _replace(tree, path, random_tree(rng, depth, full=False))
+    return _replace(tree, path, random_tree(rng, depth, full=False,
+                                            terminals=terminals))
 
 
 # ----------------------------------------------------------------------
