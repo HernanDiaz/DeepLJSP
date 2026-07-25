@@ -42,7 +42,7 @@ from jobshop_rl.models.interval import Interval, final_makespan
 DEFAULT_TRAIN = "int__tai20_15_01,int__tai20_15_02,int__tai20_15_03,int__tai20_15_04"
 
 
-def rollout_re(env, heuristic, lb) -> float:
+def rollout_re(env, heuristic, lb, fitness="midpoint", lam=0.0) -> float:
     state = env.reset()
     done = False
     while not done and state["eligible_ops"]:
@@ -51,8 +51,17 @@ def rollout_re(env, heuristic, lb) -> float:
                 len(state["eligible_ops"]) - 1)
         state, _, done, _ = env.step(a)
     m = final_makespan(env.job_completion_time)
-    mid = m.midpoint if isinstance(m, Interval) else float(m)
-    return (mid - lb) / lb * 100
+    if isinstance(m, Interval):
+        lo, up = float(m.lower), float(m.upper)
+    else:
+        lo = up = float(m)
+    if fitness == "robust":
+        # coste robusto: peor caso + lambda * ancho del intervalo (ambos
+        # normalizados por LB). Premia makespan-upper bajo Y estrecho.
+        val = up + lam * (up - lo)
+    else:                                   # midpoint (por defecto, el actual)
+        val = (lo + up) / 2.0
+    return (val - lb) / lb * 100
 
 
 def main():
@@ -71,6 +80,12 @@ def main():
                         help="ABLACIÓN: excluye los terminales de anchura de "
                              "intervalo (PTW, ESTW, WKRW) del conjunto. Mide "
                              "cuánto aporta la información de incertidumbre.")
+    parser.add_argument("--fitness", choices=["midpoint", "robust"],
+                        default="midpoint",
+                        help="objetivo: midpoint (RE por E[Cmax], actual) o "
+                             "robust (upper + lam*ancho, premia robustez)")
+    parser.add_argument("--lam", type=float, default=1.0,
+                        help="peso del ancho en el fitness robusto")
     parser.add_argument("--train-ids", type=str, default=DEFAULT_TRAIN)
     parser.add_argument("--eval-ids", type=str, default="",
                         help="si se da: tras evolucionar, evalúa la mejor regla "
@@ -95,7 +110,8 @@ def main():
         if tree_size(tree) > args.maxtree:
             return float("inf")
         h = GPRuleHeuristic(tree)
-        return sum(rollout_re(env, h, lb) for _, env, lb in train) / len(train)
+        return sum(rollout_re(env, h, lb, args.fitness, args.lam)
+                   for _, env, lb in train) / len(train)
 
     # Población inicial: ramped half-and-half + las reglas clásicas como semillas
     population = [random_tree(rng, depth=rng.choice([2, 3, 4]),
@@ -140,7 +156,8 @@ def main():
         for pid in eval_ids:
             env = EnvironmentFactory.create_from_problem(
                 PROBLEM_REGISTRY[pid](), "basic", seed=args.seed)
-            re_val.append(rollout_re(env, h, lb_for_problem_name(pid)))
+            re_val.append(rollout_re(env, h, lb_for_problem_name(pid),
+                                     args.fitness, args.lam))
         print(f"{sum(re_val) / len(re_val):.4f}")
         return
 
