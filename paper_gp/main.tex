@@ -38,13 +38,15 @@ interval arithmetic. The GP evolves priority expressions over an
 \emph{interval-aware} terminal set that exposes both the worst-case values
 and the widths of the uncertain quantities, so that evolved rules can react
 to uncertainty itself. On the 70 interval versions of Taillard's benchmark,
-the best evolved rule attains a mean relative error of $18.5\%$ with a
-single deterministic constructive pass---improving on the
+over 30 independent evolutions the resulting rules average a relative
+error of $18.7\%$ ($\pm0.8$) with a single deterministic constructive
+pass, and the best evolved rule attains $17.3\%$---improving on the
 strongest deterministic constructive baseline (Giffler--Thompson with MWKR
-tie-breaking, $29.4\%$) by over ten points---and generalizes zero-shot
-across all seven instance size classes despite being evolved on only four
-training instances of a single size class ($20{\times}15$). Embedded in a GRASP-style randomized scheme, the evolved rule
-converts sampling budget into solution quality ($14.1\%$ at best-of-1024).
+tie-breaking, $29.5\%$) on every single instance---and generalizes
+zero-shot across all seven instance size classes despite being evolved on
+only four training instances of a single size class ($20{\times}15$).
+Embedded in a GRASP-style randomized scheme, the evolved rule
+converts sampling budget into solution quality ($13.7\%$ at best-of-1024).
 Evolved rules are compact, human-readable expressions, and an automatic
 configuration study with irace shows the approach is robust to its own
 hyperparameters, with a preference for \emph{smaller} expression trees at
@@ -79,7 +81,7 @@ pass by repeatedly selecting the next operation to start. Their appeal is
 threefold---speed, interpretability, and trivial deployment---but
 hand-crafted rules (SPT, MOR, MWKR and relatives) leave a large quality
 gap: on the benchmark used in this paper the best fixed rule averages
-$45.4\%$ relative error, versus $4$--$10\%$ for metaheuristics.
+$45.5\%$ relative error, versus $4$--$10\%$ for metaheuristics.
 
 For \emph{deterministic} scheduling, a rich literature has shown that this
 gap can be narrowed substantially by evolving rules automatically with
@@ -112,9 +114,11 @@ This paper makes the following contributions:
   less from its prediction than the baselines', increasingly so as
   uncertainty grows (Section~\ref{sec:robustness}).
 \item An automatic configuration study (irace, 200 experiments) of the
-  evolutionary hyperparameters, showing the method is robust to its own
-  knobs: tuning yields only a modest, within-noise gain, from higher
-  selection pressure (Section~\ref{sec:tuning}).
+  evolutionary hyperparameters, confirmed over 30 independent evolutions
+  per configuration: tuning brings no significant quality gain---the
+  method is robust to its own knobs---but does yield systematically
+  smaller, more readable trees at equal performance
+  (Section~\ref{sec:tuning}).
 \end{enumerate}
 
 The remainder of the paper is organized as follows.
@@ -297,7 +301,7 @@ Crossover / mutation prob. & $0.8$ / $0.2$ (subtree; mutation depth $\le 3$) \\
 Elitism & $2$ \\
 Tree-size cap & $40$ nodes (violations: fitness $\infty$) \\
 Fitness & mean RE, deterministic rollout, TA11--TA14 \\
-Seeds & $\{1, 2, 3\}$ (RNG of evolution and environment) \\
+Seeds & $1$--$30$ (RNG of evolution and environment) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -345,8 +349,9 @@ fully unseen by every design decision and constitute the honest
 generalization test.
 
 \textbf{Budgets.} Population $100$, $50$ generations: ${\sim}20{,}400$
-fitness rollouts (${\approx}49$ min single-core) per seed; three
-independent seeds.
+fitness rollouts (${\approx}30$ min single-core) per seed; thirty
+independent seeds per configuration, following standard practice in
+evolutionary computation.
 
 \textbf{Baselines.} Fixed rules (SPT, LPT, MOR, MWKR) with interval-aware
 lexicographic comparison; the Giffler--Thompson active-schedule generator
@@ -360,50 +365,50 @@ class.
 \label{sec:results}
 
 \subsection{Evolution behaviour and seed stability}
-Three seeds converge to training $\RE$ of $15.60\%$, $15.62\%$ and
-$15.87\%$---a spread of $0.27$ points---with most of the improvement
+Over 30 independent evolutions, training $\RE$ converges to
+$14.8 \pm 0.9$ (range $13.4$--$16.9$), with most of the improvement
 realized by generation $25$--$30$ (Figure~\ref{fig:convergence}). The
-best evolved rules are structurally recognizable: MWKR corrected by
-earliest-start and slack$\times$processing-time terms. For example, the
-best rule of seed~1 is, after simplification, of the form
-$-\big(\mathit{WKR} - f(\mathit{NOR},\mathit{PT},\mathit{PTW})\big) +
-\mathit{EST} + \mathit{SLACK}\cdot\mathit{PT}$: maximize work remaining,
-penalize late earliest starts, and penalize slack weighted by processing
-time.
+evolved rules are structurally recognizable, combining the classical
+dispatching ingredients in interpretable ways. The best rule of the
+campaign (seed~27), for instance, is built from the ratio
+$\mathit{SLACK}/\mathit{PT}$ (slack per unit of processing time), work
+remaining terms bounded by operations-remaining counts, and an
+earliest-start correction---a refinement of the
+most-work-remaining/earliest-start family that hand-crafted rules
+approximate only coarsely.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=.8\linewidth]{figures/fig_convergence.pdf}
-\caption{Best training fitness per generation for the three evolution
-seeds (default configuration).}
+\caption{Best training fitness per generation for the 30 evolution seeds
+(default configuration): individual runs (grey) and their mean (amber).}
 \label{fig:convergence}
 \end{figure}
 
 \subsection{Rule anatomy and interpretability}
 \label{sec:anatomy}
 A practical appeal of GP over neural policies is that its output is a
-readable expression. Evolved rules are compact---mean tree size
-${\approx}32$ nodes, mean depth ${\approx}11$---so a rule can be inspected
+readable expression. Evolved rules are compact---mean tree size $33$
+nodes ($19$--$40$), mean depth $10$---so a rule can be inspected
 and simplified by hand. Figure~\ref{fig:terminals} reports how often each
-terminal is used across the evolved rules. The backbone is the classical
-scheduling triad---work remaining (\textit{WKR}), earliest start
-(\textit{EST}) and slack (\textit{SLACK})---together with worst-case
-processing time (\textit{PT}), confirming that the evolution rediscovers
-and refines known dispatching logic rather than exploiting benchmark
-artefacts. Crucially, the \emph{interval-width} terminals
-(\textit{PTW}, \textit{ESTW}, \textit{WKRW}) account for ${\approx}19\%$
-of all terminal usage and appear in \emph{every} evolved rule: the
+terminal is used across the 30 evolved rules. The backbone is the
+classical scheduling triad---slack (\textit{SLACK}), work remaining
+(\textit{WKR}) and earliest start (\textit{EST})---together with
+worst-case processing time (\textit{PT}), confirming that the evolution
+rediscovers and refines known dispatching logic rather than exploiting
+benchmark artefacts. The \emph{interval-width} terminals
+(\textit{PTW}, \textit{ESTW}, \textit{WKRW}) account for ${\approx}21\%$
+of all terminal usage and appear in $28$ of the $30$ evolved rules: the
 evolution consistently reaches for uncertainty information, even though
 worst-case bounds carry the larger share of the signal. Whether that
 width information translates into better schedules is quantified by the
 ablation of Section~\ref{sec:ablation} and the robustness analysis of
 Section~\ref{sec:robustness}.
-\todo{cifras de anatomía sobre el conjunto de 30 semillas tras la campaña}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=.8\linewidth]{figures/fig_terminals.pdf}
-\caption{Terminal usage across the evolved rules, as a share of all
+\caption{Terminal usage across the 30 evolved rules, as a share of all
 terminals. Interval-width terminals (amber) expose the magnitude of the
 uncertainty to the rule.}
 \label{fig:terminals}
@@ -411,25 +416,30 @@ uncertainty to the rule.}
 
 \subsection{Generalization to the full benchmark}
 Table~\ref{tab:gp70} reports single-rollout $\RE$ per size class over all
-70 instances. The best rule attains $18.5\%$ global mean---evolved only
-on $20{\times}15$, its best class is the unseen $50{\times}15$
-($14.5\%$). Because all terminals are per-operation attributes with no
-size-bound quantities, transfer requires no retraining or rescaling.
+70 instances, as mean $\pm$ standard deviation across the 30 evolved
+rules and for the single best rule. The best rule attains $17.3\%$
+global mean---evolved only on $20{\times}15$, its best class is the
+unseen $50{\times}15$ ($13.3\%$), and the same pattern holds on
+average ($13.5 \pm 1.4$). Because all terminals are per-operation
+attributes with no size-bound quantities, transfer requires no
+retraining or rescaling.
 
 \begin{table}[t]
 \centering\small
-\caption{Mean RE (\%) per size class, single deterministic rollout,
-three GP seeds; all 70 Taillard interval instances.}
+\caption{RE (\%) per size class, single deterministic rollout, over all
+70 Taillard interval instances: mean $\pm$ sd across the 30 independently
+evolved rules, and the best evolved rule.}
 \label{tab:gp70}
 \begin{tabular}{lccccccc|c}
 \toprule
-Rule & $15{\times}15$ & $20{\times}15$ & $20{\times}20$ &
+& $15{\times}15$ & $20{\times}15$ & $20{\times}20$ &
 $30{\times}15$ & $30{\times}20$ & $50{\times}15$ & $50{\times}20$ & All \\
 \midrule
-GP seed 1 & 16.0 & 18.7 & 19.4 & 20.9 & 25.0 & \textbf{14.5} & 15.1 &
-\textbf{18.5} \\
-GP seed 2 & 16.5 & 18.4 & 21.2 & 21.8 & 26.9 & 15.1 & 16.3 & 19.5 \\
-GP seed 3 & 18.6 & 18.5 & 20.0 & 22.7 & 25.7 & 15.2 & 15.7 & 19.5 \\
+Mean of 30 & $17.6{\pm}1.2$ & $17.5{\pm}1.2$ & $20.8{\pm}1.4$ &
+$21.2{\pm}1.2$ & $25.2{\pm}1.2$ & $13.5{\pm}1.4$ & $15.0{\pm}1.2$ &
+$18.7{\pm}0.8$ \\
+Best rule & 16.6 & 15.3 & 17.9 & 18.9 & 24.6 & \textbf{13.3} & 14.4 &
+\textbf{17.3} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -450,11 +460,11 @@ efecto (paga / cotas de peor caso bastan).}
 \subsection{Position among constructive methods}
 All three constructive methods build one schedule per instance in a single
 pass: MOR averages $45.5\%$ $\RE$, G\&T-MWKR $29.5\%$, and the evolved
-rule $18.6\%$ (tuned configuration: $17.7\%$, Section~\ref{sec:tuning}).
-The gap is not marginal and not an artefact of averaging: the evolved rule
-is better than MOR on all $70$ instances and than G\&T-MWKR on $69$ of
-$70$, and a paired Wilcoxon signed-rank test rejects equality against each
-baseline at $p<10^{-6}$ ($z=-7.3$). Per-instance figures are given in
+rules $18.7 \pm 0.8$ on average ($17.3\%$ for the best rule).
+The gap is not marginal and not an artefact of averaging: the best evolved
+rule is better than \emph{both} baselines on every one of the $70$
+instances, and a paired Wilcoxon signed-rank test rejects equality against
+each baseline at $p<10^{-6}$ ($z=-7.3$). Per-instance figures are given in
 Table~\ref{tab:perinstance} (appendix). Crucially, this quality comes at
 no evaluation penalty over hand-crafted rules: evaluating the evolved
 expression tree over the eligible set costs the same, within measurement
@@ -478,9 +488,10 @@ instances. Bars are single-solution methods except where noted.}
 \end{figure}
 
 \subsection{Sampling behaviour (GP-$\varepsilon$)}
-Best-of-$N$ over all 70 instances: $18.5\%$ ($N{=}1$, deterministic),
-$17.1\%$ ($16$), $15.9\%$ ($64$), $14.9\%$ ($256$), $14.1\%$
-($1024$)---$-4.4$ points over ten doublings
+Best-of-$N$ over all 70 instances (pools of $1024$
+$\varepsilon$-randomized samples per instance): $18.6\%$ ($N{=}1$,
+deterministic), $16.4\%$ ($16$), $14.9\%$ ($64$), $14.4\%$ ($256$),
+$13.7\%$ ($1024$)---about $-4.9$ points over ten doublings
 (Figure~\ref{fig:bestofn})---closing a substantial part of the gap to
 population-based methods while remaining a set of independent constructive
 passes, orders of magnitude below the iterative search in computational
@@ -578,15 +589,19 @@ only weakly, itself evidence that performance is largely flat over the
 hyperparameter space.
 
 Under the same pre-registered confirmation applied to every design
-decision---the winning configuration re-evolved over three independent
+decision---the winning configuration re-evolved over 30 independent
 seeds and each resulting rule evaluated on all 70 instances---the tuned
-configuration is \emph{marginally} better than the untuned default:
-$17.67\%$ versus $18.5\%$ best-of-three-seeds ($18.68\%$ versus $19.17\%$
-mean). The improvement of $0.5$--$0.8$ points is consistent in direction
-across both statistics but lies within the seed-to-seed variance
-(${\approx}2$ points), so we report it as a modest gain rather than a
-decisive one, and characterize the method as robust to its
-hyperparameters with a mild benefit from stronger selection pressure.
+configuration brings \emph{no} significant improvement: $18.99 \pm 1.33$
+mean $\RE$ versus $18.68 \pm 0.84$ for the untuned default, with a paired
+Wilcoxon signed-rank test on the shared seeds far from significance
+($z=-0.96$); if anything, the stronger selection pressure increases
+seed-to-seed variance. The one systematic effect of the tuned
+configuration is \emph{structural}: with the same performance, it evolves
+markedly smaller trees ($26.4$ versus $33.1$ nodes on average), i.e., the
+tuning budget buys readability rather than quality. We therefore
+characterize the method as robust to its evolutionary hyperparameters:
+conventional settings are statistically indistinguishable from the irace
+winner on unseen instances.
 
 \section{Conclusions and Future Work}
 \label{sec:conclusions}
@@ -596,15 +611,18 @@ hyper-heuristic for job shop scheduling with interval durations, built on
 a terminal set that exposes interval widths as first-class attributes.
 The empirical conclusions are three. (i)~Evolved rules dominate every
 deterministic constructive baseline on the 70-instance benchmark by a
-wide, statistically significant margin ($18.5\%$ versus $29.4\%$ for the
-strongest one) at the cost of a single constructive pass, and (ii)~they
+wide, statistically significant margin ($18.7 \pm 0.8$ over 30
+evolutions, $17.3\%$ for the best rule, versus $29.5\%$ for the
+strongest baseline---which the best rule beats on all 70 instances) at
+the cost of a single constructive pass, and (ii)~they
 generalize zero-shot across all size
 classes---evolved on $20{\times}15$, best on the unseen
 $50{\times}15$---because the representation contains no size-bound
 quantities. (iii)~The method is robust to its evolutionary
-hyperparameters: a 200-experiment irace study yields only a modest,
-within-noise gain over conventional settings, from higher selection
-pressure.
+hyperparameters: a 200-experiment irace study confirmed over 30
+evolutions per configuration yields no significant gain over
+conventional settings, only systematically smaller trees at equal
+performance.
 
 Future work follows three lines. First, richer symbolic models:
 ensembles of complementary rules~\cite{GilGala2021Ensembles} and
@@ -640,41 +658,41 @@ deterministic pass). LB is the crisp Taillard lower bound.}
 \toprule
 Inst. & LB & MOR & G\&T & GP & Inst. & LB & MOR & G\&T & GP \\
 \midrule
-TA1 & 1231 & 29.7 & 26.1 & 18.5 & TA36 & 1819 & 57.4 & 42.8 & 23.0 \\
-TA2 & 1244 & 34.8 & 27.8 & 15.7 & TA37 & 1771 & 43.0 & 35.6 & 18.6 \\
-TA3 & 1218 & 42.9 & 33.2 & 18.0 & TA38 & 1673 & 50.6 & 28.0 & 24.6 \\
-TA4 & 1175 & 62.6 & 27.7 & 21.4 & TA39 & 1795 & 50.2 & 28.9 & 16.3 \\
-TA5 & 1224 & 50.7 & 33.0 & 16.4 & TA40 & 1651 & 42.7 & 42.3 & 26.8 \\
-TA6 & 1238 & 36.6 & 18.2 & 12.4 & TA41 & 1906 & 53.5 & 45.0 & 33.5 \\
-TA7 & 1227 & 39.4 & 26.1 & 18.5 & TA42 & 1884 & 61.3 & 38.1 & 25.2 \\
-TA8 & 1217 & 41.3 & 25.0 & 13.6 & TA43 & 1809 & 61.4 & 39.8 & 26.1 \\
-TA9 & 1274 & 38.2 & 28.2 & 15.1 & TA44 & 1948 & 58.8 & 34.7 & 25.2 \\
-TA10 & 1241 & 38.0 & 22.1 & 11.6 & TA45 & 1997 & 59.5 & 33.7 & 20.3 \\
-TA11 & 1357 & 49.9 & 30.7 & 16.2 & TA46 & 1957 & 59.7 & 31.6 & 21.1 \\
-TA12 & 1367 & 47.8 & 34.6 & 17.6 & TA47 & 1807 & 78.3 & 30.1 & 25.2 \\
-TA13 & 1342 & 46.5 & 26.9 & 15.3 & TA48 & 1912 & 52.2 & 33.7 & 23.0 \\
-TA14 & 1345 & 44.1 & 29.7 & 13.3 & TA49 & 1931 & 46.9 & 35.3 & 21.6 \\
-TA15 & 1339 & 51.3 & 30.6 & 21.5 & TA50 & 1833 & 56.2 & 46.2 & 29.1 \\
-TA16 & 1360 & 35.8 & 34.0 & 20.4 & TA51 & 2760 & 38.2 & 34.7 & 23.5 \\
-TA17 & 1462 & 50.1 & 17.7 & 17.9 & TA52 & 2756 & 38.1 & 26.5 & 16.5 \\
-TA18 & 1377 & 54.2 & 31.8 & 26.2 & TA53 & 2717 & 28.2 & 18.3 & 11.0 \\
-TA19 & 1332 & 43.2 & 29.3 & 18.2 & TA54 & 2839 & 23.6 & 16.1 & 7.8 \\
-TA20 & 1348 & 43.7 & 24.1 & 22.2 & TA55 & 2679 & 37.6 & 29.2 & 18.7 \\
-TA21 & 1642 & 40.8 & 28.0 & 19.2 & TA56 & 2781 & 44.8 & 19.8 & 12.3 \\
-TA22 & 1561 & 46.3 & 30.8 & 20.1 & TA57 & 2943 & 29.9 & 20.0 & 11.8 \\
-TA23 & 1518 & 45.2 & 35.3 & 21.9 & TA58 & 2885 & 30.5 & 26.3 & 12.7 \\
-TA24 & 1644 & 36.2 & 23.8 & 15.1 & TA59 & 2655 & 45.2 & 28.2 & 16.8 \\
-TA25 & 1558 & 53.2 & 33.8 & 21.4 & TA60 & 2723 & 25.3 & 19.8 & 14.0 \\
-TA26 & 1591 & 52.4 & 31.2 & 22.7 & TA61 & 2868 & 48.7 & 25.4 & 18.6 \\
-TA27 & 1652 & 49.8 & 31.1 & 16.1 & TA62 & 2869 & 43.5 & 27.6 & 15.5 \\
-TA28 & 1603 & 38.8 & 26.8 & 20.3 & TA63 & 2755 & 46.0 & 23.8 & 14.9 \\
-TA29 & 1583 & 56.4 & 32.0 & 19.1 & TA64 & 2702 & 43.3 & 28.4 & 15.4 \\
-TA30 & 1528 & 53.3 & 36.1 & 19.1 & TA65 & 2725 & 44.7 & 30.0 & 19.6 \\
-TA31 & 1764 & 34.4 & 34.4 & 26.0 & TA66 & 2845 & 38.1 & 28.0 & 12.6 \\
-TA32 & 1774 & 55.8 & 33.3 & 19.7 & TA67 & 2825 & 58.4 & 26.1 & 14.5 \\
-TA33 & 1788 & 41.6 & 34.8 & 32.4 & TA68 & 2784 & 45.8 & 19.1 & 9.6 \\
-TA34 & 1828 & 34.8 & 31.8 & 16.7 & TA69 & 3071 & 38.0 & 22.8 & 14.0 \\
-TA35 & 2007 & 30.5 & 24.1 & 5.5 & TA70 & 2995 & 52.3 & 23.4 & 16.3 \\
+TA1 & 1231 & 29.7 & 26.1 & 18.6 & TA36 & 1819 & 57.4 & 42.8 & 20.0 \\
+TA2 & 1244 & 34.8 & 27.8 & 15.5 & TA37 & 1771 & 43.0 & 35.6 & 23.4 \\
+TA3 & 1218 & 42.9 & 33.2 & 16.1 & TA38 & 1673 & 50.6 & 28.0 & 21.1 \\
+TA4 & 1175 & 62.6 & 27.7 & 17.0 & TA39 & 1795 & 50.2 & 28.9 & 18.7 \\
+TA5 & 1224 & 50.7 & 33.0 & 8.8 & TA40 & 1651 & 42.7 & 42.3 & 21.5 \\
+TA6 & 1238 & 36.6 & 18.2 & 16.7 & TA41 & 1906 & 53.5 & 45.0 & 32.3 \\
+TA7 & 1227 & 39.4 & 26.1 & 21.8 & TA42 & 1884 & 61.3 & 38.1 & 23.0 \\
+TA8 & 1217 & 41.3 & 25.0 & 13.9 & TA43 & 1809 & 61.4 & 39.8 & 24.2 \\
+TA9 & 1274 & 38.2 & 28.2 & 17.9 & TA44 & 1948 & 58.8 & 34.7 & 24.4 \\
+TA10 & 1241 & 38.0 & 22.1 & 19.6 & TA45 & 1997 & 59.5 & 33.7 & 16.2 \\
+TA11 & 1357 & 49.9 & 30.7 & 16.5 & TA46 & 1957 & 59.7 & 31.6 & 24.5 \\
+TA12 & 1367 & 47.8 & 34.6 & 15.4 & TA47 & 1807 & 78.3 & 30.0 & 23.2 \\
+TA13 & 1342 & 46.5 & 26.9 & 14.9 & TA48 & 1912 & 52.2 & 33.7 & 26.3 \\
+TA14 & 1345 & 44.1 & 29.7 & 9.7 & TA49 & 1931 & 46.9 & 35.3 & 22.8 \\
+TA15 & 1339 & 51.3 & 30.6 & 16.4 & TA50 & 1833 & 56.2 & 46.2 & 29.7 \\
+TA16 & 1360 & 35.8 & 34.0 & 18.5 & TA51 & 2760 & 38.2 & 34.7 & 26.3 \\
+TA17 & 1462 & 50.1 & 17.7 & 12.8 & TA52 & 2756 & 38.1 & 26.5 & 10.5 \\
+TA18 & 1377 & 54.2 & 31.8 & 18.0 & TA53 & 2717 & 28.2 & 18.3 & 11.0 \\
+TA19 & 1332 & 43.2 & 29.3 & 13.7 & TA54 & 2839 & 23.6 & 16.1 & 4.7 \\
+TA20 & 1348 & 43.7 & 24.1 & 16.9 & TA55 & 2679 & 37.6 & 29.2 & 13.9 \\
+TA21 & 1642 & 40.8 & 28.0 & 15.4 & TA56 & 2781 & 44.8 & 19.8 & 10.9 \\
+TA22 & 1561 & 46.3 & 30.8 & 24.6 & TA57 & 2943 & 29.9 & 20.0 & 12.7 \\
+TA23 & 1518 & 45.2 & 35.3 & 22.5 & TA58 & 2885 & 30.5 & 26.3 & 13.7 \\
+TA24 & 1644 & 36.2 & 23.8 & 14.4 & TA59 & 2655 & 45.2 & 28.2 & 19.0 \\
+TA25 & 1558 & 53.2 & 33.8 & 17.4 & TA60 & 2723 & 25.3 & 19.8 & 10.1 \\
+TA26 & 1591 & 52.4 & 31.2 & 18.0 & TA61 & 2868 & 48.7 & 25.4 & 17.2 \\
+TA27 & 1652 & 49.8 & 31.1 & 16.9 & TA62 & 2869 & 43.5 & 27.6 & 14.9 \\
+TA28 & 1603 & 38.8 & 26.8 & 17.7 & TA63 & 2755 & 46.0 & 23.8 & 11.8 \\
+TA29 & 1583 & 56.4 & 32.0 & 12.3 & TA64 & 2702 & 43.3 & 28.4 & 11.5 \\
+TA30 & 1528 & 53.3 & 36.1 & 19.8 & TA65 & 2725 & 44.7 & 30.0 & 19.7 \\
+TA31 & 1764 & 34.4 & 34.4 & 15.2 & TA66 & 2845 & 38.1 & 28.0 & 14.8 \\
+TA32 & 1774 & 55.7 & 33.3 & 21.2 & TA67 & 2825 & 58.4 & 26.1 & 12.7 \\
+TA33 & 1788 & 41.6 & 34.8 & 22.7 & TA68 & 2784 & 45.8 & 19.1 & 10.3 \\
+TA34 & 1828 & 34.8 & 31.8 & 16.4 & TA69 & 3071 & 38.0 & 22.8 & 11.4 \\
+TA35 & 2007 & 30.5 & 24.1 & 9.2 & TA70 & 2995 & 52.3 & 23.4 & 20.2 \\
 \bottomrule
 \end{tabular}
 \end{table}

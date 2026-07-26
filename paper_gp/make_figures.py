@@ -24,20 +24,17 @@ plt.rcParams.update({"font.size": 11, "figure.facecolor": "white"})
 AZUL, AMBAR, GRIS, TEAL = "#1f5fa8", "#d68910", "#5d6d7e", "#0e8a7d"
 
 # ---------------------------------------------------------------------------
-# Fig 1 — convergencia (parsea los logs de las 3 evoluciones default)
+# Fig 1 — convergencia (30 evoluciones default de la campaña reevo_fixedfit)
 # ---------------------------------------------------------------------------
-TASKS = ("C:/Users/herdi/AppData/Local/Temp/claude/E--PycharmProjects-DeepLJSP/"
-         "ea0e876f-5656-4d1f-ba9c-624faf5d79d5/tasks")
-LOGS = {1: "bvikfgwj2.output", 2: "b5iwcgzqu.output", 3: "b2i1pta8a.output"}
+import glob as _glob
+REPO = os.path.dirname(HERE)
+LOGDIR = os.path.join(REPO, "logs", "reevo")
 
 curves = {}
 pat = re.compile(r"gen\s+(\d+)\s*\|\s*mejor=([\d.]+)%")
-for seed, fname in LOGS.items():
-    path = os.path.join(TASKS, fname)
-    if not os.path.exists(path):
-        continue
+for path in sorted(_glob.glob(os.path.join(LOGDIR, "gp_rule_seed*.log"))):
+    seed = int(re.search(r"seed(\d+)", path).group(1))
     text = open(path, encoding="utf-8", errors="replace").read()
-    # los logs vienen con saltos de línea intercalados: quitar antes de parsear
     gens = {}
     for m in pat.finditer(text.replace("\n", " ")):
         gens[int(m.group(1))] = float(m.group(2))
@@ -47,10 +44,13 @@ for seed, fname in LOGS.items():
 if curves:
     json.dump(curves, open(os.path.join(FIGS, "convergence_data.json"), "w"),
               indent=1)
+    L = min(len(v) for v in curves.values())
     fig, ax = plt.subplots(figsize=(6.4, 3.8))
-    for (seed, ys), c in zip(sorted(curves.items()), [AZUL, AMBAR, TEAL]):
-        ax.plot(range(len(ys)), ys, color=c, linewidth=1.8,
-                label=f"seed {seed}")
+    for seed, ys in sorted(curves.items()):
+        ax.plot(range(L), ys[:L], color=GRIS, linewidth=0.6, alpha=0.35)
+    mean = [sum(curves[s][g] for s in curves) / len(curves) for g in range(L)]
+    ax.plot(range(L), mean, color=AMBAR, linewidth=2.2,
+            label=f"mean of {len(curves)} seeds")
     ax.set_xlabel("generation")
     ax.set_ylabel("best training RE (%)")
     ax.spines[["top", "right"]].set_visible(False)
@@ -58,8 +58,7 @@ if curves:
     fig.tight_layout()
     fig.savefig(os.path.join(FIGS, "fig_convergence.pdf"))
     plt.close(fig)
-    print(f"fig_convergence: semillas {sorted(curves)} "
-          f"({[len(v) for _, v in sorted(curves.items())]} gens)")
+    print(f"fig_convergence: {len(curves)} semillas, {L} gens")
 else:
     print("AVISO: no hay datos de convergencia (logs no encontrados)")
 
@@ -67,11 +66,11 @@ else:
 # Fig 2 — escalera de constructivos
 # ---------------------------------------------------------------------------
 metodos = [
-    ("MOR (best fixed rule)", 45.4, GRIS),
-    ("G&T + MWKR", 29.4, GRIS),
-    ("GP rule (default config)", 18.5, AMBAR),
-    ("GP rule (tuned config)", 17.7, AMBAR),
-    ("GP-$\\varepsilon$, best-of-1024", 14.1, AMBAR),
+    ("MOR (best fixed rule)", 45.5, GRIS),
+    ("G&T + MWKR", 29.5, GRIS),
+    ("GP rule (mean of 30 evolved)", 18.7, AMBAR),
+    ("GP rule (best of 30)", 17.3, AMBAR),
+    ("GP-$\\varepsilon$, best-of-1024", 13.7, AMBAR),
     ("Tabu search (30 runs, minutes)", 3.9, TEAL),
 ]
 fig, ax = plt.subplots(figsize=(6.4, 3.4))
@@ -93,8 +92,10 @@ print("fig_ladder ok")
 # ---------------------------------------------------------------------------
 # Fig 3 — best-of-N
 # ---------------------------------------------------------------------------
+# N=1: pase determinista; N>1: best-of-N sobre los pools de 1024 muestras
+# GP-eps (recalculados de los pools corregidos; ver audit best-of-N)
 n_gp = [1, 16, 64, 256, 1024]
-re_gp = [18.5, 17.1, 15.9, 14.9, 14.1]
+re_gp = [18.6, 16.4, 14.9, 14.4, 13.7]
 fig, ax = plt.subplots(figsize=(6.4, 3.8))
 ax.plot(n_gp, re_gp, "-o", color=AMBAR, linewidth=2,
         label="GP-$\\varepsilon$ (uniform noise)")
