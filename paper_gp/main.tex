@@ -569,38 +569,23 @@ construction~\cite{GilGala2025GRASB}.
 
 \subsection{Benchmark instances}
 \label{sec:instances}
-The main benchmark comprises the 70 interval versions of Taillard's
-instances (TA1--TA70, seven size classes from $15{\times}15$ to
-$50{\times}20$), with crisp Taillard lower bounds as the $\RE$
-reference. Each interval instance is derived from its crisp counterpart
-with the generation scheme introduced in~\cite{DiazGA2020}: for every
+We use two benchmarks, both taken from the IJSP
+literature~\cite{DiazGA2020,DiazFEABC2023,DiazICAE2023}: the 70 interval
+versions of Taillard's instances (TA1--TA70, seven size classes from
+$15{\times}15$ to $50{\times}20$), and the 12 classical instances on
+which the published IJSP metaheuristics report results (FT10, FT20, six
+instances of the La family and ABZ7--9, of sizes $10{\times}10$ to
+$20{\times}15$). Both were obtained from their crisp counterparts with
+the generation scheme introduced in~\cite{DiazGA2020}: for every
 operation a value $\delta$ is drawn uniformly at random in
 $[0,\, 0.15\,p]$, where $p$ is its original duration, and that duration
-becomes the integer interval $[p-\delta,\, p+\delta]$; machine routes
-are unchanged. Each endpoint thus departs from the original duration by
-at most $15\%$, and since the interval is symmetric around $p$, its
-midpoint equals the original duration: the crisp instance is exactly
-the midpoint scenario of its interval version. Over
-the 70 instances the resulting intervals are at most $30\%$ of the
-original duration wide, and $12.8\%$ on average; integer rounding leaves
-$22\%$ of the operations with a degenerate, that is deterministic,
-duration. The
-resulting instance set is released with this paper (see Data
-availability), so that all results reported here can be reproduced
-exactly.
-
-As a secondary benchmark we use the 12 classical instances on which the
-published IJSP metaheuristics report
-results~\cite{DiazGA2020,DiazFEABC2023,DiazICAE2023}: FT10, FT20,
-La21--La40 (selected), and ABZ7--9, in their interval versions generated
-with the same $\pm15\%$ scheme and available from the authors'
-repository; for these, the $\RE$ reference is the best known bound of
-the expected makespan reported for them in that
-literature~\cite{DiazFEABC2023}. These instances come from different
-families and sizes
-($10{\times}10$ to $20{\times}15$) than the Taillard set, and our rules
-are \emph{not} re-evolved for them, so they double as a
-cross-family generalization test (Section~\ref{sec:classics}).
+becomes the integer interval $[p-\delta,\, p+\delta]$, machine routes
+being unchanged. The interval is symmetric around $p$, so the crisp
+instance is exactly the midpoint scenario of its interval version. Since
+rules are evolved on Taillard instances only and applied to the
+classical set without any re-evolution, the latter doubles as a
+cross-family generalization test (Section~\ref{sec:classics}). Both sets
+are released with this paper (see Data availability).
 
 \subsection{Training protocol, data split and baselines}
 Rules are evolved on TA11--TA14
