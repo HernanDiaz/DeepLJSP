@@ -366,14 +366,18 @@ division. The rule is deployed inside a semi-active schedule generation
 scheme (SGS): starting from the empty schedule, at each of the $N$
 decision points the set $\mathcal{E}$ of eligible operations (those
 whose job predecessor is already scheduled) is formed, the tree is
-evaluated---in a single vectorized pass---on the attribute vector of
-every $o \in \mathcal{E}$, and the operation with \emph{lowest} priority
-is appended at its earliest feasible start on its machine,
-Eq.~(3). Decoding a tree on an instance therefore costs exactly one
-constructive pass, the same as any hand-crafted rule. Classic rules are
-points of this search space---SPT is the tree $\mathit{PT}$ and MWKR is
-$\mathrm{neg}(\mathit{WKR})$---and both are injected as seed
-individuals.
+evaluated on the attributes of every $o \in \mathcal{E}$, and the
+operation with \emph{lowest} priority value is appended at its earliest
+feasible start on its machine, Eq.~(3).
+
+Because the lowest value wins, a criterion that seeks to \emph{maximise}
+an attribute must be expressed through the unary $\mathrm{neg}$
+operator. Classic rules are thus points of this search space: shortest
+processing time is the single-node tree $\mathit{PT}$, whereas most work
+remaining is $\mathrm{neg}(\mathit{WKR})$. We inject both as seed
+individuals in the initial population, so that the evolution starts from
+a set that already contains well-known rules and can only improve on
+them.
 
 \begin{figure}[t]
 \centering
@@ -447,7 +451,7 @@ Algorithm~\ref{alg:gp} summarizes the generational loop, with the
 operators and parameters of Table~\ref{tab:gpparams}.
 \emph{Initialization} is ramped half-and-half over
 depths $2$--$4$ (grow trees terminate early with probability $0.3$ per
-node), with SPT and MWKR injected as two additional seed individuals.
+node), plus the two seed individuals of Section~\ref{sec:hhview}.
 \emph{Fitness} of a rule is the mean $\RE$ of its deterministic
 constructive pass over the four training instances---computed with the
 same environment, decoder and evaluator used by all baselines, which
