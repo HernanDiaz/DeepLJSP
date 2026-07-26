@@ -341,18 +341,11 @@ E[\mathbf{C_{max}}] = \frac{\underline{C}_{\max} +
 \end{equation}
 where $E[\mathbf{C_{max}}]$ is the expected value of the interval
 makespan under the uniform distribution on
-$[\underline{C}_{\max},\overline{C}_{\max}]$.
-In every case $LB$ is a bound of the deterministic instance from which
-the interval one is generated---that is, of its midpoint scenario: we
-use Taillard's lower bounds for the Taillard-derived instances, and for
-the classical instances the best known bounds reported in the
-literature~\cite{DiazFEABC2023}. It is used here as an
-\emph{indicative} common reference that normalises results across
-instances of very different sizes, and not as a tight bound for the
-interval problem, for which no such bound is available. Since every comparison reported in this paper
-is between methods evaluated on the same instances, the choice of
-reference shifts all figures by the same amount and does not affect any
-of the conclusions.
+$[\underline{C}_{\max},\overline{C}_{\max}]$, and $LB$ is a bound of the
+underlying deterministic instance---Taillard's bounds for the
+Taillard-derived instances, the best known ones~\cite{DiazFEABC2023} for
+the classical set. It serves as an indicative common reference, not as a
+bound for the interval problem, for which none is available.
 
 \section{GP Hyper-Heuristic for the IJSP}
 \label{sec:method}
