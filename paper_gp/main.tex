@@ -166,16 +166,32 @@ Section~\ref{sec:conclusions} concludes.
 \subsection{Job shop scheduling under interval uncertainty}
 Interval durations offer a distribution-free uncertainty model requiring
 only bounds, in contrast to stochastic and fuzzy
-approaches~\cite{FuzzyJSPRef}. Prior IJSP work is dominated by
-population-based metaheuristics: a genetic algorithm with a systematic
-study of interval rankings~\cite{DiazGA2020}, artificial bee colony
-variants~\cite{DiazFEABC2023,DiazICAE2023}, and a population-based tabu
-search that currently defines the state of the art~\cite{DiazTS2026}.
-All of them are iterative search methods: they build and evaluate a
-population of complete solutions and refine it over many iterations for
-each instance solved. Fast constructive methods for the IJSP
-have received far less attention; dispatching rules with interval-aware
-lexicographic comparisons are the de facto baseline.
+approaches~\cite{FuzzyJSPRef}: they are the natural choice when
+historical data are insufficient to estimate distributions and a
+decision maker can only supply a minimum and a maximum duration.
+Scheduling with interval processing times has been studied across
+machine environments---single machine~\cite{Allahverdi2014}, flow shop,
+and flexible job shop~\cite{Xu2023}, among others surveyed
+in~\cite{Allahverdi2022}---and also analytically, through measures of
+the problem uncertainty induced by the intervals and of the stability of
+optimal sequences~\cite{Sotskov2013}.
+
+For the job shop with makespan minimisation, which concerns us here, the
+literature is dominated by population-based metaheuristics. Lei's
+population-based neighbourhood search~\cite{Lei2011}, which ranks
+interval makespans by a possibility degree, was an early reference
+point; it was subsequently outperformed by a genetic algorithm with a
+systematic study of interval rankings~\cite{DiazGA2020}, by artificial
+bee colony variants~\cite{DiazFEABC2023,DiazICAE2023}, and by a
+population-based tabu search that currently defines the state of the
+art~\cite{DiazTS2026}. Related objectives have also been addressed under
+interval uncertainty, notably tardiness
+minimisation~\cite{DiazTardiness2022}. All of these are iterative search
+methods: they build and evaluate a population of complete solutions and
+refine it over many iterations for each instance solved. Fast
+constructive methods for the IJSP have received far less attention;
+dispatching rules with interval-aware lexicographic comparisons are the
+de facto baseline.
 
 \subsection{Dispatching rules for job shop scheduling}
 Priority dispatching rules are among the oldest and most widely deployed
@@ -291,7 +307,7 @@ order $\leq_{Lex2}$ (upper bound first, lower bound as tie-break), one
 of the standard rankings of the IJSP literature and the one found
 in~\cite{DiazGA2020} to yield the most robust schedules; the midpoint
 ranking $\leq_{MP}$---equivalent to the possibility-degree method
-of~\cite{Lei2012}---underlies the $E[\mathbf{C_{max}}]$ metric in which
+of~\cite{Lei2011}---underlies the $E[\mathbf{C_{max}}]$ metric in which
 results are reported. All methods in this
 paper---the GP rules and every baseline---share one implementation of
 this decoder and evaluator, so reported differences cannot stem from
@@ -1157,12 +1173,44 @@ A.~Sprecher, R.~Kolisch, A.~Drexl.
 \newblock \textit{European Journal of Operational Research},
   80(1):94--102, 1995.
 
-\bibitem{Lei2012}
+\bibitem{Lei2011}
 D.~Lei.
 \newblock Population-based neighborhood search for job shop scheduling
   with interval processing time.
-\newblock \textit{Computers \& Industrial Engineering}, 62(4):1200--1208,
-  2012.
+\newblock \textit{Computers \& Industrial Engineering}, 61(4):1200--1208,
+  2011.
+
+\bibitem{Sotskov2013}
+Y.~N.~Sotskov, T.-C.~Lai, F.~Werner.
+\newblock Measures of problem uncertainty for scheduling with interval
+  processing times.
+\newblock \textit{OR Spectrum}, 35(3):659--689, 2013.
+
+\bibitem{Allahverdi2014}
+A.~Allahverdi, H.~Aydilek, A.~Aydilek.
+\newblock Single machine scheduling problem with interval processing
+  times to minimize mean weighted completion time.
+\newblock \textit{Computers \& Operations Research}, 51:200--207, 2014.
+
+\bibitem{Allahverdi2022}
+A.~Allahverdi.
+\newblock A survey of scheduling problems with uncertain
+  interval/bounded processing/setup times.
+\newblock \textit{Journal of Project Management}, 7(4):255--264, 2022.
+
+\bibitem{Xu2023}
+W.~Xu, W.~Wu, Y.~Wang, Y.~He, Z.~Lei.
+\newblock Flexible job-shop scheduling method based on interval grey
+  processing time.
+\newblock \textit{Applied Intelligence}, 53:14876--14891, 2023.
+
+\bibitem{DiazTardiness2022}
+H.~D\'iaz, J.~J.~Palacios, I.~D\'iaz, C.~R.~Vela,
+I.~Gonz\'alez-Rodr\'iguez.
+\newblock Robust schedules for tardiness optimization in job shop with
+  interval uncertainty.
+\newblock \textit{Logic Journal of the IGPL}, 2022.
+  \newblock doi:10.1093/jigpal/jzac016.
 
 \bibitem{Branke2016}
 J.~Branke, S.~Nguyen, C.~W.~Pickardt, M.~Zhang.
