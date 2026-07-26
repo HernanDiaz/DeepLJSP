@@ -198,14 +198,22 @@ scheduling heuristics: at every decision point, a priority function
 ranks the operations that are ready to start and dispatches the best
 one, building a schedule in a single constructive pass. Classical rules
 prioritize by shortest or longest processing time (SPT/LPT), most
-operations or most work remaining (MOR/MWKR), earliest starting time, or
-combinations thereof; surveys catalogue more than a hundred
-variants~\cite{Panwalkar1977,Haupt1989}. A step above single-attribute
-rules, the classical algorithm of Giffler and
+operations or most work remaining (MOR/MWKR), earliest starting time
+(EST) or critical ratio (CR), among more than a hundred variants
+catalogued in classical surveys~\cite{Panwalkar1977,Haupt1989}. A step
+above single-attribute rules, the classical algorithm of Giffler and
 Thompson~\cite{Giffler1960} restricts each choice to a machine's
 conflict set, guaranteeing \emph{active} schedules and markedly
 improving plain rules when combined with a priority tie-break (the
-G\&T-MWKR baseline of this paper). Decades of practice consolidated two
+G\&T baselines of this paper). Stronger constructive procedures exist
+for the \emph{deterministic} job shop, notably the shifting bottleneck
+heuristic~\cite{Adams1988}, which repeatedly solves one-machine
+subproblems with heads and tails by means of Carlier's
+algorithm~\cite{Carlier1982}. These fall outside the scope of the
+present work: their machinery rests on exact one-machine optimisation
+and critical-path arguments whose extension to interval arithmetic,
+where no natural total order is available, is a research contribution in
+itself and remains open. Decades of practice consolidated two
 lessons: rules are unbeatable in speed, transparency and ease of
 deployment, but hand-crafting them plateaued---no fixed combination of
 attributes performs well across shop configurations and
@@ -630,10 +638,58 @@ Best rule & 16.6 & 15.3 & 17.9 & 18.9 & 24.6 & \textbf{13.3} & 14.4 &
 \end{table}
 
 \subsection{Position among constructive methods}
-All three constructive methods build one schedule per instance in a single
-pass: MOR averages $45.5\%$ $\RE$, G\&T-MWKR $29.5\%$, and the evolved
-rules $18.7 \pm 0.8$ on average over the 30 evolutions ($17.3\%$ for the
-best rule).
+Table~\ref{tab:baselines} reports every constructive baseline under the
+protocol of this paper---one deterministic pass per instance, the same
+decoder and evaluator for all methods---together with a uniformly random
+dispatcher as a reference point.
+
+Two observations are needed to read the table correctly. First, the
+plain rules that ignore machine availability (SPT, LPT and the critical
+ratio CR, the latter being a due-date rule applied here without due
+dates) perform \emph{worse than random} in this setting. This is a
+property of the schedule generation scheme, not a defect of the
+criteria: because a solution is decoded as a permutation whose
+operations are appended to their machines, systematically dispatching
+by processing time alone produces highly unbalanced permutations. The
+same criterion embedded in the Giffler--Thompson conflict set---which
+restores classical dispatching semantics---behaves as expected
+(SPT: $627\%$ as a plain rule versus $70.6\%$ under G\&T). Second, the
+criteria that do account for the state of the shop (EST, MOR, MWKR) are
+comfortably better than random, and the strongest baseline overall is
+G\&T-MWKR at $29.5\%$, which is the reference we use throughout.
+
+Against that strongest baseline, the evolved rules average
+$18.7 \pm 0.8$ $\RE$ over the 30 evolutions, and the best rule attains
+$17.3\%$.
+
+\begin{table}[t]
+\centering\small
+\caption{Constructive baselines on the 70 interval Taillard instances:
+mean RE (\%) over one deterministic pass per instance, with the standard
+deviation across instances. A uniformly random dispatcher is included as
+a reference. Rules above the random line ignore machine availability and
+degrade below it under permutation-based decoding (see text).}
+\label{tab:baselines}
+\begin{tabular}{lcc}
+\toprule
+Method & RE (\%) & sd \\
+\midrule
+LPT & 703.6 & 168.0 \\
+SPT & 627.2 & 152.2 \\
+CR & 625.7 & 140.6 \\
+\midrule
+\textit{Random dispatcher} & \textit{116.2} & --- \\
+\midrule
+G\&T-SPT & 70.6 & 10.0 \\
+MWKR & 64.7 & 10.4 \\
+MOR & 45.5 & 10.1 \\
+EST & 42.3 & 10.6 \\
+G\&T-MWKR & \textbf{29.5} & 6.4 \\
+\midrule
+GP rule (best of 30) & \textbf{17.3} & 5.3 \\
+\bottomrule
+\end{tabular}
+\end{table}
 The gap is not marginal and not an artefact of averaging: the best evolved
 rule is better than \emph{both} baselines on every one of the $70$
 instances, and a paired Wilcoxon signed-rank test rejects equality against
@@ -1150,6 +1206,17 @@ H.~D\'iaz, J.~J.~Palacios, I.~Gonz\'alez-Rodr\'iguez, C.~R.~Vela.
 B.~Giffler, G.~L.~Thompson.
 \newblock Algorithms for solving production-scheduling problems.
 \newblock \textit{Operations Research}, 8(4):487--503, 1960.
+
+\bibitem{Adams1988}
+J.~Adams, E.~Balas, D.~Zawack.
+\newblock The shifting bottleneck procedure for job shop scheduling.
+\newblock \textit{Management Science}, 34(3):391--401, 1988.
+
+\bibitem{Carlier1982}
+J.~Carlier.
+\newblock The one-machine sequencing problem.
+\newblock \textit{European Journal of Operational Research},
+  11(1):42--47, 1982.
 
 \bibitem{Panwalkar1977}
 S.~S.~Panwalkar, W.~Iskander.
