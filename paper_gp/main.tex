@@ -316,23 +316,32 @@ Eq.~\eqref{eq:prec} enforces precedence within each job and
 Eq.~\eqref{eq:cap} forbids overlaps on each machine, in both interval
 components~\cite{DiazGA2020,DiazICAE2023}. The minimum
 in~\eqref{eq:obj} is taken with respect to an interval ranking $R$,
-since intervals admit no natural total order: we use the lexicographic
-order $\leq_{Lex2}$ (upper bound first, lower bound as tie-break), one
-of the standard rankings of the IJSP literature and the one found
-in~\cite{DiazGA2020} to yield the most robust schedules; the midpoint
-ranking $\leq_{MP}$---equivalent to the possibility-degree method
-of~\cite{Lei2011}---underlies the $E[\mathbf{C_{max}}]$ metric in which
-results are reported. All methods in this
-paper---the GP rules and every baseline---share one implementation of
-this decoder and evaluator, so reported differences cannot stem from
+since intervals admit no natural total order. We rank schedules
+lexicographically, comparing upper bounds first and using the lower
+bound only to break ties:
+\begin{equation}
+\mathbf{a} \preceq \mathbf{b} \iff \overline{a} < \overline{b}
+\;\vee\; \big(\overline{a} = \overline{b} \wedge
+\underline{a} \le \underline{b}\big),
+\label{eq:rank}
+\end{equation}
+one of the standard rankings of the IJSP literature and the one found
+in~\cite{DiazGA2020} to yield the most robust schedules. All methods in
+this paper---the GP rules and every baseline---share one implementation
+of this decoder and evaluator, so reported differences cannot stem from
 evaluator discrepancies.
 
 Performance is reported as the relative error of the expected makespan
 with respect to a crisp reference bound $LB$ of each instance,
 \begin{equation}
 \RE = \frac{E[\mathbf{C_{max}}] - LB}{LB} \times 100,
+\qquad
+E[\mathbf{C_{max}}] = \frac{\underline{C}_{\max} +
+\overline{C}_{\max}}{2},
 \end{equation}
-where $E[\mathbf{C_{max}}]$ is the midpoint of the interval makespan.
+where $E[\mathbf{C_{max}}]$ is the expected value of the interval
+makespan under the uniform distribution on
+$[\underline{C}_{\max},\overline{C}_{\max}]$.
 In every case $LB$ is a bound of the deterministic instance from which
 the interval one is generated---that is, of its midpoint scenario: we
 use Taillard's lower bounds for the Taillard-derived instances, and for
