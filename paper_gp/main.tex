@@ -573,15 +573,19 @@ The main benchmark comprises the 70 interval versions of Taillard's
 instances (TA1--TA70, seven size classes from $15{\times}15$ to
 $50{\times}20$), with crisp Taillard lower bounds as the $\RE$
 reference. Each interval instance is derived from its crisp counterpart
-with the generation scheme introduced in~\cite{DiazGA2020}: every
-duration $p$ is replaced by the integer interval $[p-\delta,\,
-p+\delta]$, with $\delta$ drawn uniformly in $[0,\, 0.15\,p]$ (maximum
-deviation $15\%$); machine routes are unchanged. The midpoint of every
-interval thus equals the original duration---the crisp instance is
-exactly the midpoint scenario of its interval version---which makes the
-crisp Taillard bounds a meaningful reference for $E[\mathbf{C_{max}}]$.
-After integer rounding, ${\approx}20\%$ of operations end up degenerate
-(deterministic), and the mean relative width is ${\approx}13\%$. The
+with the generation scheme introduced in~\cite{DiazGA2020}: for every
+operation a value $\delta$ is drawn uniformly at random in
+$[0,\, 0.15\,p]$, where $p$ is its original duration, and that duration
+becomes the integer interval $[p-\delta,\, p+\delta]$; machine routes
+are unchanged. Each endpoint thus departs from the original duration by
+at most $15\%$, and since the interval is symmetric around $p$, its
+midpoint equals the original duration---the crisp instance is exactly
+the midpoint scenario of its interval version---which makes the crisp
+Taillard bounds a meaningful reference for $E[\mathbf{C_{max}}]$. Over
+the 70 instances the resulting intervals are at most $30\%$ of the
+original duration wide, and $12.8\%$ on average; integer rounding leaves
+$22\%$ of the operations with a degenerate, that is deterministic,
+duration. The
 resulting instance set is released with this paper (see Data
 availability), so that all results reported here can be reproduced
 exactly.
