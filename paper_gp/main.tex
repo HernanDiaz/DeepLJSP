@@ -351,43 +351,6 @@ Taillard-derived instances, the best known ones~\cite{DiazFEABC2023} for
 the classical set. It serves as an indicative common reference, not as a
 bound for the interval problem, for which none is available.
 
-\section{GP Hyper-Heuristic for the IJSP}
-\label{sec:method}
-
-We describe the method from two complementary viewpoints: as a
-\emph{hyper-heuristic}---what an individual is and how it turns an IJSP
-instance into a schedule (Section~\ref{sec:hhview})---and as an
-\emph{evolutionary algorithm}---how the population of rules is
-initialized, varied and selected (Section~\ref{sec:evoview}).
-
-\subsection{Hyper-heuristic view: from expression trees to schedules}
-\label{sec:hhview}
-An individual is a priority expression tree (Figure~\ref{fig:tree}).
-Leaves are drawn from the interval-aware terminal set of
-Table~\ref{tab:terminals}, and internal nodes from the function set
-\begin{equation}
-\mathcal{F} = \{\, +,\; -,\; \times,\; \div_p,\; \min,\; \max,\;
-\mathrm{neg} \,\},
-\end{equation}
-where $\mathrm{neg}$ is the unary sign change and $\div_p$ denotes
-protected division, defined as $a \div_p b = a/b$ if $|b| > 10^{-9}$ and
-$a$ otherwise. The rule is deployed inside a semi-active schedule generation
-scheme (SGS): starting from the empty schedule, at each of the $N$
-decision points the set $\mathcal{E}$ of eligible operations (those
-whose job predecessor is already scheduled) is formed, the tree is
-evaluated on the attributes of every $o \in \mathcal{E}$, and the
-operation with \emph{lowest} priority value is appended at its earliest
-feasible start on its machine, Eq.~(3).
-
-Because the lowest value wins, a criterion that seeks to \emph{maximise}
-an attribute must be expressed through the unary $\mathrm{neg}$
-operator. Classic rules are thus points of this search space: shortest
-processing time is the single-node tree $\mathit{PT}$, whereas most work
-remaining is $\mathrm{neg}(\mathit{WKR})$. We inject both as seed
-individuals in the initial population, so that the evolution starts from
-a set that already contains well-known rules and can only improve on
-them.
-
 \begin{figure}[t]
 \centering
 \begin{tikzpicture}[
@@ -448,6 +411,44 @@ ONE  & $1$ & constant \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\section{GP Hyper-Heuristic for the IJSP}
+\label{sec:method}
+
+We describe the method from two complementary viewpoints: as a
+\emph{hyper-heuristic}---what an individual is and how it turns an IJSP
+instance into a schedule (Section~\ref{sec:hhview})---and as an
+\emph{evolutionary algorithm}---how the population of rules is
+initialized, varied and selected (Section~\ref{sec:evoview}).
+
+\subsection{Hyper-heuristic view: from expression trees to schedules}
+\label{sec:hhview}
+An individual is a priority expression tree (Figure~\ref{fig:tree}).
+Leaves are drawn from the interval-aware terminal set of
+Table~\ref{tab:terminals}, and internal nodes from the function set
+\begin{equation}
+\mathcal{F} = \{\, +,\; -,\; \times,\; \div_p,\; \min,\; \max,\;
+\mathrm{neg} \,\},
+\end{equation}
+where $\mathrm{neg}$ is the unary sign change and $\div_p$ denotes
+protected division, defined as $a \div_p b = a/b$ if $|b| > 10^{-9}$ and
+$a$ otherwise. The rule is deployed inside a semi-active schedule generation
+scheme (SGS): starting from the empty schedule, at each of the $N$
+decision points the set $\mathcal{E}$ of eligible operations (those
+whose job predecessor is already scheduled) is formed, the tree is
+evaluated on the attributes of every $o \in \mathcal{E}$, and the
+operation with \emph{lowest} priority value is appended at its earliest
+feasible start on its machine, Eq.~(3).
+
+Because the lowest value wins, a criterion that seeks to \emph{maximise}
+an attribute must be expressed through the unary $\mathrm{neg}$
+operator. Classic rules are thus points of this search space: shortest
+processing time is the single-node tree $\mathit{PT}$, whereas most work
+remaining is $\mathrm{neg}(\mathit{WKR})$. We inject both as seed
+individuals in the initial population, so that the evolution starts from
+a set that already contains well-known rules and can only improve on
+them.
+
 
 Priority ties at dispatch time are broken by eligible
 set order (lowest job index first), which is deterministic; hence a rule
