@@ -645,13 +645,25 @@ Over 30 independent evolutions, training $\RE$ converges to
 $14.8 \pm 0.9$ (range $13.4$--$16.9$), with most of the improvement
 realized by generation $25$--$30$ (Figure~\ref{fig:convergence}). The
 evolved rules are structurally recognizable, combining the classical
-dispatching ingredients in interpretable ways. The best rule of the
-campaign (seed~27), for instance, is built from the ratio
+dispatching ingredients in interpretable ways. Figure~\ref{fig:seed27}
+shows the best rule of the campaign, obtained with seed~27: $37$ nodes
+over $19$ leaves. It is built from the ratio
 $\mathit{SLACK}/\mathit{PT}$ (slack per unit of processing time), work
 remaining terms bounded by operations-remaining counts, and an
 earliest-start correction---a refinement of the
 most-work-remaining/earliest-start family that hand-crafted rules
-approximate only coarsely.
+approximate only coarsely. Two of its subtrees are identical, a
+recurring pattern in the evolved rules.
+
+\begin{figure}[t]
+\centering
+\input{figures/tree_seed27.tex}
+\caption{The best evolved rule of the campaign (seed~27), which attains
+$17.3\%$ $\RE$ over the 70 instances. Circles are functions and shaded
+boxes the interval-aware terminals of Table~\ref{tab:terminals}; the
+operation with the lowest value of the expression is dispatched.}
+\label{fig:seed27}
+\end{figure}
 
 \begin{figure}[t]
 \centering
