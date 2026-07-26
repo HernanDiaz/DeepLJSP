@@ -234,9 +234,9 @@ objectives~\cite{Haupt1989}. That plateau is precisely what motivated
 the \emph{automated} design of rules.
 
 \subsection{Automated design of dispatching rules}
-Genetic programming~\cite{Koza1992} evolves a population of expressions,
-usually represented as trees, by applying selection and variation
-operators directly on their structure. GP hyper-heuristics apply this
+Genetic programming~\cite{Koza1992,Poli2008} evolves a population of
+expressions, usually represented as trees, by applying selection and
+variation operators directly on their structure. GP hyper-heuristics apply this
 machinery to \emph{priority expressions} over scheduling attributes, and
 constitute the standard approach to automated rule design
 for production scheduling~\cite{Branke2016,Nguyen2017}. Evolved rules
@@ -463,16 +463,21 @@ Algorithm~\ref{alg:gp} summarizes the generational loop and
 Table~\ref{tab:gpparams} lists the parameter values; we describe each
 component in turn.
 
-\textbf{Initialization.} The initial population is built with Koza's
-classical \emph{ramped half-and-half} method~\cite{Koza1992}, which
-combines two tree-generation procedures over a range of depths. The
-\emph{full} method expands every branch with function nodes until the
-prescribed maximum depth is reached, placing terminals only at that
-level, and thus produces complete trees whose leaves all lie at the same
-depth; the \emph{grow} method may close a branch earlier by placing a
-terminal, and thus produces trees of irregular shape and variable size.
-Ramping refers to varying the maximum depth across the population
-instead of fixing it. The purpose of the combination is to start from a
+\textbf{Initialization.} The initial population is built with the
+\emph{ramped half-and-half} method, introduced by Koza~\cite{Koza1992}
+and still the standard choice for tree-based
+GP~\cite{Poli2008}. It combines two tree-generation procedures over a
+range of depths. The \emph{full} method expands every branch with
+function nodes until the prescribed maximum depth is reached, placing
+terminals only at that level, and thus produces complete trees whose
+leaves all lie at the same depth; the \emph{grow} method may close a
+branch earlier by placing a terminal, and thus produces trees of
+irregular shape and variable size. In both cases the function at an
+internal node is drawn uniformly from $\mathcal{F}$ and a leaf uniformly
+from the terminal set, the arity of the chosen function determining the
+number of branches to expand. Ramping refers to varying the maximum
+depth across the population instead of fixing it. The purpose of the
+combination is to start from a
 population that is diverse in both the size and the shape of its
 expressions, which in GP strongly conditions the subsequent search. In
 our implementation each individual draws its maximum depth uniformly
@@ -1374,6 +1379,12 @@ J.~R.~Koza.
 \newblock \textit{Genetic Programming: On the Programming of Computers
   by Means of Natural Selection}.
 \newblock MIT Press, Cambridge, MA, 1992.
+
+\bibitem{Poli2008}
+R.~Poli, W.~B.~Langdon, N.~F.~McPhee.
+\newblock \textit{A Field Guide to Genetic Programming}.
+\newblock Lulu Enterprises, 2008.
+\newblock Freely available at \url{http://www.gp-field-guide.org.uk}.
 
 \bibitem{Branke2016}
 J.~Branke, S.~Nguyen, C.~W.~Pickardt, M.~Zhang.
