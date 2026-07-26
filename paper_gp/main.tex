@@ -951,14 +951,38 @@ them it reaches $12.0\%$ as soon as narrowness is rewarded. The gain is
 paid for in expected makespan ($19.64$ versus $18.70$ $\RE$), which is
 precisely the trade-off the robust objective asks for.
 
-Together, the two experiments characterise \emph{when} interval
+The weight $\lambda$ governs that trade-off, and sweeping it traces the
+frontier between quality and predictability
+(Figure~\ref{fig:lambda}). Both quantities move monotonically with
+$\lambda$: as the weight grows from $0.5$ to $4$, the relative width of
+the makespan interval falls from $12.16 \pm 0.51$ to
+$10.30 \pm 1.43$ while the expected makespan degrades from
+$19.09 \pm 1.45$ to $23.04 \pm 3.26$ $\RE$. At the far end of the
+sweep the schedules are therefore about two points narrower than
+anything the ablated rules can produce, at a cost of some four points of
+$\RE$. The practitioner can choose an operating point along this curve;
+the rules deprived of width terminals have no such curve available to
+them, being pinned at ${\approx}12.4\%$ regardless of $\lambda$.
+
+Together, these experiments characterise \emph{when} interval
 awareness matters, rather than asserting that it always does: the width
 of an interval is actionable information for a dispatching rule, but
 only when the objective values predictability. A practitioner
 minimising expected makespan can safely use the worst-case attributes
 alone; one who needs schedules whose realised makespan is tightly
-predictable gains from exposing the widths---and can dial the balance
+predictable gains from exposing the widths, and can dial the balance
 through $\lambda$.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=.72\linewidth]{figures/fig_lambda.pdf}
+\caption{Quality--predictability frontier traced by the weight $\lambda$
+of the robust fitness (rules evolved \emph{with} the interval-width
+terminals; mean $\pm$ sd over independent evolutions, evaluated on the
+70 instances). Increasing $\lambda$ buys narrower makespan intervals at
+the price of a larger expected makespan.}
+\label{fig:lambda}
+\end{figure}
 
 \begin{table}[t]
 \centering\small
