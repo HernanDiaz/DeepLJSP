@@ -459,9 +459,6 @@ maps each instance to exactly one schedule.
 
 \subsection{Evolutionary components}
 \label{sec:evoview}
-Algorithm~\ref{alg:gp} summarizes the generational loop and
-Table~\ref{tab:gpparams} lists the parameter values.
-
 The initial population is built with the \emph{ramped half-and-half}
 method, introduced by Koza~\cite{Koza1992} and still the standard choice
 for tree-based GP~\cite{Poli2008}, which combines two tree-generation
@@ -508,6 +505,8 @@ Replacement is fully generational, the offspring becoming the next
 population, except for the $e$ best individuals of the current
 generation, which are copied into it unchanged. The process stops after
 a fixed number of generations and returns the best rule found.
+Algorithm~\ref{alg:gp} summarizes the generational loop and
+Table~\ref{tab:gpparams} lists the parameter values.
 
 \begin{algorithm}[t]
 \caption{GP hyper-heuristic for the IJSP}
