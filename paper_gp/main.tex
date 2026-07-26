@@ -456,22 +456,63 @@ maps each instance to exactly one schedule.
 
 \subsection{Evolutionary components}
 \label{sec:evoview}
-Algorithm~\ref{alg:gp} summarizes the generational loop, with the
-operators and parameters of Table~\ref{tab:gpparams}.
-\emph{Initialization} is ramped half-and-half over
-depths $2$--$4$ (grow trees terminate early with probability $0.3$ per
-node), plus the two seed individuals of Section~\ref{sec:hhview}.
-\emph{Fitness} of a rule is the mean $\RE$ of its deterministic
-constructive pass over the four training instances---computed with the
-same environment, decoder and evaluator used by all baselines, which
-eliminates evaluator mismatch as a confound. \emph{Selection} is by
-tournament; \emph{variation} applies subtree crossover (a uniformly
-random node of parent A is replaced by a uniformly random subtree of
-parent B) with probability $p_c$, and otherwise subtree mutation (a
-uniformly random node is replaced by a fresh grow tree of depth
-$\le 3$). \emph{Replacement} is generational with elitism: the best
-individuals pass unchanged. Offspring exceeding the node cap receive
-fitness $\infty$ (bloat control).
+Algorithm~\ref{alg:gp} summarizes the generational loop and
+Table~\ref{tab:gpparams} lists the parameter values; we describe each
+component in turn.
+
+\textbf{Initialization.} The initial population is built with the
+classical \emph{ramped half-and-half} method: for every individual a
+maximum depth is drawn uniformly from $\{2,3,4\}$ and, with equal
+probability, the tree is generated either by the \emph{full} method,
+which expands every branch with function nodes until that depth is
+reached so that all leaves lie at the same level, or by the \emph{grow}
+method, which stops the expansion of a branch early with probability
+$0.3$ at each node and therefore yields trees of irregular shape. The
+mixture provides diversity in both the size and the shape of the initial
+expressions. The two seed rules of Section~\ref{sec:hhview} complete the
+population.
+
+\textbf{Fitness.} A rule is evaluated by the mean $\RE$ of its
+deterministic constructive pass over the four training instances,
+computed with the same environment, decoder and evaluator used by all
+baselines, which eliminates evaluator mismatch as a confound. Fitness is
+minimised.
+
+\textbf{Selection.} Parents are chosen by tournament: $k$ individuals
+are drawn uniformly without replacement from the current population and
+the fittest of them is returned. The tournament size $k$ governs
+selection pressure and is one of the parameters configured in
+Section~\ref{sec:irace}.
+
+\textbf{Crossover.} With probability $p_c$ two parents are selected and
+recombined by \emph{subtree crossover}: one node is drawn uniformly at
+random among all the nodes of the first parent, defining the crossover
+point; a second node is drawn uniformly at random among all the nodes of
+the second parent; and the subtree rooted at the first node is replaced
+by the subtree rooted at the second. Nodes are drawn uniformly over the
+whole tree, leaves included, so that fragments of every size can be
+exchanged---from a single terminal to an entire expression. Each
+recombination yields one offspring.
+
+\textbf{Mutation.} With the complementary probability $1-p_c$ a single
+parent undergoes \emph{subtree mutation}: a node is drawn uniformly at
+random and the subtree rooted at it is replaced by a freshly generated
+random tree, built with the grow method and maximum depth $3$. Since the
+replacement is generated from scratch over the full primitive set,
+mutation can reintroduce terminals or operators that have disappeared
+from the population, which counteracts the loss of diversity caused by
+selection.
+
+\textbf{Replacement and elitism.} Replacement is fully generational: the
+offspring become the next population. The $e$ best individuals of the
+current generation are copied into it unchanged, so the best training
+fitness is monotone across generations.
+
+\textbf{Bloat control.} Offspring whose size exceeds a cap of $c$ nodes
+receive infinite fitness, which excludes them from selection in
+practice. This bounds the size of the evolved expressions and is what
+keeps them readable (Section~\ref{sec:anatomy}); the cap itself turns
+out not to be a sensitive parameter (Section~\ref{sec:irace}).
 
 \begin{algorithm}[t]
 \caption{GP hyper-heuristic for the IJSP}
@@ -484,12 +525,13 @@ training instances}
   \State $P' \gets$ elite($P$, $e$) \Comment{elitism}
   \While{$|P'| < pop$}
     \If{rand() $< p_c$}
-      \State $child \gets$ crossover(tournament($P$), tournament($P$))
+      \State $child \gets$ subtreeCrossover(tournament($P,k$),
+      tournament($P,k$))
     \Else
-      \State $child \gets$ mutate(tournament($P$))
+      \State $child \gets$ subtreeMutation(tournament($P,k$))
     \EndIf
     \State $P' \gets P' \cup \{child\}$ \Comment{fitness $\infty$ if
-    size $>$ cap}
+    size $> c$}
   \EndWhile
   \State $P \gets$ evaluate($P'$)
 \EndFor
@@ -506,10 +548,10 @@ Section~\ref{sec:tuning} for the sensitivity study).}
 \toprule
 Population / generations & $100$ / $50$ \\
 Initialization & ramped half-and-half (depths $2$--$4$) + 2 seeds \\
-Selection & tournament, size $4$ \\
-Crossover / mutation prob. & $0.8$ / $0.2$ (subtree, depth $\le 3$) \\
-Elitism & $2$ \\
-Tree-size cap & $40$ nodes (violations: fitness $\infty$) \\
+Selection & tournament, size $k = 4$ \\
+Crossover / mutation prob. & $p_c = 0.8$ / $0.2$ (subtree, depth $\le 3$) \\
+Elitism & $e = 2$ \\
+Tree-size cap & $c = 40$ nodes (violations: fitness $\infty$) \\
 Fitness & mean RE, deterministic rollout, TA11--TA14 \\
 Seeds & $1$--$30$ (RNG of evolution and environment) \\
 \bottomrule
