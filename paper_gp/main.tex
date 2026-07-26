@@ -74,12 +74,16 @@ interval job shop scheduling \sep genetic programming \sep hyper-heuristics
 Real manufacturing environments rarely know the exact duration of an
 operation in advance. The interval job shop scheduling problem (IJSP)
 models this uncertainty in a minimal, distribution-free way: each
-processing time is only assumed to lie within a known interval, schedules
-are built and evaluated with interval arithmetic, and solutions are
-compared by their worst-case (upper-bound) makespan. Population
-metaheuristics for the IJSP---artificial bee colony variants and tabu
-search among them---achieve strong results at the cost of minutes of
-per-instance search~\cite{DiazFEABC2023,DiazICAE2023,DiazTS2026}.
+processing time is only assumed to lie within a known interval, and
+schedules are built and evaluated with interval arithmetic, so that the
+makespan of a solution is itself an interval. Comparing two solutions is
+then a modelling decision rather than a given, since intervals admit no
+natural total order; several ranking operators have been proposed and
+systematically studied for this problem~\cite{DiazGA2020}. In this work
+we adopt the lexicographic approach (Section~\ref{sec:problem}).
+Population metaheuristics for the IJSP---artificial bee colony variants
+and tabu search among them---achieve strong results at the cost of
+minutes of per-instance search~\cite{DiazFEABC2023,DiazICAE2023,DiazTS2026}.
 
 At the opposite end of the computational spectrum live \emph{dispatching
 rules}: priority functions that build a schedule in a single constructive
@@ -95,8 +99,8 @@ genetic programming (GP)~\cite{Branke2016,Nguyen2017}. For scheduling
 under interval uncertainty, however, the automated design of dispatching
 rules remains, to the best of our knowledge, unexplored. It is not obvious
 a priori what an evolved rule should do with uncertainty: ignore it and
-rank by worst case, hedge against wide intervals, or exploit width
-information in a structured way. Making this possible requires exposing
+prioritize operations by their worst-case attributes, hedge against wide
+intervals, or exploit width information in a structured way. Making this possible requires exposing
 uncertainty to the rule as first-class attributes.
 
 This paper makes the following contributions:
