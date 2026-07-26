@@ -489,39 +489,28 @@ minimised.
 
 \textbf{Selection.} Parents are chosen by tournament: $k$ individuals
 are drawn uniformly without replacement from the current population and
-the fittest of them is returned. The tournament size $k$ governs
-selection pressure and is one of the parameters configured in
-Section~\ref{sec:irace}.
+the fittest of them is returned.
 
 \textbf{Crossover.} With probability $p_c$ two parents are selected and
 recombined by \emph{subtree crossover}: one node is drawn uniformly at
 random among all the nodes of the first parent, defining the crossover
 point; a second node is drawn uniformly at random among all the nodes of
 the second parent; and the subtree rooted at the first node is replaced
-by the subtree rooted at the second. Nodes are drawn uniformly over the
-whole tree, leaves included, so that fragments of every size can be
-exchanged---from a single terminal to an entire expression. Each
-recombination yields one offspring.
+by the subtree rooted at the second. Leaves are eligible in both draws.
+Each recombination yields one offspring.
 
 \textbf{Mutation.} With the complementary probability $1-p_c$ a single
 parent undergoes \emph{subtree mutation}: a node is drawn uniformly at
 random and the subtree rooted at it is replaced by a freshly generated
-random tree, built with the grow method and maximum depth $3$. Since the
-replacement is generated from scratch over the full primitive set,
-mutation can reintroduce terminals or operators that have disappeared
-from the population, which counteracts the loss of diversity caused by
-selection.
+random tree, built with the grow method and maximum depth $3$ over the
+full primitive set.
 
 \textbf{Replacement and elitism.} Replacement is fully generational: the
 offspring become the next population. The $e$ best individuals of the
-current generation are copied into it unchanged, so the best training
-fitness is monotone across generations.
+current generation are copied into it unchanged.
 
 \textbf{Bloat control.} Offspring whose size exceeds a cap of $c$ nodes
-receive infinite fitness, which excludes them from selection in
-practice. This bounds the size of the evolved expressions and is what
-keeps them readable (Section~\ref{sec:anatomy}); the cap itself turns
-out not to be a sensitive parameter (Section~\ref{sec:irace}).
+receive infinite fitness, which excludes them from selection.
 
 \begin{algorithm}[t]
 \caption{GP hyper-heuristic for the IJSP}
