@@ -9,10 +9,14 @@
 \usepackage{tikz}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
+\usepackage[expansion=false]{microtype}
 \usepackage{hyperref}
 
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
 \newcommand{\RE}{\mathrm{RE}}
+
+% margen extra para que TeX resuelva parrafos dificiles sin desbordar
+\setlength{\emergencystretch}{3em}
 
 \journal{Applied Soft Computing}
 
@@ -359,10 +363,15 @@ initialized, varied and selected (Section~\ref{sec:evoview}).
 \subsection{Hyper-heuristic view: from expression trees to schedules}
 \label{sec:hhview}
 An individual is a priority expression tree (Figure~\ref{fig:tree}).
-Leaves are drawn from the
-interval-aware terminal set of Table~\ref{tab:terminals}; internal nodes
-from $\{+, -, \times, \div_p, \min, \max, \mathrm{neg}\}$ with protected
-division. The rule is deployed inside a semi-active schedule generation
+Leaves are drawn from the interval-aware terminal set of
+Table~\ref{tab:terminals}, and internal nodes from the function set
+\begin{equation}
+\mathcal{F} = \{\, +,\; -,\; \times,\; \div_p,\; \min,\; \max,\;
+\mathrm{neg} \,\},
+\end{equation}
+where $\mathrm{neg}$ is the unary sign change and $\div_p$ denotes
+protected division, defined as $a \div_p b = a/b$ if $|b| > 10^{-9}$ and
+$a$ otherwise. The rule is deployed inside a semi-active schedule generation
 scheme (SGS): starting from the empty schedule, at each of the $N$
 decision points the set $\mathcal{E}$ of eligible operations (those
 whose job predecessor is already scheduled) is formed, the tree is
@@ -440,8 +449,7 @@ ONE  & $1$ & constant \\
 \end{tabular}
 \end{table}
 
-Protected division is defined as $a \div_p b = a/b$ if $|b| > 10^{-9}$
-and $a$ otherwise. Priority ties at dispatch time are broken by eligible
+Priority ties at dispatch time are broken by eligible
 set order (lowest job index first), which is deterministic; hence a rule
 maps each instance to exactly one schedule.
 
@@ -496,9 +504,9 @@ Section~\ref{sec:tuning} for the sensitivity study).}
 \begin{tabular}{ll}
 \toprule
 Population / generations & $100$ / $50$ \\
-Initialization & ramped half-and-half, depths $2$--$4$ + \{SPT, MWKR\} \\
+Initialization & ramped half-and-half (depths $2$--$4$) + 2 seeds \\
 Selection & tournament, size $4$ \\
-Crossover / mutation prob. & $0.8$ / $0.2$ (subtree; mutation depth $\le 3$) \\
+Crossover / mutation prob. & $0.8$ / $0.2$ (subtree, depth $\le 3$) \\
 Elitism & $2$ \\
 Tree-size cap & $40$ nodes (violations: fitness $\infty$) \\
 Fitness & mean RE, deterministic rollout, TA11--TA14 \\
@@ -653,6 +661,8 @@ retraining or rescaling.
 70 Taillard interval instances: mean $\pm$ sd across the 30 independently
 evolved rules, and the best evolved rule.}
 \label{tab:gp70}
+\setlength{\tabcolsep}{3.5pt}
+\scriptsize
 \begin{tabular}{lccccccc|c}
 \toprule
 & $15{\times}15$ & $20{\times}15$ & $20{\times}20$ &
@@ -874,10 +884,12 @@ productively.} Removing the three width terminals leaves performance
 unchanged: $18.39 \pm 0.59$ mean $\RE$ over the 70 instances without
 them versus $18.68 \pm 0.84$ with them, a difference that is not
 significant ($z=1.26$) and, if anything, favours the smaller terminal
-set. The same holds for the resulting schedules: their predicted
-makespan intervals are equally wide, and their $\bar\varepsilon$
-robustness is indistinguishable ($5.71$ versus $5.73 \times 10^{-3}$
-for the best rule of each arm). So although the evolution does reach for
+set. The same holds for the resulting schedules: the relative width of
+their predicted makespan interval is identical to two decimals
+($12.38 \pm 0.31$ with the width terminals versus $12.38 \pm 0.22$
+without them), and their $\bar\varepsilon$ robustness is
+indistinguishable ($5.71$ versus $5.73 \times 10^{-3}$ for the best
+rule of each arm). So although the evolution does reach for
 the width terminals---they appear in 28 of the 30 rules
 (Section~\ref{sec:anatomy})---ablating them costs nothing: for
 minimising the expected makespan, the \emph{position} of the intervals
@@ -914,10 +926,11 @@ through $\lambda$.
 \begin{table}[t]
 \centering\small
 \caption{Terminal ablation under two fitness objectives (30 independent
-evolutions per arm; paired Wilcoxon signed-rank on the shared seeds).
-\emph{Width} is the relative width of the predicted makespan interval.
+evolutions per arm; rank-based tests between arms). \emph{Width} is the
+relative width of the predicted makespan interval.
 Interval-width terminals do not help when the objective is the expected
-makespan, but do produce significantly narrower schedules when the
+makespan---the two arms are then indistinguishable on both
+measures---but do produce significantly narrower schedules when the
 objective rewards predictability.}
 \label{tab:ablation}
 \begin{tabular}{llcc}
@@ -925,14 +938,14 @@ objective rewards predictability.}
 Fitness objective & Terminal set & RE (\%) & Width (\%) \\
 \midrule
 \multirow{3}{*}{Makespan $E[\mathbf{C_{max}}]$}
- & full & $18.68 \pm 0.84$ & 12.6 \\
- & without widths & $18.39 \pm 0.59$ & 12.4 \\
- & \textit{paired test} & \textit{n.s.} ($z=1.26$) & --- \\
+ & full & $18.68 \pm 0.84$ & $12.38 \pm 0.31$ \\
+ & without widths & $18.39 \pm 0.59$ & $12.38 \pm 0.22$ \\
+ & \textit{test} & \textit{n.s.} ($z=1.26$) & \textit{n.s.} ($z=-0.12$) \\
 \midrule
 \multirow{3}{*}{Robust $\overline{C}_{\max}+\lambda\,\mathrm{width}$}
  & full & $19.64 \pm 1.28$ & $\mathbf{12.01 \pm 0.74}$ \\
  & without widths & $18.70 \pm 0.89$ & $12.42 \pm 0.21$ \\
- & \textit{paired test} & --- & $z=2.73$, $p<0.01$ \\
+ & \textit{test} & --- & $z=2.73$, $p<0.01$ \\
 \bottomrule
 \end{tabular}
 \end{table}
