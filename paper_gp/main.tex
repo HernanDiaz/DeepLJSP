@@ -86,7 +86,7 @@ by an interval ranking. Population metaheuristics for the
 IJSP---artificial bee colony variants and tabu search among
 them---achieve strong results, at the cost of building and evaluating
 large numbers of complete solutions for every
-instance~\cite{DiazFEABC2023,DiazICAE2023,DiazTS2026}.
+instance~\cite{DiazFEABC2023,DiazICAE2023}.
 
 At the opposite end of the computational spectrum live \emph{dispatching
 rules}: priority functions that build a schedule in a single constructive
@@ -181,11 +181,10 @@ literature is dominated by population-based metaheuristics. Lei's
 population-based neighbourhood search~\cite{Lei2011}, which ranks
 interval makespans by a possibility degree, was an early reference
 point; it was subsequently outperformed by a genetic algorithm with a
-systematic study of interval rankings~\cite{DiazGA2020}, by artificial
-bee colony variants~\cite{DiazFEABC2023,DiazICAE2023}, and by a
-population-based tabu search that currently defines the state of the
-art~\cite{DiazTS2026}. Related objectives have also been addressed under
-interval uncertainty, notably tardiness
+systematic study of interval rankings~\cite{DiazGA2020} and by
+artificial bee colony variants~\cite{DiazFEABC2023,DiazICAE2023}, which
+report the best published results for this problem. Related objectives
+have also been addressed under interval uncertainty, notably tardiness
 minimisation~\cite{DiazTardiness2022}. All of these are iterative search
 methods: they build and evaluate a population of complete solutions and
 refine it over many iterations for each instance solved. Fast
@@ -503,8 +502,9 @@ exactly the midpoint scenario of its interval version---which makes the
 crisp Taillard bounds a meaningful reference for $E[\mathbf{C_{max}}]$.
 After integer rounding, ${\approx}20\%$ of operations end up degenerate
 (deterministic), and the mean relative width is ${\approx}13\%$. The
-interval Taillard set is the one used by the state-of-the-art tabu
-search~\cite{DiazTS2026}, which makes that comparison an exact one.
+resulting instance set is released with this paper (see Data
+availability), so that all results reported here can be reproduced
+exactly.
 
 As a secondary benchmark we use the 12 classical instances on which the
 published IJSP metaheuristics report
@@ -536,8 +536,9 @@ lexicographic comparison; the Giffler--Thompson active-schedule generator
 with rule tie-breaks (deterministic and $\varepsilon$-randomized inside
 the conflict set); and the published IJSP metaheuristics
 (GA~\cite{DiazGA2020}, fEABC~\cite{DiazFEABC2023},
-ESABC~\cite{DiazICAE2023}, TS~\cite{DiazTS2026}) as yardsticks of the
-search-based computational class.
+ESABC~\cite{DiazICAE2023}), whose reported results serve as yardsticks
+of the search-based computational class on the classical instances
+(Section~\ref{sec:classics}).
 
 \subsection{Hyperparameter configuration with irace}
 \label{sec:irace}
@@ -643,13 +644,12 @@ expression tree over the eligible set costs the same, within measurement
 noise, as evaluating MOR or G\&T-MWKR (the three differ by under $15\%$ in
 per-schedule construction time in our implementation), since all reduce to
 one vectorized pass over eligible operations per decision. Both cost and
-quality thus place the evolved rule with the constructive methods, orders
-of magnitude below the search-based computational class in cost while
-closing much of the quality gap to it. Figure~\ref{fig:ladder} places
-these results on the full method ladder, including the published tabu
-search~\cite{DiazTS2026} as the yardstick of the search-based class,
-which evaluates many complete solutions per instance against the single
-constructive pass of a rule.
+quality thus place the evolved rule squarely with the constructive
+methods, while closing much of the quality gap that separated them from
+search-based methods. Figure~\ref{fig:ladder} summarizes the resulting
+ladder of constructive methods; the comparison against search-based
+metaheuristics is deferred to Section~\ref{sec:classics}, where
+published results are available on a common benchmark.
 
 \begin{figure}[t]
 \centering
@@ -1034,11 +1034,12 @@ application values predictable schedules over nominally shorter ones.
 
 Future work follows three lines. First, richer symbolic models:
 ensembles of complementary rules~\cite{GilGala2021Ensembles} and
-co-evolution of construction and tie-breaking. Second, using evolved rules as cheap, high-quality
-population initializers for the metaheuristics that define the state of
-the art in the IJSP, where preliminary pools built from randomized rule
-rollouts are already compatible with the seeding protocol
-of~\cite{DiazTS2026}. Third, a controlled comparison with learned
+co-evolution of construction and tie-breaking. Second, using evolved
+rules as cheap, high-quality population initializers for the
+metaheuristics that lead the IJSP: the pools of diverse, high-quality
+sequences produced by GP-$\varepsilon$ are directly usable as seeded
+initial populations, and quantifying the effect of such seeding is
+ongoing work. Third, a controlled comparison with learned
 neural constructive policies under matched training and inference
 budgets---the head-to-head evaluation that the recent
 literature~\cite{Xu2025} identifies as missing.
@@ -1144,12 +1145,6 @@ H.~D\'iaz, J.~J.~Palacios, I.~Gonz\'alez-Rodr\'iguez, C.~R.~Vela.
 \newblock An elitist seasonal artificial bee colony algorithm for the
   interval job shop.
 \newblock \textit{Integrated Computer-Aided Engineering}, 30(3):223--242, 2023.
-
-\bibitem{DiazTS2026}
-H.~D\'iaz et al.
-\newblock Neighbourhood structures and ranking operators for the interval
-  job shop scheduling problem.
-\newblock Under review, 2026.
 
 \bibitem{Giffler1960}
 B.~Giffler, G.~L.~Thompson.

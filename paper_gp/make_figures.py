@@ -71,7 +71,6 @@ metodos = [
     ("GP rule (mean of 30 evolved)", 18.7, AMBAR),
     ("GP rule (best of 30)", 17.3, AMBAR),
     ("GP-$\\varepsilon$, best-of-1024", 13.7, AMBAR),
-    ("Tabu search (30 runs, minutes)", 3.9, TEAL),
 ]
 fig, ax = plt.subplots(figsize=(6.4, 3.4))
 ys = range(len(metodos))[::-1]
