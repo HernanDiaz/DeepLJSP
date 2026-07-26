@@ -327,9 +327,21 @@ paper---the GP rules and every baseline---share one implementation of
 this decoder and evaluator, so reported differences cannot stem from
 evaluator discrepancies.
 
-Performance is reported as relative error against the crisp Taillard
-lower bounds: $\RE = (E[C_{\max}] - LB)/LB \times 100$, where
-$E[C_{\max}]$ is the midpoint of the interval makespan.
+Performance is reported as the relative error of the expected makespan
+with respect to the crisp Taillard lower bound $LB$ of each instance,
+\begin{equation}
+\RE = \frac{E[\mathbf{C_{max}}] - LB}{LB} \times 100,
+\end{equation}
+where $E[\mathbf{C_{max}}]$ is the midpoint of the interval makespan.
+The reference $LB$ is the known lower bound of the deterministic
+instance from which the interval one is generated---that is, of its
+midpoint scenario. It is used here as an \emph{indicative} common
+reference that normalises results across instances of very different
+sizes, and not as a tight bound for the interval problem, for which no
+such bound is available. Since every comparison reported in this paper
+is between methods evaluated on the same instances, the choice of
+reference shifts all figures by the same amount and does not affect any
+of the conclusions.
 
 \section{GP Hyper-Heuristic for the IJSP}
 \label{sec:method}
