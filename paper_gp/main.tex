@@ -488,15 +488,19 @@ Each generation then proceeds as follows. Parents are chosen by
 tournament, drawing $k$ individuals uniformly without replacement from
 the current population and returning the fittest of them. With
 probability $p_c$ two parents are recombined by \emph{subtree
-crossover}: one node is drawn uniformly at random among all the nodes of
-the first parent, defining the crossover point, a second node is drawn
-uniformly among all the nodes of the second parent, and the subtree
-rooted at the first is replaced by the subtree rooted at the second;
-leaves are eligible in both draws, and each recombination yields a
-single offspring. With the complementary probability $1-p_c$ a single
-parent undergoes \emph{subtree mutation}, in which a uniformly chosen
-node is replaced by a freshly generated random tree, built with the grow
-method and maximum depth $3$ over the full primitive set. Offspring
+crossover}~\cite{Koza1992,Poli2008}, the standard recombination operator
+for tree-based GP. The offspring is a copy of the first parent in which
+one subtree has been replaced by a subtree taken from the second: a node
+is drawn uniformly at random in each parent, leaves included, and the
+subtree rooted at the node chosen in the first parent is substituted by
+the subtree rooted at the node chosen in the second. In its classical
+formulation the operator exchanges both subtrees and returns two
+offspring; we keep a single one per recombination. With the
+complementary probability $1-p_c$ a single parent undergoes
+\emph{subtree mutation}~\cite{Koza1992,Poli2008}: a node is again drawn
+uniformly at random, and the subtree rooted at it is discarded and
+replaced by a freshly generated random tree, built with the grow method
+and maximum depth $3$ over the full primitive set. Offspring
 whose size exceeds a cap of $c$ nodes receive infinite fitness and are
 thereby excluded from selection.
 
