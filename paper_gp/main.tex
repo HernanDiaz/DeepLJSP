@@ -6,6 +6,9 @@
 \usepackage{graphicx}
 \usepackage{xcolor}
 \usepackage{multirow}
+\usepackage{tikz}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 \usepackage{hyperref}
 
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
@@ -124,11 +127,14 @@ This paper makes the following contributions:
 The remainder of the paper is organized as follows.
 Section~\ref{sec:related} reviews related work.
 Section~\ref{sec:problem} formalizes the IJSP.
-Section~\ref{sec:method} presents the GP hyper-heuristic and its
-interval-aware terminal set. Section~\ref{sec:setup} details the
-experimental protocol, and Section~\ref{sec:results} the empirical study,
-including the hyperparameter analysis. Section~\ref{sec:conclusions}
-concludes.
+Section~\ref{sec:method} presents the GP hyper-heuristic, from both the
+hyper-heuristic and the evolutionary viewpoints.
+Section~\ref{sec:setup} details the benchmark, the training protocol and
+the irace configuration study. Section~\ref{sec:results} reports the
+empirical results, and Section~\ref{sec:analysis} analyses them: rule
+anatomy, the interval-awareness ablation, executional robustness,
+hyperparameter sensitivity and limitations.
+Section~\ref{sec:conclusions} concludes.
 
 \section{Related Work}
 \label{sec:related}
@@ -144,6 +150,26 @@ search that currently defines the state of the art~\cite{DiazTS2026}. All operat
 the minutes-per-instance regime. Fast constructive methods for the IJSP
 have received far less attention; dispatching rules with interval-aware
 lexicographic comparisons are the de facto baseline.
+
+\subsection{Dispatching rules for job shop scheduling}
+Priority dispatching rules are among the oldest and most widely deployed
+scheduling heuristics: at every decision point, a priority function
+ranks the operations that are ready to start and dispatches the best
+one, building a schedule in a single constructive pass. Classical rules
+prioritize by shortest or longest processing time (SPT/LPT), most
+operations or most work remaining (MOR/MWKR), earliest starting time, or
+combinations thereof; surveys catalogue more than a hundred
+variants~\cite{Panwalkar1977,Haupt1989}. A step above single-attribute
+rules, the classical algorithm of Giffler and
+Thompson~\cite{Giffler1960} restricts each choice to a machine's
+conflict set, guaranteeing \emph{active} schedules and markedly
+improving plain rules when combined with a priority tie-break (the
+G\&T-MWKR baseline of this paper). Decades of practice consolidated two
+lessons: rules are unbeatable in speed, transparency and ease of
+deployment, but hand-crafting them plateaued---no fixed combination of
+attributes performs well across shop configurations and
+objectives~\cite{Haupt1989}. That plateau is precisely what motivated
+the \emph{automated} design of rules.
 
 \subsection{Automated design of dispatching rules}
 GP hyper-heuristics evolve priority expressions over scheduling
@@ -171,16 +197,16 @@ knowledge, evolving rules whose \emph{inputs} are interval
 attributes---and whose fitness is computed by interval arithmetic rather
 than by sampling realizations---has not been explored before.
 
-\subsection{Learned constructive heuristics}
-Deep reinforcement learning provides an alternative family of learned
-constructive methods for the JSP~\cite{Zhang2020L2D,Park2021GNN}; GP
-rules and DRL policies are increasingly studied as competing
-learning paradigms for the same construction task, and controlled
-comparisons between them under common protocols have been identified as
-a gap in the recent literature~\cite{Xu2025}. Both families occupy the
-same computational class at deployment (a single constructive pass); a
-controlled comparison on the IJSP is beyond the scope of this paper and
-is the object of ongoing work.
+Finally, deep reinforcement learning provides an alternative family of
+learned constructive methods for the
+JSP~\cite{Zhang2020L2D,Park2021GNN}; GP rules and DRL policies are
+increasingly studied as competing learning paradigms for the same
+construction task, and controlled comparisons between them under common
+protocols have been identified as a gap in the recent
+literature~\cite{Xu2025}. Both families occupy the same computational
+class at deployment (a single constructive pass); a controlled
+comparison on the IJSP is beyond the scope of this paper and is the
+object of ongoing work.
 
 \section{The Interval Job Shop Scheduling Problem}
 \label{sec:problem}
@@ -194,24 +220,53 @@ $0 < \underline{p}_o \le \overline{p}_o$: the only assumption is that the
 realized duration lies within these bounds.
 
 Schedule construction uses interval arithmetic. For intervals
-$a=[\underline{a},\overline{a}]$ and $b=[\underline{b},\overline{b}]$:
-$a + b = [\underline{a}+\underline{b},\, \overline{a}+\overline{b}]$ and
-$\max(a,b) = [\max(\underline{a},\underline{b}),\,
-\max(\overline{a},\overline{b})]$ (component-wise). Given an operation
-processing order (a permutation with repetition of jobs, decoded left to
-right), the \emph{semiactive} schedule starts each operation at
-$s_o = \max(C_{\mathrm{job}}, C_{\mathrm{mach}})$---the component-wise
-maximum of the completion intervals of its job predecessor and machine
-predecessor---and completes at $C_o = s_o + p_o$. The makespan
-$C_{\max} = \max_j C_{o_{jm}}$ (component-wise maximum) is itself an
-interval. Since intervals admit no natural total order, schedules are
-compared with an interval ranking: we use the lexicographic order
-$\leq_{Lex2}$ (upper bound first, lower bound as tie-break), one of the
-standard rankings of the IJSP literature and the one found
+$a=[\underline{a},\overline{a}]$ and $b=[\underline{b},\overline{b}]$,
+the two operations required by makespan minimisation are
+\begin{align}
+a + b &= [\underline{a}+\underline{b},\, \overline{a}+\overline{b}],\\
+\max(a,b) &= [\max(\underline{a},\underline{b}),\,
+\max(\overline{a},\overline{b})],
+\end{align}
+both component-wise~\cite{DiazGA2020}. A solution determines a task
+processing order $\pi$ (a permutation with repetition of jobs, decoded
+left to right). Following the notation of~\cite{DiazGA2020,DiazICAE2023},
+let $PM_o(\pi)$ and $PJ_o$ denote the predecessors of task $o$ in its
+machine (according to $\pi$) and in its job. The \emph{semi-active}
+schedule~\cite{Sprecher1995} starts each task at
+\begin{equation}
+\mathbf{s_o}(\pi) = \max\big(\mathbf{c}_{PJ_o}(\pi),\,
+\mathbf{c}_{PM_o(\pi)}(\pi)\big), \qquad
+\mathbf{c_o}(\pi) = \mathbf{s_o}(\pi) + \mathbf{p_o},
+\end{equation}
+so starting and completion times of all tasks are themselves intervals.
+The problem can be stated as
+\begin{align}
+\min_R\; & \mathbf{C_{max}} \label{eq:obj}\\
+\text{s.t.}\quad
+& \mathbf{C_{max}} = \max_{1 \le j \le n} \{\mathbf{c}_{o(j,m_j)}\},
+  \label{eq:cmax}\\
+& \underline{s}_{o(j,l)} \ge \underline{c}_{o(j,l-1)}, \quad
+  \overline{s}_{o(j,l)} \ge \overline{c}_{o(j,l-1)},
+  && 1 \le l \le m_j,\ 1 \le j \le n, \label{eq:prec}\\
+& \underline{s}_o \ge \underline{c}_{o'} \,\vee\,
+  \underline{s}_{o'} \ge \underline{c}_o, \quad
+  \overline{s}_o \ge \overline{c}_{o'} \,\vee\,
+  \overline{s}_{o'} \ge \overline{c}_o,
+  && \forall o \ne o': \mu(o) = \mu(o'), \label{eq:cap}
+\end{align}
+where Eq.~\eqref{eq:cmax} defines the interval makespan as the
+component-wise maximum of the job completion times,
+Eq.~\eqref{eq:prec} enforces precedence within each job and
+Eq.~\eqref{eq:cap} forbids overlaps on each machine, in both interval
+components~\cite{DiazGA2020,DiazICAE2023}. The minimum
+in~\eqref{eq:obj} is taken with respect to an interval ranking $R$,
+since intervals admit no natural total order: we use the lexicographic
+order $\leq_{Lex2}$ (upper bound first, lower bound as tie-break), one
+of the standard rankings of the IJSP literature and the one found
 in~\cite{DiazGA2020} to yield the most robust schedules; the midpoint
 ranking $\leq_{MP}$---equivalent to the possibility-degree method
-of~\cite{Lei2012}---underlies the $E[C_{\max}]$ metric in which results
-are reported. All methods in this
+of~\cite{Lei2012}---underlies the $E[\mathbf{C_{max}}]$ metric in which
+results are reported. All methods in this
 paper---the GP rules and every baseline---share one implementation of
 this decoder and evaluator, so reported differences cannot stem from
 evaluator discrepancies.
@@ -223,15 +278,58 @@ $E[C_{\max}]$ is the midpoint of the interval makespan.
 \section{GP Hyper-Heuristic for the IJSP}
 \label{sec:method}
 
-\subsection{Rule representation}
-An individual is a priority expression tree. Leaves are drawn from the
+We describe the method from two complementary viewpoints: as a
+\emph{hyper-heuristic}---what an individual is and how it turns an IJSP
+instance into a schedule (Section~\ref{sec:hhview})---and as an
+\emph{evolutionary algorithm}---how the population of rules is
+initialized, varied and selected (Section~\ref{sec:evoview}).
+
+\subsection{Hyper-heuristic view: from expression trees to schedules}
+\label{sec:hhview}
+An individual is a priority expression tree (Figure~\ref{fig:tree}).
+Leaves are drawn from the
 interval-aware terminal set of Table~\ref{tab:terminals}; internal nodes
 from $\{+, -, \times, \div_p, \min, \max, \mathrm{neg}\}$ with protected
-division. At each scheduling decision the tree is evaluated (vectorized)
-over all eligible operations and the operation with \emph{lowest}
-priority is dispatched, yielding a semiactive schedule. Classic rules are
+division. The rule is deployed inside a semi-active schedule generation
+scheme (SGS): starting from the empty schedule, at each of the $N$
+decision points the set $\mathcal{E}$ of eligible operations (those
+whose job predecessor is already scheduled) is formed, the tree is
+evaluated---in a single vectorized pass---on the attribute vector of
+every $o \in \mathcal{E}$, and the operation with \emph{lowest} priority
+is appended at its earliest feasible start on its machine,
+Eq.~(3). Decoding a tree on an instance therefore costs exactly one
+constructive pass, the same as any hand-crafted rule. Classic rules are
 points of this search space---SPT is the tree $\mathit{PT}$ and MWKR is
-$\mathrm{neg}(\mathit{WKR})$---and both are injected as seed individuals.
+$\mathrm{neg}(\mathit{WKR})$---and both are injected as seed
+individuals.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+  level distance=9mm,
+  level 1/.style={sibling distance=34mm},
+  level 2/.style={sibling distance=17mm},
+  op/.style={circle, draw, inner sep=1.5pt, font=\small},
+  term/.style={rectangle, draw, rounded corners=1pt, inner sep=2.5pt,
+               font=\small\itshape, fill=black!5}]
+\node[op] {$+$}
+  child {node[op] {$\div_p$}
+    child {node[term] {SLACK}}
+    child {node[term] {PT}}}
+  child {node[op] {$-$}
+    child {node[term] {EST}}
+    child {node[op] {$\times$}
+      child {node[term] {WKR}}
+      child {node[term] {PTW}}}};
+\end{tikzpicture}
+\caption{An individual is a priority expression tree; leaves are
+interval-aware attributes of the candidate operation (here the
+illustrative rule $\mathit{SLACK}/\mathit{PT} + \mathit{EST} -
+\mathit{WKR}\cdot\mathit{PTW}$). At each decision point the tree is
+evaluated on every eligible operation and the lowest-priority one is
+dispatched.}
+\label{fig:tree}
+\end{figure}
 
 \begin{table}[t]
 \centering\small
@@ -271,21 +369,48 @@ and $a$ otherwise. Priority ties at dispatch time are broken by eligible
 set order (lowest job index first), which is deterministic; hence a rule
 maps each instance to exactly one schedule.
 
-\subsection{Evolution}
-Generational GP with the operators and parameters of
-Table~\ref{tab:gpparams}. Initialization is ramped half-and-half over
+\subsection{Evolutionary components}
+\label{sec:evoview}
+Algorithm~\ref{alg:gp} summarizes the generational loop, with the
+operators and parameters of Table~\ref{tab:gpparams}.
+\emph{Initialization} is ramped half-and-half over
 depths $2$--$4$ (grow trees terminate early with probability $0.3$ per
 node), with SPT and MWKR injected as two additional seed individuals.
-Each generation, the elite passes unchanged and the remainder is produced
-by tournament selection followed by subtree crossover (a uniformly random
-node of parent A is replaced by a uniformly random subtree of parent B)
-or, with the complementary probability, subtree mutation (a uniformly
-random node is replaced by a fresh grow tree of depth $\le 3$). Offspring
-exceeding the node cap receive fitness $\infty$ (bloat control). Fitness
-of a rule is the mean $\RE$ of its deterministic rollout over the four
-training instances---computed with the same environment, decoder and
-evaluator used by all baselines, which eliminates evaluator mismatch as
-a confound.
+\emph{Fitness} of a rule is the mean $\RE$ of its deterministic
+constructive pass over the four training instances---computed with the
+same environment, decoder and evaluator used by all baselines, which
+eliminates evaluator mismatch as a confound. \emph{Selection} is by
+tournament; \emph{variation} applies subtree crossover (a uniformly
+random node of parent A is replaced by a uniformly random subtree of
+parent B) with probability $p_c$, and otherwise subtree mutation (a
+uniformly random node is replaced by a fresh grow tree of depth
+$\le 3$). \emph{Replacement} is generational with elitism: the best
+individuals pass unchanged. Offspring exceeding the node cap receive
+fitness $\infty$ (bloat control).
+
+\begin{algorithm}[t]
+\caption{GP hyper-heuristic for the IJSP}
+\label{alg:gp}
+\begin{algorithmic}[1]
+\State $P \gets$ ramped half-and-half($pop-2$) $\cup$ \{SPT, MWKR\}
+\State evaluate($P$) \Comment{mean RE of one constructive pass on the
+training instances}
+\For{$g = 1$ \textbf{to} $gens$}
+  \State $P' \gets$ elite($P$, $e$) \Comment{elitism}
+  \While{$|P'| < pop$}
+    \If{rand() $< p_c$}
+      \State $child \gets$ crossover(tournament($P$), tournament($P$))
+    \Else
+      \State $child \gets$ mutate(tournament($P$))
+    \EndIf
+    \State $P' \gets P' \cup \{child\}$ \Comment{fitness $\infty$ if
+    size $>$ cap}
+  \EndWhile
+  \State $P \gets$ evaluate($P'$)
+\EndFor
+\State \Return best rule in $P$
+\end{algorithmic}
+\end{algorithm}
 
 \begin{table}[t]
 \centering\small
@@ -321,45 +446,91 @@ construction~\cite{GilGala2025GRASB}.
 \section{Experimental Setup}
 \label{sec:setup}
 
-\textbf{Instances.} The 70 interval versions of Taillard's instances
-(TA1--TA70, seven size classes from $15{\times}15$ to $50{\times}20$),
-with crisp Taillard lower bounds as the $\RE$ reference. Each interval
-instance is derived from its crisp counterpart with the generation scheme
-introduced in~\cite{DiazGA2020}: every duration $p$ is replaced by the
-integer interval $[p-\delta,\, p+\delta]$, with $\delta$ drawn uniformly
-in $[0,\, 0.15\,p]$ (maximum deviation $15\%$); machine routes are
-unchanged. The midpoint of every interval thus equals the original
-duration---the crisp instance is exactly the midpoint scenario of its
-interval version---which makes the crisp Taillard bounds a meaningful
-reference for $E[C_{\max}]$. After integer rounding, ${\approx}20\%$ of
-operations end up degenerate (deterministic), and the mean relative width
-is ${\approx}13\%$. The same scheme underlies the benchmark of the
-published IJSP
-metaheuristics~\cite{DiazGA2020,DiazFEABC2023,DiazICAE2023}, and the
-interval Taillard set is the one used in~\cite{DiazTS2026}, which makes
-the comparison against those methods an exact one (identical uncertainty
-model and benchmark).
+\subsection{Benchmark instances}
+\label{sec:instances}
+The main benchmark comprises the 70 interval versions of Taillard's
+instances (TA1--TA70, seven size classes from $15{\times}15$ to
+$50{\times}20$), with crisp Taillard lower bounds as the $\RE$
+reference. Each interval instance is derived from its crisp counterpart
+with the generation scheme introduced in~\cite{DiazGA2020}: every
+duration $p$ is replaced by the integer interval $[p-\delta,\,
+p+\delta]$, with $\delta$ drawn uniformly in $[0,\, 0.15\,p]$ (maximum
+deviation $15\%$); machine routes are unchanged. The midpoint of every
+interval thus equals the original duration---the crisp instance is
+exactly the midpoint scenario of its interval version---which makes the
+crisp Taillard bounds a meaningful reference for $E[\mathbf{C_{max}}]$.
+After integer rounding, ${\approx}20\%$ of operations end up degenerate
+(deterministic), and the mean relative width is ${\approx}13\%$. The
+interval Taillard set is the one used by the state-of-the-art tabu
+search~\cite{DiazTS2026}, which makes that comparison an exact one.
 
-\textbf{Data split and exclusions.} Rules are evolved on TA11--TA14
-($20{\times}15$), and TA15--TA20 serve as development set: they never contribute to fitness,
-but design and configuration decisions (including the irace study of
-Section~\ref{sec:tuning}) were selected on their performance, so we flag
-them as subject to development reuse. The remaining 60 instances are
-fully unseen by every design decision and constitute the honest
-generalization test.
+As a secondary benchmark we use the 12 classical instances on which the
+published IJSP metaheuristics report
+results~\cite{DiazGA2020,DiazFEABC2023,DiazICAE2023}: FT10, FT20,
+La21--La40 (selected), and ABZ7--9, in their interval versions generated
+with the same $\pm15\%$ scheme and available from the authors'
+repository. These instances come from different families and sizes
+($10{\times}10$ to $20{\times}15$) than the Taillard set, and our rules
+are \emph{not} re-evolved for them, so they double as a
+cross-family generalization test (Section~\ref{sec:classics}).
 
-\textbf{Budgets.} Population $100$, $50$ generations: ${\sim}20{,}400$
-fitness rollouts (${\approx}30$ min single-core) per seed; thirty
-independent seeds per configuration, following standard practice in
-evolutionary computation.
+\subsection{Training protocol, data split and baselines}
+Rules are evolved on TA11--TA14
+($20{\times}15$), and TA15--TA20 serve as development set: they never
+contribute to fitness, but design and configuration decisions (including
+the irace study of Section~\ref{sec:irace}) were selected on their
+performance, so we flag them as subject to development reuse. The
+remaining 60 Taillard instances and the 12 classical instances are fully
+unseen by every design decision and constitute the honest generalization
+test.
 
-\textbf{Baselines.} Fixed rules (SPT, LPT, MOR, MWKR) with interval-aware
+Each evolution uses population $100$ and $50$ generations:
+${\sim}20{,}400$ fitness evaluations (${\approx}30$ min single-core) per
+seed; thirty independent seeds per configuration, following standard
+practice in evolutionary computation.
+
+Baselines are: fixed rules (SPT, LPT, MOR, MWKR) with interval-aware
 lexicographic comparison; the Giffler--Thompson active-schedule generator
 with rule tie-breaks (deterministic and $\varepsilon$-randomized inside
-the conflict set); published IJSP metaheuristics
-(fEABC~\cite{DiazFEABC2023}, ESABC~\cite{DiazICAE2023},
-TS~\cite{DiazTS2026}) as yardsticks of the search-based computational
-class.
+the conflict set); and the published IJSP metaheuristics
+(GA~\cite{DiazGA2020}, fEABC~\cite{DiazFEABC2023},
+ESABC~\cite{DiazICAE2023}, TS~\cite{DiazTS2026}) as yardsticks of the
+search-based computational class.
+
+\subsection{Hyperparameter configuration with irace}
+\label{sec:irace}
+The four qualitative knobs of the evolution---tournament size, crossover
+probability, tree-size cap and elitism---were configured with
+irace over a budget of 200 experiments, each a full evolution
+(population $100$, $50$ generations) on the training instances whose
+cost is the resulting rule's $\RE$ on the development set, with the
+conventional configuration seeded. Table~\ref{tab:irace} lists the
+parameter space and the winning configuration. The elite configurations
+agree on a higher selection pressure than the default (tournament size
+$7$ versus $4$) and a crossover probability close to the default
+($0.72$--$0.77$); the tree-size cap does not discriminate (surviving
+elites span caps of $20$, $30$ and $40$). Throughout the race the
+statistical tests discard configurations only weakly, itself evidence
+that performance is largely flat over the hyperparameter space; the
+confirmation experiment of Section~\ref{sec:tuning} quantifies this on
+unseen instances.
+
+\begin{table}[t]
+\centering\small
+\caption{Hyperparameter space explored by irace (200 experiments; cost =
+development-set RE of the evolved rule) and resulting configurations.}
+\label{tab:irace}
+\begin{tabular}{lccc}
+\toprule
+Parameter & Range / values & Default (seeded) & irace winner \\
+\midrule
+Tournament size & $\{2, 3, 4, 5, 7\}$ & $4$ & $7$ \\
+Crossover prob.\ $p_c$ & $[0.5,\, 0.95]$ & $0.8$ & $0.77$ \\
+Tree-size cap & $\{20, 30, 40, 60\}$ & $40$ & $30$ \\
+Elitism & $\{1, 2, 4\}$ & $2$ & $2$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section{Results}
 \label{sec:results}
@@ -383,35 +554,6 @@ approximate only coarsely.
 \caption{Best training fitness per generation for the 30 evolution seeds
 (default configuration): individual runs (grey) and their mean (amber).}
 \label{fig:convergence}
-\end{figure}
-
-\subsection{Rule anatomy and interpretability}
-\label{sec:anatomy}
-A practical appeal of GP over neural policies is that its output is a
-readable expression. Evolved rules are compact---mean tree size $33$
-nodes ($19$--$40$), mean depth $10$---so a rule can be inspected
-and simplified by hand. Figure~\ref{fig:terminals} reports how often each
-terminal is used across the 30 evolved rules. The backbone is the
-classical scheduling triad---slack (\textit{SLACK}), work remaining
-(\textit{WKR}) and earliest start (\textit{EST})---together with
-worst-case processing time (\textit{PT}), confirming that the evolution
-rediscovers and refines known dispatching logic rather than exploiting
-benchmark artefacts. The \emph{interval-width} terminals
-(\textit{PTW}, \textit{ESTW}, \textit{WKRW}) account for ${\approx}21\%$
-of all terminal usage and appear in $28$ of the $30$ evolved rules: the
-evolution consistently reaches for uncertainty information, even though
-worst-case bounds carry the larger share of the signal. Whether that
-width information translates into better schedules is quantified by the
-ablation of Section~\ref{sec:ablation} and the robustness analysis of
-Section~\ref{sec:robustness}.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=.8\linewidth]{figures/fig_terminals.pdf}
-\caption{Terminal usage across the 30 evolved rules, as a share of all
-terminals. Interval-width terminals (amber) expose the magnitude of the
-uncertainty to the rule.}
-\label{fig:terminals}
 \end{figure}
 
 \subsection{Generalization to the full benchmark}
@@ -444,23 +586,11 @@ Best rule & 16.6 & 15.3 & 17.9 & 18.9 & 24.6 & \textbf{13.3} & 14.4 &
 \end{tabular}
 \end{table}
 
-\subsection{The value of interval-awareness: terminal ablation}
-\label{sec:ablation}
-The interval-width terminals are the distinctive ingredient of this
-setting, so we isolate their contribution. We re-run the full
-evolution---30 independent seeds per configuration---with and without the
-width terminals (\textit{PTW}, \textit{ESTW}, \textit{WKRW}) in the
-terminal set, everything else held fixed, and compare the resulting
-mean $\RE$ over the 70 instances with a paired Wilcoxon signed-rank test
-on the shared seeds.
-\todo{rellenar con la campaña 30$\times$3: media$\pm$std no-width vs full,
-$\Delta$RE, y el estadístico de Wilcoxon. Redacción segun el signo del
-efecto (paga / cotas de peor caso bastan).}
-
 \subsection{Position among constructive methods}
 All three constructive methods build one schedule per instance in a single
 pass: MOR averages $45.5\%$ $\RE$, G\&T-MWKR $29.5\%$, and the evolved
-rules $18.7 \pm 0.8$ on average ($17.3\%$ for the best rule).
+rules $18.7 \pm 0.8$ on average over the 30 evolutions ($17.3\%$ for the
+best rule).
 The gap is not marginal and not an artefact of averaging: the best evolved
 rule is better than \emph{both} baselines on every one of the $70$
 instances, and a paired Wilcoxon signed-rank test rejects equality against
@@ -487,6 +617,62 @@ instances. Bars are single-solution methods except where noted.}
 \label{fig:ladder}
 \end{figure}
 
+\subsection{Cross-family generalization: the 12 classical instances}
+\label{sec:classics}
+The 12 classical instances allow a direct confrontation with the
+\emph{published} results of the IJSP metaheuristics, on their own
+benchmark and metric (Table~\ref{tab:classics}). Recall that our rule
+was evolved on four interval Taillard $20{\times}15$ instances and is
+deployed here \emph{zero-shot}, on different instance families and
+sizes. The single deterministic pass averages $13.9\%$ $\RE$---far ahead
+of MOR ($45.8\%$) and G\&T-MWKR ($30.1\%$) in the same computational
+class. More strikingly, the randomized extension GP-$\varepsilon$ at
+best-of-1024 reaches $9.9\%$, matching the published average of the
+genetic algorithm of~\cite{DiazGA2020} ($9.8\%$)---a per-instance
+metaheuristic evolving a population for every instance---and beating it
+on half of the instances. The purpose-built ABC variants and the tabu
+search remain clearly ahead ($5.5$--$6.4\%$), as expected of iterative
+search: the point of this comparison is not to compete with them but to
+locate the constructive frontier---a single evolved rule, transferred
+across families without retraining, now covers a substantial part of
+the gap that used to separate dispatching rules from metaheuristics.
+
+\begin{table}[t]
+\centering\small
+\caption{RE (\%) on the 12 classical interval instances. Own methods
+(deterministic single pass and GP-$\varepsilon$ best-of-$N$; rule evolved
+on interval Taillard $20{\times}15$, applied zero-shot) versus published
+average results (30 runs) of the IJSP metaheuristics: GA~\cite{DiazGA2020}
+and the ABC variants~\cite{DiazFEABC2023,DiazICAE2023}. LB is the
+best-known lower bound of the expected makespan.}
+\label{tab:classics}
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{lrrrrrrrrr}
+\toprule
+& & & \multicolumn{3}{c}{Own (zero-shot)} &
+\multicolumn{4}{c}{Published (avg of 30)} \\
+\cmidrule(lr){4-6}\cmidrule(l){7-10}
+Inst. & LB & & GP & GP-$\varepsilon_{64}$ & GP-$\varepsilon_{1024}$ &
+GA & ABC$_{E3}$ & fEABC & ESABC \\
+\midrule
+FT10 & 930 & & 8.1 & 7.0 & 6.3 & 5.2 & 4.1 & 3.5 & 3.0 \\
+FT20 & 1165 & & 9.1 & 7.6 & 6.2 & 4.4 & 1.7 & 1.8 & 1.8 \\
+La21 & 1046 & & 14.1 & 12.5 & 9.6 & 5.0 & 5.0 & 4.2 & 4.0 \\
+La24 & 935 & & 11.1 & 8.7 & 7.4 & 6.3 & 5.1 & 4.9 & 5.0 \\
+La25 & 977 & & 11.3 & 11.3 & 6.6 & 5.1 & 3.9 & 3.4 & 2.7 \\
+La27 & 1235 & & 16.0 & 9.7 & 9.2 & 10.2 & 4.7 & 4.6 & 4.1 \\
+La29 & 1152 & & 14.3 & 12.2 & 11.4 & 14.2 & 8.6 & 7.4 & 7.0 \\
+La38 & 1196 & & 14.3 & 10.4 & 8.0 & 9.2 & 6.9 & 6.1 & 5.8 \\
+La40 & 1222 & & 13.0 & 12.3 & 8.1 & 8.7 & 4.2 & 4.6 & 4.1 \\
+ABZ7 & 656 & & 16.2 & 13.3 & 11.5 & 12.5 & 7.3 & 6.6 & 6.7 \\
+ABZ8 & 645 & & 19.9 & 18.8 & 16.1 & 18.5 & 12.1 & 11.1 & 10.9 \\
+ABZ9 & 661 & & 19.6 & 18.9 & 18.8 & 18.0 & 13.1 & 11.6 & 11.2 \\
+\midrule
+Mean & & & 13.9 & 11.9 & 9.9 & 9.8 & 6.4 & 5.8 & 5.5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{Sampling behaviour (GP-$\varepsilon$)}
 Best-of-$N$ over all 70 instances (pools of $1024$
 $\varepsilon$-randomized samples per instance): $18.6\%$ ($N{=}1$,
@@ -505,6 +691,57 @@ $\varepsilon$-randomization ($\varepsilon{=}0.1$): mean RE over the 70
 instances as the sampling budget doubles.}
 \label{fig:bestofn}
 \end{figure}
+
+\section{Analysis}
+\label{sec:analysis}
+
+Beyond aggregate quality, this section examines \emph{why} the evolved
+rules work: what they are made of, whether the interval-specific
+ingredients actually contribute, how robust the resulting schedules are
+under executional uncertainty, and how sensitive the method is to its
+own hyperparameters.
+
+\subsection{Rule anatomy and interpretability}
+\label{sec:anatomy}
+A practical appeal of GP over neural policies is that its output is a
+readable expression. Evolved rules are compact---mean tree size $33$
+nodes ($19$--$40$), mean depth $10$---so a rule can be inspected
+and simplified by hand. Figure~\ref{fig:terminals} reports how often each
+terminal is used across the 30 evolved rules. The backbone is the
+classical scheduling triad---slack (\textit{SLACK}), work remaining
+(\textit{WKR}) and earliest start (\textit{EST})---together with
+worst-case processing time (\textit{PT}), confirming that the evolution
+rediscovers and refines known dispatching logic rather than exploiting
+benchmark artefacts. The \emph{interval-width} terminals
+(\textit{PTW}, \textit{ESTW}, \textit{WKRW}) account for ${\approx}21\%$
+of all terminal usage and appear in $28$ of the $30$ evolved rules: the
+evolution consistently reaches for uncertainty information, even though
+worst-case bounds carry the larger share of the signal. Whether that
+width information translates into better schedules is quantified by the
+ablation of Section~\ref{sec:ablation} and the robustness analysis of
+Section~\ref{sec:robustness}.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=.8\linewidth]{figures/fig_terminals.pdf}
+\caption{Terminal usage across the 30 evolved rules, as a share of all
+terminals. Interval-width terminals (amber) expose the magnitude of the
+uncertainty to the rule.}
+\label{fig:terminals}
+\end{figure}
+
+\subsection{The value of interval-awareness: terminal ablation}
+\label{sec:ablation}
+The interval-width terminals are the distinctive ingredient of this
+setting, so we isolate their contribution. We re-run the full
+evolution---30 independent seeds per configuration---with and without the
+width terminals (\textit{PTW}, \textit{ESTW}, \textit{WKRW}) in the
+terminal set, everything else held fixed, and compare the resulting
+mean $\RE$ over the 70 instances with a paired Wilcoxon signed-rank test
+on the shared seeds.
+\todo{rellenar con la campaña 30$\times$3: media$\pm$std no-width vs full,
+$\Delta$RE, y el estadístico de Wilcoxon + el experimento de dos
+regímenes (fitness robusto) cuando termine la campaña.}
 
 \subsection{Robustness under executional uncertainty}
 \label{sec:robustness}
@@ -572,22 +809,8 @@ advantage over the constructive baselines grows with interval width.}
 \todo{tras la campaña: rehacer con la mejor regla de 30 semillas y anadir
 el brazo no-width (robustez interval-aware vs ablacion); test estadistico.}
 
-\subsection{Hyperparameter study}
+\subsection{Hyperparameter confirmation}
 \label{sec:tuning}
-We tune the four qualitative knobs of the evolution (tournament size,
-crossover probability, tree-size cap, elitism) with irace over a budget
-of 200 experiments, each a full evolution (population $100$, $50$
-generations) on the training instances evaluated on the development set,
-with the conventional configuration seeded. The four elite
-configurations agree on a higher selection pressure than the default
-(tournament size $7$ versus $4$) and a crossover probability close to the
-default ($0.72$--$0.77$ versus $0.8$); the tree-size cap, by contrast,
-does not discriminate (surviving elites span caps of $20$, $30$ and
-$40$), indicating the method is insensitive to bloat control within this
-range. Throughout the race the statistical tests discard configurations
-only weakly, itself evidence that performance is largely flat over the
-hyperparameter space.
-
 Under the same pre-registered confirmation applied to every design
 decision---the winning configuration re-evolved over 30 independent
 seeds and each resulting rule evaluated on all 70 instances---the tuned
@@ -602,6 +825,21 @@ tuning budget buys readability rather than quality. We therefore
 characterize the method as robust to its evolutionary hyperparameters:
 conventional settings are statistically indistinguishable from the irace
 winner on unseen instances.
+
+\subsection{Limitations}
+\label{sec:limitations}
+Three limitations bound the scope of our conclusions. First, all rules
+operate inside a semi-active SGS; active (insertion-based) generation
+schemes are known to help weaker constructors, and although our evolved
+rules produce near-active schedules already, co-evolving rules with an
+active SGS in the loop remains untested. Second, the uncertainty model
+is the $\pm15\%$ symmetric interval scheme standard in the IJSP
+literature; other widths and asymmetric intervals may change the
+relative value of uncertainty information. Third, our runtime figures
+are relative (evolved rules cost the same as hand-crafted ones per
+pass); absolute times depend on the research-grade Python implementation
+and would shrink by orders of magnitude in an optimized production
+implementation, without affecting any ranking reported here.
 
 \section{Conclusions and Future Work}
 \label{sec:conclusions}
@@ -724,6 +962,28 @@ H.~D\'iaz et al.
 \newblock Neighbourhood structures and ranking operators for the interval
   job shop scheduling problem.
 \newblock Under review, 2026.
+
+\bibitem{Giffler1960}
+B.~Giffler, G.~L.~Thompson.
+\newblock Algorithms for solving production-scheduling problems.
+\newblock \textit{Operations Research}, 8(4):487--503, 1960.
+
+\bibitem{Panwalkar1977}
+S.~S.~Panwalkar, W.~Iskander.
+\newblock A survey of scheduling rules.
+\newblock \textit{Operations Research}, 25(1):45--61, 1977.
+
+\bibitem{Haupt1989}
+R.~Haupt.
+\newblock A survey of priority rule-based scheduling.
+\newblock \textit{OR Spektrum}, 11(1):3--16, 1989.
+
+\bibitem{Sprecher1995}
+A.~Sprecher, R.~Kolisch, A.~Drexl.
+\newblock Semi-active, active, and non-delay schedules for the
+  resource-constrained project scheduling problem.
+\newblock \textit{European Journal of Operational Research},
+  80(1):94--102, 1995.
 
 \bibitem{Lei2012}
 D.~Lei.
