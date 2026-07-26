@@ -76,14 +76,12 @@ operation in advance. The interval job shop scheduling problem (IJSP)
 models this uncertainty in a minimal, distribution-free way: each
 processing time is only assumed to lie within a known interval, and
 schedules are built and evaluated with interval arithmetic, so that the
-makespan of a solution is itself an interval. Comparing two solutions is
-then a modelling decision rather than a given, since intervals admit no
-natural total order; several ranking operators have been proposed and
-systematically studied for this problem~\cite{DiazGA2020}. In this work
-we adopt the lexicographic approach (Section~\ref{sec:problem}).
-Population metaheuristics for the IJSP---artificial bee colony variants
-and tabu search among them---achieve strong results at the cost of
-minutes of per-instance search~\cite{DiazFEABC2023,DiazICAE2023,DiazTS2026}.
+makespan of a solution is itself an interval and solutions are compared
+by an interval ranking (here, the lexicographic one;
+Section~\ref{sec:problem}). Population metaheuristics for the
+IJSP---artificial bee colony variants and tabu search among
+them---achieve strong results at the cost of minutes of per-instance
+search~\cite{DiazFEABC2023,DiazICAE2023,DiazTS2026}.
 
 At the opposite end of the computational spectrum live \emph{dispatching
 rules}: priority functions that build a schedule in a single constructive
