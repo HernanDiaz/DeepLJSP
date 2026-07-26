@@ -1,27 +1,30 @@
-\documentclass[11pt]{article}
+\documentclass[review,11pt]{elsarticle}
 
-\usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{xcolor}
-\usepackage[margin=2.6cm]{geometry}
-\usepackage{hyperref}
 \usepackage{multirow}
+\usepackage{hyperref}
 
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
 \newcommand{\RE}{\mathrm{RE}}
+
+\journal{Applied Soft Computing}
+
+\begin{document}
+
+\begin{frontmatter}
 
 \title{Genetic Programming Hyper-Heuristics for the Job Shop Scheduling
 Problem with Interval Durations: Interpretable Rules that Generalize
 Across Instance Sizes}
 
 \author{Hern\'an D\'iaz}
-\date{}
-
-\begin{document}
-\maketitle
+\affiliation{organization={Department of Computer Science, University of Oviedo},
+            city={Gij\'on},
+            country={Spain}}
 
 \begin{abstract}
 Dispatching rules remain the method of choice for scheduling under tight
@@ -49,6 +52,13 @@ no performance cost. We position the method against fixed rules, active
 schedule generators, and published metaheuristics, characterizing the
 computational class in which interpretable evolved rules operate.
 \end{abstract}
+
+\begin{keyword}
+interval job shop scheduling \sep genetic programming \sep hyper-heuristics
+\sep dispatching rules \sep scheduling under uncertainty \sep robustness
+\end{keyword}
+
+\end{frontmatter}
 
 \section{Introduction}
 \label{sec:intro}
