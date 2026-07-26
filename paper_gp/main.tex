@@ -197,15 +197,24 @@ Priority dispatching rules are among the oldest and most widely deployed
 scheduling heuristics: at every decision point, a priority function
 ranks the operations that are ready to start and dispatches the best
 one, building a schedule in a single constructive pass. Classical rules
-prioritize by shortest or longest processing time (SPT/LPT), most
-operations or most work remaining (MOR/MWKR), earliest starting time
-(EST) or critical ratio (CR), among more than a hundred variants
-catalogued in classical surveys~\cite{Panwalkar1977,Haupt1989}. A step
-above single-attribute rules, the classical algorithm of Giffler and
-Thompson~\cite{Giffler1960} restricts each choice to a machine's
+score each ready operation by a single attribute, and we adopt their
+standard acronyms throughout this paper. \emph{Shortest} and
+\emph{longest processing time} (SPT, LPT) look at the duration of the
+operation itself. \emph{Earliest starting time} (EST) prefers the
+operation that can begin soonest given the current state of its job and
+its machine. \emph{Most work remaining} (MWKR) and \emph{most operations
+remaining} (MOR) look instead at the job the operation belongs to, and
+favour the one with the largest amount of pending work, measured
+respectively in time units and in number of operations. The
+\emph{critical ratio} (CR) weighs the work still to be done against the
+time available until a due date. Surveys catalogue more than a hundred
+such variants~\cite{Panwalkar1977,Haupt1989}. A step
+above single-attribute rules, the algorithm of Giffler and
+Thompson (G\&T)~\cite{Giffler1960} restricts each choice to a machine's
 conflict set, guaranteeing \emph{active} schedules and markedly
-improving plain rules when combined with a priority tie-break (the
-G\&T baselines of this paper). Stronger constructive procedures exist
+improving plain rules when a priority criterion is used to break ties
+inside that set; we write G\&T-SPT and G\&T-MWKR for the resulting
+combinations. Stronger constructive procedures exist
 for the \emph{deterministic} job shop, notably the shifting bottleneck
 heuristic~\cite{Adams1988}, which repeatedly solves one-machine
 subproblems with heads and tails by means of Carlier's
