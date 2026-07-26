@@ -77,11 +77,11 @@ models this uncertainty in a minimal, distribution-free way: each
 processing time is only assumed to lie within a known interval, and
 schedules are built and evaluated with interval arithmetic, so that the
 makespan of a solution is itself an interval and solutions are compared
-by an interval ranking (here, the lexicographic one;
-Section~\ref{sec:problem}). Population metaheuristics for the
+by an interval ranking. Population metaheuristics for the
 IJSP---artificial bee colony variants and tabu search among
-them---achieve strong results at the cost of minutes of per-instance
-search~\cite{DiazFEABC2023,DiazICAE2023,DiazTS2026}.
+them---achieve strong results, at the cost of building and evaluating
+large numbers of complete solutions for every
+instance~\cite{DiazFEABC2023,DiazICAE2023,DiazTS2026}.
 
 At the opposite end of the computational spectrum live \emph{dispatching
 rules}: priority functions that build a schedule in a single constructive
@@ -159,8 +159,10 @@ approaches~\cite{FuzzyJSPRef}. Prior IJSP work is dominated by
 population-based metaheuristics: a genetic algorithm with a systematic
 study of interval rankings~\cite{DiazGA2020}, artificial bee colony
 variants~\cite{DiazFEABC2023,DiazICAE2023}, and a population-based tabu
-search that currently defines the state of the art~\cite{DiazTS2026}. All operate in
-the minutes-per-instance regime. Fast constructive methods for the IJSP
+search that currently defines the state of the art~\cite{DiazTS2026}.
+All of them are iterative search methods: they build and evaluate a
+population of complete solutions and refine it over many iterations for
+each instance solved. Fast constructive methods for the IJSP
 have received far less attention; dispatching rules with interval-aware
 lexicographic comparisons are the de facto baseline.
 
@@ -618,9 +620,9 @@ quality thus place the evolved rule with the constructive methods, orders
 of magnitude below the search-based computational class in cost while
 closing much of the quality gap to it. Figure~\ref{fig:ladder} places
 these results on the full method ladder, including the published tabu
-search~\cite{DiazTS2026} as the yardstick of the search-based class (an
-iterative search of minutes per instance versus a single constructive
-pass).
+search~\cite{DiazTS2026} as the yardstick of the search-based class,
+which evaluates many complete solutions per instance against the single
+constructive pass of a rule.
 
 \begin{figure}[t]
 \centering
@@ -692,9 +694,9 @@ $\varepsilon$-randomized samples per instance): $18.6\%$ ($N{=}1$,
 deterministic), $16.4\%$ ($16$), $14.9\%$ ($64$), $14.4\%$ ($256$),
 $13.7\%$ ($1024$)---about $-4.9$ points over ten doublings
 (Figure~\ref{fig:bestofn})---closing a substantial part of the gap to
-population-based methods while remaining a set of independent constructive
-passes, orders of magnitude below the iterative search in computational
-class and trivially parallel.
+population-based methods while remaining a set of independent
+constructive passes: no solution is ever re-evaluated or refined, and
+the samples are trivially parallel.
 
 \begin{figure}[t]
 \centering
