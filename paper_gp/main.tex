@@ -42,8 +42,9 @@ problem with interval durations (IJSP), in which operation durations are
 known only to lie within an interval and schedules are evaluated by
 interval arithmetic. The GP evolves priority expressions over an
 \emph{interval-aware} terminal set that exposes both the worst-case values
-and the widths of the uncertain quantities, so that evolved rules can react
-to uncertainty itself. On the 70 interval versions of Taillard's benchmark,
+and the widths of the uncertain quantities, so that reacting to
+uncertainty itself is expressible. On the 70 interval versions of
+Taillard's benchmark,
 over 30 independent evolutions the resulting rules average a relative
 error of $18.7\%$ ($\pm0.8$) with a single deterministic constructive
 pass, and the best evolved rule attains $17.3\%$---improving on the
@@ -55,8 +56,12 @@ Embedded in a GRASP-style randomized scheme, the evolved rule
 converts sampling budget into solution quality ($13.7\%$ at best-of-1024).
 Evolved rules are compact, human-readable expressions, and an automatic
 configuration study with irace shows the approach is robust to its own
-hyperparameters, with a preference for \emph{smaller} expression trees at
-no performance cost. We position the method against fixed rules, active
+hyperparameters. A controlled ablation over 30 evolutions per arm
+characterizes \emph{when} interval awareness pays: the width terminals
+do not improve the expected makespan---the worst-case bounds carry that
+signal---but under an objective that rewards predictability they yield
+significantly narrower makespan intervals, a trade-off the user can
+dial. We position the method against fixed rules, active
 schedule generators, and published metaheuristics, characterizing the
 computational class in which interpretable evolved rules operate.
 \end{abstract}
@@ -113,8 +118,8 @@ This paper makes the following contributions:
 \item A GP hyper-heuristic for the IJSP whose terminal set is
   \emph{interval-aware}: alongside worst-case processing time, earliest
   start and work remaining, rules can read the \emph{widths} of these
-  quantities, enabling uncertainty-sensitive prioritization
-  (Section~\ref{sec:method}).
+  quantities, so that uncertainty-sensitive prioritization is
+  expressible at all (Section~\ref{sec:method}).
 \item An empirical study on the 70 interval Taillard instances showing
   that evolved rules (i) beat every deterministic constructive baseline by
   a wide margin at equal cost, (ii) generalize zero-shot across instance
@@ -122,12 +127,18 @@ This paper makes the following contributions:
   (iii) extend naturally to a randomized multi-start regime with monotone
   quality gains up to best-of-1024 (Section~\ref{sec:results}).
 \item An analysis of \emph{why} the rules work: an anatomy of the evolved
-  expressions (Section~\ref{sec:anatomy}), an ablation isolating the
-  contribution of the interval-width terminals
-  (Section~\ref{sec:ablation}), and an executional-robustness study showing
-  that the evolved rule yields schedules whose realized makespan deviates
-  less from its prediction than the baselines', increasingly so as
-  uncertainty grows (Section~\ref{sec:robustness}).
+  expressions (Section~\ref{sec:anatomy}); an ablation that isolates the
+  contribution of the interval-width terminals and characterises
+  \emph{when} interval awareness pays---not under a makespan objective,
+  where worst-case bounds suffice, but under an objective that rewards
+  predictability, where the widths yield significantly narrower makespan
+  intervals (Section~\ref{sec:ablation}); an executional-robustness
+  study showing that the evolved rule yields schedules whose realised
+  makespan deviates less from its prediction than the baselines',
+  increasingly so as uncertainty grows (Section~\ref{sec:robustness});
+  and a transfer study showing that the resulting schedules remain
+  competitive when re-evaluated under crisp and fuzzy uncertainty models
+  (Section~\ref{sec:transfer}).
 \item An automatic configuration study (irace, 200 experiments) of the
   evolutionary hyperparameters, confirmed over 30 independent evolutions
   per configuration: tuning brings no significant quality gain---the
@@ -749,15 +760,80 @@ uncertainty to the rule.}
 \subsection{The value of interval-awareness: terminal ablation}
 \label{sec:ablation}
 The interval-width terminals are the distinctive ingredient of this
-setting, so we isolate their contribution. We re-run the full
-evolution---30 independent seeds per configuration---with and without the
-width terminals (\textit{PTW}, \textit{ESTW}, \textit{WKRW}) in the
-terminal set, everything else held fixed, and compare the resulting
-mean $\RE$ over the 70 instances with a paired Wilcoxon signed-rank test
-on the shared seeds.
-\todo{rellenar con la campaña 30$\times$3: media$\pm$std no-width vs full,
-$\Delta$RE, y el estadístico de Wilcoxon + el experimento de dos
-regímenes (fitness robusto) cuando termine la campaña.}
+setting, so we isolate their contribution by ablation: we re-run the
+full evolution---30 independent seeds per configuration---with and
+without the width terminals (\textit{PTW}, \textit{ESTW},
+\textit{WKRW}) in the terminal set, everything else held fixed, and
+compare the resulting rules with a paired Wilcoxon signed-rank test on
+the shared seeds. Table~\ref{tab:ablation} collects the outcome.
+
+\textbf{Under the makespan objective, width information is not used
+productively.} Removing the three width terminals leaves performance
+unchanged: $18.39 \pm 0.59$ mean $\RE$ over the 70 instances without
+them versus $18.68 \pm 0.84$ with them, a difference that is not
+significant ($z=1.26$) and, if anything, favours the smaller terminal
+set. The same holds for the resulting schedules: their predicted
+makespan intervals are equally wide, and their $\bar\varepsilon$
+robustness is indistinguishable ($5.71$ versus $5.73 \times 10^{-3}$
+for the best rule of each arm). So although the evolution does reach for
+the width terminals---they appear in 28 of the 30 rules
+(Section~\ref{sec:anatomy})---ablating them costs nothing: for
+minimising the expected makespan, the \emph{position} of the intervals
+(their worst-case bounds) carries essentially all the exploitable
+signal.
+
+\textbf{Under an uncertainty-aware objective, width information does
+pay.} This negative result is, on reflection, unsurprising: the fitness
+being optimised rewards only the makespan, so there is no incentive for
+a rule to act on the magnitude of the uncertainty. We therefore repeat
+the ablation with a \emph{robust} fitness that explicitly rewards
+predictability, minimising $\overline{C}_{\max} + \lambda\,
+(\overline{C}_{\max}-\underline{C}_{\max})$ with $\lambda = 1$: low
+worst case \emph{and} narrow interval. Under this objective the ablation
+reverses. Rules evolved with the width terminals produce schedules whose
+makespan interval is significantly narrower than those evolved without
+them ($12.01 \pm 0.74$ versus $12.42 \pm 0.21$ relative width; paired
+Wilcoxon $z=2.73$, $p<0.01$). The asymmetry is informative: deprived of
+width terminals, the evolution cannot narrow the interval below
+${\approx}12.4\%$ \emph{whatever} objective it is given, whereas with
+them it reaches $12.0\%$ as soon as narrowness is rewarded. The gain is
+paid for in expected makespan ($19.64$ versus $18.70$ $\RE$), which is
+precisely the trade-off the robust objective asks for.
+
+Together, the two experiments characterise \emph{when} interval
+awareness matters, rather than asserting that it always does: the width
+of an interval is actionable information for a dispatching rule, but
+only when the objective values predictability. A practitioner
+minimising expected makespan can safely use the worst-case attributes
+alone; one who needs schedules whose realised makespan is tightly
+predictable gains from exposing the widths---and can dial the balance
+through $\lambda$.
+
+\begin{table}[t]
+\centering\small
+\caption{Terminal ablation under two fitness objectives (30 independent
+evolutions per arm; paired Wilcoxon signed-rank on the shared seeds).
+\emph{Width} is the relative width of the predicted makespan interval.
+Interval-width terminals do not help when the objective is the expected
+makespan, but do produce significantly narrower schedules when the
+objective rewards predictability.}
+\label{tab:ablation}
+\begin{tabular}{llcc}
+\toprule
+Fitness objective & Terminal set & RE (\%) & Width (\%) \\
+\midrule
+\multirow{3}{*}{Makespan $E[\mathbf{C_{max}}]$}
+ & full & $18.68 \pm 0.84$ & 12.6 \\
+ & without widths & $18.39 \pm 0.59$ & 12.4 \\
+ & \textit{paired test} & \textit{n.s.} ($z=1.26$) & --- \\
+\midrule
+\multirow{3}{*}{Robust $\overline{C}_{\max}+\lambda\,\mathrm{width}$}
+ & full & $19.64 \pm 1.28$ & $\mathbf{12.01 \pm 0.74}$ \\
+ & without widths & $18.70 \pm 0.89$ & $12.42 \pm 0.21$ \\
+ & \textit{paired test} & --- & $z=2.73$, $p<0.01$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Robustness under executional uncertainty}
 \label{sec:robustness}
@@ -785,11 +861,15 @@ the schedule is smaller. Second, and more tellingly, its executed
 makespan tracks the prediction most closely: $\bar\varepsilon$ is lower
 than for both baselines at the nominal width ($5.8$ versus $6.5$ for MOR
 and $6.3$ for G\&T-MWKR), and its advantage \emph{widens} as uncertainty
-grows (at $+40\%$: $7.7$ versus $8.9$ and $8.6$). Because the rule can
-read interval widths, it favours dispatching decisions whose realized
-outcome is less sensitive to how the durations materialize.
+grows (at $+40\%$: $7.7$ versus $8.9$ and $8.6$).
 Figure~\ref{fig:robustness} shows the per-instance $\bar\varepsilon$
-distributions.
+distributions. It is worth being precise about the source of this
+advantage: as the ablation of Section~\ref{sec:ablation} shows, it does
+\emph{not} come from the rule reading interval widths---rules evolved
+without the width terminals are just as robust. It comes from producing
+better schedules in the first place: compact schedules with fewer and
+shorter critical paths accumulate less uncertainty along them, so both
+the predicted interval and the realised deviation shrink together.
 
 \begin{table}[t]
 \centering\small
@@ -927,7 +1007,14 @@ quantities. (iii)~The method is robust to its evolutionary
 hyperparameters: a 200-experiment irace study confirmed over 30
 evolutions per configuration yields no significant gain over
 conventional settings, only systematically smaller trees at equal
-performance.
+performance. Beyond aggregate quality, the analysis pins down
+\emph{when} the interval-specific ingredients matter: exposing the
+widths of the uncertain quantities does not improve the expected
+makespan---the worst-case bounds already carry that signal---but it
+does let the evolution produce significantly narrower makespan
+intervals once the objective rewards predictability. Interval awareness
+is thus not a free improvement but a lever, available when the
+application values predictable schedules over nominally shorter ones.
 
 Future work follows three lines. First, richer symbolic models:
 ensembles of complementary rules~\cite{GilGala2021Ensembles} and

@@ -2,7 +2,7 @@
 
 | brazo | RE midpoint | ancho intervalo (%) |
 |---|---|---|
-| robust+width | 19.73±1.85 | 11.59±1.02 |
-| robust+nowidth | 19.27±1.18 | 12.39±0.18 |
+| robust+width | 19.64±1.28 | 12.01±0.74 |
+| robust+nowidth | 18.70±0.89 | 12.42±0.21 |
 
-Delta ancho (nowidth-width) = +0.803 pts. >0 => la anchura ayuda bajo objetivo robusto.
+Delta ancho (nowidth-width) = +0.410 pts, Wilcoxon z=2.73 (n=30). >0 y |z|>1.96 => la anchura ayuda bajo objetivo robusto.
