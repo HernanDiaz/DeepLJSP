@@ -25,9 +25,11 @@ Problem with Interval Durations: Interpretable Rules that Generalize
 Across Instance Sizes}
 
 \author{Hern\'an D\'iaz}
-\ead{hernan.diaz.rodriguez@gmail.com}
-\affiliation{organization={Department of Computer Science, University of Oviedo},
+\ead{diazhernan@uniovi.es}
+\affiliation{organization={Department of Computing, University of Oviedo},
+            addressline={Campus de Gij\'on},
             city={Gij\'on},
+            postcode={33204},
             country={Spain}}
 
 \begin{abstract}
@@ -933,6 +935,11 @@ Validation, Formal analysis, Investigation, Resources, Data curation,
 Writing -- original draft, Writing -- review \& editing, Visualization,
 Project administration.
 
+\section*{Acknowledgements}
+This work was supported by the Spanish Ministry of Science, Innovation
+and Universities (MCIN/AEI/10.13039/501100011033) under grant
+PID2022-141746OB-I00.
+
 \section*{Declaration of competing interest}
 The author declares that there are no known competing financial
 interests or personal relationships that could have appeared to
@@ -942,12 +949,10 @@ influence the work reported in this paper.
 The GP hyper-heuristic is implemented from scratch in pure Python/NumPy,
 with no evolutionary-computation dependencies; evolved rules are stored
 as plain JSON expression trees and evaluated as drop-in dispatching
-strategies by the same environment used by every baseline. The interval
-benchmark instances are those of the IJSP
-literature~\cite{DiazGA2020,DiazTS2026}, available from the authors'
-repository.
-\todo{URL/DOI del repositorio de código al publicar; declaración de
-funding si procede}
+strategies by the same environment used by every baseline. The benchmark
+instances, the generated solutions and rules, and the analysis scripts
+are shared in a Zenodo repository.
+\todo{DOI de Zenodo al depositar}
 
 \appendix
 \section{Per-instance results}
