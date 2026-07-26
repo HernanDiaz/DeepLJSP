@@ -328,17 +328,19 @@ this decoder and evaluator, so reported differences cannot stem from
 evaluator discrepancies.
 
 Performance is reported as the relative error of the expected makespan
-with respect to the crisp Taillard lower bound $LB$ of each instance,
+with respect to a crisp reference bound $LB$ of each instance,
 \begin{equation}
 \RE = \frac{E[\mathbf{C_{max}}] - LB}{LB} \times 100,
 \end{equation}
 where $E[\mathbf{C_{max}}]$ is the midpoint of the interval makespan.
-The reference $LB$ is the known lower bound of the deterministic
-instance from which the interval one is generated---that is, of its
-midpoint scenario. It is used here as an \emph{indicative} common
-reference that normalises results across instances of very different
-sizes, and not as a tight bound for the interval problem, for which no
-such bound is available. Since every comparison reported in this paper
+In every case $LB$ is a bound of the deterministic instance from which
+the interval one is generated---that is, of its midpoint scenario: we
+use Taillard's lower bounds for the Taillard-derived instances, and for
+the classical instances the best known bounds reported in the
+literature~\cite{DiazFEABC2023}. It is used here as an
+\emph{indicative} common reference that normalises results across
+instances of very different sizes, and not as a tight bound for the
+interval problem, for which no such bound is available. Since every comparison reported in this paper
 is between methods evaluated on the same instances, the choice of
 reference shifts all figures by the same amount and does not affect any
 of the conclusions.
@@ -538,7 +540,10 @@ published IJSP metaheuristics report
 results~\cite{DiazGA2020,DiazFEABC2023,DiazICAE2023}: FT10, FT20,
 La21--La40 (selected), and ABZ7--9, in their interval versions generated
 with the same $\pm15\%$ scheme and available from the authors'
-repository. These instances come from different families and sizes
+repository; for these, the $\RE$ reference is the best known bound of
+the expected makespan reported for them in that
+literature~\cite{DiazFEABC2023}. These instances come from different
+families and sizes
 ($10{\times}10$ to $20{\times}15$) than the Taillard set, and our rules
 are \emph{not} re-evolved for them, so they double as a
 cross-family generalization test (Section~\ref{sec:classics}).
