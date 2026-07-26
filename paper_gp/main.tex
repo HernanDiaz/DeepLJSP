@@ -97,11 +97,18 @@ For \emph{deterministic} scheduling, a rich literature has shown that this
 gap can be narrowed substantially by evolving rules automatically with
 genetic programming (GP)~\cite{Branke2016,Nguyen2017}. For scheduling
 under interval uncertainty, however, the automated design of dispatching
-rules remains, to the best of our knowledge, unexplored. It is not obvious
-a priori what an evolved rule should do with uncertainty: ignore it and
-prioritize operations by their worst-case attributes, hedge against wide
-intervals, or exploit width information in a structured way. Making this possible requires exposing
-uncertainty to the rule as first-class attributes.
+rules remains, to the best of our knowledge, unexplored. Moving automated
+rule design to interval durations raises questions that simply do not
+arise in the deterministic case. Which attributes should a rule read,
+when the quantities describing a candidate operation---its duration, its
+earliest start, the work remaining in its job---are intervals rather
+than numbers? How should candidate operations be prioritized, and the
+resulting schedules compared, given that intervals admit no natural
+total order? And does the \emph{magnitude} of the uncertainty carry
+information that is useful for dispatching, or is it the position of the
+intervals that drives the decision? Answering these questions
+empirically requires exposing uncertainty to the rule as first-class
+attributes, which is the starting point of this work.
 
 This paper makes the following contributions:
 \begin{enumerate}
