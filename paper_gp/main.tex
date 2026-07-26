@@ -133,7 +133,8 @@ Section~\ref{sec:setup} details the benchmark, the training protocol and
 the irace configuration study. Section~\ref{sec:results} reports the
 empirical results, and Section~\ref{sec:analysis} analyses them: rule
 anatomy, the interval-awareness ablation, executional robustness,
-hyperparameter sensitivity and limitations.
+transfer to crisp and fuzzy uncertainty models, hyperparameter
+sensitivity and limitations.
 Section~\ref{sec:conclusions} concludes.
 
 \section{Related Work}
@@ -698,8 +699,9 @@ instances as the sampling budget doubles.}
 Beyond aggregate quality, this section examines \emph{why} the evolved
 rules work: what they are made of, whether the interval-specific
 ingredients actually contribute, how robust the resulting schedules are
-under executional uncertainty, and how sensitive the method is to its
-own hyperparameters.
+under executional uncertainty, whether they survive re-evaluation under
+other uncertainty models, and how sensitive the method is to its own
+hyperparameters.
 
 \subsection{Rule anatomy and interpretability}
 \label{sec:anatomy}
@@ -808,6 +810,57 @@ advantage over the constructive baselines grows with interval width.}
 \end{figure}
 \todo{tras la campaña: rehacer con la mejor regla de 30 semillas y anadir
 el brazo no-width (robustez interval-aware vs ablacion); test estadistico.}
+
+\subsection{Transfer to other uncertainty models}
+\label{sec:transfer}
+The interval representation is one of several coexisting formalisms for
+duration uncertainty; deterministic (crisp) and fuzzy models are equally
+established~\cite{FuzzyJSPRef}. A natural concern is whether schedules
+built by a rule evolved \emph{for intervals} remain good when the
+durations are ultimately handled under a different model. We test this
+by re-decoding the same processing orders under two alternative
+arithmetics, without any re-evolution: (i)~\emph{crisp}, executing each
+sequence with the original Taillard durations (the midpoint scenario of
+each interval instance); and (ii)~\emph{triangular fuzzy} (TFN), where
+each duration becomes the triangle $(\underline{p},\, p,\,
+\overline{p})$ and schedules are built with fuzzy arithmetic and ranked
+by the expected value $E[\tilde{C}] = (a + 2b + c)/4$. The evaluation
+uses the GP-$\varepsilon$ pools of Section~\ref{sec:results} ($1024$
+sequences per instance, all 70 instances), so both quality and
+\emph{ranking} transfer can be measured.
+
+Transfer is essentially lossless (Table~\ref{tab:transfer}). The best
+sequence per pool scores $13.0\%$ $\RE$ under crisp and $13.2\%$ under
+TFN evaluation, in line with its interval quality; pool means are
+unchanged ($21.0$--$21.2$ versus $21.4$); and the interval ranking of
+each pool is preserved almost exactly under both models (mean Spearman
+correlation $0.994$ crisp, $0.998$ fuzzy)---the best solution under
+interval arithmetic is, for practical purposes, also the best crisp and
+fuzzy solution. Notably, there is no ``robustness tax'': evaluating
+crisp, the interval-selected sequences are marginally \emph{better}
+than their interval $\RE$ suggests. For a practitioner this means the
+choice of uncertainty formalism can be deferred: schedules produced by
+the interval-evolved rule survive re-evaluation under the other standard
+models of the literature.
+
+\begin{table}[t]
+\centering\small
+\caption{Transfer of the GP-$\varepsilon$ pools ($1024$ sequences per
+instance, 70 instances) to other uncertainty models: the same processing
+orders re-decoded under each arithmetic. Spearman: mean per-instance
+rank correlation between the interval ranking and the re-decoded
+ranking.}
+\label{tab:transfer}
+\begin{tabular}{lccc}
+\toprule
+Evaluation model & Best of pool (\%) & Pool mean (\%) & Spearman \\
+\midrule
+Interval (native) & 13.4 & 21.4 & --- \\
+Crisp (midpoint scenario) & 13.0 & 21.0 & 0.994 \\
+Triangular fuzzy, $E[\tilde{C}]$ & 13.2 & 21.2 & 0.998 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Hyperparameter confirmation}
 \label{sec:tuning}
