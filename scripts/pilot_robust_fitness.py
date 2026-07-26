@@ -52,6 +52,9 @@ def build_jobs(seeds, lam):
 
 def run_one(name, extra):
     out_json = f"{OUT}/{name}.json"
+    if os.path.exists(out_json):
+        print(f"[fase 1] {name}: ya existe, salto", flush=True)
+        return name, True
     cmd = [PY, "scripts/evolve_gp_rule.py", "--out", out_json] + extra
     t0 = time.time()
     with open(f"{LOG}/{name}.log", "w", encoding="utf-8") as lf:
@@ -77,6 +80,8 @@ def evaluate():
         res, widths = [], []
         for pid in insts:
             lb = lb_for_problem_name(pid)
+            if lb is None:
+                continue
             env = EnvironmentFactory.create_from_problem(
                 PROBLEM_REGISTRY[pid](), "basic", seed=0)
             st = env.reset(); done = False
@@ -106,8 +111,29 @@ def evaluate():
         sd = (sum((x - mu) ** 2 for x in v) / (n - 1)) ** 0.5 if n > 1 else 0
         return mu, sd
 
+    def wilcoxon(pairs):
+        """Wilcoxon signed-rank pareado (aprox. normal). -> (z, n)."""
+        d = [a - b for a, b in pairs if abs(a - b) > 1e-12]
+        n = len(d)
+        if n < 6:
+            return float("nan"), n
+        r = sorted(d, key=abs); rank = {}; i = 0
+        while i < n:
+            j = i
+            while j + 1 < n and abs(abs(r[j + 1]) - abs(r[i])) < 1e-12:
+                j += 1
+            rr = (i + j) / 2 + 1
+            for k in range(i, j + 1):
+                rank[id(r[k])] = rr
+            i = j + 1
+        wp = sum(rank[id(x)] for x in r if x > 0)
+        mu = n * (n + 1) / 4; sd = (n * (n + 1) * (2 * n + 1) / 24) ** 0.5
+        return (wp - mu) / sd, n
+
     rw_re, rw_w = arm("robwidth")
     rn_re, rn_w = arm("robnowidth")
+    # pareado por semilla (glob ordenado -> seed1..N en ambos brazos)
+    z_w, n_w = wilcoxon(list(zip(rn_w, rw_w)))    # nowidth - width sobre el ancho
 
     print("\n=== PILOTO fitness robusto: width vs no-width ===")
     print(f"{'brazo':<16}{'RE midpoint':>16}{'ancho interv. %':>18}")
@@ -117,9 +143,10 @@ def evaluate():
           f"{f'{st(rn_w)[0]:.2f} ± {st(rn_w)[1]:.2f}':>18}")
     dw = st(rn_w)[0] - st(rw_w)[0]
     print(f"\nDelta ancho (nowidth - width): {dw:+.3f} pts")
-    print("  >0 => quitar la anchura ENSANCHA el intervalo => los terminales")
-    print("        de anchura SI ayudan bajo objetivo robusto (novedad recuperada)")
-    print("  <=0 => la anchura no ayuda ni con objetivo robusto")
+    print(f"Wilcoxon pareado sobre el ancho (n={n_w}): z={z_w:.2f}  "
+          f"({'SIGNIFICATIVO' if abs(z_w) > 1.96 else 'no significativo'} al 5%)")
+    print("  Delta>0 y signif. => quitar la anchura ENSANCHA el intervalo =>")
+    print("    los terminales de anchura SI ayudan bajo objetivo robusto.")
 
     with open(f"{OUT}/VEREDICTO_PILOTO.md", "w", encoding="utf-8") as f:
         f.write(f"# Piloto fitness robusto (upper + lam*ancho), 5 seeds/brazo\n\n"
@@ -128,8 +155,9 @@ def evaluate():
                 f"{st(rw_w)[0]:.2f}±{st(rw_w)[1]:.2f} |\n"
                 f"| robust+nowidth | {st(rn_re)[0]:.2f}±{st(rn_re)[1]:.2f} | "
                 f"{st(rn_w)[0]:.2f}±{st(rn_w)[1]:.2f} |\n\n"
-                f"Delta ancho (nowidth-width) = {dw:+.3f} pts. "
-                f">0 => la anchura ayuda bajo objetivo robusto.\n")
+                f"Delta ancho (nowidth-width) = {dw:+.3f} pts, "
+                f"Wilcoxon z={z_w:.2f} (n={n_w}). "
+                f">0 y |z|>1.96 => la anchura ayuda bajo objetivo robusto.\n")
     print(f"\nVEREDICTO_PILOTO.md en {OUT}/")
 
 
@@ -138,8 +166,14 @@ def main():
     ap.add_argument("--lam", type=float, default=1.0)
     ap.add_argument("--seeds", type=int, default=5)
     ap.add_argument("--dry", action="store_true")
+    ap.add_argument("--eval-only", action="store_true",
+                    help="salta la evolucion y solo evalua los JSON existentes")
     args = ap.parse_args()
     os.makedirs(OUT, exist_ok=True); os.makedirs(LOG, exist_ok=True)
+    if args.eval_only:
+        print(f"[fase 2] solo evaluacion ({time.ctime()})", flush=True)
+        evaluate()
+        return
     jobs = build_jobs(args.seeds, args.lam)
     if args.dry:
         for n, e in jobs:
