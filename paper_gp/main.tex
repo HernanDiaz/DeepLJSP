@@ -499,7 +499,12 @@ uniformly at random, and the subtree rooted at it is discarded and
 replaced by a freshly generated random tree, built with the grow method
 and maximum depth $3$ over the full primitive set. Offspring
 whose size exceeds a cap of $c$ nodes receive infinite fitness and are
-thereby excluded from selection.
+thereby excluded from selection. Note that the depth bounds above apply
+only to the trees created from scratch, at initialization and inside
+mutation: the depth of an individual is never constrained during the
+run, so recombination routinely produces expressions deeper than those
+of the initial population, the number of nodes being the only quantity
+that is bounded.
 
 Replacement is fully generational, the offspring becoming the next
 population, except for the $e$ best individuals of the current
@@ -661,7 +666,8 @@ recurring pattern in the evolved rules.
 \caption{The best evolved rule of the campaign (seed~27), which attains
 $17.3\%$ $\RE$ over the 70 instances. Circles are functions and shaded
 boxes the interval-aware terminals of Table~\ref{tab:terminals}; the
-operation with the lowest value of the expression is dispatched.}
+operation with the lowest value of the expression is dispatched. The
+tree is shown exactly as evolved, without algebraic simplification.}
 \label{fig:seed27}
 \end{figure}
 
