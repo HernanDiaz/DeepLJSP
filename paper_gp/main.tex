@@ -18,6 +18,15 @@
 % margen extra para que TeX resuelva parrafos dificiles sin desbordar
 \setlength{\emergencystretch}{3em}
 
+% el modo review es a doble espacio, asi que caben pocas lineas por pagina y
+% los valores por defecto empujan los floats varias paginas por detras de su
+% cita. Se relajan para que una tabla y una figura puedan compartir el top.
+\setcounter{topnumber}{3}
+\setcounter{totalnumber}{4}
+\renewcommand{\topfraction}{.85}
+\renewcommand{\textfraction}{.1}
+\renewcommand{\floatpagefraction}{.75}
+
 \journal{Applied Soft Computing}
 
 \begin{document}
@@ -1074,41 +1083,6 @@ through $\lambda$.
 
 
 
-\subsection{Robustness under executional uncertainty}
-\label{sec:robustness}
-Relative error measures a-priori quality; the $\bar\varepsilon$
-robustness of Eq.~\eqref{eq:eps} measures how well that a-priori
-prediction survives execution, and is the quantity examined here. We
-estimate it by Monte Carlo, drawing $K{=}1000$ realizations of the
-durations uniformly on each operation's interval and executing the fixed
-processing order on each of them; lower is more robust. To probe
-behaviour under growing uncertainty we also widen every interval
-symmetrically about its midpoint by $+20\%$ and $+40\%$ (clipping
-negative bounds to zero), re-evaluating the same processing orders.
-
-The evolved rule does not merely produce lower-makespan schedules---it
-produces \emph{more robust} ones, on two complementary measures
-(Table~\ref{tab:robustness}). First, its predicted makespan interval is
-the \emph{tightest}: a relative width of $12.6\%$ against $13.8\%$
-(G\&T-MWKR) and $14.4\%$ (MOR), so the a-priori uncertainty attached to
-the schedule is smaller. Second, and more tellingly, its executed
-makespan tracks the prediction most closely: $\bar\varepsilon$ is lower
-than for both baselines at the nominal width ($5.8$ versus $6.5$ for MOR
-and $6.3$ for G\&T-MWKR), and its advantage \emph{widens} as uncertainty
-grows (at $+40\%$: $7.7$ versus $8.9$ and $8.6$).
-Figure~\ref{fig:robustness} shows the per-instance $\bar\varepsilon$
-distributions. It is worth being careful about the source of this
-advantage. Under the makespan objective, the ablation of
-Section~\ref{sec:ablation} finds no benefit from the width terminals in
-the \emph{predicted} width of the interval, so the advantage does not
-appear to rest on the rule reading widths; the evidence is indirect,
-however, since $\bar\varepsilon$ measures the \emph{realised} deviation,
-a distinct quantity. The likely mechanism is that the advantage comes
-from producing better schedules in the first place: compact schedules
-with fewer and shorter critical paths accumulate less uncertainty along
-them, so both the predicted interval and the realised deviation shrink
-together.
-
 \begin{table}[t]
 \centering\small
 \caption{Robustness over the 70 instances (lower is better on both
@@ -1137,11 +1111,56 @@ MOR & 14.4 & 6.5 & 7.7 & 8.9 \\
 \includegraphics[width=\linewidth]{figures/fig_robustness_box.pdf}
 \caption{Per-instance $\bar\varepsilon$ robustness by method at each
 uncertainty level (lower is better). The evolved rule's robustness
-advantage over the constructive baselines grows with interval width.}
+advantage over the constructive baselines grows with interval width.
+\emph{GP-nowidth} is the ablated arm of Section~\ref{sec:ablation},
+evolved without the three interval-width terminals: it is
+indistinguishable from the full rule, which locates the robustness
+advantage in the quality of the schedules rather than in the rule
+reading widths.}
 \label{fig:robustness}
 \end{figure}
-\todo{tras la campaña: rehacer con la mejor regla de 30 semillas y anadir
-el brazo no-width (robustez interval-aware vs ablacion); test estadistico.}
+
+\subsection{Robustness under executional uncertainty}
+\label{sec:robustness}
+Relative error measures a-priori quality; the $\bar\varepsilon$
+robustness of Eq.~\eqref{eq:eps} measures how well that a-priori
+prediction survives execution, and is the quantity examined here. We
+estimate it by Monte Carlo, drawing $K{=}1000$ realizations of the
+durations uniformly on each operation's interval and executing the fixed
+processing order on each of them; lower is more robust. To probe
+behaviour under growing uncertainty we also widen every interval
+symmetrically about its midpoint by $+20\%$ and $+40\%$ (clipping
+negative bounds to zero), re-evaluating the same processing orders.
+
+The evolved rule does not merely produce lower-makespan schedules---it
+produces \emph{more robust} ones, on two complementary measures
+(Table~\ref{tab:robustness}). First, its predicted makespan interval is
+the \emph{tightest}: a relative width of $12.6\%$ against $13.8\%$
+(G\&T-MWKR) and $14.4\%$ (MOR), so the a-priori uncertainty attached to
+the schedule is smaller. Second, and more tellingly, its executed
+makespan tracks the prediction most closely: $\bar\varepsilon$ is lower
+than for both baselines at the nominal width ($5.8$ versus $6.5$ for MOR
+and $6.3$ for G\&T-MWKR), and its advantage \emph{widens} as uncertainty
+grows (at $+40\%$: $7.7$ versus $8.9$ and $8.6$).
+Figure~\ref{fig:robustness} shows the per-instance $\bar\varepsilon$
+distributions. It is worth being precise about the source of this
+advantage. The figure also carries the ablated arm of
+Section~\ref{sec:ablation}: rules evolved \emph{without} the
+interval-width terminals are as robust as the full rule at every
+uncertainty level ($\bar\varepsilon$ of $5.7$, $6.8$ and $7.8$ against
+$5.7$, $6.8$ and $7.7$), so the advantage does not come from the rule
+reading interval widths. It comes from producing better schedules in the
+first place: compact schedules with fewer and shorter critical paths
+accumulate less uncertainty along them, so both the predicted interval
+and the realised deviation shrink together.
+
+
+\todo{tras la campana: (1) tab:robustness sale de robustness\_eps.csv y
+fig:robustness de robustness\_ablation.csv, que son reglas GP distintas
+(diferentes en las 70 instancias, medias casi iguales): regenerar AMBAS de
+una sola ejecucion con la mejor regla tuneada; (2) anadir la fila
+GP-nowidth a tab:robustness, que la figura ya muestra; (3) Wilcoxon
+pareado sobre las 70 instancias para GP vs baselines y GP vs GP-nowidth.}
 
 \subsection{Transfer to other uncertainty models}
 \label{sec:transfer}
