@@ -918,6 +918,15 @@ families without retraining, covers a substantial part of the gap that
 used to separate dispatching rules from metaheuristics.
 
 
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=.8\linewidth]{figures/fig_terminals.pdf}
+\caption{Terminal usage across the 30 evolved rules, as a share of all
+terminals. Interval-width terminals (amber) expose the magnitude of the
+uncertainty to the rule.}
+\label{fig:terminals}
+\end{figure}
+
 \section{Analysis}
 \label{sec:analysis}
 
@@ -947,14 +956,7 @@ width information translates into better schedules is quantified by the
 ablation of Section~\ref{sec:ablation} and the robustness analysis of
 Section~\ref{sec:robustness}.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=.8\linewidth]{figures/fig_terminals.pdf}
-\caption{Terminal usage across the 30 evolved rules, as a share of all
-terminals. Interval-width terminals (amber) expose the magnitude of the
-uncertainty to the rule.}
-\label{fig:terminals}
-\end{figure}
+
 
 \subsection{The value of interval-awareness: terminal ablation}
 \label{sec:ablation}
@@ -993,9 +995,9 @@ Fitness objective & Terminal set & RE (\%) & Width (\%) \\
 \end{tabular}
 \end{table}
 
-\textbf{Under the makespan objective, width information is not used
-productively.} Removing the three width terminals leaves performance
-unchanged: $18.39 \pm 0.59$ mean $\RE$ over the 70 instances without
+Under the makespan objective, the width information turns out not to
+be used productively. Removing the three width terminals leaves
+performance unchanged: $18.39 \pm 0.59$ mean $\RE$ over the 70 instances without
 them versus $18.68 \pm 0.84$ with them, a difference that is not
 significant ($z=1.26$) and, if anything, favours the smaller terminal
 set. The same holds for the resulting schedules: the relative width of
@@ -1010,8 +1012,7 @@ minimising the expected makespan, the \emph{position} of the intervals
 (their worst-case bounds) carries essentially all the exploitable
 signal.
 
-\textbf{Under an uncertainty-aware objective, width information does
-pay.} This negative result is, on reflection, unsurprising: the fitness
+This negative result is, on reflection, unsurprising: the fitness
 being optimised rewards only the makespan, so there is no incentive for
 a rule to act on the magnitude of the uncertainty. We therefore repeat
 the ablation with a \emph{robust} fitness that explicitly rewards
@@ -1023,8 +1024,8 @@ f_{\lambda} = \overline{C}_{\max} + \lambda\,
 \end{equation}
 that is, a low worst case \emph{and} a narrow interval, with the weight
 $\lambda$ setting the balance between the two; we take $\lambda = 1$
-here. Under the objective of Eq.~\eqref{eq:robustfit} the ablation
-reverses. Rules evolved with the width terminals produce schedules whose
+here. Under this objective the ablation reverses, and the width
+information does pay. Rules evolved with the width terminals produce schedules whose
 makespan interval is significantly narrower than those evolved without
 them ($12.01 \pm 0.74$ versus $12.42 \pm 0.21$ relative width; paired
 Wilcoxon $z=2.73$, $p<0.01$). The asymmetry is informative: deprived of
