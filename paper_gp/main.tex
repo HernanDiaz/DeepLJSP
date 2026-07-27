@@ -148,7 +148,7 @@ This paper makes the following contributions:
   per configuration: tuning brings no significant quality gain---the
   method is robust to its own knobs---but does yield systematically
   smaller, more readable trees at equal performance
-  (Section~\ref{sec:tuning}).
+  (Section~\ref{sec:irace}).
 \end{enumerate}
 
 The remainder of the paper is organized as follows.
@@ -160,8 +160,7 @@ Section~\ref{sec:setup} details the benchmark, the training protocol and
 the irace configuration study. Section~\ref{sec:results} reports the
 empirical results, and Section~\ref{sec:analysis} analyses them: rule
 anatomy, the interval-awareness ablation, executional robustness,
-transfer to crisp and fuzzy uncertainty models, hyperparameter
-sensitivity and limitations.
+transfer to crisp and fuzzy uncertainty models, and limitations.
 Section~\ref{sec:conclusions} concludes.
 
 \section{Related Work}
@@ -541,7 +540,7 @@ training instances}
 \begin{table}[t]
 \centering\small
 \caption{Evolution parameters (conventional settings; see
-Section~\ref{sec:tuning} for the sensitivity study).}
+Section~\ref{sec:irace} for the sensitivity study).}
 \label{tab:gpparams}
 \begin{tabular}{ll}
 \toprule
@@ -621,13 +620,23 @@ $7$ versus $4$) and a crossover probability close to the default
 ($0.72$--$0.77$); the tree-size cap does not discriminate (surviving
 elites span caps of $20$, $30$ and $40$). Throughout the race the
 statistical tests discard configurations only weakly, itself evidence
-that performance is largely flat over the hyperparameter space; the
-confirmation experiment of Section~\ref{sec:tuning} quantifies this on
-unseen instances and finds no significant advantage for the tuned
-configuration. Accordingly, \emph{every result reported in this paper
-was obtained with the default configuration} of
-Table~\ref{tab:gpparams}; the tuned one is used only in the comparison
-of Section~\ref{sec:tuning}.
+that performance is largely flat over the hyperparameter space.
+
+We confirmed this on unseen instances following the pre-registered
+protocol applied to every design decision of this work: the winning
+configuration was re-evolved over 30 independent seeds and each
+resulting rule evaluated on all 70 instances. The tuned configuration
+brings \emph{no} significant improvement---$18.99 \pm 1.33$ mean $\RE$
+versus $18.68 \pm 0.84$ for the default, with a paired Wilcoxon
+signed-rank test on the shared seeds far from significance
+($z=-0.96$)---and if anything the stronger selection pressure increases
+seed-to-seed variance. Its one systematic effect is \emph{structural}:
+at equal performance it evolves markedly smaller trees ($26.4$ versus
+$33.1$ nodes on average), so the tuning budget buys readability rather
+than quality. The method is therefore robust to its evolutionary
+hyperparameters, and \emph{every result reported in this paper was
+obtained with the default configuration} of
+Table~\ref{tab:gpparams}.
 
 \begin{table}[t]
 \centering\small
@@ -888,9 +897,8 @@ instances as the sampling budget doubles.}
 Beyond aggregate quality, this section examines \emph{why} the evolved
 rules work: what they are made of, whether the interval-specific
 ingredients actually contribute, how robust the resulting schedules are
-under executional uncertainty, whether they survive re-evaluation under
-other uncertainty models, and how sensitive the method is to its own
-hyperparameters.
+under executional uncertainty, and whether they survive re-evaluation
+under other uncertainty models.
 
 \subsection{Rule anatomy and interpretability}
 \label{sec:anatomy}
@@ -1146,23 +1154,6 @@ Triangular fuzzy, $E[\tilde{C}]$ & 13.2 & 21.2 & 0.998 \\
 \bottomrule
 \end{tabular}
 \end{table}
-
-\subsection{Hyperparameter confirmation}
-\label{sec:tuning}
-Under the same pre-registered confirmation applied to every design
-decision---the winning configuration re-evolved over 30 independent
-seeds and each resulting rule evaluated on all 70 instances---the tuned
-configuration brings \emph{no} significant improvement: $18.99 \pm 1.33$
-mean $\RE$ versus $18.68 \pm 0.84$ for the untuned default, with a paired
-Wilcoxon signed-rank test on the shared seeds far from significance
-($z=-0.96$); if anything, the stronger selection pressure increases
-seed-to-seed variance. The one systematic effect of the tuned
-configuration is \emph{structural}: with the same performance, it evolves
-markedly smaller trees ($26.4$ versus $33.1$ nodes on average), i.e., the
-tuning budget buys readability rather than quality. We therefore
-characterize the method as robust to its evolutionary hyperparameters:
-conventional settings are statistically indistinguishable from the irace
-winner on unseen instances.
 
 \subsection{Limitations}
 \label{sec:limitations}
