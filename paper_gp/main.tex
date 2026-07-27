@@ -56,8 +56,10 @@ strongest deterministic constructive baseline (Giffler--Thompson with MWKR
 tie-breaking, $29.5\%$) on every single instance---and generalizes
 zero-shot across all seven instance size classes despite being evolved on
 only four training instances of a single size class ($20{\times}15$).
-Embedded in a GRASP-style randomized scheme, the evolved rule
-converts sampling budget into solution quality ($13.7\%$ at best-of-1024).
+On a second benchmark of classical instances it is applied without any
+re-evolution and, wrapped in a GRASP-style randomized scheme, matches the
+published average of a genetic algorithm that searches each instance
+separately.
 Evolved rules are compact, human-readable expressions, and an automatic
 configuration study with irace shows the approach is robust to its own
 hyperparameters. A controlled ablation over 30 evolutions per arm
@@ -128,8 +130,9 @@ This paper makes the following contributions:
   that evolved rules (i) beat every deterministic constructive baseline by
   a wide margin at equal cost, (ii) generalize zero-shot across instance
   sizes---evolved on $20{\times}15$, best class $50{\times}15$---and
-  (iii) extend naturally to a randomized multi-start regime with monotone
-  quality gains up to best-of-1024 (Section~\ref{sec:results}).
+  (iii) transfer to a second benchmark of classical instances, where a
+  randomized multi-start of the same rule matches a published
+  per-instance metaheuristic (Section~\ref{sec:results}).
 \item An analysis of \emph{why} the rules work: an anatomy of the evolved
   expressions (Section~\ref{sec:anatomy}); an ablation that isolates the
   contribution of the interval-width terminals and characterises
@@ -903,25 +906,6 @@ Mean & & & 13.9 & 11.9 & 9.9 & 9.8 & 6.4 & 5.8 & 5.5 \\
 \bottomrule
 \end{tabular}
 \end{table}
-
-\subsection{Sampling behaviour (GP-$\varepsilon$)}
-Best-of-$N$ over all 70 instances (pools of $1024$
-$\varepsilon$-randomized samples per instance): $18.6\%$ ($N{=}1$,
-deterministic), $16.4\%$ ($16$), $14.9\%$ ($64$), $14.4\%$ ($256$),
-$13.7\%$ ($1024$)---about $-4.9$ points over ten doublings
-(Figure~\ref{fig:bestofn})---closing a substantial part of the gap to
-population-based methods while remaining a set of independent
-constructive passes: no solution is ever re-evaluated or refined, and
-the samples are trivially parallel.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=.8\linewidth]{figures/fig_bestofN.pdf}
-\caption{Best-of-$N$ curve of the evolved rule with uniform
-$\varepsilon$-randomization ($\varepsilon{=}0.1$): mean RE over the 70
-instances as the sampling budget doubles.}
-\label{fig:bestofn}
-\end{figure}
 
 \section{Analysis}
 \label{sec:analysis}

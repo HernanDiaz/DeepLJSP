@@ -2,8 +2,8 @@
 """Figuras del paper GP -> paper_gp/figures/*.pdf (+ datos parseados en JSON).
 
 Fig 1: convergencia de la evolución (mejor fitness por generación, 30 semillas)
-Fig 2: curva best-of-N (GP-eps; la comparación con el DRL se movió al
-       tercer paper — paper_seeding/PARKED_gp_vs_rl.tex)
+Fig 2 (eliminada): la curva best-of-N pertenecia al experimento de siembra,
+       que es material del tercer paper (paper_seeding/).
 """
 
 import json
@@ -65,25 +65,3 @@ if curves:
     print(f"fig_convergence: {len(curves)} semillas, {L} gens")
 else:
     print("AVISO: no hay datos de convergencia (logs no encontrados)")
-
-# ---------------------------------------------------------------------------
-# Fig 2 — best-of-N
-# ---------------------------------------------------------------------------
-# N=1: pase determinista; N>1: best-of-N sobre los pools de 1024 muestras
-# GP-eps (recalculados de los pools corregidos; ver audit best-of-N)
-n_gp = [1, 16, 64, 256, 1024]
-re_gp = [18.6, 16.4, 14.9, 14.4, 13.7]
-fig, ax = plt.subplots(figsize=(6.4, 3.8))
-ax.plot(n_gp, re_gp, "-o", color=AMBAR, linewidth=2,
-        label="GP-$\\varepsilon$ (uniform noise)")
-ax.set_xscale("log", base=2)
-ax.set_xticks(n_gp)
-ax.set_xticklabels([str(n) for n in n_gp])
-ax.set_xlabel("N sampled solutions per instance (best-of-N)")
-ax.set_ylabel("mean RE (%) — 70 instances")
-ax.spines[["top", "right"]].set_visible(False)
-ax.legend(frameon=False)
-fig.tight_layout()
-fig.savefig(os.path.join(FIGS, "fig_bestofN.pdf"))
-plt.close(fig)
-print("fig_bestofN ok")
