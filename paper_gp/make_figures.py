@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 """Figuras del paper GP -> paper_gp/figures/*.pdf (+ datos parseados en JSON).
 
-Fig 1: convergencia de la evolución (mejor fitness por generación, 3 semillas)
-Fig 2: escalera de métodos constructivos (RE global, 70 instancias)
-Fig 3: curva best-of-N (GP-eps; la comparación con el DRL se movió al
+Fig 1: convergencia de la evolución (mejor fitness por generación, 30 semillas)
+Fig 2: curva best-of-N (GP-eps; la comparación con el DRL se movió al
        tercer paper — paper_seeding/PARKED_gp_vs_rl.tex)
 """
 
@@ -68,33 +67,7 @@ else:
     print("AVISO: no hay datos de convergencia (logs no encontrados)")
 
 # ---------------------------------------------------------------------------
-# Fig 2 — escalera de constructivos
-# ---------------------------------------------------------------------------
-metodos = [
-    ("MOR (best fixed rule)", 45.5, GRIS),
-    ("G&T + MWKR", 29.5, GRIS),
-    ("GP rule (mean of 30 evolved)", 18.7, AMBAR),
-    ("GP rule (best of 30)", 17.3, AMBAR),
-    ("GP-$\\varepsilon$, best-of-1024", 13.7, AMBAR),
-]
-fig, ax = plt.subplots(figsize=(6.4, 3.4))
-ys = range(len(metodos))[::-1]
-for y, (nombre, v, c) in zip(ys, metodos):
-    ax.barh(y, v, height=0.6, color=c)
-    ax.text(v + 0.6, y, f"{v:.1f}%", va="center", fontsize=10,
-            fontweight="bold")
-ax.set_yticks(list(ys))
-ax.set_yticklabels([m[0] for m in metodos], fontsize=10)
-ax.set_xlabel("mean RE (%) over the 70 instances — lower is better")
-ax.set_xlim(0, 52)
-ax.spines[["top", "right"]].set_visible(False)
-fig.tight_layout()
-fig.savefig(os.path.join(FIGS, "fig_ladder.pdf"))
-plt.close(fig)
-print("fig_ladder ok")
-
-# ---------------------------------------------------------------------------
-# Fig 3 — best-of-N
+# Fig 2 — best-of-N
 # ---------------------------------------------------------------------------
 # N=1: pase determinista; N>1: best-of-N sobre los pools de 1024 muestras
 # GP-eps (recalculados de los pools corregidos; ver audit best-of-N)
