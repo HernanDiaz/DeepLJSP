@@ -1035,6 +1035,20 @@ them it reaches $12.0\%$ as soon as narrowness is rewarded. The gain is
 paid for in expected makespan ($19.64$ versus $18.70$ $\RE$), which is
 precisely the trade-off the robust objective asks for.
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=.8\linewidth]{figures/fig_lambda.pdf}
+\caption{Quality--predictability frontier traced by the weight $\lambda$
+of the robust fitness, Eq.~\eqref{eq:robustfit}. Rules evolved
+\emph{with} the interval-width terminals; each point is the mean over the
+independent evolutions of that arm, every rule evaluated on the 70
+instances, and the grey bars span $\pm 1$ sd in both coordinates. The
+dashed line marks the arm evolved \emph{without} them, which cannot
+narrow the interval whatever $\lambda$ is used. Increasing $\lambda$ buys narrower makespan
+intervals at the price of a larger expected makespan.}
+\label{fig:lambda}
+\end{figure}
+
 The weight $\lambda$ of Eq.~\eqref{eq:robustfit} governs that trade-off,
 and sweeping it traces the frontier between quality and predictability
 (Figure~\ref{fig:lambda}). Both quantities move monotonically with
@@ -1058,19 +1072,6 @@ alone; one who needs schedules whose realised makespan is tightly
 predictable gains from exposing the widths, and can dial the balance
 through $\lambda$.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=.8\linewidth]{figures/fig_lambda.pdf}
-\caption{Quality--predictability frontier traced by the weight $\lambda$
-of the robust fitness, Eq.~\eqref{eq:robustfit}. Rules evolved
-\emph{with} the interval-width terminals; each point is the mean over the
-independent evolutions of that arm, every rule evaluated on the 70
-instances, and the grey bars span $\pm 1$ sd in both coordinates. The
-dashed line marks the arm evolved \emph{without} them, which cannot
-narrow the interval whatever $\lambda$ is used. Increasing $\lambda$ buys narrower makespan
-intervals at the price of a larger expected makespan.}
-\label{fig:lambda}
-\end{figure}
 
 
 \subsection{Robustness under executional uncertainty}
