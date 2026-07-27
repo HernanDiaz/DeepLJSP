@@ -1097,13 +1097,17 @@ than for both baselines at the nominal width ($5.8$ versus $6.5$ for MOR
 and $6.3$ for G\&T-MWKR), and its advantage \emph{widens} as uncertainty
 grows (at $+40\%$: $7.7$ versus $8.9$ and $8.6$).
 Figure~\ref{fig:robustness} shows the per-instance $\bar\varepsilon$
-distributions. It is worth being precise about the source of this
-advantage: as the ablation of Section~\ref{sec:ablation} shows, it does
-\emph{not} come from the rule reading interval widths---rules evolved
-without the width terminals are just as robust. It comes from producing
-better schedules in the first place: compact schedules with fewer and
-shorter critical paths accumulate less uncertainty along them, so both
-the predicted interval and the realised deviation shrink together.
+distributions. It is worth being careful about the source of this
+advantage. Under the makespan objective, the ablation of
+Section~\ref{sec:ablation} finds no benefit from the width terminals in
+the \emph{predicted} width of the interval, so the advantage does not
+appear to rest on the rule reading widths; the evidence is indirect,
+however, since $\bar\varepsilon$ measures the \emph{realised} deviation,
+a distinct quantity. The likely mechanism is that the advantage comes
+from producing better schedules in the first place: compact schedules
+with fewer and shorter critical paths accumulate less uncertainty along
+them, so both the predicted interval and the realised deviation shrink
+together.
 
 \begin{table}[t]
 \centering\small
