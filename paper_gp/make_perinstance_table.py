@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 """Regenera el cuerpo de tab:perinstance (apendice) dentro de main.tex.
 
-LB / MOR / G&T salen de benchmarks/constructive_per_instance.csv; la columna
-GP se toma de benchmarks/reevo_fixedfit/summary.csv para la REGLA DESTACADA,
-de modo que el apendice y el cuerpo del paper reporten siempre la misma regla.
+Columnas: LB y G&T-MWKR de benchmarks/constructive_per_instance.csv, EST de
+benchmarks/est_per_instance.csv, y GP de benchmarks/reevo_fixedfit/summary.csv
+para la REGLA DESTACADA, de modo que el apendice y el cuerpo del paper
+reporten siempre la misma regla.
+
+Se muestra EST y no MOR porque EST es la mejor de las reglas simples
+(42.3% frente a 45.5%), que es la comparacion que hace el texto de 6.3.
 
 Reescribe solo las filas entre \\midrule y \\bottomrule, en el sitio, para no
 depender de un \\input externo (un fichero con CRLF rompe la tabular).
@@ -24,6 +28,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 TEX = os.path.join(HERE, "main.tex")
 PERINST = os.path.join(REPO, "benchmarks/constructive_per_instance.csv")
+ESTCSV = os.path.join(REPO, "benchmarks/est_per_instance.csv")
 SUMMARY = os.path.join(REPO, "benchmarks/reevo_fixedfit/summary.csv")
 
 # summary.csv usa int__taiJ_M_KK; el CSV por instancia usa TA01..TA70. El
@@ -54,9 +59,24 @@ def main():
     if len(base) != 70:
         sys.exit(f"{PERINST}: {len(base)} filas, se esperaban 70")
 
+    est = {int(r["ta"][2:]): float(r["est_re"]) for r in
+           csv.DictReader(open(ESTCSV, encoding="utf-8"))}
+    if len(est) != 70:
+        sys.exit(f"{ESTCSV}: {len(est)} filas, se esperaban 70")
+
+    # los dos CSV se generaron por separado: el LB tiene que coincidir
+    for i, r in base.items():
+        lb_a = int(float(r["lb"]))
+        lb_b = int(float(next(x["lb"] for x in
+                              csv.DictReader(open(ESTCSV, encoding="utf-8"))
+                              if int(x["ta"][2:]) == i)))
+        if lb_a != lb_b:
+            sys.exit(f"TA{i}: LB discrepante entre los dos CSV "
+                     f"({lb_a} vs {lb_b})")
+
     def cell(i):
         r = base[i]
-        return (f"TA{i} & {int(float(r['lb']))} & {float(r['MOR_re']):.1f} & "
+        return (f"TA{i} & {int(float(r['lb']))} & {est[i]:.1f} & "
                 f"{float(r['GT-MWKR_re']):.1f} & {gp[i]:.1f}")
 
     rows = [f"{cell(i)} & {cell(i + 35)} \\\\" for i in range(1, 36)]
