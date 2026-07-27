@@ -1,45 +1,46 @@
 \begin{tikzpicture}[
-  op/.style={circle, draw, inner sep=0.6pt, minimum size=3.6mm,
-             font=\scriptsize},
-  term/.style={rectangle, draw, rounded corners=1pt, inner sep=1.2pt,
-               font=\tiny\itshape, fill=black!5}]
-  \node[term] (n4) at (0.00,-3.44) {SLACK};
-  \node[term] (n5) at (0.62,-3.44) {PT};
-  \node[op] (n3) at (0.31,-2.58) {$\div$};
-  \node[term] (n7) at (1.24,-3.44) {ESTW};
-  \node[term] (n8) at (1.86,-3.44) {EST};
-  \node[op] (n6) at (1.55,-2.58) {max};
-  \node[op] (n2) at (0.93,-1.72) {min};
-  \node[term] (n12) at (2.48,-4.30) {NOR};
-  \node[term] (n14) at (3.10,-5.16) {PT};
-  \node[term] (n15) at (3.72,-5.16) {SLACK};
-  \node[op] (n13) at (3.41,-4.30) {$-$};
-  \node[op] (n11) at (2.94,-3.44) {$-$};
-  \node[term] (n16) at (4.34,-3.44) {WKR};
-  \node[op] (n10) at (3.64,-2.58) {min};
-  \node[term] (n17) at (4.96,-2.58) {NOR};
-  \node[op] (n9) at (4.30,-1.72) {min};
-  \node[op] (n1) at (2.62,-0.86) {$\times$};
-  \node[term] (n19) at (5.58,-1.72) {SLACK};
-  \node[term] (n22) at (6.20,-3.44) {ONE};
-  \node[term] (n27) at (6.82,-6.88) {NOR};
-  \node[term] (n29) at (7.44,-7.74) {PT};
-  \node[term] (n30) at (8.06,-7.74) {SLACK};
-  \node[op] (n28) at (7.75,-6.88) {$-$};
-  \node[op] (n26) at (7.29,-6.02) {$-$};
-  \node[term] (n31) at (8.68,-6.02) {WKR};
-  \node[op] (n25) at (7.98,-5.16) {min};
-  \node[term] (n32) at (9.30,-5.16) {SLACK};
-  \node[op] (n24) at (8.64,-4.30) {min};
-  \node[term] (n33) at (9.92,-4.30) {EST};
-  \node[op] (n23) at (9.28,-3.44) {$-$};
-  \node[op] (n21) at (7.74,-2.58) {$\div$};
-  \node[term] (n35) at (10.54,-3.44) {WKR};
-  \node[term] (n36) at (11.16,-3.44) {PT};
-  \node[op] (n34) at (10.85,-2.58) {$\div$};
-  \node[op] (n20) at (9.30,-1.72) {$-$};
-  \node[op] (n18) at (7.44,-0.86) {$+$};
-  \node[op] (n0) at (5.03,0.00) {$+$};
+  op/.style={circle, draw, inner sep=0.6pt, minimum size=4.6mm,
+             font=\small},
+  term/.style={rectangle, draw, rounded corners=1pt, inner sep=1.6pt,
+               font=\scriptsize\itshape, fill=black!5,
+               rotate=90, anchor=east}]
+  \node[term] (n4) at (0.27,-4.00) {SLACK};
+  \node[term] (n5) at (0.95,-4.00) {PT};
+  \node[op] (n3) at (0.61,-3.00) {$\div$};
+  \node[term] (n7) at (1.62,-4.00) {ESTW};
+  \node[term] (n8) at (2.30,-4.00) {EST};
+  \node[op] (n6) at (1.96,-3.00) {max};
+  \node[op] (n2) at (1.29,-2.00) {min};
+  \node[term] (n12) at (2.98,-5.00) {NOR};
+  \node[term] (n14) at (3.65,-6.00) {PT};
+  \node[term] (n15) at (4.33,-6.00) {SLACK};
+  \node[op] (n13) at (3.99,-5.00) {$-$};
+  \node[op] (n11) at (3.48,-4.00) {$-$};
+  \node[term] (n16) at (5.00,-4.00) {WKR};
+  \node[op] (n10) at (4.24,-3.00) {min};
+  \node[term] (n17) at (5.68,-3.00) {NOR};
+  \node[op] (n9) at (4.96,-2.00) {min};
+  \node[op] (n1) at (3.12,-1.00) {$\times$};
+  \node[term] (n19) at (6.36,-2.00) {SLACK};
+  \node[term] (n22) at (7.03,-4.00) {ONE};
+  \node[term] (n27) at (7.71,-8.00) {NOR};
+  \node[term] (n29) at (8.38,-9.00) {PT};
+  \node[term] (n30) at (9.06,-9.00) {SLACK};
+  \node[op] (n28) at (8.72,-8.00) {$-$};
+  \node[op] (n26) at (8.22,-7.00) {$-$};
+  \node[term] (n31) at (9.74,-7.00) {WKR};
+  \node[op] (n25) at (8.98,-6.00) {min};
+  \node[term] (n32) at (10.41,-6.00) {SLACK};
+  \node[op] (n24) at (9.69,-5.00) {min};
+  \node[term] (n33) at (11.09,-5.00) {EST};
+  \node[op] (n23) at (10.39,-4.00) {$-$};
+  \node[op] (n21) at (8.71,-3.00) {$\div$};
+  \node[term] (n35) at (11.77,-4.00) {WKR};
+  \node[term] (n36) at (12.44,-4.00) {PT};
+  \node[op] (n34) at (12.10,-3.00) {$\div$};
+  \node[op] (n20) at (10.41,-2.00) {$-$};
+  \node[op] (n18) at (8.38,-1.00) {$+$};
+  \node[op] (n0) at (5.75,0.00) {$+$};
   \draw (n3) -- (n4);
   \draw (n3) -- (n5);
   \draw (n6) -- (n7);

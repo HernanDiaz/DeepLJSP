@@ -19,11 +19,26 @@ SYM = {"add": "$+$", "sub": "$-$", "mul": "$\\times$", "div": "$\\div$",
        "min": "min", "max": "max", "neg": "neg"}
 
 
+# Las etiquetas de las hojas se rotan 90 grados: 19 hojas con nombres de
+# hasta 5 caracteres no caben horizontalmente en el ancho de una pagina.
+# Asi cada hoja ocupa solo la ALTURA de su caja, y el texto puede ir a un
+# tamano legible.
+LEAF_W = 0.42    # cm que ocupa una hoja rotada (altura de la caja + aire)
+GAP = 0.10       # cm de separacion adicional entre hojas
+
+
+def label_w(s):
+    return LEAF_W
+
+
 def build(tree, out, depth=0, counter=[0]):
-    """Devuelve (id, x) asignando x a las hojas por orden de aparicion."""
+    """Devuelve (id, x). Las hojas se colocan dejando GAP entre recuadros, de
+    modo que las etiquetas largas reciben mas espacio y no se solapan."""
     nid = f"n{counter[0]}"; counter[0] += 1
     if isinstance(tree, str):
-        x = build.leaf; build.leaf += 1
+        w = label_w(tree)
+        x = build.cursor + w / 2
+        build.cursor = x + w / 2 + GAP
         out.append((nid, x, depth, tree, True))
         return nid, x
     kids = [build(c, out, depth + 1, counter) for c in tree[1:]]
@@ -34,19 +49,23 @@ def build(tree, out, depth=0, counter=[0]):
     return nid, x
 
 
-def emit(path_json, path_out, xs=0.62, ys=0.86):
+def emit(path_json, path_out, xs=1.30, ys=1.0):
+    """xs/ys en cm. El resultado se envuelve en \\resizebox al ancho de linea,
+    de modo que el espaciado puede ser holgado (etiquetas sin solaparse) y la
+    figura se escala despues para caber en la pagina."""
     tree = json.load(open(path_json, encoding="utf-8"))["tree"]
     nodes = []
-    build.leaf = 0
+    build.cursor = 0.0
     build.edges = []
     build(tree, nodes)
 
     L = [
         "\\begin{tikzpicture}[",
-        "  op/.style={circle, draw, inner sep=0.6pt, minimum size=3.6mm,",
-        "             font=\\scriptsize},",
-        "  term/.style={rectangle, draw, rounded corners=1pt, inner sep=1.2pt,",
-        "               font=\\tiny\\itshape, fill=black!5}]",
+        "  op/.style={circle, draw, inner sep=0.6pt, minimum size=4.6mm,",
+        "             font=\\small},",
+        "  term/.style={rectangle, draw, rounded corners=1pt, inner sep=1.6pt,",
+        "               font=\\scriptsize\\itshape, fill=black!5,",
+        "               rotate=90, anchor=east}]",
     ]
     for nid, x, d, label, is_leaf in nodes:
         style = "term" if is_leaf else "op"
