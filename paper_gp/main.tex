@@ -950,6 +950,33 @@ without the width terminals (\textit{PTW}, \textit{ESTW},
 compare the resulting rules with a paired Wilcoxon signed-rank test on
 the shared seeds. Table~\ref{tab:ablation} collects the outcome.
 
+\begin{table}[t]
+\centering\small
+\caption{Terminal ablation under two fitness objectives (30 independent
+evolutions per arm; rank-based tests between arms). \emph{Width} is the
+relative width of the predicted makespan interval.
+Interval-width terminals do not help when the objective is the expected
+makespan---the two arms are then indistinguishable on both
+measures---but do produce significantly narrower schedules when the
+objective rewards predictability.}
+\label{tab:ablation}
+\begin{tabular}{llcc}
+\toprule
+Fitness objective & Terminal set & RE (\%) & Width (\%) \\
+\midrule
+\multirow{3}{*}{Makespan $E[\mathbf{C_{max}}]$}
+ & full & $18.68 \pm 0.84$ & $12.38 \pm 0.31$ \\
+ & without widths & $18.39 \pm 0.59$ & $12.38 \pm 0.22$ \\
+ & \textit{test} & \textit{n.s.} ($z=1.26$) & \textit{n.s.} ($z=-0.12$) \\
+\midrule
+\multirow{3}{*}{Robust $\overline{C}_{\max}+\lambda\,\mathrm{width}$}
+ & full & $19.64 \pm 1.28$ & $\mathbf{12.01 \pm 0.74}$ \\
+ & without widths & $18.70 \pm 0.89$ & $12.42 \pm 0.21$ \\
+ & \textit{test} & --- & $z=2.73$, $p<0.01$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \textbf{Under the makespan objective, width information is not used
 productively.} Removing the three width terminals leaves performance
 unchanged: $18.39 \pm 0.59$ mean $\RE$ over the 70 instances without
@@ -1018,32 +1045,6 @@ the price of a larger expected makespan.}
 \label{fig:lambda}
 \end{figure}
 
-\begin{table}[t]
-\centering\small
-\caption{Terminal ablation under two fitness objectives (30 independent
-evolutions per arm; rank-based tests between arms). \emph{Width} is the
-relative width of the predicted makespan interval.
-Interval-width terminals do not help when the objective is the expected
-makespan---the two arms are then indistinguishable on both
-measures---but do produce significantly narrower schedules when the
-objective rewards predictability.}
-\label{tab:ablation}
-\begin{tabular}{llcc}
-\toprule
-Fitness objective & Terminal set & RE (\%) & Width (\%) \\
-\midrule
-\multirow{3}{*}{Makespan $E[\mathbf{C_{max}}]$}
- & full & $18.68 \pm 0.84$ & $12.38 \pm 0.31$ \\
- & without widths & $18.39 \pm 0.59$ & $12.38 \pm 0.22$ \\
- & \textit{test} & \textit{n.s.} ($z=1.26$) & \textit{n.s.} ($z=-0.12$) \\
-\midrule
-\multirow{3}{*}{Robust $\overline{C}_{\max}+\lambda\,\mathrm{width}$}
- & full & $19.64 \pm 1.28$ & $\mathbf{12.01 \pm 0.74}$ \\
- & without widths & $18.70 \pm 0.89$ & $12.42 \pm 0.21$ \\
- & \textit{test} & --- & $z=2.73$, $p<0.01$ \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 \subsection{Robustness under executional uncertainty}
 \label{sec:robustness}
