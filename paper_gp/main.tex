@@ -820,70 +820,66 @@ common benchmark.
 
 \subsection{Cross-family generalization: the 12 classical instances}
 \label{sec:classics}
-The 12 classical instances allow a direct confrontation with the
-\emph{published} results of the IJSP metaheuristics, on their own
-benchmark and metric (Table~\ref{tab:classics}). Those methods belong to
-a different algorithmic family: a genetic algorithm evolving a
-population of permutations~\cite{DiazGA2020} and three artificial bee
-colony variants~\cite{DiazFEABC2023,DiazICAE2023}, all of which run a
-separate search on each instance. Recall that our rule
-was evolved on four interval Taillard $20{\times}15$ instances and is
-deployed here \emph{zero-shot}, on different instance families and
-sizes.
+The 12 classical instances serve a double purpose: they test the evolved
+rule on instance families and sizes it has never seen---the rule was
+evolved on four interval Taillard $20{\times}15$ instances and is
+applied here without any re-evolution---and they enable a direct
+comparison with the \emph{published} results of the IJSP metaheuristics
+on their own benchmark and metric (Table~\ref{tab:classics}). Those
+methods belong to a different algorithmic family: a genetic algorithm
+evolving a population of permutations~\cite{DiazGA2020} and three
+artificial bee colony variants~\cite{DiazFEABC2023,DiazICAE2023}, each
+of which runs a separate search on every instance. Alongside the
+deterministic pass, Table~\ref{tab:classics} reports the randomized
+extension of Section~\ref{sec:grasp} at best-of-$64$ and best-of-$1024$:
+$N$ independent $\varepsilon$-randomized passes of the same rule, of
+which the best schedule is kept, with no refinement or recombination
+among samples.
 
-Two of our columns report the randomized extension of
-Section~\ref{sec:grasp}. GP-$\varepsilon$ builds a schedule with the
-evolved rule but, at each dispatching decision, replaces the rule's
-choice by a uniformly random eligible operation with probability
-$\varepsilon = 0.1$; drawing $N$ such schedules independently and
-keeping the best one yields the best-of-$N$ figures. The first sample is
-always the deterministic rule, so best-of-$N$ can never be worse than a
-single pass, and the $N$ samples are mutually independent: none of them
-is refined, recombined or in any way informed by the others.
+The two families also differ in how they spend computation. Counted in
+complete schedules evaluated---the measure that does not depend on the
+implementation---best-of-1024 uses $1024$ independent samples per
+instance, whereas the metaheuristics evolve a population of $250$
+individuals over hundreds of generations: tens of thousands of
+evaluations, chained one after another. In wall-clock terms the picture
+is mixed. A single constructive pass takes ${\approx}0.1$~s on instances
+of this size in our Python implementation, against the $0.5$--$2.2$~s
+reported for the genetic algorithm and the $1.9$--$6.8$~s reported for
+fEABC on the same instances~\cite{DiazFEABC2023}, so the deterministic
+rule is faster even though interpreted code is being compared with
+compiled code. Best-of-1024, however, requires about two minutes of
+sequential Python time and is therefore \emph{not} faster than the
+published metaheuristics; what it offers is that its samples are
+mutually independent---the budget parallelizes trivially---and that $N$
+acts as a dial between cost and quality.
 
-This is also where the two families differ in cost. Counted in complete
-schedules evaluated---the measure that does not depend on the
-implementation---best-of-1024 uses $1024$ per instance, all of them
-independent, whereas the metaheuristics evolve a population of $250$
-individuals over hundreds of generations, that is, tens of thousands of
-evaluations chained one after another. In wall-clock terms the picture
-is more nuanced, and worth stating plainly. A single constructive pass
-takes ${\approx}0.1$ s on instances of this size in our Python
-implementation, against the $0.5$--$2.2$ s reported for the genetic
-algorithm and the $1.9$--$6.8$ s reported for fEABC on these very
-instances~\cite{DiazFEABC2023}: the deterministic rule is faster even
-across the handicap of comparing interpreted with compiled code.
-Best-of-1024, on the other hand, needs about two minutes of sequential
-Python time, so it is \emph{not} faster than the published
-metaheuristics in wall-clock terms. What it offers instead is that its
-samples are mutually independent, so the budget can be spread over as
-many cores as are available, and that $N$ acts as a dial between cost
-and quality.
-
-With that in mind, the randomized extension GP-$\varepsilon$ at
-best-of-1024 reaches $9.9\%$ $\RE$, matching the published average of the
-genetic algorithm of~\cite{DiazGA2020} ($9.8\%$)---a per-instance
-metaheuristic evolving a population for every instance---and beating it
-on half of the instances. The purpose-built ABC variants
-remain clearly ahead ($5.5$--$6.4\%$), as expected of iterative
-search: the point of this comparison is not to compete with them but to
-locate the constructive frontier---a single evolved rule, transferred
-across families without retraining, now covers a substantial part of
-the gap that used to separate dispatching rules from metaheuristics.
+In terms of quality, GP-$\varepsilon$ at best-of-1024 reaches $9.9\%$
+$\RE$, against the $9.8\%$ published average of the genetic algorithm:
+each method is better on exactly half of the instances, and a Wilcoxon
+signed-rank test on the paired per-instance values finds no significant
+difference ($z = 0.24$). A rule evolved once, on another benchmark, is
+thus statistically indistinguishable from a metaheuristic that evolves a
+population for every instance it solves. The purpose-built ABC variants
+remain clearly ahead ($5.5$--$6.4\%$), as expected of iterative search:
+the point of this comparison is not to compete with them but to locate
+the constructive frontier---a single evolved rule, transferred across
+families without retraining, covers a substantial part of the gap that
+used to separate dispatching rules from metaheuristics.
 
 \begin{table}[t]
 \centering\small
-\caption{RE (\%) on the 12 classical interval instances. Own methods
+\caption{RE (\%) on the 12 classical interval instances: our methods
 (deterministic single pass and GP-$\varepsilon$ best-of-$N$; rule evolved
-on interval Taillard $20{\times}15$, applied zero-shot) versus published
-average results (30 runs) of the IJSP metaheuristics: GA~\cite{DiazGA2020}
-and the ABC variants~\cite{DiazFEABC2023,DiazICAE2023}. LB is the
-best-known lower bound of the expected makespan.}
+on interval Taillard $20{\times}15$, applied zero-shot) versus the
+published average results (30 runs per instance) of the IJSP
+metaheuristics GA~\cite{DiazGA2020}, ABC$_{E3}$, fEABC~\cite{DiazFEABC2023}
+and ESABC~\cite{DiazICAE2023}. LB is the best-known lower bound of the
+expected makespan.}
 \label{tab:classics}
 \setlength{\tabcolsep}{4.5pt}
 \begin{tabular}{lrrrrrrrrr}
 \toprule
-& & & \multicolumn{3}{c}{Own (zero-shot)} &
+& & & \multicolumn{3}{c}{Ours (zero-shot)} &
 \multicolumn{4}{c}{Published (avg of 30)} \\
 \cmidrule(lr){4-6}\cmidrule(l){7-10}
 Inst. & LB & & GP & GP-$\varepsilon_{64}$ & GP-$\varepsilon_{1024}$ &
