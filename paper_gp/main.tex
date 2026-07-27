@@ -652,10 +652,10 @@ realized by generation $25$--$30$ (Figure~\ref{fig:convergence}). The
 evolved rules are structurally recognizable, combining the classical
 dispatching ingredients in interpretable ways. Figure~\ref{fig:seed27}
 shows the best rule of the campaign, obtained with seed~27: $37$ nodes
-over $19$ leaves, two of its subtrees being identical---a recurring
-pattern in the evolved rules. Factoring that repeated subtree as
-$A = \mathit{NOR}-\mathit{PT}+\mathit{SLACK}$ and flattening the nested
-minima, the rule is algebraically equivalent to
+over $19$ leaves. Writing
+$A = \mathit{NOR}-\mathit{PT}+\mathit{SLACK}$ for the subtree that
+occurs twice in it, and flattening the nested minima, the rule is
+algebraically equivalent to:
 \begin{multline}
 \min\!\left(\frac{\mathit{SLACK}}{\mathit{PT}},\,
 \max(\mathit{ESTW},\mathit{EST})\right)
