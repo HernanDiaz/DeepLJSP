@@ -836,12 +836,11 @@ $N$ independent $\varepsilon$-randomized passes of the same rule, of
 which the best schedule is kept, with no refinement or recombination
 among samples.
 
-The two families also differ in how they spend computation. Counted in
-complete schedules evaluated---the measure that does not depend on the
-implementation---best-of-1024 uses $1024$ independent samples per
-instance, whereas the metaheuristics evolve a population of $250$
-individuals over hundreds of generations: tens of thousands of
-evaluations, chained one after another. In wall-clock terms the picture
+The two families also differ in how they spend computation:
+best-of-1024 evaluates $1024$ mutually independent samples per instance,
+whereas the metaheuristics evolve a population of $250$
+individuals~\cite{DiazGA2020,DiazFEABC2023} through successive
+generations, each of which depends on the previous one. In wall-clock terms the picture
 is mixed. A single constructive pass takes ${\approx}0.1$~s on instances
 of this size in our Python implementation, against the $0.5$--$2.2$~s
 reported for the genetic algorithm and the $1.9$--$6.8$~s reported for
