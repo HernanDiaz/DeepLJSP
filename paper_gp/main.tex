@@ -733,7 +733,9 @@ retraining or rescaling.
 70 Taillard interval instances: mean $\pm$ sd across the 30 independently
 evolved rules, and the best evolved rule.}
 \label{tab:gp70}
-\setlength{\tabcolsep}{3.5pt}
+% 9 columnas = 18 huecos, asi que cada punto de tabcolsep vale 18pt de ancho:
+% a 3.5pt la tabla medía 373.7pt contra los 360pt de \linewidth
+\setlength{\tabcolsep}{2.5pt}
 \scriptsize
 \begin{tabular}{lccccccc|c}
 \toprule
