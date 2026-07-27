@@ -46,11 +46,16 @@ if curves:
               indent=1)
     L = min(len(v) for v in curves.values())
     fig, ax = plt.subplots(figsize=(6.4, 3.8))
-    for seed, ys in sorted(curves.items()):
-        ax.plot(range(L), ys[:L], color=GRIS, linewidth=0.6, alpha=0.35)
+    # curvas individuales muy tenues: son contexto, no el mensaje
+    for i, (seed, ys) in enumerate(sorted(curves.items())):
+        ax.plot(range(L), ys[:L], color="#9aa5b1", linewidth=0.45, alpha=0.22,
+                zorder=1, label="individual runs" if i == 0 else None)
     mean = [sum(curves[s][g] for s in curves) / len(curves) for g in range(L)]
-    ax.plot(range(L), mean, color=AMBAR, linewidth=2.2,
-            label=f"mean of {len(curves)} seeds")
+    # halo blanco bajo la media para que destaque sobre el haz de curvas
+    ax.plot(range(L), mean, color="white", linewidth=4.0, solid_capstyle="round",
+            zorder=2)
+    ax.plot(range(L), mean, color=AMBAR, linewidth=2.4, solid_capstyle="round",
+            zorder=3, label=f"mean of {len(curves)} runs")
     ax.set_xlabel("generation")
     ax.set_ylabel("best training RE (%)")
     ax.spines[["top", "right"]].set_visible(False)
