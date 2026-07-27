@@ -13,6 +13,7 @@ deterministas, y GP-eps best-of-{64,1024}.
 Salida: benchmarks/classic12.csv + tabla comparativa.
 """
 
+import argparse
 import json
 import random
 import re
@@ -101,8 +102,16 @@ def rollout(env, h, rng=None, eps=0.0):
 
 
 def main():
-    gp = GPRuleHeuristic(json.load(open(
-        "benchmarks/reevo_fixedfit/gp_rule_seed27.json", encoding="utf-8"))["tree"])
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--rule",
+                    default="benchmarks/reevo_fixedfit/gp_tuned_seed1.json",
+                    help="regla destacada a evaluar")
+    ap.add_argument("--out", default="benchmarks/classic12_tuned.csv",
+                    help="salida; no se sobrescribe la de campanas previas")
+    args = ap.parse_args()
+    print(f"regla: {args.rule}", flush=True)
+
+    gp = GPRuleHeuristic(json.load(open(args.rule, encoding="utf-8"))["tree"])
     mor, gt = MORHeuristic(), GTHeuristic(tiebreak="mwkr")
 
     rows = []
@@ -136,7 +145,7 @@ def main():
                      **PUB_AVG[name]})
         print(f"{name}: GP {r_gp:.1f} | bo1024 {best1024[1]:.1f}", flush=True)
 
-    with open("benchmarks/classic12.csv", "w", encoding="utf-8") as f:
+    with open(args.out, "w", encoding="utf-8") as f:
         cols = ["inst", "mor", "gt", "gp", "gp64", "gp1024",
                 "GA", "ABCE3", "fEABC", "ESABC"]
         f.write(",".join(cols) + "\n")
@@ -157,7 +166,7 @@ def main():
         for c, w in [("mor", 7), ("gt", 7), ("gp", 7), ("gp64", 8),
                      ("gp1024", 9), ("GA", 7), ("ABCE3", 8),
                      ("fEABC", 8), ("ESABC", 8)]))
-    print("\nCSV: benchmarks/classic12.csv")
+    print(f"\nCSV: {args.out}")
 
 
 if __name__ == "__main__":

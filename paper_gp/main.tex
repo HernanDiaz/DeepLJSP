@@ -69,14 +69,14 @@ On a second benchmark of classical instances it is applied without any
 re-evolution and, wrapped in a GRASP-style randomized scheme, matches the
 published average of a genetic algorithm that searches each instance
 separately.
-Evolved rules are compact, human-readable expressions, and an automatic
-configuration study with irace shows the approach is robust to its own
-hyperparameters. A controlled ablation over 30 evolutions per arm
-characterizes \emph{when} interval awareness pays: the width terminals
-do not improve the expected makespan---the worst-case bounds carry that
-signal---but under an objective that rewards predictability they yield
-significantly narrower makespan intervals, a trade-off the user can
-dial. We position the method against fixed rules, active
+Evolved rules are compact, human-readable expressions, with the
+evolutionary hyperparameters configured automatically by irace. A
+controlled ablation over 30 evolutions per arm characterizes what
+interval awareness buys: the width terminals do not improve the expected
+makespan---the worst-case bounds carry that signal---but they yield
+significantly narrower makespan intervals, modestly under a makespan
+objective and substantially under one that rewards predictability, a
+trade-off the user can dial. We position the method against fixed rules, active
 schedule generators, and published metaheuristics, characterizing the
 computational class in which interpretable evolved rules operate.
 \end{abstract}
