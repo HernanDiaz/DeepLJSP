@@ -931,8 +931,8 @@ under other uncertainty models.
 \subsection{Rule anatomy and interpretability}
 \label{sec:anatomy}
 A practical appeal of GP over neural policies is that its output is a
-readable expression. Evolved rules are compact---mean tree size $33$
-nodes ($19$--$40$), mean depth $10$---so a rule can be inspected
+readable expression. Evolved rules are compact---mean tree size $26$
+nodes ($20$--$30$), mean depth $9$---so a rule can be inspected
 and simplified by hand. Figure~\ref{fig:terminals} reports how often each
 terminal is used across the 30 evolved rules. The backbone is the
 classical scheduling triad---slack (\textit{SLACK}), work remaining
@@ -941,7 +941,7 @@ worst-case processing time (\textit{PT}), confirming that the evolution
 rediscovers and refines known dispatching logic rather than exploiting
 benchmark artefacts. The \emph{interval-width} terminals
 (\textit{PTW}, \textit{ESTW}, \textit{WKRW}) account for ${\approx}21\%$
-of all terminal usage and appear in $28$ of the $30$ evolved rules: the
+of all terminal usage and appear in $27$ of the $30$ evolved rules: the
 evolution consistently reaches for uncertainty information, even though
 worst-case bounds carry the larger share of the signal. Whether that
 width information translates into better schedules is quantified by the
@@ -975,14 +975,14 @@ objective rewards predictability.}
 Fitness objective & Terminal set & RE (\%) & Width (\%) \\
 \midrule
 \multirow{3}{*}{Makespan $E[\mathbf{C_{max}}]$}
- & full & $18.68 \pm 0.84$ & $12.38 \pm 0.31$ \\
- & without widths & $18.39 \pm 0.59$ & $12.38 \pm 0.22$ \\
- & \textit{test} & \textit{n.s.} ($z=1.26$) & \textit{n.s.} ($z=-0.12$) \\
+ & full & $18.99 \pm 1.33$ & $12.41 \pm 0.30$ \\
+ & without widths & $18.66 \pm 1.08$ & $12.62 \pm 0.23$ \\
+ & \textit{test} & \textit{n.s.} ($z=-0.83$) & $z=3.40$, $p<0.001$ \\
 \midrule
 \multirow{3}{*}{Robust, Eq.~\eqref{eq:robustfit}}
- & full & $19.64 \pm 1.28$ & $\mathbf{12.01 \pm 0.74}$ \\
- & without widths & $18.70 \pm 0.89$ & $12.42 \pm 0.21$ \\
- & \textit{test} & --- & $z=2.73$, $p<0.01$ \\
+ & full & $19.62 \pm 1.52$ & $\mathbf{12.04 \pm 0.75}$ \\
+ & without widths & $18.42 \pm 0.87$ & $12.47 \pm 0.20$ \\
+ & \textit{test} & --- & $z=3.22$, $p<0.01$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -992,28 +992,26 @@ resto del paper ya reporta el brazo tuneado ($18.99\pm1.33$). Los cuatro
 brazos se rehacen con la campana tuneada en curso, que calcula RE y
 anchura de una sola pasada.}
 
-Under the makespan objective, the width information turns out not to
-be used productively. Removing the three width terminals leaves
-performance unchanged: $18.39 \pm 0.59$ mean $\RE$ over the 70 instances without
-them versus $18.68 \pm 0.84$ with them, a difference that is not
-significant ($z=1.26$) and, if anything, favours the smaller terminal
-set. The same holds for the resulting schedules: the relative width of
-their predicted makespan interval is identical to two decimals
-($12.38 \pm 0.31$ with the width terminals versus $12.38 \pm 0.22$
-without them), and their $\bar\varepsilon$ robustness is
-indistinguishable ($5.71$ versus $5.73 \times 10^{-3}$ for the best
-rule of each arm). So although the evolution does reach for
-the width terminals---they appear in 28 of the 30 rules
-(Section~\ref{sec:anatomy})---ablating them costs nothing: for
-minimising the expected makespan, the \emph{position} of the intervals
-(their worst-case bounds) carries essentially all the exploitable
-signal.
+Under the makespan objective, the width terminals do not improve the
+quantity actually being optimised. Removing the three of them leaves the
+expected makespan unchanged: $18.66 \pm 1.08$ mean $\RE$ over the 70
+instances without them versus $18.99 \pm 1.33$ with them, a difference
+that is not significant ($z=-0.83$) and, if anything, favours the smaller
+terminal set. They do, however, leave a mark on the schedules: the
+relative width of the predicted makespan interval is significantly
+narrower when the rule can read widths ($12.41 \pm 0.30$ versus
+$12.62 \pm 0.23$; paired Wilcoxon $z=3.40$, $p<0.001$), even though
+nothing in this objective rewards narrowness. The evolution does reach
+for these terminals---they appear in 27 of the 30 rules
+(Section~\ref{sec:anatomy})---and what it obtains from them here is a
+tighter interval at no cost in expected makespan.
 
-This negative result is, on reflection, unsurprising: the fitness
-being optimised rewards only the makespan, so there is no incentive for
-a rule to act on the magnitude of the uncertainty. We therefore repeat
-the ablation with a \emph{robust} fitness that explicitly rewards
-predictability, minimising
+That the gain shows up in the interval rather than in the makespan is,
+on reflection, unsurprising: the fitness being optimised rewards only
+the makespan, so nothing pushes a rule to trade quality for
+predictability. To ask whether it \emph{can} make that trade when asked,
+we repeat the ablation with a \emph{robust} fitness that explicitly
+rewards predictability, minimising
 \begin{equation}
 f_{\lambda} = \overline{C}_{\max} + \lambda\,
 \big(\overline{C}_{\max}-\underline{C}_{\max}\big),
@@ -1021,16 +1019,18 @@ f_{\lambda} = \overline{C}_{\max} + \lambda\,
 \end{equation}
 that is, a low worst case \emph{and} a narrow interval, with the weight
 $\lambda$ setting the balance between the two; we take $\lambda = 1$
-here. Under this objective the ablation reverses, and the width
-information does pay. Rules evolved with the width terminals produce schedules whose
-makespan interval is significantly narrower than those evolved without
-them ($12.01 \pm 0.74$ versus $12.42 \pm 0.21$ relative width; paired
-Wilcoxon $z=2.73$, $p<0.01$). The asymmetry is informative: deprived of
-width terminals, the evolution cannot narrow the interval below
-${\approx}12.4\%$ \emph{whatever} objective it is given, whereas with
-them it reaches $12.0\%$ as soon as narrowness is rewarded. The gain is
-paid for in expected makespan ($19.64$ versus $18.70$ $\RE$), which is
-precisely the trade-off the robust objective asks for.
+here. Under this objective the separation widens. Rules evolved with the
+width terminals produce schedules whose makespan interval is
+significantly narrower than those evolved without them
+($12.04 \pm 0.75$ versus $12.47 \pm 0.20$ relative width; paired
+Wilcoxon $z=3.22$, $p<0.01$). The asymmetry is informative: deprived of
+width terminals, the evolution stays at ${\approx}12.5\%$
+\emph{whatever} objective it is given---$12.62$ under makespan and
+$12.47$ under the robust fitness---whereas with them it moves from
+$12.41$ to $12.04\%$ as soon as narrowness is rewarded, and further
+still as $\lambda$ grows. That movement is paid for in expected makespan
+($19.62$ versus $18.42$ $\RE$), which is precisely the trade-off the
+robust objective asks for.
 
 \begin{figure}[t]
 \centering
@@ -1060,14 +1060,23 @@ terminals, the evolution is pinned at ${\approx}12.4\%$ \emph{whatever}
 value of $\lambda$ it is given, so it has no such frontier available to
 it at all.
 
-Together, these experiments characterise \emph{when} interval
-awareness matters, rather than asserting that it always does: the width
-of an interval is actionable information for a dispatching rule, but
-only when the objective values predictability. A practitioner
-minimising expected makespan can safely use the worst-case attributes
-alone; one who needs schedules whose realised makespan is tightly
-predictable gains from exposing the widths, and can dial the balance
-through $\lambda$.
+Together, these experiments locate \emph{what} interval awareness buys,
+rather than asserting that it improves everything: the width of an
+interval is actionable information for a dispatching rule, but what it
+buys is predictability, not expected makespan. Exposing the widths
+leaves the expected makespan where it was under either objective, and
+narrows the predicted interval under both---modestly when the objective
+ignores narrowness, substantially when it rewards it, with $\lambda$
+setting how far the trade is taken.
+\todo{ESTE PARRAFO CAMBIA DE TESIS respecto a la version por defecto y
+lo dejo para que lo decidas. Con la config tuneada el ancho bajo
+objetivo makespan pasa de n.s. ($z=-0.12$) a significativo ($z=3.40$),
+asi que ya no es cierto que la anchura solo sirva cuando el objetivo
+premia la predictibilidad: sirve siempre, solo que menos. He ajustado
+las frases falsas, pero el encuadre de la seccion --- y sus ecos en la
+contribucion 3 de la introduccion (linea 148) y en la conclusion (linea
+1190), que siguen diciendo ``not under a makespan objective'' --- es
+decision tuya.}
 
 
 

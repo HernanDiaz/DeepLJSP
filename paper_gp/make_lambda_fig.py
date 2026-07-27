@@ -20,7 +20,7 @@ if hasattr(sys.stdout, "reconfigure"):
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
-CSV = os.path.join(REPO, "benchmarks/lambda_sweep/lambda_sweep.csv")
+CSV = os.path.join(REPO, "benchmarks/lambda_sweep/lambda_sweep_tuned.csv")
 OUT = os.path.join(HERE, "figures/fig_lambda.pdf")
 
 # mismos ajustes que make_figures.py, para que el tamano de fuente sea
@@ -28,7 +28,11 @@ OUT = os.path.join(HERE, "figures/fig_lambda.pdf")
 plt.rcParams.update({"font.size": 11, "figure.facecolor": "white"})
 
 AMBAR, GRIS = "#d68910", "#5d6d7e"
-NOWIDTH = 12.42          # ancho del brazo sin terminales de anchura
+# Ancho del brazo sin terminales de anchura bajo el objetivo robusto
+# (RESULTADOS.md de la campana tuneada). Bajo objetivo makespan da 12.62, asi
+# que 12.47 es el punto MAS estrecho que ese brazo alcanza con cualquier
+# objetivo: es la referencia exigente para el argumento.
+NOWIDTH = 12.47
 
 rows = sorted((float(r["lambda"]), float(r["re_mean"]), float(r["re_sd"]),
                float(r["width_mean"]), float(r["width_sd"]))

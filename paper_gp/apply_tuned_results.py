@@ -81,6 +81,21 @@ def f(pair):
     return f"{pair[0]:.2f} \\pm {pair[1]:.2f}"
 
 
+def verdict(z):
+    """Celda de test a partir del |z| de la normal, en vez de dar por hecho
+    el resultado: con la configuracion tuneada el ancho bajo objetivo makespan
+    pasa de n.s. a significativo, y hardcodear 'n.s.' habria impreso una
+    conclusion falsa junto a su propio z."""
+    a = abs(z)
+    if a > 3.29:
+        return f"$z={z:.2f}$, $p<0.001$"
+    if a > 2.58:
+        return f"$z={z:.2f}$, $p<0.01$"
+    if a > 1.96:
+        return f"$z={z:.2f}$, $p<0.05$"
+    return f"\\textit{{n.s.}} ($z={z:.2f}$)"
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry", action="store_true")
@@ -109,15 +124,14 @@ def main():
  & \\textit{test} & \\textit{n.s.} ($z=1.26$) & \\textit{n.s.} ($z=-0.12$) \\\\""",
         f""" & full & ${f(d['full']['re'])}$ & ${f(d['full']['w'])}$ \\\\
  & without widths & ${f(d['nowidth']['re'])}$ & ${f(d['nowidth']['w'])}$ \\\\
- & \\textit{{test}} & \\textit{{n.s.}} ($z={d['z_re']:.2f}$) & """
-        f"""\\textit{{n.s.}} ($z={d['z_w']:.2f}$) \\\\""")
+ & \\textit{{test}} & {verdict(d['z_re'])} & {verdict(d['z_w'])} \\\\""")
 
     sub(""" & full & $19.64 \\pm 1.28$ & $\\mathbf{12.01 \\pm 0.74}$ \\\\
  & without widths & $18.70 \\pm 0.89$ & $12.42 \\pm 0.21$ \\\\
  & \\textit{test} & --- & $z=2.73$, $p<0.01$ \\\\""",
         f""" & full & ${f(d['rob_w']['re'])}$ & $\\mathbf{{{f(d['rob_w']['w'])}}}$ \\\\
  & without widths & ${f(d['rob_nw']['re'])}$ & ${f(d['rob_nw']['w'])}$ \\\\
- & \\textit{{test}} & --- & $z={d['z_rob']:.2f}$ \\\\""")
+ & \\textit{{test}} & --- & {verdict(d['z_rob'])} \\\\""")
 
     # --- texto de 7.2 -----------------------------------------------------
     sub(f"""performance unchanged: $18.39 \\pm 0.59$ mean $\\RE$ over the 70 instances without
