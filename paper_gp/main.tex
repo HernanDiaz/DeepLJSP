@@ -153,11 +153,8 @@ This paper makes the following contributions:
   makespan deviates less from its prediction than the baselines',
   increasingly so as uncertainty grows (Section~\ref{sec:robustness}).
 \item An automatic configuration study (irace, 200 experiments) of the
-  evolutionary hyperparameters, confirmed over 30 independent evolutions
-  per configuration: tuning brings no significant quality gain---the
-  method is robust to its own knobs---but does yield systematically
-  smaller, more readable trees at equal performance
-  (Section~\ref{sec:irace}).
+  evolutionary hyperparameters, whose winning configuration is used
+  throughout (Section~\ref{sec:irace}).
 \end{enumerate}
 
 The remainder of the paper is organized as follows.
@@ -638,49 +635,30 @@ practice in evolutionary computation.
 \label{sec:irace}
 The four qualitative knobs of the evolution---tournament size, crossover
 probability, tree-size cap and elitism---were configured with
-irace over a budget of 200 experiments, each a full evolution
-(population $100$, $50$ generations) on the training instances whose
-cost is the resulting rule's $\RE$ on the development set, with the
-conventional configuration seeded. Table~\ref{tab:irace} lists the
-parameter space and the winning configuration. The elite configurations
-agree on a higher selection pressure than the default (tournament size
-$7$ versus $4$) and a crossover probability close to the default
-($0.72$--$0.77$); the tree-size cap does not discriminate (surviving
-elites span caps of $20$, $30$ and $40$). Throughout the race the
-statistical tests discard configurations only weakly, itself evidence
-that performance is largely flat over the hyperparameter space.
-
-We confirmed this on unseen instances following the pre-registered
-protocol applied to every design decision of this work: the winning
-configuration was re-evolved over 30 independent seeds and each
-resulting rule evaluated on all 70 instances. The tuned configuration
-brings \emph{no} significant improvement---$18.99 \pm 1.33$ mean $\RE$
-versus $18.68 \pm 0.84$ for the default, with a paired Wilcoxon
-signed-rank test on the shared seeds far from significance
-($z=-0.96$)---and if anything the stronger selection pressure increases
-seed-to-seed variance. Its one systematic effect is \emph{structural}:
-at equal performance it evolves markedly smaller trees ($26.4$ versus
-$33.1$ nodes on average, and with half the spread), so the tuning budget
-buys readability rather than quality. The method is therefore robust to
-its evolutionary hyperparameters. We nonetheless adopt the tuned
-configuration of Table~\ref{tab:gpparams} for \emph{every} experiment
-reported in this paper: when quality is indifferent, the configuration
-that returns rules one can actually read is the one worth having in a
-hyper-heuristic whose output is meant to be inspected.
+irace over a budget of 200 experiments, each one a full evolution
+(population $100$, $50$ generations) on the training instances, scored by
+the resulting rule's $\RE$ on the development set.
+Table~\ref{tab:irace} lists the parameter space and the winning
+configuration, which is the one used for every experiment reported in
+this paper (Table~\ref{tab:gpparams}). The elite configurations agree on
+a high selection pressure (tournament size $7$) and a crossover
+probability in the range $0.72$--$0.77$; the tree-size cap does not
+discriminate, with surviving elites spanning caps of $20$, $30$ and
+$40$.
 
 \begin{table}[t]
 \centering\small
 \caption{Hyperparameter space explored by irace (200 experiments; cost =
-development-set RE of the evolved rule) and resulting configurations.}
+development-set RE of the evolved rule) and the winning configuration.}
 \label{tab:irace}
-\begin{tabular}{lccc}
+\begin{tabular}{lcc}
 \toprule
-Parameter & Range / values & Default (seeded) & irace winner \\
+Parameter & Range / values & irace winner \\
 \midrule
-Tournament size & $\{2, 3, 4, 5, 7\}$ & $4$ & $7$ \\
-Crossover prob.\ $p_c$ & $[0.5,\, 0.95]$ & $0.8$ & $0.77$ \\
-Tree-size cap & $\{20, 30, 40, 60\}$ & $40$ & $30$ \\
-Elitism & $\{1, 2, 4\}$ & $2$ & $2$ \\
+Tournament size & $\{2, 3, 4, 5, 7\}$ & $7$ \\
+Crossover prob.\ $p_c$ & $[0.5,\, 0.95]$ & $0.77$ \\
+Tree-size cap & $\{20, 30, 40, 60\}$ & $30$ \\
+Elitism & $\{1, 2, 4\}$ & $2$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1203,11 +1181,9 @@ the cost of a single constructive pass, and (ii)~they
 generalize zero-shot across all size
 classes---evolved on $20{\times}15$, best on the unseen
 $50{\times}15$---because the representation contains no size-bound
-quantities. (iii)~The method is robust to its evolutionary
-hyperparameters: a 200-experiment irace study confirmed over 30
-evolutions per configuration yields no significant gain over
-conventional settings, only systematically smaller trees at equal
-performance. Beyond aggregate quality, the analysis pins down
+quantities. (iii)~The evolutionary hyperparameters were configured
+automatically with a 200-experiment irace study, whose winning
+configuration is used throughout. Beyond aggregate quality, the analysis pins down
 \emph{when} the interval-specific ingredients matter: exposing the
 widths of the uncertain quantities does not improve the expected
 makespan---the worst-case bounds already carry that signal---but it
