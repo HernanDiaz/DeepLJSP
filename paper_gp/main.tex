@@ -826,7 +826,8 @@ evolved on four interval Taillard $20{\times}15$ instances and is
 applied here without any re-evolution---and they enable a direct
 comparison with the \emph{published} results of the IJSP metaheuristics
 on their own benchmark and metric (Table~\ref{tab:classics}). Those
-methods belong to a different algorithmic family: a genetic algorithm
+methods belong to different algorithmic families---evolutionary
+computation and swarm intelligence: a genetic algorithm
 evolving a population of permutations~\cite{DiazGA2020} and three
 artificial bee colony variants~\cite{DiazFEABC2023,DiazICAE2023}, each
 of which runs a separate search on every instance. Alongside the
@@ -844,9 +845,9 @@ generations, each of which depends on the previous one. In wall-clock terms the 
 is mixed. A single constructive pass takes ${\approx}0.1$~s on instances
 of this size in our Python implementation, against the $0.5$--$2.2$~s
 reported for the genetic algorithm and the $1.9$--$6.8$~s reported for
-fEABC on the same instances~\cite{DiazFEABC2023}, so the deterministic
-rule is faster even though interpreted code is being compared with
-compiled code. Best-of-1024, however, requires about two minutes of
+fEABC on the same instances~\cite{DiazFEABC2023}, both implemented in
+C\texttt{++}, so the deterministic rule is faster even though
+interpreted Python is being compared with compiled C\texttt{++} code. Best-of-1024, however, requires about two minutes of
 sequential Python time and is therefore \emph{not} faster than the
 published metaheuristics; what it offers is that its samples are
 mutually independent---the budget parallelizes trivially---and that $N$
