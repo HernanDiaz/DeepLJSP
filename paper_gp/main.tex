@@ -786,25 +786,29 @@ method is over the benchmark rather than any run-to-run variability. The
 only stochastic entry is the uniformly random dispatcher, included as a
 reference and averaged over 10 independent dispatches per instance.
 Rules above the random line ignore machine availability and degrade
-below it under permutation-based decoding (see text).}
+below it under permutation-based decoding (see text). \emph{ms}: mean
+wall-clock time of one complete constructive pass, over the same 70
+instances and 5 repetitions each, in our research-grade Python
+implementation; the absolute values are implementation-bound and only
+the comparison between rows is meaningful.}
 \label{tab:baselines}
-\begin{tabular}{lcc}
+\begin{tabular}{lccc}
 \toprule
-Method & RE (\%) & sd \\
+Method & RE (\%) & sd & ms \\
 \midrule
-LPT & 703.6 & 168.0 \\
-SPT & 627.2 & 152.2 \\
-CR & 625.7 & 140.6 \\
+LPT & 703.6 & 168.0 & 231 \\
+SPT & 627.2 & 152.2 & 229 \\
+CR & 625.7 & 140.6 & 256 \\
 \midrule
-\textit{Random dispatcher} & \textit{127.2} & \textit{13.9} \\
+\textit{Random dispatcher} & \textit{127.2} & \textit{13.9} & \textit{85} \\
 \midrule
-G\&T-SPT & 70.6 & 10.0 \\
-MWKR & 64.7 & 10.4 \\
-MOR & 45.5 & 10.1 \\
-EST & 42.3 & 10.6 \\
-G\&T-MWKR & \textbf{29.5} & 6.4 \\
+G\&T-SPT & 70.6 & 10.0 & 295 \\
+MWKR & 64.7 & 10.4 & 332 \\
+MOR & 45.5 & 10.1 & 334 \\
+EST & 42.3 & 10.6 & 279 \\
+G\&T-MWKR & \textbf{29.5} & 6.4 & 382 \\
 \midrule
-GP rule (best of 30) & \textbf{17.71} & 5.23 \\
+GP rule (best of 30) & \textbf{17.71} & 5.23 & 335 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -817,10 +821,13 @@ single $20{\times}15$ instance; against the best plain rule (EST) the
 smallest margin is $6.3$ points. Per-instance figures are given in
 Table~\ref{tab:perinstance} (appendix). Crucially, this quality comes at
 no evaluation penalty over hand-crafted rules: evaluating the evolved
-expression tree over the eligible set costs the same, within measurement
-noise, as evaluating MOR or G\&T-MWKR (the three differ by under $15\%$ in
-per-schedule construction time in our implementation), since all reduce to
-one vectorized pass over eligible operations per decision. Both cost and
+expression tree over the eligible set costs what evaluating a
+hand-crafted criterion costs. Averaged over the 70 instances, a complete
+constructive pass takes $335$~ms with the evolved rule against $334$~ms
+with MOR and $382$~ms with G\&T-MWKR, a spread of $14\%$ between the
+three; all of them reduce to one vectorized pass over the eligible
+operations per decision, so the priority expression is not where the
+time goes. Both cost and
 quality thus place the evolved rule squarely with the constructive
 methods, while closing much of the quality gap that separated them from
 search-based methods; that latter comparison is deferred to
