@@ -50,8 +50,8 @@ and the widths of the uncertain quantities, so that reacting to
 uncertainty itself is expressible. On the 70 interval versions of
 Taillard's benchmark,
 over 30 independent evolutions the resulting rules average a relative
-error of $18.7\%$ ($\pm0.8$) with a single deterministic constructive
-pass, and the best evolved rule attains $17.3\%$---improving on the
+error of $18.68\%$ ($\pm0.84$) with a single deterministic constructive
+pass, and the best evolved rule attains $17.30\%$---improving on the
 strongest deterministic constructive baseline (Giffler--Thompson with MWKR
 tie-breaking, $29.5\%$) on every single instance---and generalizes
 zero-shot across all seven instance size classes despite being evolved on
@@ -695,7 +695,7 @@ approximate only coarsely.
 \centering
 \input{figures/tree_seed27.tex}
 \caption{The best evolved rule of the campaign (seed~27), which attains
-$17.3\%$ $\RE$ over the 70 instances. Circles are functions and shaded
+$17.30\%$ $\RE$ over the 70 instances. Circles are functions and shaded
 boxes the interval-aware terminals of Table~\ref{tab:terminals}; the
 operation with the lowest value of the expression is dispatched. The
 tree is shown exactly as evolved, without algebraic simplification.}
@@ -713,7 +713,7 @@ evolutions: each individual run and their mean.}
 \subsection{Generalization to the full benchmark}
 Table~\ref{tab:gp70} reports single-rollout $\RE$ per size class over all
 70 instances, as mean $\pm$ standard deviation across the 30 evolved
-rules and for the single best rule. The best rule attains $17.3\%$
+rules and for the single best rule. The best rule attains $17.30\%$
 global mean---evolved only on $20{\times}15$, its best class is the
 unseen $50{\times}15$ ($13.3\%$), and the same pattern holds on
 average ($13.5 \pm 1.4$). Because all terminals are per-operation
@@ -735,9 +735,9 @@ $30{\times}15$ & $30{\times}20$ & $50{\times}15$ & $50{\times}20$ & All \\
 \midrule
 Mean of 30 & $17.6{\pm}1.2$ & $17.5{\pm}1.2$ & $20.8{\pm}1.4$ &
 $21.2{\pm}1.2$ & $25.2{\pm}1.2$ & $13.5{\pm}1.4$ & $15.0{\pm}1.2$ &
-$18.7{\pm}0.8$ \\
+$18.68{\pm}0.84$ \\
 Best rule & 16.6 & 15.3 & 17.9 & 18.9 & 24.6 & \textbf{13.3} & 14.4 &
-\textbf{17.3} \\
+\textbf{17.30} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -764,8 +764,8 @@ comfortably better than random, and the strongest baseline overall is
 G\&T-MWKR at $29.5\%$, which is the reference we use throughout.
 
 Against that strongest baseline, the evolved rules average
-$18.7 \pm 0.8$ $\RE$ over the 30 evolutions, and the best rule attains
-$17.3\%$.
+$18.68 \pm 0.84$ $\RE$ over the 30 evolutions, and the best rule
+attains $17.30\%$.
 
 \begin{table}[t]
 \centering\small
@@ -795,7 +795,7 @@ MOR & 45.5 & 10.1 \\
 EST & 42.3 & 10.6 \\
 G\&T-MWKR & \textbf{29.5} & 6.4 \\
 \midrule
-GP rule (best of 30) & \textbf{17.3} & 5.3 \\
+GP rule (best of 30) & \textbf{17.30} & 5.26 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1190,8 +1190,8 @@ hyper-heuristic for job shop scheduling with interval durations, built on
 a terminal set that exposes interval widths as first-class attributes.
 The empirical conclusions are three. (i)~Evolved rules dominate every
 deterministic constructive baseline on the 70-instance benchmark by a
-wide, statistically significant margin ($18.7 \pm 0.8$ over 30
-evolutions, $17.3\%$ for the best rule, versus $29.5\%$ for the
+wide, statistically significant margin ($18.68 \pm 0.84$ over 30
+evolutions, $17.30\%$ for the best rule, versus $29.5\%$ for the
 strongest baseline---which the best rule beats on all 70 instances) at
 the cost of a single constructive pass, and (ii)~they
 generalize zero-shot across all size
