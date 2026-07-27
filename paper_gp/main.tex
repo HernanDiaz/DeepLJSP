@@ -821,14 +821,12 @@ The 12 classical instances allow a direct confrontation with the
 benchmark and metric (Table~\ref{tab:classics}). Recall that our rule
 was evolved on four interval Taillard $20{\times}15$ instances and is
 deployed here \emph{zero-shot}, on different instance families and
-sizes. The single deterministic pass averages $13.9\%$ $\RE$---far ahead
-of MOR ($45.8\%$) and G\&T-MWKR ($30.1\%$) in the same computational
-class. More strikingly, the randomized extension GP-$\varepsilon$ at
-best-of-1024 reaches $9.9\%$, matching the published average of the
+sizes. The randomized extension GP-$\varepsilon$ at
+best-of-1024 reaches $9.9\%$ $\RE$, matching the published average of the
 genetic algorithm of~\cite{DiazGA2020} ($9.8\%$)---a per-instance
 metaheuristic evolving a population for every instance---and beating it
-on half of the instances. The purpose-built ABC variants and the tabu
-search remain clearly ahead ($5.5$--$6.4\%$), as expected of iterative
+on half of the instances. The purpose-built ABC variants
+remain clearly ahead ($5.5$--$6.4\%$), as expected of iterative
 search: the point of this comparison is not to compete with them but to
 locate the constructive frontier---a single evolved rule, transferred
 across families without retraining, now covers a substantial part of
