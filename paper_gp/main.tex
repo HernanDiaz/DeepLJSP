@@ -59,8 +59,8 @@ and the widths of the uncertain quantities, so that reacting to
 uncertainty itself is expressible. On the 70 interval versions of
 Taillard's benchmark,
 over 30 independent evolutions the resulting rules average a relative
-error of $18.68\%$ ($\pm0.84$) with a single deterministic constructive
-pass, and the best evolved rule attains $17.30\%$---improving on the
+error of $18.99\%$ ($\pm1.33$) with a single deterministic constructive
+pass, and the best evolved rule attains $17.71\%$---improving on the
 strongest deterministic constructive baseline (Giffler--Thompson with MWKR
 tie-breaking, $29.5\%$) on every single instance---and generalizes
 zero-shot across all seven instance size classes despite being evolved on
@@ -565,17 +565,18 @@ training instances}
 
 \begin{table}[t]
 \centering\small
-\caption{Evolution parameters (conventional settings; see
-Section~\ref{sec:irace} for the sensitivity study).}
+\caption{Evolution parameters: the configuration selected by irace
+(Section~\ref{sec:irace}), used for every experiment reported in this
+paper.}
 \label{tab:gpparams}
 \begin{tabular}{ll}
 \toprule
 Population / generations & $100$ / $50$ \\
 Initialization & ramped half-and-half (depths $2$--$4$) + 2 seeds \\
-Selection & tournament, size $k = 4$ \\
-Crossover / mutation prob. & $p_c = 0.8$ / $0.2$ (subtree, depth $\le 3$) \\
+Selection & tournament, size $k = 7$ \\
+Crossover / mutation prob. & $p_c = 0.77$ / $0.23$ (subtree, depth $\le 3$) \\
 Elitism & $e = 2$ \\
-Tree-size cap & $c = 40$ nodes (violations: fitness $\infty$) \\
+Tree-size cap & $c = 30$ nodes (violations: fitness $\infty$) \\
 Fitness & mean RE, deterministic rollout, TA11--TA14 \\
 Seeds & $1$--$30$ (RNG of evolution and environment) \\
 \bottomrule
@@ -659,11 +660,13 @@ signed-rank test on the shared seeds far from significance
 ($z=-0.96$)---and if anything the stronger selection pressure increases
 seed-to-seed variance. Its one systematic effect is \emph{structural}:
 at equal performance it evolves markedly smaller trees ($26.4$ versus
-$33.1$ nodes on average), so the tuning budget buys readability rather
-than quality. The method is therefore robust to its evolutionary
-hyperparameters, and \emph{every result reported in this paper was
-obtained with the default configuration} of
-Table~\ref{tab:gpparams}.
+$33.1$ nodes on average, and with half the spread), so the tuning budget
+buys readability rather than quality. The method is therefore robust to
+its evolutionary hyperparameters. We nonetheless adopt the tuned
+configuration of Table~\ref{tab:gpparams} for \emph{every} experiment
+reported in this paper: when quality is indifferent, the configuration
+that returns rules one can actually read is the one worth having in a
+hyper-heuristic whose output is meant to be inspected.
 
 \begin{table}[t]
 \centering\small
@@ -687,42 +690,45 @@ Elitism & $\{1, 2, 4\}$ & $2$ & $2$ \\
 
 \subsection{Evolution behaviour and seed stability}
 Over 30 independent evolutions, training $\RE$ converges to
-$14.8 \pm 0.9$ (range $13.4$--$16.9$), with most of the improvement
+$14.9 \pm 1.5$ (range $12.4$--$19.7$), with most of the improvement
 realized by generation $25$--$30$ (Figure~\ref{fig:convergence}). The
 evolved rules are structurally recognizable, combining the classical
-dispatching ingredients in interpretable ways. Figure~\ref{fig:seed27}
-shows the best rule of the campaign, obtained with seed~27: $37$ nodes
-over $19$ leaves. Writing
-$A = \mathit{NOR}-\mathit{PT}+\mathit{SLACK}$ for the subtree that
-occurs twice in it, and flattening the nested minima, the rule is
-algebraically equivalent to:
-\begin{multline}
-\min\!\left(\frac{\mathit{SLACK}}{\mathit{PT}},\,
-\max(\mathit{ESTW},\mathit{EST})\right)
-\cdot \min(A,\mathit{WKR},\mathit{NOR}) \;+\; \mathit{SLACK} \\
-+\; \frac{1}{\min(A,\mathit{WKR},\mathit{SLACK})-\mathit{EST}}
-\;-\; \frac{\mathit{WKR}}{\mathit{PT}},
-\label{eq:seed27}
-\end{multline}
-which admits a reading in four parts. The last term is MWKR normalised
-by processing time, negated because the lowest priority is dispatched;
-the second penalises slack; the first weights slack per unit of
-processing time, capped by the worst-case start or by its uncertainty,
-by a measure of the remaining work; and the third is a correction that
-grows sharply when that measure approaches the earliest start. The
-evolved rule is thus a refinement of the
-most-work-remaining/earliest-start family that hand-crafted rules
-approximate only coarsely.
+dispatching ingredients in interpretable ways. Figure~\ref{fig:besttree}
+shows the best rule of the campaign, obtained with seed~1: $26$ nodes
+over $12$ leaves. Every terminal of the tree is non-negative by
+construction and processing times are at least one time unit, so both
+guards it contains resolve to the same branch at every decision, and the
+tree is exactly equivalent on the problem domain to
+\begin{equation}
+\mathit{SLACK}^{2} \;+\; 2\,\mathit{PT}
+\;-\; \mathit{WKR} \;-\; \mathit{WKRW} \;-\; 1 ,
+\label{eq:besttree}
+\end{equation}
+an identity we verified over the $1.9$ million dispatching decisions the
+rule takes on the benchmark. Since the lowest value is dispatched, the
+rule reads directly: $-\mathit{WKR}$ is most-work-remaining, $2\,
+\mathit{PT}$ is shortest-processing-time at double weight, $\mathit{
+SLACK}^{2}$ penalises quadratically any operation that cannot start at
+the earliest available time, and the constant is immaterial to the
+ranking. The remaining term, $-\mathit{WKRW}$, is the interval-aware
+one: among jobs with comparable remaining work the rule advances those
+whose remaining work is \emph{more uncertain}, resolving that
+uncertainty early rather than carrying it to the end of the schedule.
+The evolved rule is thus a weighted blend of MWKR and SPT, regularised
+by a quadratic earliest-start term and tilted by the uncertainty of the
+work ahead---a combination none of the hand-crafted rules of
+Table~\ref{tab:baselines} expresses.
 
 \begin{figure}[t]
 \centering
-\input{figures/tree_seed27.tex}
-\caption{The best evolved rule of the campaign (seed~27), which attains
-$17.30\%$ $\RE$ over the 70 instances. Circles are functions and shaded
+\input{figures/tree_best.tex}
+\caption{The best evolved rule of the campaign (seed~1), which attains
+$17.71\%$ $\RE$ over the 70 instances. Circles are functions and shaded
 boxes the interval-aware terminals of Table~\ref{tab:terminals}; the
 operation with the lowest value of the expression is dispatched. The
-tree is shown exactly as evolved, without algebraic simplification.}
-\label{fig:seed27}
+tree is shown exactly as evolved; Eq.~\eqref{eq:besttree} gives its
+simplified form.}
+\label{fig:besttree}
 \end{figure}
 
 \begin{figure}[t]
@@ -736,10 +742,10 @@ evolutions: each individual run and their mean.}
 \subsection{Generalization to the full benchmark}
 Table~\ref{tab:gp70} reports single-rollout $\RE$ per size class over all
 70 instances, as mean $\pm$ standard deviation across the 30 evolved
-rules and for the single best rule. The best rule attains $17.30\%$
+rules and for the single best rule. The best rule attains $17.71\%$
 global mean---evolved only on $20{\times}15$, its best class is the
-unseen $50{\times}15$ ($13.3\%$), and the same pattern holds on
-average ($13.5 \pm 1.4$). Because all terminals are per-operation
+unseen $50{\times}15$ ($13.8\%$), and the same pattern holds on
+average ($13.7 \pm 1.5$). Because all terminals are per-operation
 attributes with no size-bound quantities, transfer requires no
 retraining or rescaling.
 
@@ -756,11 +762,11 @@ evolved rules, and the best evolved rule.}
 & $15{\times}15$ & $20{\times}15$ & $20{\times}20$ &
 $30{\times}15$ & $30{\times}20$ & $50{\times}15$ & $50{\times}20$ & All \\
 \midrule
-Mean of 30 & $17.6{\pm}1.2$ & $17.5{\pm}1.2$ & $20.8{\pm}1.4$ &
-$21.2{\pm}1.2$ & $25.2{\pm}1.2$ & $13.5{\pm}1.4$ & $15.0{\pm}1.2$ &
-$18.68{\pm}0.84$ \\
-Best rule & 16.6 & 15.3 & 17.9 & 18.9 & 24.6 & \textbf{13.3} & 14.4 &
-\textbf{17.30} \\
+Mean of 30 & $18.1{\pm}1.3$ & $18.0{\pm}1.5$ & $20.9{\pm}1.7$ &
+$21.4{\pm}1.7$ & $25.7{\pm}1.9$ & $13.7{\pm}1.5$ & $15.1{\pm}1.5$ &
+$18.99{\pm}1.33$ \\
+Best rule & 15.7 & 16.6 & 18.1 & 21.1 & 24.1 & \textbf{13.8} & 14.6 &
+\textbf{17.71} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -787,8 +793,8 @@ comfortably better than random, and the strongest baseline overall is
 G\&T-MWKR at $29.5\%$, which is the reference we use throughout.
 
 Against that strongest baseline, the evolved rules average
-$18.68 \pm 0.84$ $\RE$ over the 30 evolutions, and the best rule
-attains $17.30\%$.
+$18.99 \pm 1.33$ $\RE$ over the 30 evolutions, and the best rule
+attains $17.71\%$.
 
 \begin{table}[t]
 \centering\small
@@ -818,7 +824,7 @@ MOR & 45.5 & 10.1 \\
 EST & 42.3 & 10.6 \\
 G\&T-MWKR & \textbf{29.5} & 6.4 \\
 \midrule
-GP rule (best of 30) & \textbf{17.30} & 5.26 \\
+GP rule (best of 30) & \textbf{17.71} & 5.23 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -826,9 +832,9 @@ The gap is not marginal and not an artefact of averaging: the best
 evolved rule beats \emph{every} rule in the table on \emph{every} one of
 the $70$ instances, and a paired Wilcoxon signed-rank test rejects
 equality against each of them at $p<10^{-6}$ ($z=-7.3$). The narrowest
-margin over the whole comparison is $1.5$ points, against G\&T-MWKR on a
-single $15{\times}15$ instance; against the best plain rule (EST) the
-smallest margin is $7.6$ points. Per-instance figures are given in
+margin over the whole comparison is $3.9$ points, against G\&T-MWKR on a
+single $20{\times}15$ instance; against the best plain rule (EST) the
+smallest margin is $6.3$ points. Per-instance figures are given in
 Table~\ref{tab:perinstance} (appendix). Crucially, this quality comes at
 no evaluation penalty over hand-crafted rules: evaluating the evolved
 expression tree over the eligible set costs the same, within measurement
@@ -1000,6 +1006,11 @@ Fitness objective & Terminal set & RE (\%) & Width (\%) \\
 \bottomrule
 \end{tabular}
 \end{table}
+\todo{tab:ablation es lo unico que sigue en la configuracion por defecto:
+la fila `full' del objetivo makespan da $18.68\pm0.84$, mientras que el
+resto del paper ya reporta el brazo tuneado ($18.99\pm1.33$). Los cuatro
+brazos se rehacen con la campana tuneada en curso, que calcula RE y
+anchura de una sola pasada.}
 
 Under the makespan objective, the width information turns out not to
 be used productively. Removing the three width terminals leaves
@@ -1185,8 +1196,8 @@ hyper-heuristic for job shop scheduling with interval durations, built on
 a terminal set that exposes interval widths as first-class attributes.
 The empirical conclusions are three. (i)~Evolved rules dominate every
 deterministic constructive baseline on the 70-instance benchmark by a
-wide, statistically significant margin ($18.68 \pm 0.84$ over 30
-evolutions, $17.30\%$ for the best rule, versus $29.5\%$ for the
+wide, statistically significant margin ($18.99 \pm 1.33$ over 30
+evolutions, $17.71\%$ for the best rule, versus $29.5\%$ for the
 strongest baseline---which the best rule beats on all 70 instances) at
 the cost of a single constructive pass, and (ii)~they
 generalize zero-shot across all size

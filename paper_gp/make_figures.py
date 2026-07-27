@@ -31,7 +31,7 @@ LOGDIR = os.path.join(REPO, "logs", "reevo")
 
 curves = {}
 pat = re.compile(r"gen\s+(\d+)\s*\|\s*mejor=([\d.]+)%")
-for path in sorted(_glob.glob(os.path.join(LOGDIR, "gp_rule_seed*.log"))):
+for path in sorted(_glob.glob(os.path.join(LOGDIR, "gp_tuned_seed*.log"))):
     seed = int(re.search(r"seed(\d+)", path).group(1))
     text = open(path, encoding="utf-8", errors="replace").read()
     gens = {}

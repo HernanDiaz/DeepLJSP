@@ -19,16 +19,20 @@ SYM = {"add": "$+$", "sub": "$-$", "mul": "$\\times$", "div": "$\\div$",
        "min": "min", "max": "max", "neg": "neg"}
 
 
-# Las etiquetas de las hojas se rotan 90 grados: 19 hojas con nombres de
-# hasta 5 caracteres no caben horizontalmente en el ancho de una pagina.
-# Asi cada hoja ocupa solo la ALTURA de su caja, y el texto puede ir a un
-# tamano legible.
-LEAF_W = 0.42    # cm que ocupa una hoja rotada (altura de la caja + aire)
-GAP = 0.10       # cm de separacion adicional entre hojas
+# Con etiquetas rotadas 90 grados cada hoja ocupa solo la ALTURA de su caja,
+# que es constante; horizontales ocupan el ANCHO del texto, que depende del
+# nombre del terminal (PT frente a SLACK). El layout reserva el espacio real
+# de cada etiqueta, que es lo que evita que se solapen.
+LEAF_W = 0.42      # cm de una hoja rotada
+CHAR_W = 0.175     # cm por caracter a \scriptsize\itshape
+PAD = 0.22         # cm de recuadro + aire
+GAP = 0.10         # cm de separacion adicional entre hojas
+
+ROTATE = True      # lo fija emit()
 
 
 def label_w(s):
-    return LEAF_W
+    return LEAF_W if ROTATE else len(s) * CHAR_W + PAD
 
 
 def build(tree, out, depth=0, counter=[0]):
@@ -49,10 +53,12 @@ def build(tree, out, depth=0, counter=[0]):
     return nid, x
 
 
-def emit(path_json, path_out, xs=1.30, ys=1.0):
+def emit(path_json, path_out, xs=1.30, ys=1.0, rotate=True):
     """xs/ys en cm. El resultado se envuelve en \\resizebox al ancho de linea,
     de modo que el espaciado puede ser holgado (etiquetas sin solaparse) y la
     figura se escala despues para caber en la pagina."""
+    global ROTATE
+    ROTATE = rotate
     tree = json.load(open(path_json, encoding="utf-8"))["tree"]
     nodes = []
     build.cursor = 0.0
@@ -64,8 +70,8 @@ def emit(path_json, path_out, xs=1.30, ys=1.0):
         "  op/.style={circle, draw, inner sep=0.6pt, minimum size=4.6mm,",
         "             font=\\small},",
         "  term/.style={rectangle, draw, rounded corners=1pt, inner sep=1.6pt,",
-        "               font=\\scriptsize\\itshape, fill=black!5,",
-        "               rotate=90, anchor=east}]",
+        "               font=\\scriptsize\\itshape, fill=black!5"
+        + (",\n               rotate=90, anchor=east}]" if rotate else "}]"),
     ]
     for nid, x, d, label, is_leaf in nodes:
         style = "term" if is_leaf else "op"
@@ -85,6 +91,10 @@ def emit(path_json, path_out, xs=1.30, ys=1.0):
 
 if __name__ == "__main__":
     HERE = os.path.dirname(os.path.abspath(__file__))
+    # La regla destacada de la campana tuneada: 26 nodos sobre 12 hojas. Con
+    # tan pocas hojas las etiquetas caben en horizontal, que se lee mucho
+    # mejor que la version rotada que necesitaba el arbol de 19 hojas.
     emit(os.path.join(os.path.dirname(HERE),
-                      "benchmarks/reevo_fixedfit/gp_rule_seed27.json"),
-         os.path.join(HERE, "figures/tree_seed27.tex"))
+                      "benchmarks/reevo_fixedfit/gp_tuned_seed1.json"),
+         os.path.join(HERE, "figures/tree_best.tex"),
+         xs=1.0, ys=1.15, rotate=False)

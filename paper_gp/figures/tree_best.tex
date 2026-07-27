@@ -1,0 +1,57 @@
+\begin{tikzpicture}[
+  op/.style={circle, draw, inner sep=0.6pt, minimum size=4.6mm,
+             font=\small},
+  term/.style={rectangle, draw, rounded corners=1pt, inner sep=1.6pt,
+               font=\scriptsize\itshape, fill=black!5}]
+  \node[term] (n5) at (0.55,-5.75) {SLACK};
+  \node[term] (n7) at (1.74,-6.90) {SLACK};
+  \node[op] (n6) at (1.74,-5.75) {neg};
+  \node[op] (n4) at (1.15,-4.60) {$\times$};
+  \node[term] (n8) at (2.85,-4.60) {WKRW};
+  \node[op] (n3) at (2.00,-3.45) {$+$};
+  \node[term] (n13) at (3.78,-8.05) {ONE};
+  \node[term] (n14) at (4.54,-8.05) {PT};
+  \node[op] (n12) at (4.16,-6.90) {$-$};
+  \node[term] (n16) at (5.38,-8.05) {ESTW};
+  \node[term] (n17) at (6.32,-8.05) {ONE};
+  \node[op] (n15) at (5.85,-6.90) {min};
+  \node[op] (n11) at (5.01,-5.75) {min};
+  \node[op] (n10) at (5.01,-4.60) {neg};
+  \node[term] (n19) at (7.07,-5.75) {PT};
+  \node[term] (n20) at (7.74,-5.75) {PT};
+  \node[op] (n18) at (7.41,-4.60) {min};
+  \node[op] (n9) at (6.21,-3.45) {$+$};
+  \node[op] (n2) at (4.10,-2.30) {$-$};
+  \node[op] (n1) at (4.10,-1.15) {neg};
+  \node[term] (n23) at (8.50,-3.45) {ONE};
+  \node[term] (n24) at (9.26,-3.45) {PT};
+  \node[op] (n22) at (8.88,-2.30) {$-$};
+  \node[term] (n25) at (10.02,-2.30) {WKR};
+  \node[op] (n21) at (9.45,-1.15) {max};
+  \node[op] (n0) at (6.78,0.00) {$-$};
+  \draw (n6) -- (n7);
+  \draw (n4) -- (n5);
+  \draw (n4) -- (n6);
+  \draw (n3) -- (n4);
+  \draw (n3) -- (n8);
+  \draw (n12) -- (n13);
+  \draw (n12) -- (n14);
+  \draw (n15) -- (n16);
+  \draw (n15) -- (n17);
+  \draw (n11) -- (n12);
+  \draw (n11) -- (n15);
+  \draw (n10) -- (n11);
+  \draw (n18) -- (n19);
+  \draw (n18) -- (n20);
+  \draw (n9) -- (n10);
+  \draw (n9) -- (n18);
+  \draw (n2) -- (n3);
+  \draw (n2) -- (n9);
+  \draw (n1) -- (n2);
+  \draw (n22) -- (n23);
+  \draw (n22) -- (n24);
+  \draw (n21) -- (n22);
+  \draw (n21) -- (n25);
+  \draw (n0) -- (n1);
+  \draw (n0) -- (n21);
+\end{tikzpicture}
