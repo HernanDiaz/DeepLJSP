@@ -666,6 +666,14 @@ Elitism & $\{1, 2, 4\}$ & $2$ \\
 \section{Results}
 \label{sec:results}
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=.8\linewidth]{figures/fig_convergence.pdf}
+\caption{Best training fitness per generation over the 30 independent
+evolutions: each individual run and their mean.}
+\label{fig:convergence}
+\end{figure}
+
 \subsection{Evolution behaviour and seed stability}
 Over 30 independent evolutions, training $\RE$ converges to
 $14.9 \pm 1.5$ (range $12.4$--$19.7$), with most of the improvement
@@ -709,13 +717,6 @@ simplified form.}
 \label{fig:besttree}
 \end{figure}
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=.8\linewidth]{figures/fig_convergence.pdf}
-\caption{Best training fitness per generation over the 30 independent
-evolutions: each individual run and their mean.}
-\label{fig:convergence}
-\end{figure}
 
 \subsection{Generalization to the full benchmark}
 Table~\ref{tab:gp70} reports single-rollout $\RE$ per size class over all
