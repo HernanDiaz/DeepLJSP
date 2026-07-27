@@ -652,13 +652,27 @@ realized by generation $25$--$30$ (Figure~\ref{fig:convergence}). The
 evolved rules are structurally recognizable, combining the classical
 dispatching ingredients in interpretable ways. Figure~\ref{fig:seed27}
 shows the best rule of the campaign, obtained with seed~27: $37$ nodes
-over $19$ leaves. It is built from the ratio
-$\mathit{SLACK}/\mathit{PT}$ (slack per unit of processing time), work
-remaining terms bounded by operations-remaining counts, and an
-earliest-start correction---a refinement of the
+over $19$ leaves, two of its subtrees being identical---a recurring
+pattern in the evolved rules. Factoring that repeated subtree as
+$A = \mathit{NOR}-\mathit{PT}+\mathit{SLACK}$ and flattening the nested
+minima, the rule is algebraically equivalent to
+\begin{multline}
+\min\!\left(\frac{\mathit{SLACK}}{\mathit{PT}},\,
+\max(\mathit{ESTW},\mathit{EST})\right)
+\cdot \min(A,\mathit{WKR},\mathit{NOR}) \;+\; \mathit{SLACK} \\
++\; \frac{1}{\min(A,\mathit{WKR},\mathit{SLACK})-\mathit{EST}}
+\;-\; \frac{\mathit{WKR}}{\mathit{PT}},
+\label{eq:seed27}
+\end{multline}
+which admits a reading in four parts. The last term is MWKR normalised
+by processing time, negated because the lowest priority is dispatched;
+the second penalises slack; the first weights slack per unit of
+processing time, capped by the worst-case start or by its uncertainty,
+by a measure of the remaining work; and the third is a correction that
+grows sharply when that measure approaches the earliest start. The
+evolved rule is thus a refinement of the
 most-work-remaining/earliest-start family that hand-crafted rules
-approximate only coarsely. Two of its subtrees are identical, a
-recurring pattern in the evolved rules.
+approximate only coarsely.
 
 \begin{figure}[t]
 \centering
