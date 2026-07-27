@@ -12,7 +12,7 @@ Solo el brazo CON anchura: el brazo sin anchura es la referencia plana
 lambda=1). lambda=1 se reutiliza de la campana anterior.
 
 Salida: benchmarks/lambda_sweep/ + tabla con (lambda -> RE, ancho) y figura
-paper_gp/figures/fig_lambda.pdf con la frontera.
+la frontera se reporta como tabla en el paper (tab:lambda).
 
 Uso: python scripts/lambda_sweep.py [--seeds 10] [--dry]
 """
@@ -150,27 +150,6 @@ def main():
         for lam, (mr, sr), (mw, sw), n in rows:
             f.write(f"{lam},{n},{mr:.4f},{sr:.4f},{mw:.4f},{sw:.4f}\n")
 
-    try:
-        import matplotlib
-        matplotlib.use("Agg")
-        import matplotlib.pyplot as plt
-        fig, ax = plt.subplots(figsize=(6.0, 3.6))
-        xs = [r[2][0] for r in rows]; ys = [r[1][0] for r in rows]
-        xe = [r[2][1] for r in rows]; ye = [r[1][1] for r in rows]
-        ax.errorbar(xs, ys, xerr=xe, yerr=ye, fmt="-o", color="#d68910",
-                    linewidth=1.8, capsize=3)
-        for (lam, (mr, _), (mw, _), _) in rows:
-            ax.annotate(f"$\\lambda$={lam:g}", (mw, mr),
-                        textcoords="offset points", xytext=(6, 5), fontsize=9)
-        ax.set_xlabel("relative width of the makespan interval (%)")
-        ax.set_ylabel("mean RE (%)")
-        ax.spines[["top", "right"]].set_visible(False)
-        fig.tight_layout()
-        fig.savefig("paper_gp/figures/fig_lambda.pdf")
-        plt.close(fig)
-        print("fig_lambda ok")
-    except Exception as e:
-        print("figura no generada:", e)
     print(f"\nCSV: {OUT}/lambda_sweep.csv")
 
 

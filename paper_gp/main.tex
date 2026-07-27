@@ -1037,16 +1037,15 @@ precisely the trade-off the robust objective asks for.
 
 The weight $\lambda$ of Eq.~\eqref{eq:robustfit} governs that trade-off,
 and sweeping it traces the frontier between quality and predictability
-(Figure~\ref{fig:lambda}). Both quantities move monotonically with
+(Table~\ref{tab:lambda}). Both quantities move monotonically with
 $\lambda$: as the weight grows from $0.5$ to $4$, the relative width of
-the makespan interval falls from $12.16 \pm 0.51$ to
-$10.30 \pm 1.43$ while the expected makespan degrades from
-$19.09 \pm 1.45$ to $23.04 \pm 3.26$ $\RE$. At the far end of the
-sweep the schedules are therefore about two points narrower than
-anything the ablated rules can produce, at a cost of some four points of
-$\RE$. The practitioner can choose an operating point along this curve;
-the rules deprived of width terminals have no such curve available to
-them, being pinned at ${\approx}12.4\%$ regardless of $\lambda$.
+the makespan interval falls by almost two points while the expected
+makespan degrades by four. At the far end of the sweep the schedules are
+therefore narrower than anything the ablated rules can produce, and the
+comparison is instructive: deprived of the width terminals, the
+evolution is pinned at ${\approx}12.4\%$ \emph{whatever} value of
+$\lambda$ it is given, so it has no such frontier available to it at
+all.
 
 Together, these experiments characterise \emph{when} interval
 awareness matters, rather than asserting that it always does: the width
@@ -1057,16 +1056,29 @@ alone; one who needs schedules whose realised makespan is tightly
 predictable gains from exposing the widths, and can dial the balance
 through $\lambda$.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=.72\linewidth]{figures/fig_lambda.pdf}
+\begin{table}[t]
+\centering\small
 \caption{Quality--predictability frontier traced by the weight $\lambda$
-of the robust fitness (rules evolved \emph{with} the interval-width
-terminals; mean $\pm$ sd over independent evolutions, evaluated on the
-70 instances). Increasing $\lambda$ buys narrower makespan intervals at
-the price of a larger expected makespan.}
-\label{fig:lambda}
-\end{figure}
+of the robust fitness, Eq.~\eqref{eq:robustfit}. Rules evolved
+\emph{with} the interval-width terminals; mean $\pm$ sd over $n$
+independent evolutions, each evaluated on the 70 instances. The last row
+recalls the arm evolved \emph{without} those terminals, which cannot
+narrow the interval whatever $\lambda$ is used.}
+\label{tab:lambda}
+\begin{tabular}{lccc}
+\toprule
+$\lambda$ & $n$ & RE (\%) & Interval width (\%) \\
+\midrule
+$0.5$ & 10 & $19.09 \pm 1.45$ & $12.16 \pm 0.51$ \\
+$1$   & 30 & $19.64 \pm 1.28$ & $12.01 \pm 0.74$ \\
+$2$   & 10 & $20.17 \pm 1.65$ & $11.97 \pm 0.64$ \\
+$4$   & 10 & $23.04 \pm 3.26$ & $\mathbf{10.30 \pm 1.43}$ \\
+\midrule
+\multicolumn{2}{l}{\textit{without width terminals}} &
+$18.70 \pm 0.89$ & $12.42 \pm 0.21$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 
 \subsection{Robustness under executional uncertainty}
