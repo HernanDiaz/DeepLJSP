@@ -838,17 +838,24 @@ always the deterministic rule, so best-of-$N$ can never be worse than a
 single pass, and the $N$ samples are mutually independent: none of them
 is refined, recombined or in any way informed by the others.
 
-This is also where the two families differ in cost, in a way that does
-not depend on the implementation. Best-of-1024 evaluates $1024$ complete
-schedules per instance, all of which could be produced in parallel,
-whereas the metaheuristics evolve a population of $250$ individuals over
-hundreds of generations---tens of thousands of evaluations per
-instance, each generation depending on the previous one. Their published
-runtimes, of the order of seconds per
-run~\cite{DiazGA2020,DiazFEABC2023}, were obtained with C\texttt{++}
-implementations and are therefore not directly comparable with the
-research-grade Python code used here; the number of complete schedules
-evaluated is the fair yardstick.
+This is also where the two families differ in cost. Counted in complete
+schedules evaluated---the measure that does not depend on the
+implementation---best-of-1024 uses $1024$ per instance, all of them
+independent, whereas the metaheuristics evolve a population of $250$
+individuals over hundreds of generations, that is, tens of thousands of
+evaluations chained one after another. In wall-clock terms the picture
+is more nuanced, and worth stating plainly. A single constructive pass
+takes ${\approx}0.1$ s on instances of this size in our Python
+implementation, against the $0.5$--$2.2$ s reported for the genetic
+algorithm and the $1.9$--$6.8$ s reported for fEABC on these very
+instances~\cite{DiazFEABC2023}: the deterministic rule is faster even
+across the handicap of comparing interpreted with compiled code.
+Best-of-1024, on the other hand, needs about two minutes of sequential
+Python time, so it is \emph{not} faster than the published
+metaheuristics in wall-clock terms. What it offers instead is that its
+samples are mutually independent, so the budget can be spread over as
+many cores as are available, and that $N$ acts as a dial between cost
+and quality.
 
 With that in mind, the randomized extension GP-$\varepsilon$ at
 best-of-1024 reaches $9.9\%$ $\RE$, matching the published average of the
