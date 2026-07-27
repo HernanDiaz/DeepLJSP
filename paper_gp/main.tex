@@ -865,20 +865,20 @@ expected makespan.}
 Inst. & LB & & GP & GP-$\varepsilon_{64}$ & GP-$\varepsilon_{1024}$ &
 GA & ABC$_{E3}$ & fEABC & ESABC \\
 \midrule
-FT10 & 930 & & 8.1 & 7.0 & 6.3 & 5.2 & 4.1 & 3.5 & 3.0 \\
-FT20 & 1165 & & 9.1 & 7.6 & 6.2 & 4.4 & 1.7 & 1.8 & 1.8 \\
-La21 & 1046 & & 14.1 & 12.5 & 9.6 & 5.0 & 5.0 & 4.2 & 4.0 \\
-La24 & 935 & & 11.1 & 8.7 & 7.4 & 6.3 & 5.1 & 4.9 & 5.0 \\
-La25 & 977 & & 11.3 & 11.3 & 6.6 & 5.1 & 3.9 & 3.4 & 2.7 \\
-La27 & 1235 & & 16.0 & 9.7 & 9.2 & 10.2 & 4.7 & 4.6 & 4.1 \\
-La29 & 1152 & & 14.3 & 12.2 & 11.4 & 14.2 & 8.6 & 7.4 & 7.0 \\
-La38 & 1196 & & 14.3 & 10.4 & 8.0 & 9.2 & 6.9 & 6.1 & 5.8 \\
-La40 & 1222 & & 13.0 & 12.3 & 8.1 & 8.7 & 4.2 & 4.6 & 4.1 \\
-ABZ7 & 656 & & 16.2 & 13.3 & 11.5 & 12.5 & 7.3 & 6.6 & 6.7 \\
-ABZ8 & 645 & & 19.9 & 18.8 & 16.1 & 18.5 & 12.1 & 11.1 & 10.9 \\
-ABZ9 & 661 & & 19.6 & 18.9 & 18.8 & 18.0 & 13.1 & 11.6 & 11.2 \\
+FT10 & 930 & & 20.4 & 8.4 & 6.6 & 5.2 & 4.1 & 3.5 & 3.0 \\
+FT20 & 1165 & & 13.2 & 12.1 & 10.8 & 4.4 & 1.7 & 1.8 & 1.8 \\
+La21 & 1046 & & 15.0 & 14.4 & 9.0 & 5.0 & 5.0 & 4.2 & 4.0 \\
+La24 & 935 & & 10.1 & 8.8 & 8.6 & 6.3 & 5.1 & 4.9 & 5.0 \\
+La25 & 977 & & 11.8 & 11.6 & 7.6 & 5.1 & 3.9 & 3.4 & 2.7 \\
+La27 & 1235 & & 25.0 & 13.7 & 11.3 & 10.2 & 4.7 & 4.6 & 4.1 \\
+La29 & 1152 & & 13.4 & 14.2 & 11.0 & 14.2 & 8.6 & 7.4 & 7.0 \\
+La38 & 1196 & & 15.0 & 13.3 & 9.4 & 9.2 & 6.9 & 6.1 & 5.8 \\
+La40 & 1222 & & 13.3 & 12.8 & 9.9 & 8.7 & 4.2 & 4.6 & 4.1 \\
+ABZ7 & 656 & & 19.7 & 14.3 & 11.7 & 12.5 & 7.3 & 6.6 & 6.7 \\
+ABZ8 & 645 & & 24.7 & 22.1 & 17.7 & 18.5 & 12.1 & 11.1 & 10.9 \\
+ABZ9 & 661 & & 33.4 & 25.3 & 22.1 & 18.0 & 13.1 & 11.6 & 11.2 \\
 \midrule
-Mean & & & 13.9 & 11.9 & 9.9 & 9.8 & 6.4 & 5.8 & 5.5 \\
+Mean & & & 17.9 & 14.2 & 11.3 & 9.8 & 6.4 & 5.8 & 5.5 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -896,18 +896,28 @@ C\texttt{++}. Best-of-1024, however, requires about two minutes of
 sequential Python time and is therefore \emph{not} faster than the
 published metaheuristics.
 
-In terms of quality, GP-$\varepsilon$ at best-of-1024 reaches $9.9\%$
-$\RE$, against the $9.8\%$ published average of the genetic algorithm:
-each method is better on exactly half of the instances, and a Wilcoxon
-signed-rank test on the paired per-instance values finds no significant
-difference ($z = 0.24$). A rule evolved once, on another benchmark, is
-thus statistically indistinguishable from a metaheuristic that evolves a
-population for every instance it solves. The purpose-built ABC variants
-remain clearly ahead ($5.5$--$6.4\%$), as expected of iterative search:
-the point of this comparison is not to compete with them but to locate
-the constructive frontier---a single evolved rule, transferred across
-families without retraining, covers a substantial part of the gap that
-used to separate dispatching rules from metaheuristics.
+In terms of quality, GP-$\varepsilon$ at best-of-1024 reaches $11.3\%$
+$\RE$ against the $9.8\%$ published average of the genetic algorithm,
+beating it on $3$ of the $12$ instances; a Wilcoxon signed-rank test on
+the paired per-instance values puts the difference at the edge of
+significance ($z = 1.96$, $p \approx 0.05$). The rule therefore does not
+match the per-instance metaheuristics on this benchmark, and the
+purpose-built ABC variants remain clearly ahead ($5.5$--$6.4\%$), as
+expected of iterative search. What the comparison locates is the
+constructive frontier: a rule evolved once on interval Taillard
+instances and applied here with no retraining lands within a point and a
+half of a population-based method that searches every instance
+separately, and well clear of the deterministic rules of
+Table~\ref{tab:baselines}.
+\todo{OJO, ESTO CAMBIA respecto a la campana anterior y afecta al
+abstract y a la contribucion 2. Con seed27 el best-of-1024 daba $9.9$
+frente al $9.8$ del GA y el test salia n.s. ($z=0.24$), de ahi el
+``matches the published average''. La regla tuneada transfiere peor a
+estas 12 (pase unico $17.9$ frente a $13.9$), asi que esa afirmacion ya
+no se sostiene: la he sustituido por lo medido, pero el abstract
+(``matches the published average of a genetic algorithm'') y la
+contribucion 2 (``matches a published per-instance metaheuristic'')
+siguen prometiendolo y hay que decidir que decimos.}
 
 
 \begin{figure}[htbp]
