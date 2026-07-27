@@ -765,11 +765,15 @@ $17.3\%$.
 
 \begin{table}[t]
 \centering\small
-\caption{Constructive baselines on the 70 interval Taillard instances:
-mean RE (\%) over one deterministic pass per instance, with the standard
-deviation across instances. A uniformly random dispatcher is included as
-a reference. Rules above the random line ignore machine availability and
-degrade below it under permutation-based decoding (see text).}
+\caption{Constructive baselines on the 70 interval Taillard instances.
+All the rules are deterministic and build one schedule per instance, so
+the reported figures are the mean RE (\%) over the 70 instances and the
+standard deviation \emph{across instances}, which measures how uniform a
+method is over the benchmark rather than any run-to-run variability. The
+only stochastic entry is the uniformly random dispatcher, included as a
+reference and averaged over 10 independent dispatches per instance.
+Rules above the random line ignore machine availability and degrade
+below it under permutation-based decoding (see text).}
 \label{tab:baselines}
 \begin{tabular}{lcc}
 \toprule
@@ -779,7 +783,7 @@ LPT & 703.6 & 168.0 \\
 SPT & 627.2 & 152.2 \\
 CR & 625.7 & 140.6 \\
 \midrule
-\textit{Random dispatcher} & \textit{116.2} & --- \\
+\textit{Random dispatcher} & \textit{127.2} & \textit{13.9} \\
 \midrule
 G\&T-SPT & 70.6 & 10.0 \\
 MWKR & 64.7 & 10.4 \\
