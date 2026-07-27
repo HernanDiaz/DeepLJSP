@@ -846,8 +846,7 @@ is mixed. A single constructive pass takes ${\approx}0.1$~s on instances
 of this size in our Python implementation, against the $0.5$--$2.2$~s
 reported for the genetic algorithm and the $1.9$--$6.8$~s reported for
 fEABC on the same instances~\cite{DiazFEABC2023}, both implemented in
-C\texttt{++}, so the deterministic rule is faster even though
-interpreted Python is being compared with compiled C\texttt{++} code. Best-of-1024, however, requires about two minutes of
+C\texttt{++}. Best-of-1024, however, requires about two minutes of
 sequential Python time and is therefore \emph{not} faster than the
 published metaheuristics; what it offers is that its samples are
 mutually independent---the budget parallelizes trivially---and that $N$
