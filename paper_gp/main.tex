@@ -985,7 +985,7 @@ Fitness objective & Terminal set & RE (\%) & Width (\%) \\
  & without widths & $18.39 \pm 0.59$ & $12.38 \pm 0.22$ \\
  & \textit{test} & \textit{n.s.} ($z=1.26$) & \textit{n.s.} ($z=-0.12$) \\
 \midrule
-\multirow{3}{*}{Robust $\overline{C}_{\max}+\lambda\,\mathrm{width}$}
+\multirow{3}{*}{Robust, Eq.~\eqref{eq:robustfit}}
  & full & $19.64 \pm 1.28$ & $\mathbf{12.01 \pm 0.74}$ \\
  & without widths & $18.70 \pm 0.89$ & $12.42 \pm 0.21$ \\
  & \textit{test} & --- & $z=2.73$, $p<0.01$ \\
@@ -1015,9 +1015,15 @@ pay.} This negative result is, on reflection, unsurprising: the fitness
 being optimised rewards only the makespan, so there is no incentive for
 a rule to act on the magnitude of the uncertainty. We therefore repeat
 the ablation with a \emph{robust} fitness that explicitly rewards
-predictability, minimising $\overline{C}_{\max} + \lambda\,
-(\overline{C}_{\max}-\underline{C}_{\max})$ with $\lambda = 1$: low
-worst case \emph{and} narrow interval. Under this objective the ablation
+predictability, minimising
+\begin{equation}
+f_{\lambda} = \overline{C}_{\max} + \lambda\,
+\big(\overline{C}_{\max}-\underline{C}_{\max}\big),
+\label{eq:robustfit}
+\end{equation}
+that is, a low worst case \emph{and} a narrow interval, with the weight
+$\lambda$ setting the balance between the two; we take $\lambda = 1$
+here. Under the objective of Eq.~\eqref{eq:robustfit} the ablation
 reverses. Rules evolved with the width terminals produce schedules whose
 makespan interval is significantly narrower than those evolved without
 them ($12.01 \pm 0.74$ versus $12.42 \pm 0.21$ relative width; paired
@@ -1028,8 +1034,8 @@ them it reaches $12.0\%$ as soon as narrowness is rewarded. The gain is
 paid for in expected makespan ($19.64$ versus $18.70$ $\RE$), which is
 precisely the trade-off the robust objective asks for.
 
-The weight $\lambda$ governs that trade-off, and sweeping it traces the
-frontier between quality and predictability
+The weight $\lambda$ of Eq.~\eqref{eq:robustfit} governs that trade-off,
+and sweeping it traces the frontier between quality and predictability
 (Figure~\ref{fig:lambda}). Both quantities move monotonically with
 $\lambda$: as the weight grows from $0.5$ to $4$, the relative width of
 the makespan interval falls from $12.16 \pm 0.51$ to
