@@ -1083,7 +1083,9 @@ interval, $(\overline{C}_{\max}-\underline{C}_{\max})/E[C_{\max}]$ (\%).
 $\bar\varepsilon$ ($\times10^3$): mean deviation of the executed makespan
 from its prediction, at nominal interval widths and widened by $+20\%$ and
 $+40\%$ (Monte Carlo, $K{=}1000$ realizations, common random numbers
-across methods).}
+across methods). \emph{Ablated}: the best rule evolved without the
+interval-width terminals, the arm of Section~\ref{sec:ablation}. All
+four methods come from a single evaluation run.}
 \label{tab:robustness}
 \begin{tabular}{lcccc}
 \toprule
@@ -1091,9 +1093,10 @@ across methods).}
 \cmidrule(l){3-5}
 Method & Rel.\ width (\%) & $+0\%$ & $+20\%$ & $+40\%$ \\
 \midrule
-GP rule & \textbf{12.6} & \textbf{5.8} & \textbf{6.8} & \textbf{7.7} \\
+GP rule & \textbf{12.3} & \textbf{5.7} & \textbf{6.6} & \textbf{7.6} \\
+GP rule, ablated (no widths) & 12.5 & 5.7 & 6.8 & 7.8 \\
 G\&T-MWKR & 13.8 & 6.3 & 7.5 & 8.6 \\
-MOR & 14.4 & 6.5 & 7.7 & 8.9 \\
+MOR & 14.4 & 6.4 & 7.7 & 8.9 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1128,33 +1131,30 @@ reading widths.}
 The evolved rule does not merely produce lower-makespan schedules---it
 produces \emph{more robust} ones, on two complementary measures
 (Table~\ref{tab:robustness}). First, its predicted makespan interval is
-the \emph{tightest}: a relative width of $12.6\%$ against $13.8\%$
+the \emph{tightest}: a relative width of $12.3\%$ against $13.8\%$
 (G\&T-MWKR) and $14.4\%$ (MOR), so the a-priori uncertainty attached to
 the schedule is smaller. Second, and more tellingly, its executed
 makespan tracks the prediction most closely: $\bar\varepsilon$ is lower
-than for both baselines at the nominal width ($5.8$ versus $6.5$ for MOR
-and $6.3$ for G\&T-MWKR), and its advantage \emph{widens} as uncertainty
-grows (at $+40\%$: $7.7$ versus $8.9$ and $8.6$).
+than for both baselines at the nominal width ($5.7$ versus $6.4$ for MOR
+and $6.3$ for G\&T-MWKR; paired Wilcoxon over the 70 instances,
+$z=-5.96$ and $z=-4.42$, both $p<0.001$), and its advantage
+\emph{widens} as uncertainty grows (at $+40\%$: $7.6$ versus $8.9$ and
+$8.6$).
 Figure~\ref{fig:robustness} shows the per-instance $\bar\varepsilon$
 distributions. It is worth being precise about the source of this
 advantage. The figure also carries the ablated arm of
 Section~\ref{sec:ablation}: rules evolved \emph{without} the
 interval-width terminals are as robust as the full rule at every
 uncertainty level ($\bar\varepsilon$ of $5.7$, $6.8$ and $7.8$ against
-$5.7$, $6.8$ and $7.7$), so the advantage does not come from the rule
-reading interval widths. It comes from producing better schedules in the
+$5.7$, $6.6$ and $7.6$; the two are statistically indistinguishable at
+the nominal width, $z=-0.17$), so the advantage does not come from the
+rule reading interval widths. It comes from producing better schedules in the
 first place: compact schedules with fewer and shorter critical paths
 accumulate less uncertainty along them, so both the predicted interval
 and the realised deviation shrink together.
 
 
 
-\todo{tras la campana: (1) tab:robustness sale de robustness\_eps.csv y
-fig:robustness de robustness\_ablation.csv, que son reglas GP distintas
-(diferentes en las 70 instancias, medias casi iguales): regenerar AMBAS de
-una sola ejecucion con la mejor regla tuneada; (2) anadir la fila
-GP-nowidth a tab:robustness, que la figura ya muestra; (3) Wilcoxon
-pareado sobre las 70 instancias para GP vs baselines y GP vs GP-nowidth.}
 
 
 \subsection{Limitations}

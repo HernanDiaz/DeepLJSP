@@ -27,7 +27,7 @@ if hasattr(sys.stdout, "reconfigure"):
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
-CSV = os.path.join(REPO, "benchmarks/robustness_ablation.csv")
+CSV = os.path.join(REPO, "benchmarks/robustness_tuned.csv")
 OUT = os.path.join(HERE, "figures/fig_robustness_box.pdf")
 
 plt.rcParams.update({"font.size": 11, "figure.facecolor": "white"})
