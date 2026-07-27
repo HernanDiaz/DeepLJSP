@@ -795,10 +795,13 @@ GP rule (best of 30) & \textbf{17.3} & 5.3 \\
 \bottomrule
 \end{tabular}
 \end{table}
-The gap is not marginal and not an artefact of averaging: the best evolved
-rule is better than \emph{both} baselines on every one of the $70$
-instances, and a paired Wilcoxon signed-rank test rejects equality against
-each baseline at $p<10^{-6}$ ($z=-7.3$). Per-instance figures are given in
+The gap is not marginal and not an artefact of averaging: the best
+evolved rule beats \emph{every} rule in the table on \emph{every} one of
+the $70$ instances, and a paired Wilcoxon signed-rank test rejects
+equality against each of them at $p<10^{-6}$ ($z=-7.3$). The narrowest
+margin over the whole comparison is $1.5$ points, against G\&T-MWKR on a
+single $15{\times}15$ instance; against the best plain rule (EST) the
+smallest margin is $7.6$ points. Per-instance figures are given in
 Table~\ref{tab:perinstance} (appendix). Crucially, this quality comes at
 no evaluation penalty over hand-crafted rules: evaluating the evolved
 expression tree over the eligible set costs the same, within measurement
