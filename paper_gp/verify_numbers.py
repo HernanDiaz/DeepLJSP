@@ -100,6 +100,20 @@ if os.path.exists(rob):
               " & ".join(f"{x:.1f}" for x in e).replace(" & ", " & "),
               "robustness_tuned.csv")
 
+# ---- 12 clasicas -------------------------------------------------------
+cl = os.path.join(REPO, "benchmarks/classic12_tuned.csv")
+if os.path.exists(cl):
+    rows = list(csv.DictReader(open(cl, encoding="utf-8")))
+    print("\n== 12 clasicas (classic12_tuned.csv) ==")
+    for c, label in (("gp", "pase unico"), ("gp64", "best-of-64"),
+                     ("gp1024", "best-of-1024")):
+        m = sum(float(r[c]) for r in rows) / len(rows)
+        check(f"media {label}", f"{m:.1f}", "classic12_tuned.csv")
+    for r in rows[:3]:
+        check(f"{r['inst']}: fila completa",
+              f"{float(r['gp']):.1f} & {float(r['gp64']):.1f} & "
+              f"{float(r['gp1024']):.1f}", "classic12_tuned.csv")
+
 # ---- apendice ----------------------------------------------------------
 print("\n== apendice ==")
 blk = TEX[TEX.index("\\label{tab:perinstance}"):]
