@@ -356,6 +356,23 @@ Taillard-derived instances, the best known ones~\cite{DiazFEABC2023} for
 the classical set. It serves as an indicative common reference, not as a
 bound for the interval problem, for which none is available.
 
+A schedule is eventually \emph{executed} under one realization of the
+durations, and a second quantity of interest is how well its a-priori
+interval predicts that execution. Following~\cite{DiazGA2020}, the
+$\bar\varepsilon$ robustness of a schedule with a fixed processing order
+is the average relative deviation of its executed makespan from the
+predicted expected value, over $K$ realizations of the durations:
+\begin{equation}
+\bar\varepsilon = \frac{1}{K}\sum_{k=1}^{K}
+\frac{\big|C^{ex,k}_{\max} - E[\mathbf{C_{max}}]\big|}
+     {E[\mathbf{C_{max}}]},
+\label{eq:eps}
+\end{equation}
+where $C^{ex,k}_{\max}$ is the crisp makespan obtained by executing that
+same order when the durations turn out to take the values of realization
+$k$. A low $\bar\varepsilon$ therefore means that what was promised
+before execution is close to what is obtained after it.
+
 \begin{figure}[t]
 \centering
 \begin{tikzpicture}[
@@ -1047,20 +1064,15 @@ the price of a larger expected makespan.}
 
 \subsection{Robustness under executional uncertainty}
 \label{sec:robustness}
-Relative error measures a-priori quality, but for the IJSP a schedule is
-ultimately \emph{executed} under one realization of the durations. A good
-predictive schedule is one whose executed makespan stays close to its
-a-priori prediction. We quantify this with the $\bar\varepsilon$
-robustness of~\cite{DiazGA2020}: for a schedule with fixed processing
-order and predicted expected makespan $E[C_{\max}]$ (interval midpoint),
-we draw $K{=}1000$ realizations of the durations (uniform on each
-operation's interval), execute the fixed order, and average the relative
-deviation of the executed makespan $C^{ex}_{\max}$ from the prediction,
-$\bar\varepsilon = \frac1K\sum_k |C^{ex,k}_{\max}-E[C_{\max}]| /
-E[C_{\max}]$. Lower is more robust. To probe behaviour under growing
-uncertainty we also widen every interval symmetrically about its midpoint
-by $+20\%$ and $+40\%$ (clipping negative bounds to zero), re-evaluating
-the same processing orders.
+Relative error measures a-priori quality; the $\bar\varepsilon$
+robustness of Eq.~\eqref{eq:eps} measures how well that a-priori
+prediction survives execution, and is the quantity examined here. We
+estimate it by Monte Carlo, drawing $K{=}1000$ realizations of the
+durations uniformly on each operation's interval and executing the fixed
+processing order on each of them; lower is more robust. To probe
+behaviour under growing uncertainty we also widen every interval
+symmetrically about its midpoint by $+20\%$ and $+40\%$ (clipping
+negative bounds to zero), re-evaluating the same processing orders.
 
 The evolved rule does not merely produce lower-makespan schedules---it
 produces \emph{more robust} ones, on two complementary measures
