@@ -837,34 +837,6 @@ $N$ independent $\varepsilon$-randomized passes of the same rule, of
 which the best schedule is kept, with no refinement or recombination
 among samples.
 
-The two families also differ in how they spend computation:
-best-of-1024 evaluates $1024$ mutually independent samples per instance,
-whereas the metaheuristics evolve a population of $250$
-individuals~\cite{DiazGA2020,DiazFEABC2023} through successive
-generations, each of which depends on the previous one. In wall-clock terms the picture
-is mixed. A single constructive pass takes ${\approx}0.1$~s on instances
-of this size in our Python implementation, against the $0.5$--$2.2$~s
-reported for the genetic algorithm and the $1.9$--$6.8$~s reported for
-fEABC on the same instances~\cite{DiazFEABC2023}, both implemented in
-C\texttt{++}. Best-of-1024, however, requires about two minutes of
-sequential Python time and is therefore \emph{not} faster than the
-published metaheuristics; what it offers is that its samples are
-mutually independent---the budget parallelizes trivially---and that $N$
-acts as a dial between cost and quality.
-
-In terms of quality, GP-$\varepsilon$ at best-of-1024 reaches $9.9\%$
-$\RE$, against the $9.8\%$ published average of the genetic algorithm:
-each method is better on exactly half of the instances, and a Wilcoxon
-signed-rank test on the paired per-instance values finds no significant
-difference ($z = 0.24$). A rule evolved once, on another benchmark, is
-thus statistically indistinguishable from a metaheuristic that evolves a
-population for every instance it solves. The purpose-built ABC variants
-remain clearly ahead ($5.5$--$6.4\%$), as expected of iterative search:
-the point of this comparison is not to compete with them but to locate
-the constructive frontier---a single evolved rule, transferred across
-families without retraining, covers a substantial part of the gap that
-used to separate dispatching rules from metaheuristics.
-
 \begin{table}[t]
 \centering\small
 \caption{RE (\%) on the 12 classical interval instances: our methods
@@ -901,6 +873,35 @@ Mean & & & 13.9 & 11.9 & 9.9 & 9.8 & 6.4 & 5.8 & 5.5 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+The two families also differ in how they spend computation:
+best-of-1024 evaluates $1024$ mutually independent samples per instance,
+whereas the metaheuristics evolve a population of $250$
+individuals~\cite{DiazGA2020,DiazFEABC2023} through successive
+generations, each of which depends on the previous one. In wall-clock terms the picture
+is mixed. A single constructive pass takes ${\approx}0.1$~s on instances
+of this size in our Python implementation, against the $0.5$--$2.2$~s
+reported for the genetic algorithm and the $1.9$--$6.8$~s reported for
+fEABC on the same instances~\cite{DiazFEABC2023}, both implemented in
+C\texttt{++}. Best-of-1024, however, requires about two minutes of
+sequential Python time and is therefore \emph{not} faster than the
+published metaheuristics; what it offers is that its samples are
+mutually independent---the budget parallelizes trivially---and that $N$
+acts as a dial between cost and quality.
+
+In terms of quality, GP-$\varepsilon$ at best-of-1024 reaches $9.9\%$
+$\RE$, against the $9.8\%$ published average of the genetic algorithm:
+each method is better on exactly half of the instances, and a Wilcoxon
+signed-rank test on the paired per-instance values finds no significant
+difference ($z = 0.24$). A rule evolved once, on another benchmark, is
+thus statistically indistinguishable from a metaheuristic that evolves a
+population for every instance it solves. The purpose-built ABC variants
+remain clearly ahead ($5.5$--$6.4\%$), as expected of iterative search:
+the point of this comparison is not to compete with them but to locate
+the constructive frontier---a single evolved rule, transferred across
+families without retraining, covers a substantial part of the gap that
+used to separate dispatching rules from metaheuristics.
+
 
 \section{Analysis}
 \label{sec:analysis}
