@@ -630,7 +630,19 @@ test.
 Each evolution uses population $100$ and $50$ generations:
 ${\sim}20{,}400$ fitness evaluations (${\approx}30$ min single-core) per
 seed; thirty independent seeds per configuration, following standard
-practice in evolutionary computation.
+practice in evolutionary computation. A run returns the best rule of its
+final population, so a campaign of thirty seeds yields thirty rules,
+differing only through the stochasticity of initialization, crossover and
+mutation. These are evaluated on the 70 benchmark instances and the one
+with the lowest mean $\RE$ is the \emph{featured rule}. Results that
+characterise the method are reported as the mean $\pm$ standard deviation
+over the thirty rules, with paired tests over the shared seeds; results
+that require a single rule---the tree of Figure~\ref{fig:besttree}, its
+simplified expression, the $\bar\varepsilon$ analysis and the
+per-instance appendix---use the featured rule and are labelled as such.
+The ablation, robust-fitness and $\lambda$-sweep experiments of
+Section~\ref{sec:analysis} repeat this procedure with one element
+changed: the terminal set, the fitness function or the weight $\lambda$.
 
 \subsection{Hyperparameter configuration with irace}
 \label{sec:irace}
@@ -663,41 +675,6 @@ Elitism & $\{1, 2, 4\}$ & $2$ \\
 \bottomrule
 \end{tabular}
 \end{table}
-
-\subsection{What a campaign consists of, and what is reported}
-\label{sec:campaign}
-It is worth stating the whole procedure in one place, since the numbers
-reported later refer to three different objects. First, irace fixes the
-\emph{configuration}: one set of hyperparameter values, obtained as
-described above and used unchanged from then on. Second, that
-configuration is run $30$ times with different random seeds. Each run is
-a complete evolution---a population of $100$ expression trees over $50$
-generations, scored on the four training instances---and returns the
-single best rule of its final population. A campaign therefore yields
-$30$ rules, one per seed, differing only through the stochasticity of
-initialization, crossover and mutation. Third, those 30 rules are
-evaluated on the 70 benchmark instances, and the one with the lowest
-mean $\RE$ is the \emph{featured rule} carried through the rest of the
-paper.
-
-The distinction matters for reading the tables. Anything that
-characterises the \emph{method}---the comparison against baselines, the
-ablation, the robust-fitness sweep---is reported as the mean $\pm$
-standard deviation over the 30 rules, with paired tests over the shared
-seeds, because a single evolution cannot separate a real effect from the
-luck of one run. Anything that requires a concrete artefact---the tree
-of Figure~\ref{fig:besttree}, its simplified expression, the
-$\bar\varepsilon$ analysis, the per-instance appendix---necessarily uses
-the featured rule, and is labelled as such. Where both are informative
-we give both, as in Table~\ref{tab:gp70}; note that the best of 30 is an
-order statistic and is not what a single fresh evolution should be
-expected to produce.
-
-The ablation, robust-fitness and $\lambda$-sweep experiments of
-Section~\ref{sec:analysis} repeat this same procedure with one element
-changed---the terminal set, the fitness function or the weight
-$\lambda$---so that every comparison is between campaigns that differ in
-exactly one respect.
 
 \section{Results}
 \label{sec:results}
