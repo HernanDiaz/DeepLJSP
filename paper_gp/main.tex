@@ -961,6 +961,18 @@ rules work: what they are made of, whether the interval-specific
 ingredients contribute, and how robust the resulting schedules are under
 executional uncertainty.
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=.9\linewidth]{figures/fig_sensitivity.pdf}
+\caption{Sensitivity of the featured rule to the two weights of its
+simplified form, Eq.~\eqref{eq:besttree}: mean $\RE$ over the 70
+instances when each weight is varied and the other is held at its
+evolved value. Dashed lines mark the evolved weights, the dotted line
+the mean over the 30 evolved rules. $\beta = 0$ is the rule with its
+interval-width term switched off.}
+\label{fig:sensitivity}
+\end{figure}
+
 \subsection{Rule anatomy and interpretability}
 \label{sec:anatomy}
 A practical appeal of GP over neural policies is that its output is a
@@ -980,6 +992,27 @@ worst-case bounds carry the larger share of the signal. Whether that
 width information translates into better schedules is quantified by the
 ablation of Section~\ref{sec:ablation} and the robustness analysis of
 Section~\ref{sec:robustness}.
+
+Readability also makes the rule open to direct inspection. Its
+simplified form, Eq.~\eqref{eq:besttree}, weighs
+$\mathit{PT}$ by $\alpha = 2$ and $\mathit{WKRW}$ by $\beta = 1$; we
+swept each weight over the 70 instances holding the other at its evolved
+value (Figure~\ref{fig:sensitivity}). Both curves have a single broad
+minimum, and the evolved $\alpha$ sits at the lowest point of its sweep:
+the weight given to processing time was tuned rather than arrived at by
+chance. The evolved $\beta$ lies near, but not at, the minimum of its
+own sweep, where $\beta = 0.5$ yields $17.54\%$ against $17.71\%$. This
+kind of post-hoc adjustment is available for any evolved rule, and is a
+practical consequence of the output being an expression rather than a
+network.
+
+Setting $\beta = 0$ removes the width term from the deployed rule and
+costs $0.5$ points of $\RE$ ($18.23$ against $17.71$). This is a
+different question from the ablation of Section~\ref{sec:ablation},
+which withholds the width terminals from the language \emph{before}
+evolution and lets the search compensate with the remaining ones; here
+the term is switched off in a rule already built around it. The two
+answers are therefore not in conflict.
 
 
 
