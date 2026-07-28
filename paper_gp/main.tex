@@ -627,12 +627,11 @@ remaining 60 Taillard instances and the 12 classical instances are fully
 unseen by every design decision and constitute the honest generalization
 test.
 
-Each evolution uses population $100$ and $50$ generations. Thirty
-independent evolutions are performed per configuration, differing only
-in their random seed. An evolution returns the best rule of its final
-population, so thirty evolutions yield thirty rules. These are evaluated
-on the 70 benchmark instances, and the one with the lowest mean $\RE$ is
-the \emph{featured rule}.
+Each evolution runs a population of $100$ rules for $50$ generations and
+returns the best rule of its final population. Thirty independent
+evolutions, differing only in their random seed, therefore yield thirty
+rules; these are evaluated on the 70 benchmark instances, and the one
+with the lowest mean $\RE$ is the \emph{featured rule}.
 
 \subsection{Hyperparameter configuration with irace}
 \label{sec:irace}
