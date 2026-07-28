@@ -628,21 +628,12 @@ unseen by every design decision and constitute the honest generalization
 test.
 
 Each evolution uses population $100$ and $50$ generations:
-${\sim}20{,}400$ fitness evaluations (${\approx}30$ min single-core) per
-seed; thirty independent seeds per configuration, following standard
-practice in evolutionary computation. A run returns the best rule of its
-final population, so a campaign of thirty seeds yields thirty rules,
-differing only through the stochasticity of initialization, crossover and
-mutation. These are evaluated on the 70 benchmark instances and the one
-with the lowest mean $\RE$ is the \emph{featured rule}. Results that
-characterise the method are reported as the mean $\pm$ standard deviation
-over the thirty rules, with paired tests over the shared seeds; results
-that require a single rule---the tree of Figure~\ref{fig:besttree}, its
-simplified expression, the $\bar\varepsilon$ analysis and the
-per-instance appendix---use the featured rule and are labelled as such.
-The ablation, robust-fitness and $\lambda$-sweep experiments of
-Section~\ref{sec:analysis} repeat this procedure with one element
-changed: the terminal set, the fitness function or the weight $\lambda$.
+${\sim}20{,}400$ fitness evaluations per seed; thirty independent seeds
+per configuration. A run returns the best rule of its final population,
+so a campaign of thirty seeds yields thirty rules, differing only
+through the stochasticity of initialization, crossover and mutation.
+These are evaluated on the 70 benchmark instances and the one with the
+lowest mean $\RE$ is the \emph{featured rule}.
 
 \subsection{Hyperparameter configuration with irace}
 \label{sec:irace}
