@@ -685,15 +685,17 @@ recognizable form. Figure~\ref{fig:besttree}
 shows the featured rule, obtained with seed~1: $26$ nodes
 over $12$ leaves. Every terminal of the tree is non-negative by
 construction and processing times are at least one time unit, so both
-guards it contains resolve to the same branch at every decision, and the
-tree is exactly equivalent on the problem domain to
+guards it contains resolve to the same branch at every decision. On the
+problem domain the tree is therefore exactly equivalent to the
+expression
 \begin{equation}
 \mathit{SLACK}^{2} \;+\; 2\,\mathit{PT}
-\;-\; \mathit{WKR} \;-\; \mathit{WKRW} \;-\; 1 ,
+\;-\; \mathit{WKR} \;-\; \mathit{WKRW} \;-\; 1 .
 \label{eq:besttree}
 \end{equation}
-an identity verified at each of the $37{,}250$ dispatching decisions
-the rule takes on the benchmark ($1.29$ million candidate evaluations). Since the lowest value is dispatched, the
+We verified this identity at each of the $37{,}250$ dispatching decisions
+the rule takes on the benchmark ($1.29$ million candidate evaluations).
+Since the lowest value is dispatched, the
 rule reads directly: $-\mathit{WKR}$ is most-work-remaining, $2\,
 \mathit{PT}$ is shortest-processing-time at double weight, $\mathit{
 SLACK}^{2}$ penalises quadratically any operation that cannot start at
