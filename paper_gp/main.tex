@@ -477,6 +477,51 @@ Priority ties at dispatch time are broken by eligible
 set order (lowest job index first), which is deterministic; hence a rule
 maps each instance to exactly one schedule.
 
+\begin{algorithm}[t]
+\caption{GP hyper-heuristic for the IJSP}
+\label{alg:gp}
+\begin{algorithmic}[1]
+\State $P \gets$ ramped half-and-half($pop-2$) $\cup$ \{SPT, MWKR\}
+\State evaluate($P$) \Comment{mean RE of one constructive pass on the
+training instances}
+\For{$g = 1$ \textbf{to} $gens$}
+  \State $P' \gets$ elite($P$, $e$) \Comment{elitism}
+  \While{$|P'| < pop$}
+    \If{rand() $< p_c$}
+      \State $p_1, p_2 \gets$ tournament($P,k$), tournament($P,k$)
+      \State $child \gets$ subtreeCrossover($p_1$, $p_2$)
+    \Else
+      \State $child \gets$ subtreeMutation(tournament($P,k$))
+    \EndIf
+    \State $P' \gets P' \cup \{child\}$ \Comment{fitness $\infty$ if
+    size $> c$}
+  \EndWhile
+  \State $P \gets$ evaluate($P'$)
+\EndFor
+\State \Return best rule in $P$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{table}[t]
+\centering\small
+\caption{Evolution parameters: the configuration selected by irace
+(Section~\ref{sec:irace}), used for every experiment reported in this
+paper.}
+\label{tab:gpparams}
+\begin{tabular}{ll}
+\toprule
+Population / generations & $100$ / $50$ \\
+Initialization & ramped half-and-half (depths $2$--$4$) + 2 seeded rules \\
+Selection & tournament, size $k = 7$ \\
+Crossover / mutation prob. & $p_c = 0.77$ / $0.23$ (subtree, depth $\le 3$) \\
+Elitism & $e = 2$ \\
+Tree-size cap & $c = 30$ nodes (violations: fitness $\infty$) \\
+Fitness & mean RE, deterministic rollout, TA11--TA14 \\
+Seeds & $1$--$30$ (RNG of evolution and environment) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{Evolutionary components}
 \label{sec:evoview}
 The initial population is built with the \emph{ramped half-and-half}
@@ -533,50 +578,7 @@ a fixed number of generations and returns the best rule found.
 Algorithm~\ref{alg:gp} summarizes the generational loop and
 Table~\ref{tab:gpparams} lists the parameter values.
 
-\begin{algorithm}[t]
-\caption{GP hyper-heuristic for the IJSP}
-\label{alg:gp}
-\begin{algorithmic}[1]
-\State $P \gets$ ramped half-and-half($pop-2$) $\cup$ \{SPT, MWKR\}
-\State evaluate($P$) \Comment{mean RE of one constructive pass on the
-training instances}
-\For{$g = 1$ \textbf{to} $gens$}
-  \State $P' \gets$ elite($P$, $e$) \Comment{elitism}
-  \While{$|P'| < pop$}
-    \If{rand() $< p_c$}
-      \State $child \gets$ subtreeCrossover(tournament($P,k$),
-      tournament($P,k$))
-    \Else
-      \State $child \gets$ subtreeMutation(tournament($P,k$))
-    \EndIf
-    \State $P' \gets P' \cup \{child\}$ \Comment{fitness $\infty$ if
-    size $> c$}
-  \EndWhile
-  \State $P \gets$ evaluate($P'$)
-\EndFor
-\State \Return best rule in $P$
-\end{algorithmic}
-\end{algorithm}
 
-\begin{table}[t]
-\centering\small
-\caption{Evolution parameters: the configuration selected by irace
-(Section~\ref{sec:irace}), used for every experiment reported in this
-paper.}
-\label{tab:gpparams}
-\begin{tabular}{ll}
-\toprule
-Population / generations & $100$ / $50$ \\
-Initialization & ramped half-and-half (depths $2$--$4$) + 2 seeded rules \\
-Selection & tournament, size $k = 7$ \\
-Crossover / mutation prob. & $p_c = 0.77$ / $0.23$ (subtree, depth $\le 3$) \\
-Elitism & $e = 2$ \\
-Tree-size cap & $c = 30$ nodes (violations: fitness $\infty$) \\
-Fitness & mean RE, deterministic rollout, TA11--TA14 \\
-Seeds & $1$--$30$ (RNG of evolution and environment) \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 \subsection{Randomized multi-start extension}
 \label{sec:grasp}
