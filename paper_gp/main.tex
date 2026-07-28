@@ -634,9 +634,9 @@ with the lowest mean $\RE$ is the \emph{featured rule}.
 
 \subsection{Hyperparameter configuration with irace}
 \label{sec:irace}
-The four qualitative knobs of the evolution, namely tournament size,
-crossover probability, tree-size cap and elitism, were configured with
-irace over a budget of 200 experiments, each one a full evolution
+Four parameters govern the behaviour of the evolution: tournament size,
+crossover probability, tree-size cap and elitism. We configured them
+with irace over a budget of 200 experiments, each one a full evolution
 (population $100$, $50$ generations) on the training instances, scored by
 the resulting rule's $\RE$ on the development set.
 Table~\ref{tab:irace} lists the parameter space and the winning
