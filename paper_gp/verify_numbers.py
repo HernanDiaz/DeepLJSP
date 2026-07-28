@@ -82,6 +82,20 @@ if os.path.exists(res):
         if m:
             check(label, f"z={float(m.group(1)):.2f}", "RESULTADOS.md")
 
+# ---- barrido de lambda, citado en prosa en 7.2 -------------------------
+sw = os.path.join(REPO, "benchmarks/lambda_sweep/lambda_sweep_tuned.csv")
+if os.path.exists(sw):
+    print("\n== barrido de lambda (lambda_sweep_tuned.csv) ==")
+    for r in csv.DictReader(open(sw, encoding="utf-8")):
+        lam = float(r["lambda"])
+        if lam in (0.5, 4.0):        # los dos extremos son los que cita 7.2
+            check(f"lambda={lam:g}: RE",
+                  f"{float(r['re_mean']):.2f} \\pm {float(r['re_sd']):.2f}",
+                  "lambda_sweep_tuned.csv")
+            check(f"lambda={lam:g}: ancho",
+                  f"{float(r['width_mean']):.2f} \\pm "
+                  f"{float(r['width_sd']):.2f}", "lambda_sweep_tuned.csv")
+
 # ---- robustez, desde robustness_tuned.csv ------------------------------
 rob = os.path.join(REPO, "benchmarks/robustness_tuned.csv")
 if os.path.exists(rob):

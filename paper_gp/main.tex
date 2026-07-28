@@ -904,9 +904,9 @@ is mixed. A single constructive pass takes ${\approx}0.1$~s on instances
 of this size in our Python implementation, against the $0.5$--$2.2$~s
 reported for the genetic algorithm and the $1.9$--$6.8$~s reported for
 fEABC on the same instances~\cite{DiazFEABC2023}, both implemented in
-C\texttt{++}. Best-of-1024, however, requires about two minutes of
-sequential Python time and is therefore \emph{not} faster than the
-published metaheuristics.
+C\texttt{++}. Best-of-1024, however, requires between $0.6$ and
+$2.4$~minutes of sequential Python time depending on instance size, and
+is therefore \emph{not} faster than the published metaheuristics.
 
 We report this transfer as a property of the method rather than of one
 rule. Over the 30 independently evolved rules the deterministic pass
@@ -932,9 +932,9 @@ The evolved rules therefore do not match the per-instance metaheuristics
 on this benchmark, and the purpose-built ABC variants remain clearly
 ahead ($5.5$--$6.4\%$), as expected of iterative search. What the
 comparison locates is the constructive frontier: rules evolved once on
-another benchmark and applied here with no retraining land within a
-point and a half of a population-based method that searches every
-instance separately, and well clear of the deterministic rules of
+another benchmark and applied here with no retraining land $1.5$ points
+of $\RE$ from a population-based method that searches every instance
+separately, and well clear of the deterministic rules of
 Table~\ref{tab:baselines}.
 
 
@@ -1073,13 +1073,13 @@ The weight $\lambda$ of Eq.~\eqref{eq:robustfit} governs that trade-off,
 and sweeping it traces the frontier between quality and predictability
 (Figure~\ref{fig:lambda}). Both quantities move monotonically with
 $\lambda$: as the weight grows from $0.5$ to $4$, the relative width of
-the makespan interval falls from $12.16 \pm 0.51$ to
-$10.30 \pm 1.43$ while the expected makespan degrades from
-$19.09 \pm 1.45$ to $23.04 \pm 3.26$ $\RE$. At the far end of the sweep
+the makespan interval falls from $12.18 \pm 0.50$ to
+$10.54 \pm 1.26$ while the expected makespan degrades from
+$19.20 \pm 1.52$ to $23.27 \pm 3.80$ $\RE$. At the far end of the sweep
 the schedules are therefore narrower than anything the ablated rules can
 produce, at a cost of some four points of $\RE$. The practitioner can
 choose an operating point along this curve; deprived of the width
-terminals, the evolution is pinned at ${\approx}12.4\%$ \emph{whatever}
+terminals, the evolution is pinned at ${\approx}12.5\%$ \emph{whatever}
 value of $\lambda$ it is given, so it has no such frontier available to
 it at all.
 

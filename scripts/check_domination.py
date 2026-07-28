@@ -22,7 +22,10 @@ from jobshop_rl.heuristics.strategies import (
 )
 from jobshop_rl.models.interval import Interval, final_makespan
 
-RULE = "benchmarks/reevo_fixedfit/gp_rule_seed27.json"
+# regla destacada; se toma de la linea de comandos para no quedar fijada a la
+# de una campana anterior
+RULE = (sys.argv[1] if len(sys.argv) > 1
+        else "benchmarks/reevo_fixedfit/gp_tuned_seed1.json")
 
 
 def re_of(env, h, lb):
