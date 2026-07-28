@@ -65,10 +65,10 @@ strongest deterministic constructive baseline (Giffler--Thompson with MWKR
 tie-breaking, $29.5\%$) on every single instance---and generalizes
 zero-shot across all seven instance size classes despite being evolved on
 only four training instances of a single size class ($20{\times}15$).
-On a second benchmark of classical instances it is applied without any
-re-evolution and, wrapped in a GRASP-style randomized scheme, matches the
-published average of a genetic algorithm that searches each instance
-separately.
+Applied without any re-evolution to a second benchmark of classical
+instances, the rules hold their quality across the change of instance
+family, and a GRASP-style randomized scheme closes much of the remaining
+distance to metaheuristics that search each instance separately.
 Evolved rules are compact, human-readable expressions, with the
 evolutionary hyperparameters configured automatically by irace. A
 controlled ablation over 30 evolutions per arm characterizes what
@@ -139,9 +139,9 @@ This paper makes the following contributions:
   that evolved rules (i) beat every deterministic constructive baseline by
   a wide margin at equal cost, (ii) generalize zero-shot across instance
   sizes---evolved on $20{\times}15$, best class $50{\times}15$---and
-  (iii) transfer to a second benchmark of classical instances, where a
-  randomized multi-start of the same rule matches a published
-  per-instance metaheuristic (Section~\ref{sec:results}).
+  (iii) transfer to a second benchmark of classical instances with no
+  loss of quality across the change of instance family
+  (Section~\ref{sec:results}).
 \item An analysis of \emph{why} the rules work: an anatomy of the evolved
   expressions (Section~\ref{sec:anatomy}); an ablation that isolates the
   contribution of the interval-width terminals and characterises
@@ -861,7 +861,10 @@ on interval Taillard $20{\times}15$, applied zero-shot) versus the
 published average results (30 runs per instance) of the IJSP
 metaheuristics GA~\cite{DiazGA2020}, ABC$_{E3}$, fEABC~\cite{DiazFEABC2023}
 and ESABC~\cite{DiazICAE2023}. LB is the best-known lower bound of the
-expected makespan.}
+expected makespan. Per-instance rows are the single featured rule; the
+last row gives the mean $\pm$ sd of the deterministic pass over all 30
+independently evolved rules, so that the transfer is read as a property
+of the method and not of one draw.}
 \label{tab:classics}
 \setlength{\tabcolsep}{4.5pt}
 \begin{tabular}{lrrrrrrrrr}
@@ -886,6 +889,7 @@ ABZ8 & 645 & & 24.7 & 22.1 & 17.7 & 18.5 & 12.1 & 11.1 & 10.9 \\
 ABZ9 & 661 & & 33.4 & 25.3 & 22.1 & 18.0 & 13.1 & 11.6 & 11.2 \\
 \midrule
 Mean & & & 17.9 & 14.2 & 11.3 & 9.8 & 6.4 & 5.8 & 5.5 \\
+Mean of 30 & & & $19.0{\pm}2.0$ & --- & --- & & & & \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -903,28 +907,28 @@ C\texttt{++}. Best-of-1024, however, requires about two minutes of
 sequential Python time and is therefore \emph{not} faster than the
 published metaheuristics.
 
-In terms of quality, GP-$\varepsilon$ at best-of-1024 reaches $11.3\%$
-$\RE$ against the $9.8\%$ published average of the genetic algorithm,
-beating it on $3$ of the $12$ instances; a Wilcoxon signed-rank test on
-the paired per-instance values puts the difference at the edge of
-significance ($z = 1.96$, $p \approx 0.05$). The rule therefore does not
-match the per-instance metaheuristics on this benchmark, and the
-purpose-built ABC variants remain clearly ahead ($5.5$--$6.4\%$), as
-expected of iterative search. What the comparison locates is the
-constructive frontier: a rule evolved once on interval Taillard
-instances and applied here with no retraining lands within a point and a
-half of a population-based method that searches every instance
-separately, and well clear of the deterministic rules of
+We report this transfer as a property of the method rather than of one
+rule. Over the 30 independently evolved rules the deterministic pass
+averages $19.0 \pm 2.0\%$ $\RE$ on these instances, against $19.0\%$ on
+the interval Taillard benchmark the rules were evolved for: the quality
+of a rule survives the move to a different instance family essentially
+intact, which is the substantive claim here. Individual rules vary
+considerably around that mean, from $15.3\%$ to $23.3\%$, so the figure
+attached to any single rule should be read with that spread in mind.
+
+In terms of quality, the featured rule wrapped in GP-$\varepsilon$ at
+best-of-1024 reaches $11.3\%$ $\RE$ against the $9.8\%$ published average
+of the genetic algorithm, beating it on $3$ of the $12$ instances; a
+Wilcoxon signed-rank test on the paired per-instance values puts the
+difference at the edge of significance ($z = 1.96$, $p \approx 0.05$).
+The evolved rules therefore do not match the per-instance metaheuristics
+on this benchmark, and the purpose-built ABC variants remain clearly
+ahead ($5.5$--$6.4\%$), as expected of iterative search. What the
+comparison locates is the constructive frontier: rules evolved once on
+another benchmark and applied here with no retraining land within a
+point and a half of a population-based method that searches every
+instance separately, and well clear of the deterministic rules of
 Table~\ref{tab:baselines}.
-\todo{OJO, ESTO CAMBIA respecto a la campana anterior y afecta al
-abstract y a la contribucion 2. Con seed27 el best-of-1024 daba $9.9$
-frente al $9.8$ del GA y el test salia n.s. ($z=0.24$), de ahi el
-``matches the published average''. La regla tuneada transfiere peor a
-estas 12 (pase unico $17.9$ frente a $13.9$), asi que esa afirmacion ya
-no se sostiene: la he sustituido por lo medido, pero el abstract
-(``matches the published average of a genetic algorithm'') y la
-contribucion 2 (``matches a published per-instance metaheuristic'')
-siguen prometiendolo y hay que decidir que decimos.}
 
 
 \begin{figure}[htbp]
