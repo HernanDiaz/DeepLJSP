@@ -810,7 +810,19 @@ GP rule (best of 30) & \textbf{17.71} & 5.23 & 335 \\
 \bottomrule
 \end{tabular}
 \end{table}
-The gap holds at the level of individual instances: the best evolved
+\begin{figure}[t]
+\centering
+\includegraphics[width=.72\linewidth]{figures/fig_dominance.pdf}
+\caption{Per-instance $\RE$ of the featured rule against the strongest
+baseline, G\&T-MWKR, over the 70 Taillard interval instances, coloured
+by size class. The dashed line marks equal performance: all 70 points
+lie below it, with a smallest margin of $3.9$ points (a $20{\times}15$
+instance).}
+\label{fig:dominance}
+\end{figure}
+
+The gap holds at the level of individual instances
+(Figure~\ref{fig:dominance}): the best evolved
 rule beats each of the eight deterministic baselines on every one of
 the $70$ instances, and a paired Wilcoxon signed-rank test rejects
 equality against each of them at $p<10^{-6}$ ($z=-7.3$). The narrowest
