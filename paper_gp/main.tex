@@ -66,9 +66,10 @@ tie-breaking, $29.5\%$) on every single instance---and generalizes
 zero-shot across all seven instance size classes despite being evolved on
 only four training instances of a single size class ($20{\times}15$).
 Applied without any re-evolution to a second benchmark of classical
-instances, the rules hold their quality across the change of instance
-family, and a GRASP-style randomized scheme closes much of the remaining
-distance to metaheuristics that search each instance separately.
+instances, the rules keep the same margin over the constructive
+baselines that they hold on the benchmark they were evolved for, and a
+GRASP-style randomized scheme closes much of the remaining distance to
+metaheuristics that search each instance separately.
 Evolved rules are compact, human-readable expressions, with the
 evolutionary hyperparameters configured automatically by irace. A
 controlled ablation over 30 evolutions per arm characterizes what
@@ -139,8 +140,8 @@ This paper makes the following contributions:
   that evolved rules (i) beat every deterministic constructive baseline by
   a wide margin at equal cost, (ii) generalize zero-shot across instance
   sizes---evolved on $20{\times}15$, best class $50{\times}15$---and
-  (iii) transfer to a second benchmark of classical instances with no
-  loss of quality across the change of instance family
+  (iii) transfer to a second benchmark of classical instances, keeping
+  the same margin over the constructive baselines
   (Section~\ref{sec:results}).
 \item An analysis of \emph{why} the rules work: an anatomy of the evolved
   expressions (Section~\ref{sec:anatomy}); an ablation that isolates the
@@ -909,14 +910,18 @@ published metaheuristics.
 
 We report this transfer as a property of the method rather than of one
 rule. Over the 30 independently evolved rules the deterministic pass
-averages $19.04 \pm 1.97\%$ $\RE$ on these instances, against
-$18.99 \pm 1.33\%$ on the interval Taillard benchmark the rules were
-evolved for. The quality of a rule therefore survives the move to a
-different instance family essentially intact, even though the classical
-instances differ in size, in shape and in origin from anything seen
-during evolution. Individual rules vary considerably around that mean,
-from $15.3\%$ to $23.3\%$, so the figure attached to any single rule
-should be read with that spread in mind.
+averages $19.04 \pm 1.97\%$ $\RE$ on these instances, individual rules
+ranging from $15.3\%$ to $23.3\%$, so the figure attached to any single
+rule should be read with that spread in mind. The two benchmarks are
+referred to different bounds---Taillard's for the Taillard-derived
+instances, best-known ones for the classical set---so their $\RE$ values
+are not directly comparable; what does carry across is the margin over
+the baselines evaluated on the same instances against the same bound.
+That margin is preserved: on the classical set the evolved rules average
+$2.40$ times better than MOR and $1.58$ times better than G\&T-MWKR,
+against $2.40$ and $1.55$ on the interval Taillard benchmark they were
+evolved for. Whatever the rules learned on one family is worth as much
+on the other.
 
 In terms of quality, the featured rule wrapped in GP-$\varepsilon$ at
 best-of-1024 reaches $11.3\%$ $\RE$ against the $9.8\%$ published average
