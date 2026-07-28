@@ -632,21 +632,6 @@ evolutions, differing only in their random seed, therefore yield thirty
 rules; these are evaluated on the 70 benchmark instances, and the one
 with the lowest mean $\RE$ is the \emph{featured rule}.
 
-\subsection{Hyperparameter configuration with irace}
-\label{sec:irace}
-Four parameters govern the behaviour of the evolution: tournament size,
-crossover probability, tree-size cap and elitism. We configured them
-with irace over a budget of 200 experiments, each one a full evolution
-(population $100$, $50$ generations) on the training instances, scored by
-the resulting rule's $\RE$ on the development set.
-Table~\ref{tab:irace} lists the parameter space and the winning
-configuration, which is the one used for every experiment reported in
-this paper (Table~\ref{tab:gpparams}). The elite configurations agree on
-a high selection pressure (tournament size $7$) and a crossover
-probability in the range $0.72$--$0.77$; the tree-size cap does not
-discriminate, with surviving elites spanning caps of $20$, $30$ and
-$40$.
-
 \begin{table}[t]
 \centering\small
 \caption{Hyperparameter space explored by irace (200 experiments; cost =
@@ -663,6 +648,22 @@ Elitism & $\{1, 2, 4\}$ & $2$ \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\subsection{Hyperparameter configuration with irace}
+\label{sec:irace}
+Four parameters govern the behaviour of the evolution: tournament size,
+crossover probability, tree-size cap and elitism. We configured them
+with irace over a budget of 200 experiments, each one a full evolution
+(population $100$, $50$ generations) on the training instances, scored by
+the resulting rule's $\RE$ on the development set.
+Table~\ref{tab:irace} lists the parameter space and the winning
+configuration, which is the one used for every experiment reported in
+this paper (Table~\ref{tab:gpparams}). The elite configurations agree on
+a high selection pressure (tournament size $7$) and a crossover
+probability in the range $0.72$--$0.77$; the tree-size cap does not
+discriminate, with surviving elites spanning caps of $20$, $30$ and
+$40$.
+
 
 \section{Results}
 \label{sec:results}
