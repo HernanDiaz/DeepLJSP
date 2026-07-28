@@ -78,8 +78,7 @@ makespan---the worst-case bounds carry that signal---but they yield
 significantly narrower makespan intervals, modestly under a makespan
 objective and substantially under one that rewards predictability, a
 trade-off the user can dial. We position the method against fixed rules, active
-schedule generators, and published metaheuristics, characterizing the
-computational class in which interpretable evolved rules operate.
+schedule generators, and published metaheuristics.
 \end{abstract}
 
 \begin{keyword}
@@ -104,7 +103,7 @@ them---achieve strong results, at the cost of building and evaluating
 large numbers of complete solutions for every
 instance~\cite{DiazFEABC2023,DiazICAE2023}.
 
-At the opposite end of the computational spectrum live \emph{dispatching
+At the opposite end of the computational spectrum are \emph{dispatching
 rules}: priority functions that build a schedule in a single constructive
 pass by repeatedly selecting the next operation to start. Their appeal is
 threefold---speed, interpretability, and trivial deployment---but
@@ -117,15 +116,15 @@ gap can be narrowed substantially by evolving rules automatically with
 genetic programming (GP)~\cite{Branke2016,Nguyen2017}. For scheduling
 under interval uncertainty, however, the automated design of dispatching
 rules remains, to the best of our knowledge, unexplored. Moving automated
-rule design to interval durations raises questions that simply do not
+rule design to interval durations raises questions that do not
 arise in the deterministic case: which attributes a rule should read,
 when the quantities describing a candidate operation---its duration, its
 earliest start, the work remaining in its job---are intervals rather
 than numbers; how candidate operations should be prioritized, and the
 resulting schedules compared, given that intervals admit no natural
 total order; and whether the \emph{magnitude} of the uncertainty carries
-information that is useful for dispatching, or it is the position of the
-intervals that drives the decision. Answering these questions
+information that is useful for dispatching, or whether it is the
+position of the intervals that drives the decision. Answering these questions
 empirically requires exposing uncertainty to the rule as first-class
 attributes, which is the starting point of this work.
 
@@ -145,11 +144,11 @@ This paper makes the following contributions:
   (Section~\ref{sec:results}).
 \item An analysis of \emph{why} the rules work: an anatomy of the evolved
   expressions (Section~\ref{sec:anatomy}); an ablation that isolates the
-  contribution of the interval-width terminals and characterises
-  \emph{when} interval awareness pays---not under a makespan objective,
-  where worst-case bounds suffice, but under an objective that rewards
-  predictability, where the widths yield significantly narrower makespan
-  intervals (Section~\ref{sec:ablation}); and an executional-robustness
+  contribution of the interval-width terminals: they leave the expected
+  makespan unchanged but yield significantly narrower makespan
+  intervals, modestly under a makespan objective and substantially under
+  an objective that rewards predictability
+  (Section~\ref{sec:ablation}); and an executional-robustness
   study showing that the evolved rule yields schedules whose realised
   makespan deviates less from its prediction than the baselines',
   increasingly so as uncertainty grows (Section~\ref{sec:robustness}).
@@ -233,10 +232,10 @@ present work: their machinery rests on exact one-machine optimisation
 and critical-path arguments whose extension to interval arithmetic,
 where no natural total order is available, is a research contribution in
 itself and remains open. Decades of practice consolidated two
-lessons: rules are unbeatable in speed, transparency and ease of
+lessons: rules are unmatched in speed, transparency and ease of
 deployment, but hand-crafting them plateaued---no fixed combination of
 attributes performs well across shop configurations and
-objectives~\cite{Haupt1989}. That plateau is precisely what motivated
+objectives~\cite{Haupt1989}. That plateau is what motivated
 the \emph{automated} design of rules.
 
 \subsection{Automated design of dispatching rules}
@@ -466,7 +465,7 @@ evaluated on the attributes of every $o \in \mathcal{E}$, and the
 operation with \emph{lowest} priority value is appended at its earliest
 feasible start on its machine, Eq.~(3).
 
-Because the lowest value wins, a criterion that seeks to \emph{maximise}
+Because the lowest value is dispatched, a criterion that seeks to \emph{maximise}
 an attribute must be expressed through the unary $\mathrm{neg}$
 operator. Classic rules are thus points of this search space: shortest
 processing time is the single-node tree $\mathit{PT}$, whereas most work
@@ -502,7 +501,7 @@ Section~\ref{sec:hhview}, inserted directly.
 Every individual is evaluated by the mean $\RE$ of its
 deterministic constructive pass over the four training instances,
 computed with the same environment, decoder and evaluator used by all
-baselines, which eliminates evaluator mismatch as a confound.
+baselines.
 
 Each generation then proceeds as follows. Parents are chosen by
 tournament, drawing $k$ individuals uniformly without replacement from
@@ -570,7 +569,7 @@ paper.}
 \begin{tabular}{ll}
 \toprule
 Population / generations & $100$ / $50$ \\
-Initialization & ramped half-and-half (depths $2$--$4$) + 2 seeds \\
+Initialization & ramped half-and-half (depths $2$--$4$) + 2 seeded rules \\
 Selection & tournament, size $k = 7$ \\
 Crossover / mutation prob. & $p_c = 0.77$ / $0.23$ (subtree, depth $\le 3$) \\
 Elitism & $e = 2$ \\
@@ -680,8 +679,8 @@ evolutions: each individual run and their mean.}
 Over 30 independent evolutions, training $\RE$ converges to
 $14.9 \pm 1.5$ (range $12.4$--$19.7$), with most of the improvement
 realized by generation $25$--$30$ (Figure~\ref{fig:convergence}). The
-evolved rules are structurally recognizable, combining the classical
-dispatching ingredients in interpretable ways. Figure~\ref{fig:besttree}
+evolved rules combine the classical dispatching ingredients in
+recognizable form. Figure~\ref{fig:besttree}
 shows the featured rule, obtained with seed~1: $26$ nodes
 over $12$ leaves. Every terminal of the tree is non-negative by
 construction and processing times are at least one time unit, so both
@@ -692,8 +691,8 @@ tree is exactly equivalent on the problem domain to
 \;-\; \mathit{WKR} \;-\; \mathit{WKRW} \;-\; 1 ,
 \label{eq:besttree}
 \end{equation}
-an identity we verified over the $1.9$ million dispatching decisions the
-rule takes on the benchmark. Since the lowest value is dispatched, the
+an identity verified at each of the $37{,}250$ dispatching decisions
+the rule takes on the benchmark ($1.29$ million candidate evaluations). Since the lowest value is dispatched, the
 rule reads directly: $-\mathit{WKR}$ is most-work-remaining, $2\,
 \mathit{PT}$ is shortest-processing-time at double weight, $\mathit{
 SLACK}^{2}$ penalises quadratically any operation that cannot start at
@@ -771,7 +770,7 @@ same criterion embedded in the Giffler--Thompson conflict set---which
 restores classical dispatching semantics---behaves as expected
 (SPT: $627\%$ as a plain rule versus $70.6\%$ under G\&T). Second, the
 criteria that do account for the state of the shop (EST, MOR, MWKR) are
-comfortably better than random, and the strongest baseline overall is
+clearly better than random, and the strongest baseline overall is
 G\&T-MWKR at $29.5\%$, which is the reference we use throughout.
 
 Against that strongest baseline, the evolved rules average
@@ -819,25 +818,25 @@ GP rule (best of 30) & \textbf{17.71} & 5.23 & 335 \\
 \bottomrule
 \end{tabular}
 \end{table}
-The gap is not marginal and not an artefact of averaging: the best
-evolved rule beats \emph{every} rule in the table on \emph{every} one of
+The gap holds at the level of individual instances: the best evolved
+rule beats each of the eight deterministic baselines on every one of
 the $70$ instances, and a paired Wilcoxon signed-rank test rejects
 equality against each of them at $p<10^{-6}$ ($z=-7.3$). The narrowest
 margin over the whole comparison is $3.9$ points, against G\&T-MWKR on a
 single $20{\times}15$ instance; against the best plain rule (EST) the
 smallest margin is $6.3$ points. Per-instance figures are given in
-Table~\ref{tab:perinstance} (appendix). Crucially, this quality comes at
+Table~\ref{tab:perinstance} (appendix). This quality comes at
 no evaluation penalty over hand-crafted rules: evaluating the evolved
 expression tree over the eligible set costs what evaluating a
 hand-crafted criterion costs. Averaged over the 70 instances, a complete
 constructive pass takes $335$~ms with the evolved rule against $334$~ms
 with MOR and $382$~ms with G\&T-MWKR, a spread of $14\%$ between the
 three; all of them reduce to one vectorized pass over the eligible
-operations per decision, so the priority expression is not where the
-time goes. Both cost and
-quality thus place the evolved rule squarely with the constructive
-methods, while closing much of the quality gap that separated them from
-search-based methods; that latter comparison is deferred to
+operations per decision, so the choice of priority expression
+contributes little to the cost of a pass. Both cost and quality thus
+place the evolved rule with the constructive methods, while closing much
+of the quality gap that separated them from search-based methods; that
+comparison is deferred to
 Section~\ref{sec:classics}, where published results are available on a
 common benchmark.
 
@@ -871,7 +870,7 @@ and ESABC~\cite{DiazICAE2023}. LB is the best-known lower bound of the
 expected makespan. Per-instance rows are the single featured rule; the
 last row gives the mean $\pm$ sd of the deterministic pass over all 30
 independently evolved rules, so that the transfer is read as a property
-of the method and not of one draw.}
+of the method and not of a single rule.}
 \label{tab:classics}
 \setlength{\tabcolsep}{4.5pt}
 \begin{tabular}{lrrrrrrrrr}
@@ -905,8 +904,8 @@ The two families also differ in how they spend computation:
 best-of-1024 evaluates $1024$ mutually independent samples per instance,
 whereas the metaheuristics evolve a population of $250$
 individuals~\cite{DiazGA2020,DiazFEABC2023} through successive
-generations, each of which depends on the previous one. In wall-clock terms the picture
-is mixed. A single constructive pass takes ${\approx}0.1$~s on instances
+generations, each of which depends on the previous one. In wall-clock
+terms, a single constructive pass takes ${\approx}0.1$~s on instances
 of this size in our Python implementation, against the $0.5$--$2.2$~s
 reported for the genetic algorithm and the $1.9$--$6.8$~s reported for
 fEABC on the same instances~\cite{DiazFEABC2023}, both implemented in
@@ -926,8 +925,7 @@ the baselines evaluated on the same instances against the same bound.
 That margin is preserved: on the classical set the evolved rules average
 $2.40$ times better than MOR and $1.58$ times better than G\&T-MWKR,
 against $2.40$ and $1.55$ on the interval Taillard benchmark they were
-evolved for. Whatever the rules learned on one family is worth as much
-on the other.
+evolved for.
 
 In terms of quality, the featured rule wrapped in GP-$\varepsilon$ at
 best-of-1024 reaches $11.3\%$ $\RE$ against the $9.8\%$ published average
@@ -958,9 +956,8 @@ uncertainty to the rule.}
 
 Beyond aggregate quality, this section examines \emph{why} the evolved
 rules work: what they are made of, whether the interval-specific
-ingredients actually contribute, how robust the resulting schedules are
-under executional uncertainty, and whether they survive re-evaluation
-under other uncertainty models.
+ingredients contribute, and how robust the resulting schedules are under
+executional uncertainty.
 
 \subsection{Rule anatomy and interpretability}
 \label{sec:anatomy}
@@ -971,7 +968,7 @@ and simplified by hand. Figure~\ref{fig:terminals} reports how often each
 terminal is used across the 30 evolved rules. The backbone is the
 classical scheduling triad---slack (\textit{SLACK}), work remaining
 (\textit{WKR}) and earliest start (\textit{EST})---together with
-worst-case processing time (\textit{PT}), confirming that the evolution
+worst-case processing time (\textit{PT}), indicating that the evolution
 rediscovers and refines known dispatching logic rather than exploiting
 benchmark artefacts. The \emph{interval-width} terminals
 (\textit{PTW}, \textit{ESTW}, \textit{WKRW}) account for ${\approx}21\%$
@@ -1022,7 +1019,7 @@ Fitness objective & Terminal set & RE (\%) & Width (\%) \\
 \end{table}
 
 Under the makespan objective, the width terminals do not improve the
-quantity actually being optimised. Removing the three of them leaves the
+quantity being optimised. Removing the three of them leaves the
 expected makespan unchanged: $18.66 \pm 1.08$ mean $\RE$ over the 70
 instances without them versus $18.99 \pm 1.33$ with them, a difference
 that is not significant ($z=-0.83$) and, if anything, favours the smaller
@@ -1035,12 +1032,10 @@ for these terminals---they appear in 27 of the 30 rules
 (Section~\ref{sec:anatomy})---and what it obtains from them here is a
 tighter interval at no cost in expected makespan.
 
-That the gain shows up in the interval rather than in the makespan is,
-on reflection, unsurprising: the fitness being optimised rewards only
-the makespan, so nothing pushes a rule to trade quality for
-predictability. To ask whether it \emph{can} make that trade when asked,
-we repeat the ablation with a \emph{robust} fitness that explicitly
-rewards predictability, minimising
+The makespan fitness gives the evolution no incentive to trade expected
+makespan for predictability. To test whether it can make that trade
+when rewarded for it, we repeat the ablation with a \emph{robust}
+fitness that explicitly rewards predictability, minimising
 \begin{equation}
 f_{\lambda} = \overline{C}_{\max} + \lambda\,
 \big(\overline{C}_{\max}-\underline{C}_{\max}\big),
@@ -1052,14 +1047,14 @@ here. Under this objective the separation widens. Rules evolved with the
 width terminals produce schedules whose makespan interval is
 significantly narrower than those evolved without them
 ($12.04 \pm 0.75$ versus $12.47 \pm 0.20$ relative width; paired
-Wilcoxon $z=3.22$, $p<0.01$). The asymmetry is informative: deprived of
-width terminals, the evolution stays at ${\approx}12.5\%$
-\emph{whatever} objective it is given---$12.62$ under makespan and
+Wilcoxon $z=3.22$, $p<0.01$). Deprived of
+width terminals, the evolution stays at ${\approx}12.5\%$ under both
+objectives---$12.62$ under makespan and
 $12.47$ under the robust fitness---whereas with them it moves from
 $12.41$ to $12.04\%$ as soon as narrowness is rewarded, and further
 still as $\lambda$ grows. That movement is paid for in expected makespan
-($19.62$ versus $18.42$ $\RE$), which is precisely the trade-off the
-robust objective asks for.
+($19.62$ versus $18.42$ $\RE$), which is the trade-off the robust
+objective asks for.
 
 \begin{figure}[t]
 \centering
@@ -1069,9 +1064,10 @@ of the robust fitness, Eq.~\eqref{eq:robustfit}. Rules evolved
 \emph{with} the interval-width terminals; each point is the mean over the
 independent evolutions of that arm, every rule evaluated on the 70
 instances, and the grey bars span $\pm 1$ sd in both coordinates. The
-dashed line marks the arm evolved \emph{without} them, which cannot
-narrow the interval whatever $\lambda$ is used. Increasing $\lambda$ buys narrower makespan
-intervals at the price of a larger expected makespan.}
+dashed line marks the width reached by the arm evolved \emph{without}
+them under the robust fitness ($\lambda{=}1$). Increasing $\lambda$
+buys narrower makespan intervals at the price of a larger expected
+makespan.}
 \label{fig:lambda}
 \end{figure}
 
@@ -1083,29 +1079,18 @@ the makespan interval falls from $12.18 \pm 0.50$ to
 $10.54 \pm 1.26$ while the expected makespan degrades from
 $19.20 \pm 1.52$ to $23.27 \pm 3.80$ $\RE$. At the far end of the sweep
 the schedules are therefore narrower than anything the ablated rules can
-produce, at a cost of some four points of $\RE$. The practitioner can
-choose an operating point along this curve; deprived of the width
-terminals, the evolution is pinned at ${\approx}12.5\%$ \emph{whatever}
-value of $\lambda$ it is given, so it has no such frontier available to
-it at all.
+produce, at a cost of about four points of $\RE$. The practitioner can
+choose an operating point along this curve. No comparable frontier is
+available to the ablated arm, which stayed at ${\approx}12.5\%$ under
+both objectives it was evolved for.
 
-Together, these experiments locate \emph{what} interval awareness buys,
-rather than asserting that it improves everything: the width of an
-interval is actionable information for a dispatching rule, but what it
-buys is predictability, not expected makespan. Exposing the widths
-leaves the expected makespan where it was under either objective, and
-narrows the predicted interval under both---modestly when the objective
-ignores narrowness, substantially when it rewards it, with $\lambda$
-setting how far the trade is taken.
-\todo{ESTE PARRAFO CAMBIA DE TESIS respecto a la version por defecto y
-lo dejo para que lo decidas. Con la config tuneada el ancho bajo
-objetivo makespan pasa de n.s. ($z=-0.12$) a significativo ($z=3.40$),
-asi que ya no es cierto que la anchura solo sirva cuando el objetivo
-premia la predictibilidad: sirve siempre, solo que menos. He ajustado
-las frases falsas, pero el encuadre de la seccion --- y sus ecos en la
-contribucion 3 de la introduccion (linea 148) y en la conclusion (linea
-1190), que siguen diciendo ``not under a makespan objective'' --- es
-decision tuya.}
+Together, these experiments locate \emph{what} interval awareness buys:
+the width of an interval is actionable information for a dispatching
+rule, and what it buys is predictability rather than expected makespan.
+Exposing the widths leaves the expected makespan unchanged under either
+objective and narrows the predicted interval under both---modestly when
+the objective ignores narrowness, substantially when it rewards it, with
+$\lambda$ setting how far the trade is taken.
 
 
 
@@ -1162,12 +1147,12 @@ reading widths.}
 \label{fig:robustness}
 \end{figure}
 
-The evolved rule does not merely produce lower-makespan schedules---it
-produces \emph{more robust} ones, on two complementary measures
+The evolved rule also produces more robust schedules, on two
+complementary measures
 (Table~\ref{tab:robustness}). First, its predicted makespan interval is
 the \emph{tightest}: a relative width of $12.3\%$ against $13.8\%$
 (G\&T-MWKR) and $14.4\%$ (MOR), so the a-priori uncertainty attached to
-the schedule is smaller. Second, and more tellingly, its executed
+the schedule is smaller. Second, its executed
 makespan tracks the prediction most closely: $\bar\varepsilon$ is lower
 than for both baselines at the nominal width ($5.7$ versus $6.4$ for MOR
 and $6.3$ for G\&T-MWKR; paired Wilcoxon over the 70 instances,
@@ -1175,8 +1160,7 @@ $z=-5.96$ and $z=-4.42$, both $p<0.001$), and its advantage
 \emph{widens} as uncertainty grows (at $+40\%$: $7.6$ versus $8.9$ and
 $8.6$).
 Figure~\ref{fig:robustness} shows the per-instance $\bar\varepsilon$
-distributions. It is worth being precise about the source of this
-advantage. The figure also carries the ablated arm of
+distributions. The figure also includes the ablated arm of
 Section~\ref{sec:ablation}: rules evolved \emph{without} the
 interval-width terminals are as robust as the full rule at every
 uncertainty level ($\bar\varepsilon$ of $5.7$, $6.8$ and $7.8$ against
@@ -1195,24 +1179,23 @@ and the realised deviation shrink together.
 \label{sec:limitations}
 Three limitations bound the scope of our conclusions. First, all rules
 operate inside a semi-active SGS; active (insertion-based) generation
-schemes are known to help weaker constructors, and although our evolved
-rules produce near-active schedules already, co-evolving rules with an
-active SGS in the loop remains untested. Second, the uncertainty model
+schemes are known to help weaker constructors, and co-evolving rules
+with an active SGS in the loop remains untested. Second, the uncertainty model
 is the $\pm15\%$ symmetric interval scheme standard in the IJSP
 literature; other widths and asymmetric intervals may change the
 relative value of uncertainty information. Third, our runtime figures
 are relative (evolved rules cost the same as hand-crafted ones per
-pass); absolute times depend on the research-grade Python implementation
-and would shrink by orders of magnitude in an optimized production
-implementation, without affecting any ranking reported here.
+pass); absolute times depend on the research-grade Python
+implementation, but the rankings reported here do not.
 
 \section{Conclusions and Future Work}
 \label{sec:conclusions}
 
 We presented what is, to the best of our knowledge, the first GP
 hyper-heuristic for job shop scheduling with interval durations, built on
-a terminal set that exposes interval widths as first-class attributes.
-The empirical conclusions are three. (i)~Evolved rules dominate every
+a terminal set that exposes interval widths as first-class attributes,
+with the evolutionary hyperparameters configured automatically by a
+200-experiment irace study. The empirical conclusions are three. (i)~Evolved rules dominate every
 deterministic constructive baseline on the 70-instance benchmark by a
 wide, statistically significant margin ($18.99 \pm 1.33$ over 30
 evolutions, $17.71\%$ for the best rule, versus $29.5\%$ for the
@@ -1221,16 +1204,12 @@ the cost of a single constructive pass, and (ii)~they
 generalize zero-shot across all size
 classes---evolved on $20{\times}15$, best on the unseen
 $50{\times}15$---because the representation contains no size-bound
-quantities. (iii)~The evolutionary hyperparameters were configured
-automatically with a 200-experiment irace study, whose winning
-configuration is used throughout. Beyond aggregate quality, the analysis pins down
-\emph{when} the interval-specific ingredients matter: exposing the
-widths of the uncertain quantities does not improve the expected
-makespan---the worst-case bounds already carry that signal---but it
-does let the evolution produce significantly narrower makespan
-intervals once the objective rewards predictability. Interval awareness
-is thus not a free improvement but a lever, available when the
-application values predictable schedules over nominally shorter ones.
+quantities. (iii)~Exposing the widths of the uncertain quantities does
+not improve the expected makespan---the worst-case bounds already carry
+that signal---but it yields significantly narrower makespan intervals,
+modestly under a makespan objective and substantially under an objective
+that rewards predictability, with the weight $\lambda$ setting how far
+that trade is taken.
 
 Future work follows three lines. First, richer symbolic models:
 ensembles of complementary rules~\cite{GilGala2021Ensembles} and
