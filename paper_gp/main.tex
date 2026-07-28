@@ -664,6 +664,41 @@ Elitism & $\{1, 2, 4\}$ & $2$ \\
 \end{tabular}
 \end{table}
 
+\subsection{What a campaign consists of, and what is reported}
+\label{sec:campaign}
+It is worth stating the whole procedure in one place, since the numbers
+reported later refer to three different objects. First, irace fixes the
+\emph{configuration}: one set of hyperparameter values, obtained as
+described above and used unchanged from then on. Second, that
+configuration is run $30$ times with different random seeds. Each run is
+a complete evolution---a population of $100$ expression trees over $50$
+generations, scored on the four training instances---and returns the
+single best rule of its final population. A campaign therefore yields
+$30$ rules, one per seed, differing only through the stochasticity of
+initialization, crossover and mutation. Third, those 30 rules are
+evaluated on the 70 benchmark instances, and the one with the lowest
+mean $\RE$ is the \emph{featured rule} carried through the rest of the
+paper.
+
+The distinction matters for reading the tables. Anything that
+characterises the \emph{method}---the comparison against baselines, the
+ablation, the robust-fitness sweep---is reported as the mean $\pm$
+standard deviation over the 30 rules, with paired tests over the shared
+seeds, because a single evolution cannot separate a real effect from the
+luck of one run. Anything that requires a concrete artefact---the tree
+of Figure~\ref{fig:besttree}, its simplified expression, the
+$\bar\varepsilon$ analysis, the per-instance appendix---necessarily uses
+the featured rule, and is labelled as such. Where both are informative
+we give both, as in Table~\ref{tab:gp70}; note that the best of 30 is an
+order statistic and is not what a single fresh evolution should be
+expected to produce.
+
+The ablation, robust-fitness and $\lambda$-sweep experiments of
+Section~\ref{sec:analysis} repeat this same procedure with one element
+changed---the terminal set, the fitness function or the weight
+$\lambda$---so that every comparison is between campaigns that differ in
+exactly one respect.
+
 \section{Results}
 \label{sec:results}
 
@@ -791,7 +826,11 @@ below it under permutation-based decoding (see text). \emph{ms}: mean
 wall-clock time of one complete constructive pass, over the same 70
 instances and 5 repetitions each, in our research-grade Python
 implementation; the absolute values are implementation-bound and only
-the comparison between rows is meaningful.}
+the comparison between rows is meaningful, and it was measured for the
+featured rule rather than for all 30. The two GP entries are the mean
+over the 30 evolved rules and the best of them; the latter is an order
+statistic and the former is what a single evolution should be expected
+to yield.}
 \label{tab:baselines}
 \begin{tabular}{lccc}
 \toprule
@@ -809,6 +848,7 @@ MOR & 45.5 & 10.1 & 334 \\
 EST & 42.3 & 10.6 & 279 \\
 G\&T-MWKR & \textbf{29.5} & 6.4 & 382 \\
 \midrule
+GP rule (mean of 30) & 18.99 & 4.96 & --- \\
 GP rule (best of 30) & \textbf{17.71} & 5.23 & 335 \\
 \bottomrule
 \end{tabular}
@@ -1121,8 +1161,8 @@ four methods come from a single evaluation run.}
 \cmidrule(l){3-5}
 Method & Rel.\ width (\%) & $+0\%$ & $+20\%$ & $+40\%$ \\
 \midrule
-GP rule & \textbf{12.3} & \textbf{5.7} & \textbf{6.6} & \textbf{7.6} \\
-GP rule, ablated (no widths) & 12.5 & 5.7 & 6.8 & 7.8 \\
+GP rule (best of 30) & \textbf{12.3} & \textbf{5.7} & \textbf{6.6} & \textbf{7.6} \\
+GP rule, ablated (best of 30) & 12.5 & 5.7 & 6.8 & 7.8 \\
 G\&T-MWKR & 13.8 & 6.3 & 7.5 & 8.6 \\
 MOR & 14.4 & 6.4 & 7.7 & 8.9 \\
 \bottomrule
