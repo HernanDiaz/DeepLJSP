@@ -627,13 +627,12 @@ remaining 60 Taillard instances and the 12 classical instances are fully
 unseen by every design decision and constitute the honest generalization
 test.
 
-Each evolution uses population $100$ and $50$ generations:
-${\sim}20{,}400$ fitness evaluations per seed; thirty independent seeds
-per configuration. A run returns the best rule of its final population,
-so a campaign of thirty seeds yields thirty rules, differing only
-through the stochasticity of initialization, crossover and mutation.
-These are evaluated on the 70 benchmark instances and the one with the
-lowest mean $\RE$ is the \emph{featured rule}.
+Each evolution uses population $100$ and $50$ generations. Thirty
+independent evolutions are performed per configuration, differing only
+in their random seed. An evolution returns the best rule of its final
+population, so thirty evolutions yield thirty rules. These are evaluated
+on the 70 benchmark instances, and the one with the lowest mean $\RE$ is
+the \emph{featured rule}.
 
 \subsection{Hyperparameter configuration with irace}
 \label{sec:irace}
@@ -684,7 +683,7 @@ $14.9 \pm 1.5$ (range $12.4$--$19.7$), with most of the improvement
 realized by generation $25$--$30$ (Figure~\ref{fig:convergence}). The
 evolved rules are structurally recognizable, combining the classical
 dispatching ingredients in interpretable ways. Figure~\ref{fig:besttree}
-shows the best rule of the campaign, obtained with seed~1: $26$ nodes
+shows the featured rule, obtained with seed~1: $26$ nodes
 over $12$ leaves. Every terminal of the tree is non-negative by
 construction and processing times are at least one time unit, so both
 guards it contains resolve to the same branch at every decision, and the
@@ -711,7 +710,7 @@ work ahead.
 \begin{figure}[t]
 \centering
 \input{figures/tree_best.tex}
-\caption{The best evolved rule of the campaign (seed~1), which attains
+\caption{The featured rule (seed~1), which attains
 $17.71\%$ $\RE$ over the 70 instances. Circles are functions and shaded
 boxes the interval-aware terminals of Table~\ref{tab:terminals}; the
 operation with the lowest value of the expression is dispatched. The
@@ -989,8 +988,8 @@ Section~\ref{sec:robustness}.
 \subsection{The value of interval-awareness: terminal ablation}
 \label{sec:ablation}
 The interval-width terminals are the distinctive ingredient of this
-setting, so we isolate their contribution by ablation: we re-run the
-full evolution---30 independent seeds per configuration---with and
+setting, so we isolate their contribution by ablation: we repeat the
+30 evolutions with and
 without the width terminals (\textit{PTW}, \textit{ESTW},
 \textit{WKRW}) in the terminal set, everything else held fixed, and
 compare the resulting rules with a paired Wilcoxon signed-rank test on
