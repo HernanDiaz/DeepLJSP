@@ -758,8 +758,17 @@ Best rule & 15.7 & 16.6 & 18.1 & 21.1 & 24.1 & \textbf{13.8} & 14.6 &
 \subsection{Position among constructive methods}
 Table~\ref{tab:baselines} reports every constructive baseline under the
 protocol of this paper, one deterministic pass per instance with the
-same decoder and evaluator for all methods, together with a uniformly random
-dispatcher as a reference point.
+same decoder and evaluator for all methods, together with a uniformly
+random dispatcher as a reference point. Since these rules are
+deterministic, the standard deviation is taken across instances and
+measures how uniform a method is over the benchmark rather than any
+run-to-run variability; the random dispatcher, the one stochastic entry,
+is averaged over 10 dispatches per instance. Times are wall-clock
+averages over the same 70 instances with 5 repetitions each, measured
+for the featured rule in the case of GP; being implementation-bound,
+they are informative only in comparison between rows. The two GP entries
+are the mean over the 30 evolved rules and the best of them, the mean
+being what a single evolution should be expected to yield.
 
 Two observations are needed to read the table correctly. First, the
 plain rules that ignore machine availability (SPT, LPT and the critical
@@ -782,22 +791,9 @@ attains $17.71\%$.
 
 \begin{table}[t]
 \centering\small
-\caption{Constructive baselines on the 70 interval Taillard instances.
-All the rules are deterministic and build one schedule per instance, so
-the reported figures are the mean RE (\%) over the 70 instances and the
-standard deviation \emph{across instances}, which measures how uniform a
-method is over the benchmark rather than any run-to-run variability. The
-only stochastic entry is the uniformly random dispatcher, included as a
-reference and averaged over 10 independent dispatches per instance.
-Rules above the random line ignore machine availability and degrade
-below it under permutation-based decoding (see text). \emph{ms}: mean
-wall-clock time of one complete constructive pass, over the same 70
-instances and 5 repetitions each, in our research-grade Python
-implementation; absolute values are implementation-bound, so only the
-comparison between rows is meaningful. The GP time is that of the
-featured rule. The two GP entries are the mean over the 30 evolved rules
-and the best of them; the mean is what a single evolution should be
-expected to yield.}
+\caption{Constructive baselines on the 70 interval Taillard instances:
+mean RE (\%), standard deviation across instances, and mean time of one
+constructive pass.}
 \label{tab:baselines}
 \begin{tabular}{lccc}
 \toprule
