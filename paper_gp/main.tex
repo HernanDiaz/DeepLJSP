@@ -139,17 +139,16 @@ This paper makes the following contributions:
   (Section~\ref{sec:results}).
 \item An analysis of \emph{why} the rules work: an anatomy of the evolved
   expressions (Section~\ref{sec:anatomy}); an ablation that isolates the
-  contribution of the interval-width terminals: they leave the expected
-  makespan unchanged but yield significantly narrower makespan
-  intervals, modestly under a makespan objective and substantially under
-  an objective that rewards predictability
-  (Section~\ref{sec:ablation}); and an executional-robustness
-  study showing that the evolved rule yields schedules whose realized
-  makespan deviates less from its prediction than the baselines',
-  increasingly so as uncertainty grows (Section~\ref{sec:robustness}).
-\item An automatic configuration study (irace, 200 experiments) of the
-  evolutionary hyperparameters, whose winning configuration is used
-  throughout (Section~\ref{sec:irace}).
+  contribution of the interval-width terminals, which under a makespan
+  objective leave the expected makespan unchanged and narrow the
+  predicted interval only modestly, and under an objective that rewards
+  predictability narrow it substantially at a cost in expected makespan
+  (Section~\ref{sec:ablation}); and an executional-robustness study
+  showing that the deviation of the realized makespan from its
+  prediction falls only when it is optimized for directly, by about a
+  fifth under the robust objective, that this reduction requires the
+  width terminals, and that the advantage widens as uncertainty grows
+  (Section~\ref{sec:robustness}).
 \end{enumerate}
 
 The remainder of the paper is organized as follows.
@@ -159,7 +158,7 @@ Section~\ref{sec:method} presents the GP hyper-heuristic, from both the
 hyper-heuristic and the evolutionary viewpoints.
 Section~\ref{sec:setup} details the benchmark, the training protocol and
 the irace configuration study. Section~\ref{sec:results} reports the
-empirical results, and Section~\ref{sec:analysis} analyses them: rule
+empirical results, and Section~\ref{sec:analysis} analyzes them: rule
 anatomy, the interval-awareness ablation, executional robustness and
 limitations.
 Section~\ref{sec:conclusions} concludes.
