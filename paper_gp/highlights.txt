@@ -1,0 +1,5 @@
+First genetic programming hyper-heuristic for the interval job shop problem
+Terminals expose interval widths, so uncertainty-aware priorities are expressible
+Rules beat every deterministic baseline on all 70 instances: 17.71% vs 29.5%
+Rules evolved on 20x15 instances generalise zero-shot to all seven size classes
+Interval widths buy narrower makespan intervals, not a lower expected makespan
