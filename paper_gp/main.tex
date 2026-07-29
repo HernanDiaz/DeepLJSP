@@ -798,7 +798,8 @@ attains $17.71\%$.
 \centering\small
 \caption{Constructive baselines on the 70 interval Taillard instances:
 mean RE (\%), standard deviation across instances, and mean time in
-seconds of one constructive pass.}
+seconds of one constructive pass. All times come from a single
+measurement run, so the column is comparable row by row.}
 \label{tab:baselines}
 \begin{tabular}{lccc}
 \toprule
@@ -816,7 +817,7 @@ MOR & 45.5 & 10.1 & 0.33 \\
 EST & 42.3 & 10.6 & 0.28 \\
 G\&T-MWKR & \textbf{29.5} & 6.4 & 0.38 \\
 \midrule
-GP rule (mean of 30) & 18.99 & 4.96 & 0.41 \\
+GP rule (mean of 30) & 18.99 & 4.96 & --- \\
 GP rule (best of 30) & \textbf{17.71} & 5.23 & 0.34 \\
 \bottomrule
 \end{tabular}
@@ -836,7 +837,9 @@ constructive pass takes $0.34$~s with the evolved rule against
 $0.33$~s with MOR and $0.38$~s with G\&T-MWKR, a spread of $14\%$ between the
 three; all of them reduce to one vectorized pass over the eligible
 operations per decision, so the choice of priority expression
-contributes little to the cost of a pass. Both cost and quality thus
+contributes little to the cost of a pass. No time is reported for the
+mean over the 30 rules: the only measurement available for it was taken
+under varying machine load and is not comparable with this column. Both cost and quality thus
 place the evolved rule with the constructive methods, while closing much
 of the quality gap that separated them from search-based methods; that
 comparison is deferred to
@@ -994,12 +997,14 @@ The simplified form of the featured rule, Eq.~\eqref{eq:besttree}, also
 admits a direct sensitivity analysis: it weighs $\mathit{PT}$ by
 $\alpha = 2$ and $\mathit{WKRW}$ by $\beta = 1$, and we swept each
 weight over the 70 instances holding the other at its evolved value
-(Figure~\ref{fig:sensitivity}). Both curves have a single broad
-minimum. The evolved $\alpha$ coincides with the minimum of its sweep,
-indicating that this weight was effectively optimized by the evolution;
-the evolved $\beta$ lies near, but not at, the minimum of its own,
-where $\beta = 0.5$ yields $17.54\%$ against $17.71\%$. Such a
-post-hoc adjustment is available for any evolved rule. Setting
+(Figure~\ref{fig:sensitivity}). Neither curve is unimodal: over the
+sampled grid $\alpha$ has five local minima and $\beta$ three, and
+since each point is a deterministic evaluation over the 70 instances,
+that ruggedness belongs to the landscape rather than to sampling noise.
+The evolved $\alpha = 2$ is nonetheless the global minimum of its sweep;
+the evolved $\beta$ is not, giving $17.71\%$ against the $17.54\%$ of
+$\beta = 0.5$. Such a post-hoc adjustment is available for any evolved
+rule, though the ruggedness makes it a search rather than a correction. Setting
 $\beta = 0$ removes the width term from the deployed rule and costs
 $0.5$ points of $\RE$ ($18.23$ against $17.71$).
 
@@ -1013,7 +1018,8 @@ setting, so we isolate their contribution by ablation: we repeat the
 without the width terminals ($\mathit{PTW}$, $\mathit{ESTW}$,
 $\mathit{WKRW}$) in the terminal set, everything else held fixed, and
 compare the resulting rules with a paired Wilcoxon signed-rank test on
-the shared seeds. Table~\ref{tab:ablation} collects the outcome.
+the shared seeds, reporting the normal-approximation statistic $z$ and
+exact two-sided $p$-values. Table~\ref{tab:ablation} collects the outcome.
 
 \begin{table}[t]
 \centering\small
@@ -1022,8 +1028,12 @@ evolutions per arm; rank-based tests between arms). \emph{Width} is the
 relative width of the predicted makespan interval.
 Under both objectives the arm with width terminals produces
 significantly narrower intervals; the expected makespan does not differ
-significantly under the makespan objective.}
+under the makespan objective and is significantly worse under the robust
+one.}
 \label{tab:ablation}
+% la celda del test de RE bajo el objetivo robusto ensancha la tabla 12.9pt
+% sobre los 360pt de caja; a 4pt mide 356.9pt
+\setlength{\tabcolsep}{4pt}
 \begin{tabular}{llcc}
 \toprule
 Fitness objective & Terminal set & RE (\%) & Width (\%) \\
@@ -1036,7 +1046,7 @@ Fitness objective & Terminal set & RE (\%) & Width (\%) \\
 \multirow{3}{*}{Robust, Eq.~\eqref{eq:robustfit}}
  & full & $19.62 \pm 1.52$ & $12.04 \pm 0.75$ \\
  & without widths & $18.42 \pm 0.87$ & $12.47 \pm 0.20$ \\
- & \textit{test} & --- & $z=3.22$, $p<0.01$ \\
+ & \textit{test} & $z=-3.75$, $p<0.001$ & $z=3.22$, $p<0.001$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1100,11 +1110,12 @@ $\lambda$: as the weight grows from $0.5$ to $4$, the relative width of
 the makespan interval falls from $12.18 \pm 0.50$ to
 $10.54 \pm 1.26$ while the expected makespan degrades from
 $19.20 \pm 1.52$ to $23.27 \pm 3.80$ $\RE$. At the far end of the sweep
-the schedules are therefore narrower than anything the ablated rules can
-produce, at a cost of about four points of $\RE$. The practitioner can
-choose an operating point along this curve. No comparable frontier is
-available to the ablated arm, which stayed at ${\approx}12.5\%$ under
-both objectives it was evolved for.
+the schedules are therefore narrower than any the ablated rules produced,
+at a cost of about four points of $\RE$. The practitioner can
+choose an operating point along this curve. We did not sweep $\lambda$
+for the ablated arm, so we cannot say whether it traces a frontier of its
+own; at the two objectives it was evolved for its width stayed at
+${\approx}12.5\%$.
 
 \begin{figure}[t]
 \centering
@@ -1120,17 +1131,19 @@ $9.24\%$.}
 Figure~\ref{fig:arms} shows the four arms rule by rule. Without the
 width terminals no rule goes below $12.05\%$ under either objective;
 with them, the minimum is $11.60\%$ under the makespan objective and
-$9.24\%$ under the robust one. Both conditions are therefore necessary:
-the terminals and an objective that rewards narrowness.
+$9.24\%$ under the robust one. The terminals alone therefore suffice to
+leave the ablated band, but reaching $9.24\%$ takes both them and an
+objective that rewards narrowness.
 
 Taken together, these experiments delimit the contribution of interval
 awareness. The width of an interval is exploitable information for a
 dispatching rule, but its effect falls on the predictability of the
 schedule rather than on its expected makespan: exposing the widths
-leaves the expected makespan unchanged under both objectives while
-narrowing the predicted interval under both, modestly when the objective
-disregards narrowness and substantially when it rewards it, with
-$\lambda$ governing the extent of the trade-off.
+narrows the predicted interval under both objectives, modestly when the
+objective disregards narrowness and substantially when it rewards it.
+Under the makespan objective that comes at no cost in expected makespan;
+under the robust objective it does cost, $19.62$ against $18.42$ $\RE$,
+and $\lambda$ governs the extent of the trade-off.
 
 
 
@@ -1193,7 +1206,7 @@ ablated counterpart are statistically indistinguishable in
 $\bar\varepsilon$ ($5.70$ against $5.75$ at the nominal width; paired
 Wilcoxon over the 70 instances, $z=-0.17$). The rule is more robust than
 G\&T-MWKR ($6.29$, $z=-4.42$, $p<0.001$) but not than EST ($5.66$,
-$z=0.42$), although it improves on EST by $24$ points of $\RE$. A low
+$z=0.42$), although it improves on EST by $24.6$ points of $\RE$. A low
 deviation does not require a low makespan, so robustness must be
 optimized for directly.
 

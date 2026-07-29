@@ -147,6 +147,58 @@ if os.path.exists(cl):
               f"{float(r['gp']):.1f} & {float(r['gp64']):.1f} & "
               f"{float(r['gp1024']):.1f}", "classic12_tuned.csv")
 
+# ---- los cuatro tests de tab:ablation, desde los datos por regla -------
+# RESULTADOS.md solo recoge los dos del objetivo de makespan, asi que el test
+# de RE bajo el objetivo robusto no estaba comprobado por nadie. Se recalcula
+# aqui desde el CSV por regla, que es la fuente primaria.
+abl = os.path.join(REPO, "benchmarks/ablation_por_regla.csv")
+if os.path.exists(abl):
+    try:
+        from scipy.stats import wilcoxon
+    except ImportError:
+        wilcoxon = None
+    if wilcoxon is not None:
+        por = defaultdict(dict)
+        for r in csv.DictReader(open(abl, encoding="utf-8")):
+            por[(r["objetivo"], r["terminales"])][r["seed"]] = (
+                float(r["re"]), float(r["ancho"]))
+        print("\n== tests de tab:ablation (ablation_por_regla.csv) ==")
+        for obj in ("makespan", "robust"):
+            for i, que in ((0, "RE"), (1, "ancho")):
+                a, b = por[(obj, "full")], por[(obj, "nowidth")]
+                com = sorted(set(a) & set(b), key=int)
+                x = [a[s][i] for s in com]
+                y = [b[s][i] for s in com]
+                st, p = wilcoxon(x, y, method="exact")
+                n = len(com)
+                z = (st - n * (n + 1) / 4) / (n * (n + 1) * (2 * n + 1) / 24) ** 0.5
+                # la tabla lleva el signo del sentido del efecto: negativo si el
+                # brazo con anchuras sale peor en esa medida
+                z = z if sum(x) / n > sum(y) / n else -z
+                if p >= 0.05:
+                    check(f"{obj}/{que}: no significativo", f"z={z:.2f}", abl)
+                else:
+                    tramo = ("p<0.001" if p < 0.001 else
+                             "p<0.01" if p < 0.01 else "p<0.05")
+                    check(f"{obj}/{que}: test", f"z={z:.2f}$, ${tramo}", abl)
+
+# ---- columna Time de tab:baselines -------------------------------------
+# esta columna no estaba comprobada, y por eso sobrevivio una celda medida en
+# otra tirada y con deriva de maquina. Todos los tiempos que el paper imprime
+# tienen que venir de timing_tuned.csv, que es una sola tirada.
+tim = os.path.join(REPO, "benchmarks/timing_tuned.csv")
+if os.path.exists(tim):
+    ms = {r["method"]: float(r["mean_ms"])
+          for r in csv.DictReader(open(tim, encoding="utf-8"))}
+    print("\n== tiempos de tab:baselines (timing_tuned.csv) ==")
+    for m in ("LPT", "SPT", "CR", "Random", "G&T-SPT", "MWKR", "MOR", "EST",
+              "G&T-MWKR", "GP rule"):
+        check(f"{m}: s por pase", f"{ms[m] / 1000:.2f}", "timing_tuned.csv")
+    # la dispersion que el texto afirma entre las tres filas comparables
+    tres = [ms[m] for m in ("MOR", "GP rule", "G&T-MWKR")]
+    check("dispersion MOR/GP/G&T-MWKR",
+          f"{(max(tres) / min(tres) - 1) * 100:.0f}\\%", "timing_tuned.csv")
+
 # ---- apendice ----------------------------------------------------------
 print("\n== apendice ==")
 blk = TEX[TEX.index("\\label{tab:perinstance}"):]
