@@ -1211,10 +1211,13 @@ $6.08$ against $7.57$ for the makespan rule and $8.58$ for G\&T-MWKR.
 Three limitations bound the scope of our conclusions. First, all rules
 operate inside a semi-active SGS; active (insertion-based) generation
 schemes are known to help weaker constructors, and co-evolving rules
-with an active SGS in the loop remains untested. Second, the uncertainty model
-is the $\pm15\%$ symmetric interval scheme standard in the IJSP
-literature; other widths and asymmetric intervals may change the
-relative value of uncertainty information. Third, our runtime figures
+with an active SGS in the loop remains untested. Second, all rules were
+evolved on instances generated with the $\pm15\%$ symmetric interval
+scheme standard in the IJSP literature; the robustness analysis of
+Section~\ref{sec:robustness} does re-evaluate the resulting schedules
+under intervals widened by $+20\%$ and $+40\%$, but no rule was evolved
+under a different width, and asymmetric intervals remain untested.
+Third, our runtime figures
 are relative (evolved rules cost the same as hand-crafted ones per
 pass); absolute times depend on the research-grade Python
 implementation, but the rankings reported here do not.
