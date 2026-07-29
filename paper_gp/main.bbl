@@ -5,6 +5,16 @@
 \expandafter\ifx\csname href\endcsname\relax
   \def\href#1#2{#2} \def\path#1{#1}\fi
 
+\bibitem{Allahverdi2022}
+A.~Allahverdi, A survey of scheduling problems with uncertain interval/bounded
+  processing/setup times, Journal of Project Management 7~(4) (2022) 255--264.
+
+\bibitem{DiazGA2020}
+H.~D{\'i}az, I.~Gonz{\'a}lez-Rodr{\'i}guez, J.~J. Palacios, I.~D{\'i}az, C.~R.
+  Vela, A genetic approach to the job shop scheduling problem with interval
+  uncertainty, in: Information Processing and Management of Uncertainty in
+  Knowledge-Based Systems ({IPMU}), Springer, 2020, pp. 663--676.
+
 \bibitem{DiazFEABC2023}
 H.~D{\'i}az, J.~J. Palacios, I.~Gonz{\'a}lez-Rodr{\'i}guez, C.~R. Vela, Fast
   elitist {ABC} for makespan optimisation in interval {JSP}, Natural Computing
@@ -40,10 +50,6 @@ W.~Xu, W.~Wu, Y.~Wang, Y.~He, Z.~Lei, Flexible job-shop scheduling method based
   on interval grey processing time, Applied Intelligence 53 (2023)
   14876--14891.
 
-\bibitem{Allahverdi2022}
-A.~Allahverdi, A survey of scheduling problems with uncertain interval/bounded
-  processing/setup times, Journal of Project Management 7~(4) (2022) 255--264.
-
 \bibitem{Sotskov2013}
 Y.~N. Sotskov, T.-C. Lai, F.~Werner, Measures of problem uncertainty for
   scheduling with interval processing times, OR Spectrum 35~(3) (2013)
@@ -53,12 +59,6 @@ Y.~N. Sotskov, T.-C. Lai, F.~Werner, Measures of problem uncertainty for
 D.~Lei, Population-based neighborhood search for job shop scheduling with
   interval processing time, Computers \& Industrial Engineering 61~(4) (2011)
   1200--1208.
-
-\bibitem{DiazGA2020}
-H.~D{\'i}az, I.~Gonz{\'a}lez-Rodr{\'i}guez, J.~J. Palacios, I.~D{\'i}az, C.~R.
-  Vela, A genetic approach to the job shop scheduling problem with interval
-  uncertainty, in: Information Processing and Management of Uncertainty in
-  Knowledge-Based Systems ({IPMU}), Springer, 2020, pp. 663--676.
 
 \bibitem{DiazTardiness2022}
 H.~D{\'i}az, J.~J. Palacios, I.~D{\'i}az, C.~R. Vela,
