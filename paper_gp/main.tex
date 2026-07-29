@@ -173,13 +173,13 @@ Section~\ref{sec:conclusions} concludes.
 \subsection{Job shop scheduling under interval uncertainty}
 Interval durations offer a distribution-free uncertainty model requiring
 only bounds, in contrast to stochastic and fuzzy
-approaches~\cite{FuzzyJSPRef}: they are the natural choice when
+approaches~\cite{Palacios2015}: they are the natural choice when
 historical data are insufficient to estimate distributions and a
 decision maker can only supply a minimum and a maximum duration.
 Scheduling with interval processing times has been studied across
-machine environments: single machine~\cite{Allahverdi2014}, flow shop,
-and flexible job shop~\cite{Xu2023}, among others surveyed
-in~\cite{Allahverdi2022}. It has also been studied analytically, through measures of
+machine environments, from the single machine~\cite{Allahverdi2014} to
+the flexible job shop~\cite{Xu2023}, with the flow shop and others
+surveyed in~\cite{Allahverdi2022}. It has also been studied analytically, through measures of
 the problem uncertainty induced by the intervals and of the stability of
 optimal sequences~\cite{Sotskov2013}.
 
@@ -193,11 +193,12 @@ artificial bee colony variants~\cite{DiazFEABC2023,DiazICAE2023}, which
 report the best published results for this problem. Related objectives
 have also been addressed under interval uncertainty, notably tardiness
 minimization~\cite{DiazTardiness2022}. All of these are iterative search
-methods: they build and evaluate a population of complete solutions and
-refine it over many iterations for each instance solved. Fast
-constructive methods for the IJSP have received far less attention;
-dispatching rules with interval-aware lexicographic comparisons are the
-de facto baseline.
+methods: they build and evaluate many complete solutions and refine them
+over many iterations for each instance solved. Fast constructive methods
+for the IJSP have received far less attention, and dispatching rules with
+interval-aware lexicographic comparisons are the point of comparison they
+are measured against, the role they play in this paper
+(Section~\ref{sec:baselines}).
 
 \subsection{Dispatching rules for job shop scheduling}
 Priority dispatching rules are among the oldest and most widely deployed
@@ -242,8 +243,8 @@ machinery to \emph{priority expressions} over scheduling attributes, and
 constitute the standard approach to automated rule design
 for production scheduling~\cite{Branke2016,Nguyen2017}. Evolved rules
 have been shown to outperform hand-crafted ones across job shop variants,
-with active research on surrogate fitness, feature selection, and
-multi-objective formulations. Beyond single rules, a further line
+with active research on surrogate fitness, feature selection and
+multi-objective formulations~\cite{Branke2016,Nguyen2017}. Beyond single rules, a further line
 combines several evolved rules into \emph{ensembles} that jointly
 construct or vote on a solution~\cite{GilGala2021Ensembles}, and recent
 work explores alternatives to evolutionary search for the same design
@@ -766,6 +767,7 @@ Best rule & 15.7 & 16.6 & 18.1 & 21.1 & 24.1 & \textbf{13.8} & 14.6 &
 \end{table}
 
 \subsection{Position among constructive methods}
+\label{sec:baselines}
 Table~\ref{tab:baselines} reports every constructive baseline under the
 protocol of this paper, one deterministic pass per instance with the
 same decoder and evaluator for all methods, together with a uniformly
@@ -1249,10 +1251,12 @@ $6.08$ against $7.57$ for the makespan rule and $8.58$ for G\&T-MWKR.
 
 \subsection{Limitations}
 \label{sec:limitations}
-Three limitations bound the scope of our conclusions. First, all rules
-operate inside a semi-active SGS; active (insertion-based) generation
-schemes are known to help weaker constructors, and co-evolving rules
-with an active SGS in the loop remains untested. Second, all rules were
+Three limitations bound the scope of our conclusions. First, the evolved
+rules choose from the whole eligible set inside a semi-active decoder.
+Neither the conflict-set restriction that makes Giffler and Thompson's
+procedure yield active schedules, used here only for the baselines, nor
+an insertion-based generation scheme was placed in the evolutionary loop,
+and both are known to help weaker constructors. Second, all rules were
 evolved on instances generated with the $\pm15\%$ symmetric interval
 scheme standard in the IJSP literature; the robustness analysis of
 Section~\ref{sec:robustness} does re-evaluate the resulting schedules
