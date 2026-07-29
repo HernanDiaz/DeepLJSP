@@ -378,35 +378,7 @@ an IJSP instance into a schedule (Section~\ref{sec:hhview}); and as an
 \emph{evolutionary algorithm}, that is, how the population of rules is
 initialized, varied and selected (Section~\ref{sec:evoview}).
 
-\begin{figure}[t]
-\centering
-\begin{tikzpicture}[
-  level distance=9mm,
-  level 1/.style={sibling distance=34mm},
-  level 2/.style={sibling distance=17mm},
-  op/.style={circle, draw, inner sep=1.5pt, font=\small},
-  term/.style={rectangle, draw, rounded corners=1pt, inner sep=2.5pt,
-               font=\small\itshape, fill=black!5}]
-\node[op] {$+$}
-  child {node[op] {$\div_p$}
-    child {node[term] {SLACK}}
-    child {node[term] {PT}}}
-  child {node[op] {$-$}
-    child {node[term] {EST}}
-    child {node[op] {$\times$}
-      child {node[term] {WKR}}
-      child {node[term] {PTW}}}};
-\end{tikzpicture}
-\caption{An individual is a priority expression tree; leaves are
-interval-aware attributes of the candidate operation (here the
-illustrative rule $\mathit{SLACK}/\mathit{PT} + \mathit{EST} -
-\mathit{WKR}\cdot\mathit{PTW}$). At each decision point the tree is
-evaluated on every eligible operation and the lowest-priority one is
-dispatched.}
-\label{fig:tree}
-\end{figure}
-
-\begin{table}[t]
+\begin{table}[!t]
 \centering\small
 \caption{Interval-aware terminal set, with exact definitions. For an
 eligible operation $o$ of job $j$ on machine $m$: $p_o =
@@ -438,6 +410,34 @@ ONE  & $1$ & constant \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[
+  level distance=9mm,
+  level 1/.style={sibling distance=34mm},
+  level 2/.style={sibling distance=17mm},
+  op/.style={circle, draw, inner sep=1.5pt, font=\small},
+  term/.style={rectangle, draw, rounded corners=1pt, inner sep=2.5pt,
+               font=\small\itshape, fill=black!5}]
+\node[op] {$+$}
+  child {node[op] {$\div_p$}
+    child {node[term] {SLACK}}
+    child {node[term] {PT}}}
+  child {node[op] {$-$}
+    child {node[term] {EST}}
+    child {node[op] {$\times$}
+      child {node[term] {WKR}}
+      child {node[term] {PTW}}}};
+\end{tikzpicture}
+\caption{An individual is a priority expression tree; leaves are
+interval-aware attributes of the candidate operation (here the
+illustrative rule $\mathit{SLACK}/\mathit{PT} + \mathit{EST} -
+\mathit{WKR}\cdot\mathit{PTW}$). At each decision point the tree is
+evaluated on every eligible operation and the lowest-priority one is
+dispatched.}
+\label{fig:tree}
+\end{figure}
 
 \subsection{Hyper-heuristic view: from expression trees to schedules}
 \label{sec:hhview}
