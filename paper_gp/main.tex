@@ -64,16 +64,16 @@ rule attains $17.71\%$, improving on the strongest constructive baseline
 (Giffler--Thompson with MWKR tie-breaking, $29.5\%$) on every instance.
 They generalize zero-shot across all seven size classes despite being
 evolved on four instances of one class ($20{\times}15$), and keep the
-same margin over the baselines on a second benchmark of classical
-instances, applied without re-evolution. Evolved rules are compact,
+same margin over the constructive baselines on a second benchmark of
+classical instances, applied without re-evolution. Evolved rules are compact,
 human-readable expressions, with the evolutionary hyperparameters
 configured by irace. A controlled ablation over 30 evolutions per arm
 delimits the contribution of interval awareness: the width terminals do
 not improve the expected makespan, but under an objective penalizing
 interval width they yield substantially narrower predicted intervals and
-a correspondingly lower deviation of the executed makespan from its
-prediction, neither attainable without them; a single weight governs the
-trade-off.
+a lower deviation of the executed makespan from its prediction, neither
+reached without them and both paid for in expected makespan, a trade-off
+governed by a single weight.
 \end{abstract}
 
 \begin{keyword}
@@ -1235,23 +1235,23 @@ We presented what is, to the best of our knowledge, the first GP
 hyper-heuristic for job shop scheduling with interval durations, built on
 a terminal set that exposes interval widths as first-class attributes,
 with the evolutionary hyperparameters configured automatically by a
-200-experiment irace study. The empirical conclusions are three. (i)~Evolved rules dominate every
+200-experiment irace study. The empirical conclusions are three. (i)~Evolved rules outperform every
 deterministic constructive baseline on the 70-instance benchmark by a
 wide, statistically significant margin ($18.99 \pm 1.33$ over 30
 evolutions, $17.71\%$ for the best rule, versus $29.5\%$ for the
 strongest baseline, which the best rule outperforms on all 70 instances) at
 the cost of a single constructive pass, and (ii)~they
-generalize zero-shot across all size
-classes, evolved on $20{\times}15$ and best on the unseen
-$50{\times}15$, because the representation contains no size-bound
-quantities. (iii)~Exposing the widths of the uncertain quantities does
-not improve the expected makespan, since the worst-case bounds already
-carry that signal; under an objective that penalizes interval width,
-however, it yields substantially narrower predicted intervals and a
-deviation of the executed makespan from its prediction about one fifth
-lower ($4.52$ against $5.70 \times 10^{-3}$), and neither reduction is
-attainable without the width terminals. The weight $\lambda$ governs the
-extent of the trade-off.
+generalize zero-shot across all size classes, evolved on
+$20{\times}15$ and best on the unseen $50{\times}15$; since every
+terminal is a per-operation attribute with no size-bound quantities,
+that transfer requires no retraining or rescaling. (iii)~Exposing the widths of the uncertain quantities does
+not improve the expected makespan. Under an objective that penalizes
+interval width, however, the predicted intervals become substantially
+narrower and the deviation of the executed makespan from its prediction
+falls by about a fifth ($4.52$ against $5.70 \times 10^{-3}$); that
+reduction requires the width terminals, since under the same objective
+the ablated arm reaches only $5.54$. The gain is paid for in expected
+makespan, and the weight $\lambda$ governs the trade-off.
 
 Future work follows four lines. First, optimizing the numeric weights of
 an evolved rule, which the sensitivity analysis of
