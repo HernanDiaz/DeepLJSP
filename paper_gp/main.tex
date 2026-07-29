@@ -98,9 +98,9 @@ instance~\cite{DiazFEABC2023,DiazICAE2023}.
 
 At the opposite end of the computational spectrum are \emph{dispatching
 rules}: priority functions that build a schedule in a single constructive
-pass by repeatedly selecting the next operation to start. Their appeal is
-threefold: speed, interpretability and ease of deployment. However,
-hand-crafted rules (SPT, MOR, MWKR and relatives) leave a large quality
+pass by repeatedly selecting the next operation to start. They combine
+speed, interpretability and ease of deployment. However,
+hand-crafted rules (SPT, MOR, MWKR and related rules) leave a large quality
 gap with respect to search-based methods, as the experiments reported
 later in this paper confirm.
 
@@ -129,8 +129,8 @@ This paper makes the following contributions:
   quantities, so that uncertainty-sensitive prioritization is
   expressible at all (Section~\ref{sec:method}).
 \item An empirical study on the 70 interval Taillard instances showing
-  that evolved rules (i) beat every deterministic constructive baseline by
-  a wide margin at equal cost, (ii) generalize zero-shot across instance
+  that evolved rules (i) outperform every deterministic constructive
+  baseline by a wide margin at equal cost, (ii) generalize zero-shot across instance
   sizes (evolved on $20{\times}15$, best class $50{\times}15$), and
   (iii) transfer to a second benchmark of classical instances, keeping
   the same margin over the constructive baselines
@@ -811,7 +811,7 @@ GP rule (best of 30) & \textbf{17.71} & 5.23 & 0.34 \\
 \end{tabular}
 \end{table}
 The gap holds at the level of individual instances: the best evolved
-rule beats each of the eight deterministic baselines on every one of
+rule outperforms each of the eight deterministic baselines on every one of
 the $70$ instances, and a paired Wilcoxon signed-rank test rejects
 equality against each of them at $p<10^{-6}$ ($z=-7.3$). The narrowest
 margin over the whole comparison is $3.9$ points, against G\&T-MWKR on a
@@ -1229,7 +1229,7 @@ with the evolutionary hyperparameters configured automatically by a
 deterministic constructive baseline on the 70-instance benchmark by a
 wide, statistically significant margin ($18.99 \pm 1.33$ over 30
 evolutions, $17.71\%$ for the best rule, versus $29.5\%$ for the
-strongest baseline, which the best rule beats on all 70 instances) at
+strongest baseline, which the best rule outperforms on all 70 instances) at
 the cost of a single constructive pass, and (ii)~they
 generalize zero-shot across all size
 classes, evolved on $20{\times}15$ and best on the unseen
@@ -1260,8 +1260,8 @@ the elites of each generation, follow from these observations.
 Second, richer symbolic models:
 ensembles of complementary rules~\cite{GilGala2021Ensembles} and
 co-evolution of construction and tie-breaking. Third, using evolved
-rules as cheap, high-quality population initializers for the
-metaheuristics that lead the IJSP: the pools of diverse, high-quality
+rules as inexpensive, high-quality population initializers for the
+leading IJSP metaheuristics: the pools of diverse, high-quality
 sequences produced by GP-$\varepsilon$ are directly usable as seeded
 initial populations, and quantifying the effect of such seeding is
 ongoing work. Fourth, a controlled comparison with learned
