@@ -67,11 +67,11 @@ same margin over the baselines on a second benchmark of classical
 instances, applied without re-evolution. Evolved rules are compact,
 human-readable expressions, with the evolutionary hyperparameters
 configured by irace. A controlled ablation over 30 evolutions per arm
-characterizes what interval awareness buys: the width terminals do not
-improve the expected makespan, since the worst-case bounds carry that
-signal, but they yield significantly narrower makespan intervals,
+delimits the contribution of interval awareness: the width terminals do
+not improve the expected makespan, since the worst-case bounds carry
+that signal, but they yield significantly narrower makespan intervals,
 modestly under a makespan objective and substantially under one that
-rewards predictability, a trade-off the user can dial.
+rewards predictability, with a single weight governing the trade-off.
 \end{abstract}
 
 \begin{keyword}
@@ -1079,7 +1079,7 @@ independent evolutions of that arm, every rule evaluated on the 70
 instances, and the grey bars span $\pm 1$ sd in both coordinates. The
 dashed line marks the width reached by the arm evolved \emph{without}
 them under the robust fitness ($\lambda{=}1$). Increasing $\lambda$
-buys narrower makespan intervals at the price of a larger expected
+yields narrower makespan intervals at the cost of a larger expected
 makespan.}
 \label{fig:lambda}
 \end{figure}
@@ -1097,13 +1097,14 @@ choose an operating point along this curve. No comparable frontier is
 available to the ablated arm, which stayed at ${\approx}12.5\%$ under
 both objectives it was evolved for.
 
-Together, these experiments locate \emph{what} interval awareness buys:
-the width of an interval is actionable information for a dispatching
-rule, and what it buys is predictability rather than expected makespan.
-Exposing the widths leaves the expected makespan unchanged under either
-objective and narrows the predicted interval under both: modestly when
-the objective ignores narrowness, substantially when it rewards it, with
-$\lambda$ setting how far the trade is taken.
+Taken together, these experiments delimit the contribution of interval
+awareness. The width of an interval is exploitable information for a
+dispatching rule, but its effect falls on the predictability of the
+schedule rather than on its expected makespan: exposing the widths
+leaves the expected makespan unchanged under both objectives while
+narrowing the predicted interval under both, modestly when the objective
+disregards narrowness and substantially when it rewards it, with
+$\lambda$ governing the extent of the trade-off.
 
 
 
@@ -1220,8 +1221,8 @@ quantities. (iii)~Exposing the widths of the uncertain quantities does
 not improve the expected makespan, since the worst-case bounds already
 carry that signal, but it yields significantly narrower makespan intervals,
 modestly under a makespan objective and substantially under an objective
-that rewards predictability, with the weight $\lambda$ setting how far
-that trade is taken.
+that rewards predictability, with the weight $\lambda$ governing the
+extent of the trade-off.
 
 Future work follows three lines. First, richer symbolic models:
 ensembles of complementary rules~\cite{GilGala2021Ensembles} and
