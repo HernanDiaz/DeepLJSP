@@ -377,6 +377,17 @@ same order when the durations turn out to take the values of realization
 $k$. A low $\bar\varepsilon$ therefore means that what was promised
 before execution is close to what is obtained after it.
 
+
+
+\section{GP Hyper-Heuristic for the IJSP}
+\label{sec:method}
+
+We describe the method from two complementary viewpoints: as a
+\emph{hyper-heuristic}, that is, what an individual is and how it turns
+an IJSP instance into a schedule (Section~\ref{sec:hhview}); and as an
+\emph{evolutionary algorithm}, that is, how the population of rules is
+initialized, varied and selected (Section~\ref{sec:evoview}).
+
 \begin{figure}[t]
 \centering
 \begin{tikzpicture}[
@@ -437,15 +448,6 @@ ONE  & $1$ & constant \\
 \bottomrule
 \end{tabular}
 \end{table}
-
-\section{GP Hyper-Heuristic for the IJSP}
-\label{sec:method}
-
-We describe the method from two complementary viewpoints: as a
-\emph{hyper-heuristic}, that is, what an individual is and how it turns
-an IJSP instance into a schedule (Section~\ref{sec:hhview}); and as an
-\emph{evolutionary algorithm}, that is, how the population of rules is
-initialized, varied and selected (Section~\ref{sec:evoview}).
 
 \subsection{Hyper-heuristic view: from expression trees to schedules}
 \label{sec:hhview}
