@@ -14,6 +14,7 @@
 
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
 \newcommand{\RE}{\mathrm{RE}}
+\newcommand{\LB}{\mathrm{LB}}
 
 % margen extra para que TeX resuelva parrafos dificiles sin desbordar
 \setlength{\emergencystretch}{3em}
@@ -181,7 +182,7 @@ optimal sequences~\cite{Sotskov2013}.
 
 For the job shop with makespan minimization, which concerns us here, the
 literature is dominated by population-based metaheuristics. Lei's
-population-based neighbourhood search~\cite{Lei2011}, which ranks
+population-based neighborhood search~\cite{Lei2011}, which ranks
 interval makespans by a possibility degree, was an early reference
 point; it was subsequently outperformed by a genetic algorithm with a
 systematic study of interval rankings~\cite{DiazGA2020} and by
@@ -273,41 +274,45 @@ class at deployment: a single constructive pass.
 
 An IJSP instance consists of $n$ jobs and $m$ machines. Job $j$ is a
 chain of $m$ operations $o_{j1} \prec o_{j2} \prec \cdots \prec o_{jm}$,
-each requiring a distinct machine $\mu(o_{jk})$ exclusively and
+each requiring a distinct machine $\mu(o_{jl})$ exclusively and
 non-preemptively. The duration of operation $o$ is an interval
-$p_o = [\underline{p}_o, \overline{p}_o]$ with
+$\mathbf{p}_o = [\underline{p}_o, \overline{p}_o]$ with
 $0 < \underline{p}_o \le \overline{p}_o$: the only assumption is that the
-realized duration lies within these bounds.
+realized duration lies within these bounds. As in this definition,
+boldface denotes an interval-valued quantity throughout, and the
+underlined and overlined symbols its lower and upper bounds.
 
 Schedule construction uses interval arithmetic. For intervals
-$a=[\underline{a},\overline{a}]$ and $b=[\underline{b},\overline{b}]$,
+$\mathbf{a}=[\underline{a},\overline{a}]$ and
+$\mathbf{b}=[\underline{b},\overline{b}]$,
 the two operations required by makespan minimization are
 \begin{align}
-a + b &= [\underline{a}+\underline{b},\, \overline{a}+\overline{b}],\\
-\max(a,b) &= [\max(\underline{a},\underline{b}),\,
+\mathbf{a} + \mathbf{b} &= [\underline{a}+\underline{b},\,
+\overline{a}+\overline{b}],\\
+\max(\mathbf{a},\mathbf{b}) &= [\max(\underline{a},\underline{b}),\,
 \max(\overline{a},\overline{b})],
 \end{align}
 both component-wise~\cite{DiazGA2020}. A solution determines a task
 processing order $\pi$ (a permutation with repetition of jobs, decoded
 left to right). Following the notation of~\cite{DiazGA2020,DiazICAE2023},
-let $PM_o(\pi)$ and $PJ_o$ denote the predecessors of task $o$ in its
+let $\mathrm{PM}_o(\pi)$ and $\mathrm{PJ}_o$ denote the predecessors of task $o$ in its
 machine (according to $\pi$) and in its job. The \emph{semi-active}
 schedule~\cite{Sprecher1995} starts each task at
 \begin{equation}
-\mathbf{s_o}(\pi) = \max\big(\mathbf{c}_{PJ_o}(\pi),\,
-\mathbf{c}_{PM_o(\pi)}(\pi)\big), \qquad
-\mathbf{c_o}(\pi) = \mathbf{s_o}(\pi) + \mathbf{p_o},
+\mathbf{s}_o(\pi) = \max\big(\mathbf{c}_{\mathrm{PJ}_o}(\pi),\,
+\mathbf{c}_{\mathrm{PM}_o(\pi)}(\pi)\big), \qquad
+\mathbf{c}_o(\pi) = \mathbf{s}_o(\pi) + \mathbf{p}_o,
 \end{equation}
 so starting and completion times of all tasks are themselves intervals.
 The problem can be stated as
 \begin{align}
-\min_R\; & \mathbf{C_{max}} \label{eq:obj}\\
+\min_R\; & \mathbf{C}_{\max} \label{eq:obj}\\
 \text{s.t.}\quad
-& \mathbf{C_{max}} = \max_{1 \le j \le n} \{\mathbf{c}_{o(j,m_j)}\},
+& \mathbf{C}_{\max} = \max_{1 \le j \le n} \{\mathbf{c}_{o_{jm}}\},
   \label{eq:cmax}\\
-& \underline{s}_{o(j,l)} \ge \underline{c}_{o(j,l-1)}, \quad
-  \overline{s}_{o(j,l)} \ge \overline{c}_{o(j,l-1)},
-  && 1 \le l \le m_j,\ 1 \le j \le n, \label{eq:prec}\\
+& \underline{s}_{o_{jl}} \ge \underline{c}_{o_{j,l-1}}, \quad
+  \overline{s}_{o_{jl}} \ge \overline{c}_{o_{j,l-1}},
+  && 2 \le l \le m,\ 1 \le j \le n, \label{eq:prec}\\
 & \underline{s}_o \ge \underline{c}_{o'} \,\vee\,
   \underline{s}_{o'} \ge \underline{c}_o, \quad
   \overline{s}_o \ge \overline{c}_{o'} \,\vee\,
@@ -336,16 +341,16 @@ of this decoder and evaluator, so reported differences cannot stem from
 evaluator discrepancies.
 
 Performance is reported as the relative error of the expected makespan
-with respect to a crisp reference bound $LB$ of each instance,
+with respect to a crisp reference bound $\LB$ of each instance,
 \begin{equation}
-\RE = \frac{E[\mathbf{C_{max}}] - LB}{LB} \times 100,
+\RE = \frac{E[\mathbf{C}_{\max}] - \LB}{\LB} \times 100,
 \qquad
-E[\mathbf{C_{max}}] = \frac{\underline{C}_{\max} +
+E[\mathbf{C}_{\max}] = \frac{\underline{C}_{\max} +
 \overline{C}_{\max}}{2},
 \end{equation}
-where $E[\mathbf{C_{max}}]$ is the expected value of the interval
+where $E[\mathbf{C}_{\max}]$ is the expected value of the interval
 makespan under the uniform distribution on
-$[\underline{C}_{\max},\overline{C}_{\max}]$, and $LB$ is a bound of the
+$[\underline{C}_{\max},\overline{C}_{\max}]$, and $\LB$ is a bound of the
 underlying deterministic instance: Taillard's bounds for the
 Taillard-derived instances, the best known ones~\cite{DiazFEABC2023} for
 the classical set. It serves as an indicative common reference, not as a
@@ -359,11 +364,11 @@ is the average relative deviation of its executed makespan from the
 predicted expected value, over $K$ realizations of the durations:
 \begin{equation}
 \bar\varepsilon = \frac{1}{K}\sum_{k=1}^{K}
-\frac{\big|C^{ex,k}_{\max} - E[\mathbf{C_{max}}]\big|}
-     {E[\mathbf{C_{max}}]},
+\frac{\big|C^{\mathrm{ex},k}_{\max} - E[\mathbf{C}_{\max}]\big|}
+     {E[\mathbf{C}_{\max}]},
 \label{eq:eps}
 \end{equation}
-where $C^{ex,k}_{\max}$ is the crisp makespan obtained by executing that
+where $C^{\mathrm{ex},k}_{\max}$ is the crisp makespan obtained by executing that
 same order when the durations turn out to take the values of realization
 $k$. A low $\bar\varepsilon$ therefore means that what was promised
 before execution is close to what is obtained after it.
@@ -382,10 +387,10 @@ initialized, varied and selected (Section~\ref{sec:evoview}).
 \begin{table}[!t]
 \centering\small
 \caption{Interval-aware terminal set, with exact definitions. For an
-eligible operation $o$ of job $j$ on machine $m$: $p_o =
-[\underline{p}_o, \overline{p}_o]$ is its duration interval; $C_j$ and
-$C_m$ are the (interval) completion times of the last scheduled operation
-of job $j$ and machine $m$; $\mathcal{R}_o$ is the set of operations of
+eligible operation $o$ of job $j$ on machine $\mu(o)$: $\mathbf{p}_o =
+[\underline{p}_o, \overline{p}_o]$ is its duration interval; $\mathbf{C}_j$ and
+$\mathbf{C}_{\mu(o)}$ are the interval completion times of the last
+scheduled operation of job $j$ and of machine $\mu(o)$; $\mathcal{R}_o$ is the set of operations of
 $j$ after $o$; $\mathcal{E}$ is the current eligible set. Terminals are
 evaluated on \emph{raw} (unnormalized) values.}
 \label{tab:terminals}
@@ -395,10 +400,10 @@ Terminal & Definition & Role \\
 \midrule
 PT   & $\overline{p}_o$ & worst-case processing time \\
 PTW  & $\overline{p}_o-\underline{p}_o$ & duration uncertainty \\
-EST  & $\overline{e}_o = \max(\overline{C}_j, \overline{C}_m)$ &
+EST  & $\overline{e}_o = \max(\overline{C}_j, \overline{C}_{\mu(o)})$ &
 worst-case earliest start \\
 ESTW & $\overline{e}_o - \underline{e}_o$, with
-$\underline{e}_o=\max(\underline{C}_j,\underline{C}_m)$ &
+$\underline{e}_o=\max(\underline{C}_j,\underline{C}_{\mu(o)})$ &
 start uncertainty \\
 WKR  & $\sum_{q\in\mathcal{R}_o}\overline{p}_q$ & worst-case work
 remaining \\
@@ -452,7 +457,7 @@ Table~\ref{tab:terminals}, and internal nodes from the function set
 where $\mathrm{neg}$ is the unary sign change and $\div_p$ denotes
 protected division, defined as $a \div_p b = a/b$ if $|b| > 10^{-9}$ and
 $a$ otherwise. The rule is deployed inside a semi-active schedule generation
-scheme (SGS): starting from the empty schedule, at each of the $N$
+scheme (SGS): starting from the empty schedule, at each of the $n\,m$
 decision points the set $\mathcal{E}$ of eligible operations (those
 whose job predecessor is already scheduled) is formed, the tree is
 evaluated on the attributes of every $o \in \mathcal{E}$, and the
@@ -500,19 +505,19 @@ baselines.
 \caption{GP hyper-heuristic for the IJSP}
 \label{alg:gp}
 \begin{algorithmic}[1]
-\State $P \gets$ ramped half-and-half($pop-2$) $\cup$ \{SPT, MWKR\}
+\State $P \gets$ ramped half-and-half($\mathit{pop}-2$) $\cup$ \{SPT, MWKR\}
 \State evaluate($P$) \Comment{mean RE of one constructive pass on the
 training instances}
-\For{$g = 1$ \textbf{to} $gens$}
+\For{$g = 1$ \textbf{to} $\mathit{gens}$}
   \State $P' \gets$ elite($P$, $e$) \Comment{elitism}
-  \While{$|P'| < pop$}
+  \While{$|P'| < \mathit{pop}$}
     \If{rand() $< p_c$}
       \State $p_1, p_2 \gets$ tournament($P,k$), tournament($P,k$)
-      \State $child \gets$ subtreeCrossover($p_1$, $p_2$)
+      \State $\mathit{child} \gets$ subtreeCrossover($p_1$, $p_2$)
     \Else
-      \State $child \gets$ subtreeMutation(tournament($P,k$))
+      \State $\mathit{child} \gets$ subtreeMutation(tournament($P,k$))
     \EndIf
-    \State $P' \gets P' \cup \{child\}$ \Comment{fitness $\infty$ if
+    \State $P' \gets P' \cup \{\mathit{child}\}$ \Comment{fitness $\infty$ if
     size $> c$}
   \EndWhile
   \State $P \gets$ evaluate($P'$)
@@ -692,7 +697,7 @@ ranking. The remaining term, $-\mathit{WKRW}$, is the interval-aware
 one: among jobs with comparable remaining work the rule advances those
 whose remaining work is \emph{more uncertain}, resolving that
 uncertainty early rather than carrying it to the end of the schedule.
-The evolved rule is thus a weighted blend of MWKR and SPT, regularised
+The evolved rule is thus a weighted blend of MWKR and SPT, regularized
 by a quadratic earliest-start term and tilted by the uncertainty of the
 work ahead.
 
@@ -972,12 +977,12 @@ with a mean tree size of $26$ nodes ($20$--$30$) and mean depth $9$, so
 a rule can be inspected and simplified by hand.
 Figure~\ref{fig:terminals} reports how often each terminal is used
 across the 30 evolved rules. The most frequent are the classical
-scheduling attributes, slack (\textit{SLACK}), work remaining
-(\textit{WKR}) and earliest start (\textit{EST}), together with
-worst-case processing time (\textit{PT}), indicating that the evolution
+scheduling attributes, slack ($\mathit{SLACK}$), work remaining
+($\mathit{WKR}$) and earliest start ($\mathit{EST}$), together with
+worst-case processing time ($\mathit{PT}$), indicating that the evolution
 rediscovers known dispatching logic rather than exploiting benchmark
-artefacts. The \emph{interval-width} terminals (\textit{PTW},
-\textit{ESTW}, \textit{WKRW}) account for ${\approx}21\%$ of all
+artifacts. The \emph{interval-width} terminals ($\mathit{PTW}$,
+$\mathit{ESTW}$, $\mathit{WKRW}$) account for ${\approx}21\%$ of all
 terminal usage and appear in $27$ of the $30$ evolved rules. Whether
 that width information translates into better schedules is quantified in
 Sections~\ref{sec:ablation} and~\ref{sec:robustness}.
@@ -1002,8 +1007,8 @@ $0.5$ points of $\RE$ ($18.23$ against $17.71$).
 The interval-width terminals are the distinctive ingredient of this
 setting, so we isolate their contribution by ablation: we repeat the
 30 evolutions with and
-without the width terminals (\textit{PTW}, \textit{ESTW},
-\textit{WKRW}) in the terminal set, everything else held fixed, and
+without the width terminals ($\mathit{PTW}$, $\mathit{ESTW}$,
+$\mathit{WKRW}$) in the terminal set, everything else held fixed, and
 compare the resulting rules with a paired Wilcoxon signed-rank test on
 the shared seeds. Table~\ref{tab:ablation} collects the outcome.
 
@@ -1020,13 +1025,13 @@ significantly under the makespan objective.}
 \toprule
 Fitness objective & Terminal set & RE (\%) & Width (\%) \\
 \midrule
-\multirow{3}{*}{Makespan $E[\mathbf{C_{max}}]$}
+\multirow{3}{*}{Makespan $E[\mathbf{C}_{\max}]$}
  & full & $18.99 \pm 1.33$ & $12.41 \pm 0.30$ \\
  & without widths & $18.66 \pm 1.08$ & $12.62 \pm 0.23$ \\
  & \textit{test} & \textit{n.s.} ($z=-0.83$) & $z=3.40$, $p<0.001$ \\
 \midrule
 \multirow{3}{*}{Robust, Eq.~\eqref{eq:robustfit}}
- & full & $19.62 \pm 1.52$ & $\mathbf{12.04 \pm 0.75}$ \\
+ & full & $19.62 \pm 1.52$ & $12.04 \pm 0.75$ \\
  & without widths & $18.42 \pm 0.87$ & $12.47 \pm 0.20$ \\
  & \textit{test} & --- & $z=3.22$, $p<0.01$ \\
 \bottomrule
