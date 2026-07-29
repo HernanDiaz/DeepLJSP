@@ -138,4 +138,8 @@ F.~J. Gil-Gala, M.~{\DJ}ura{\v{s}}evi{\'c}, M.~R. Sierra, J.~Puente, Greedy
   the Genetic and Evolutionary Computation Conference Companion ({GECCO} '25),
   ACM, 2025, pp. 211--214.
 
+\bibitem{Keijzer2003}
+M.~Keijzer, Improving symbolic regression with interval arithmetic and linear
+  scaling, in: Genetic Programming ({EuroGP}), Springer, 2003, pp. 70--82.
+
 \end{thebibliography}

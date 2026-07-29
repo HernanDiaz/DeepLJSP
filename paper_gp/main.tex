@@ -1224,14 +1224,30 @@ modestly under a makespan objective and substantially under an objective
 that rewards predictability, with the weight $\lambda$ governing the
 extent of the trade-off.
 
-Future work follows three lines. First, richer symbolic models:
+Future work follows four lines. First, optimising the numeric weights of
+an evolved rule, which the sensitivity analysis of
+Section~\ref{sec:anatomy} suggests the evolution leaves unfinished: the
+weight of $\mathit{WKRW}$ in the featured rule is $\beta = 1$, whereas
+$\beta = 0.5$ scores $17.54\%$ against $17.71\%$. Two properties of this
+setting shape how such a search should be posed. Because operations are
+dispatched by \emph{argmin}, the priority is invariant to adding a
+constant and to multiplying by a positive one, so the standard technique
+of linear scaling~\cite{Keijzer2003} cannot help and only the
+\emph{relative} weights of the additive terms are free, $k-1$ of them
+for a rule with $k$ terms. And because the terminal set contains no
+ephemeral random constants, the evolution must build coefficients
+structurally, spending nodes of a bounded budget on arithmetic that a
+constant would express in one. Both an enriched terminal set and a local
+search over the relative weights, whether applied after evolution or to
+the elites of each generation, follow from these observations.
+Second, richer symbolic models:
 ensembles of complementary rules~\cite{GilGala2021Ensembles} and
-co-evolution of construction and tie-breaking. Second, using evolved
+co-evolution of construction and tie-breaking. Third, using evolved
 rules as cheap, high-quality population initializers for the
 metaheuristics that lead the IJSP: the pools of diverse, high-quality
 sequences produced by GP-$\varepsilon$ are directly usable as seeded
 initial populations, and quantifying the effect of such seeding is
-ongoing work. Third, a controlled comparison with learned
+ongoing work. Fourth, a controlled comparison with learned
 neural constructive policies under matched training and inference
 budgets, the head-to-head evaluation that the recent
 literature~\cite{Xu2025} identifies as missing.
