@@ -1019,7 +1019,11 @@ without the width terminals ($\mathit{PTW}$, $\mathit{ESTW}$,
 $\mathit{WKRW}$) in the terminal set, everything else held fixed, and
 compare the resulting rules with a paired Wilcoxon signed-rank test on
 the shared seeds, reporting the normal-approximation statistic $z$ and
-exact two-sided $p$-values. Table~\ref{tab:ablation} collects the outcome.
+exact two-sided $p$-values. The irace configuration of
+Section~\ref{sec:irace} was selected on the full terminal set and is used
+for both arms: holding it fixed is what makes the comparison controlled,
+at the cost that the ablated arm runs with hyperparameters tuned for a
+larger primitive set than its own. Table~\ref{tab:ablation} collects the outcome.
 
 \begin{table}[t]
 \centering\small
@@ -1112,10 +1116,19 @@ $10.54 \pm 1.26$ while the expected makespan degrades from
 $19.20 \pm 1.52$ to $23.27 \pm 3.80$ $\RE$. At the far end of the sweep
 the schedules are therefore narrower than any the ablated rules produced,
 at a cost of about four points of $\RE$. The practitioner can
-choose an operating point along this curve. We did not sweep $\lambda$
-for the ablated arm, so we cannot say whether it traces a frontier of its
-own; at the two objectives it was evolved for its width stayed at
-${\approx}12.5\%$.
+choose an operating point along this curve.
+
+Sweeping $\lambda$ for the ablated arm shows that it has no such curve.
+Its width does not respond to the weight at all: $12.47 \pm 0.16$ at
+$\lambda = 0$, $12.43 \pm 0.15$ at $\lambda = 0.5$ and
+$12.47 \pm 0.20$ at $\lambda = 1$, a range of $0.05$ points against the
+$1.65$ the full arm covers, and with a spread four times smaller, so no
+individual rule escapes either. Four of the ten $\lambda = 2$ evolutions
+are available and sit at $12.50 \pm 0.30$; $\lambda = 4$ is still
+running. Penalizing width in the fitness therefore buys narrowness only
+when the rule has terminals through which to act on it: the objective and
+the representation are not two independent routes to the same end, the
+first works through the second.
 
 \begin{figure}[t]
 \centering
@@ -1267,7 +1280,8 @@ interval width, however, the predicted intervals become substantially
 narrower and the deviation of the executed makespan from its prediction
 falls by about a fifth ($4.52$ against $5.70 \times 10^{-3}$); that
 reduction requires the width terminals, since under the same objective
-the ablated arm reaches only $5.54$. The gain is paid for in expected
+the ablated arm reaches only $5.54$ and no value of $\lambda$ narrows its
+intervals. The gain is paid for in expected
 makespan, and the weight $\lambda$ governs the trade-off.
 
 Future work follows four lines. First, optimizing the numeric weights of

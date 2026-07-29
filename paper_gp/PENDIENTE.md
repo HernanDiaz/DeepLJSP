@@ -35,7 +35,25 @@ regla destacada, anadiendo una frase en el texto con el contraste de brazos.
 **No lanzar hasta** que termine `scripts/time_gp_arm.py`, que ocupa la maquina
 y cuyo resultado va a la celda vacia de la columna de tiempos en tab:baselines.
 
-## 2. Barrido de lambda tambien para el brazo sin anchura
+## 2. Barrido de lambda tambien para el brazo sin anchura — PARCIALMENTE HECHO
+
+**Estado (30 jul 2026).** Lanzado como paso 2 de la cadena. Completos lambda=0
+y lambda=0.5 (10 semillas cada uno); lambda=2 a 4/10; lambda=4 sin empezar. Las
+reglas disponibles ya estan evaluadas sobre las 70 instancias con
+`scripts/lambda_nowidth_per_rule.py` ->
+`benchmarks/lambda_nowidth_por_regla.csv`, y 7.2 ya cita el resultado: el ancho
+del brazo ablado **no responde a lambda** (12.43 a 12.50, recorrido de 0.05
+puntos, frente a 1.65 del brazo completo), con sd cuatro veces menor.
+
+**Falta** completar lambda=2 (6 semillas) y lambda=4 (10), reejecutar
+`lambda_nowidth_per_rule.py` **con `--out` distinto** para no pisar el CSV
+actual, y entonces convertir la linea discontinua de fig:lambda en una segunda
+curva. La afirmacion del paper ya no depende de ello: con lambda = 0, 0.5 y 1
+completos el brazo ablado ya se ve plano.
+
+### Nota original
+
+
 
 **Motivo.** El barrido de la Ec. 13 solo esta hecho para el brazo CON
 terminales de anchura (lambda = 0.5, 1, 2, 4). Del brazo sin anchura solo
@@ -58,7 +76,18 @@ y escribir a un directorio propio para no pisar
 linea; el parrafo final de 7.2 podria comparar pendientes en lugar de comparar
 una curva contra un punto.
 
-## 3. irace no se corrio para el brazo sin anchura
+## 3. irace no se corrio para el brazo sin anchura — DECLARADO EN 7.2
+
+**Estado (30 jul 2026).** Aplicada la opcion barata: 7.2 dice ahora que la
+configuracion de irace se eligio sobre el conjunto completo de terminales y se
+usa en los dos brazos, que mantenerla fija es lo que hace controlada la
+comparacion, y que el coste es que el brazo ablado corre con hiperparametros
+afinados para un conjunto de primitivas mayor que el suyo. Queda solo la opcion
+cara, y solo si un revisor la exige.
+
+### Nota original
+
+
 
 **Motivo.** irace se ejecuto **una sola vez**, sobre el conjunto de terminales
 completo, y su configuracion ganadora (tournament 7, crossover 0.7695, maxtree

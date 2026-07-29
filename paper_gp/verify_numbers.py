@@ -147,6 +147,18 @@ if os.path.exists(cl):
               f"{float(r['gp']):.1f} & {float(r['gp64']):.1f} & "
               f"{float(r['gp1024']):.1f}", "classic12_tuned.csv")
 
+# ---- barrido de lambda SIN anchuras, citado en 7.2 ---------------------
+nwl = os.path.join(REPO, "benchmarks/lambda_nowidth_por_regla.csv")
+if os.path.exists(nwl):
+    porlam = defaultdict(list)
+    for r in csv.DictReader(open(nwl, encoding="utf-8")):
+        porlam[r["lam"]].append(float(r["ancho"]))
+    print("\n== barrido sin anchuras (lambda_nowidth_por_regla.csv) ==")
+    for lam in sorted(porlam):
+        mu, sd = stats(porlam[lam])
+        check(f"lambda={lam} sin anchuras: ancho",
+              f"{mu:.2f} \\pm {sd:.2f}", "lambda_nowidth_por_regla.csv")
+
 # ---- los cuatro tests de tab:ablation, desde los datos por regla -------
 # RESULTADOS.md solo recoge los dos del objetivo de makespan, asi que el test
 # de RE bajo el objetivo robusto no estaba comprobado por nadie. Se recalcula

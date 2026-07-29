@@ -15,7 +15,7 @@ anchuras de intervalo ampliadas +0/+20/+40% simétricamente respecto al midpoint
 (si el lower saliera negativo se recorta a 0), evaluando el MISMO orden.
 
 Compara por método: la regla GP interval-aware, la ablación no-width (si existe),
-y los baselines MOR y GT-MWKR. Salida: benchmarks/robustness_eps.csv + figuras
+y los baselines EST y GT-MWKR. Salida: benchmarks/robustness_eps.csv + figuras
 (boxplots por método/anchura, histogramas estilo fEABC Fig 3).
 
 Uso:
@@ -41,7 +41,7 @@ from jobshop_rl.data import PROBLEM_REGISTRY                 # noqa: E402
 from jobshop_rl.data.literature_bounds import lb_for_problem_name  # noqa: E402
 from jobshop_rl.experiments.factory import EnvironmentFactory     # noqa: E402
 from jobshop_rl.heuristics.gp_rule import GPRuleHeuristic         # noqa: E402
-from jobshop_rl.heuristics.strategies import MORHeuristic, GTHeuristic  # noqa: E402
+from jobshop_rl.heuristics.strategies import ESTHeuristic, GTHeuristic  # noqa: E402
 from jobshop_rl.models.interval import Interval               # noqa: E402
 
 WIDTHS = [1.0, 1.2, 1.4]     # +0%, +20%, +40%
@@ -116,23 +116,39 @@ def eps_bar(seq, lo, up, mseq, rng):
     return float(np.mean(np.abs(cmax - e_mid) / e_mid)), e_mid, cmax
 
 
+def coverage(cmax, clo, cup):
+    """Fraccion de realizaciones dentro del intervalo predicho.
+
+    Distingue si un intervalo mas estrecho es una prediccion mas informativa
+    (misma cobertura) o un exceso de confianza (cobertura menor).
+    """
+    return float(np.mean((cmax >= clo) & (cmax <= cup)))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--rule", default="benchmarks/gp_rule_seed1.json",
                     help="regla GP interval-aware (JSON)")
     ap.add_argument("--nowidth", default="",
                     help="regla ablación no-width (JSON), opcional")
+    ap.add_argument("--extra", action="append", default=[],
+                    help="regla adicional como nombre=fichero.json; repetible")
     ap.add_argument("--hist-instance", default="int__tai20_20_02",
                     help="instancia para los histogramas estilo fEABC Fig 3")
     ap.add_argument("--out", default="benchmarks/robustness_eps.csv")
     args = ap.parse_args()
 
     methods = {"GP": GPRuleHeuristic(json.load(open(args.rule))["tree"]),
-               "MOR": MORHeuristic(),
+               "EST": ESTHeuristic(),
                "GT-MWKR": GTHeuristic(tiebreak="mwkr")}
     if args.nowidth and os.path.exists(args.nowidth):
         methods["GP-nowidth"] = GPRuleHeuristic(
             json.load(open(args.nowidth))["tree"])
+    # reglas adicionales como nombre=fichero.json, p.ej. las entrenadas con
+    # el fitness robusto para distintos lambda
+    for spec in args.extra:
+        name, path = spec.split("=", 1)
+        methods[name] = GPRuleHeuristic(json.load(open(path))["tree"])
 
     instances = [p for p in sorted(PROBLEM_REGISTRY)
                  if re.match(r"int__tai\d+_\d+_\d+$", p)]
@@ -158,8 +174,12 @@ def main():
                 # con números comunes entre métodos (misma nube por instancia).
                 rng = np.random.default_rng(1000 * i + wi)
                 eb, e_mid, cmax = eps_bar(seq, lo, up, mseq, rng)
+                # cobertura: siempre contra el intervalo NOMINAL predicho,
+                # tambien cuando se ensancha la incertidumbre, porque es el
+                # intervalo que el planificador habria anunciado
+                cov = coverage(cmax, clo, cup)
                 rows.append({"instance": pid, "cls": cls, "method": name,
-                             "width": w, "eps_bar": eb,
+                             "width": w, "eps_bar": eb, "coverage": cov,
                              "rel_width": rel_width if w == 1.0 else float("nan")})
                 if pid == args.hist_instance:
                     hist[(name, w)] = (cmax, e_mid)
@@ -167,11 +187,12 @@ def main():
     print()
 
     with open(args.out, "w", encoding="utf-8") as f:
-        f.write("instance,cls,method,width,eps_bar,rel_width\n")
+        f.write("instance,cls,method,width,eps_bar,rel_width,coverage\n")
         for r in rows:
             rw = f"{r['rel_width']:.4f}" if r["rel_width"] == r["rel_width"] else ""
             f.write(f"{r['instance']},{r['cls']},{r['method']},"
-                    f"{r['width']:.1f},{r['eps_bar']*1000:.4f},{rw}\n")
+                    f"{r['width']:.1f},{r['eps_bar']*1000:.4f},{rw},"
+                    f"{r['coverage']:.4f}\n")
 
     # Resumen: eps-barra media (x1000) por método y anchura
     print("\n=== eps-barra media (x1000) por método y anchura ===")
@@ -202,7 +223,8 @@ def _figures(rows, hist, methods):
 
     os.makedirs("paper_gp/figures", exist_ok=True)
     COL = {"GP": "#d68910", "GP-nowidth": "#a04000",
-           "MOR": "#5d6d7e", "GT-MWKR": "#0e8a7d"}
+           "EST": "#5d6d7e", "GT-MWKR": "#0e8a7d",
+           "GP-rob1": "#b0632c", "GP-rob4": "#2e6f95"}
 
     # Fig A: boxplots de eps-barra por método, un panel por anchura
     fig, axes = plt.subplots(1, len(WIDTHS), figsize=(9, 3.4), sharey=True)
@@ -222,9 +244,9 @@ def _figures(rows, hist, methods):
     plt.close(fig)
     print("fig_robustness_box ok")
 
-    # Fig B: histogramas de C^k_max (instancia elegida), GP vs MOR, +0/+40%
+    # Fig B: histogramas de C^k_max (instancia elegida), GP vs EST, +0/+40%
     if hist:
-        pairs = [(m, w) for m in ("GP", "MOR") for w in (1.0, 1.4)
+        pairs = [(m, w) for m in ("GP", "EST") for w in (1.0, 1.4)
                  if (m, w) in hist]
         if pairs:
             fig, axes = plt.subplots(len(pairs) // 2, 2, figsize=(8, 5),
