@@ -965,36 +965,33 @@ interval-width term switched off.}
 
 \subsection{Rule anatomy and interpretability}
 \label{sec:anatomy}
-A practical appeal of GP is that its output is a readable expression. Evolved rules are compact, with a mean tree size of
-$26$ nodes ($20$--$30$) and mean depth $9$, so a rule can be inspected
-and simplified by hand. Figure~\ref{fig:terminals} reports how often each
-terminal is used across the 30 evolved rules. The backbone is the
-classical scheduling triad of slack (\textit{SLACK}), work remaining
+The output of GP is a readable expression. Evolved rules are compact,
+with a mean tree size of $26$ nodes ($20$--$30$) and mean depth $9$, so
+a rule can be inspected and simplified by hand.
+Figure~\ref{fig:terminals} reports how often each terminal is used
+across the 30 evolved rules. The most frequent are the classical
+scheduling attributes, slack (\textit{SLACK}), work remaining
 (\textit{WKR}) and earliest start (\textit{EST}), together with
 worst-case processing time (\textit{PT}), indicating that the evolution
-rediscovers and refines known dispatching logic rather than exploiting
-benchmark artefacts. The \emph{interval-width} terminals
-(\textit{PTW}, \textit{ESTW}, \textit{WKRW}) account for ${\approx}21\%$
-of all terminal usage and appear in $27$ of the $30$ evolved rules: the
-evolution consistently reaches for uncertainty information, even though
-worst-case bounds carry the larger share of the signal. Whether that
-width information translates into better schedules is quantified by the
-ablation of Section~\ref{sec:ablation} and the robustness analysis of
-Section~\ref{sec:robustness}.
+rediscovers known dispatching logic rather than exploiting benchmark
+artefacts. The \emph{interval-width} terminals (\textit{PTW},
+\textit{ESTW}, \textit{WKRW}) account for ${\approx}21\%$ of all
+terminal usage and appear in $27$ of the $30$ evolved rules. Whether
+that width information translates into better schedules is quantified in
+Sections~\ref{sec:ablation} and~\ref{sec:robustness}.
 
-Readability also makes the rule open to direct inspection. Its
-simplified form, Eq.~\eqref{eq:besttree}, weighs
-$\mathit{PT}$ by $\alpha = 2$ and $\mathit{WKRW}$ by $\beta = 1$; we
-swept each weight over the 70 instances holding the other at its evolved
-value (Figure~\ref{fig:sensitivity}). Both curves have a single broad
-minimum, and the evolved $\alpha$ sits at the lowest point of its sweep:
-the weight given to processing time was tuned rather than arrived at by
-chance. The evolved $\beta$ lies near, but not at, the minimum of its
-own sweep, where $\beta = 0.5$ yields $17.54\%$ against $17.71\%$. Such
-a post-hoc adjustment is available for any evolved rule.
-
-Setting $\beta = 0$ removes the width term from the deployed rule and
-costs $0.5$ points of $\RE$ ($18.23$ against $17.71$).
+The simplified form of the featured rule, Eq.~\eqref{eq:besttree}, also
+admits a direct sensitivity analysis: it weighs $\mathit{PT}$ by
+$\alpha = 2$ and $\mathit{WKRW}$ by $\beta = 1$, and we swept each
+weight over the 70 instances holding the other at its evolved value
+(Figure~\ref{fig:sensitivity}). Both curves have a single broad
+minimum. The evolved $\alpha$ coincides with the minimum of its sweep,
+indicating that this weight was effectively optimised by the evolution;
+the evolved $\beta$ lies near, but not at, the minimum of its own,
+where $\beta = 0.5$ yields $17.54\%$ against $17.71\%$. Such a
+post-hoc adjustment is available for any evolved rule. Setting
+$\beta = 0$ removes the width term from the deployed rule and costs
+$0.5$ points of $\RE$ ($18.23$ against $17.71$).
 
 
 
