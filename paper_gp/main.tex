@@ -893,11 +893,11 @@ best-of-1024 evaluates $1024$ mutually independent samples per instance,
 whereas the metaheuristics evolve a population of $250$
 individuals~\cite{DiazGA2020,DiazFEABC2023} through successive
 generations, each of which depends on the previous one. In wall-clock
-terms, a single constructive pass takes ${\approx}0.1$~s on instances
-of this size in our Python implementation, against the $0.5$--$2.2$~s
-reported for the genetic algorithm and the $1.9$--$6.8$~s reported for
-fEABC on the same instances~\cite{DiazFEABC2023}, both implemented in
-C\texttt{++}. Best-of-1024, however, requires between $0.6$ and
+terms, a single constructive pass over these instances takes between
+$29$ and $129$~ms in our Python implementation, $73$~ms on average,
+against the $0.5$--$2.2$~s reported for the genetic algorithm and the
+$1.9$--$6.8$~s reported for fEABC on the same
+instances~\cite{DiazFEABC2023}, both implemented in C\texttt{++}. Best-of-1024, however, requires between $0.6$ and
 $2.4$~minutes of sequential Python time depending on instance size, and
 is therefore \emph{not} faster than the published metaheuristics.
 
