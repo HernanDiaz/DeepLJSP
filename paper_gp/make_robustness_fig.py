@@ -27,14 +27,14 @@ if hasattr(sys.stdout, "reconfigure"):
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
-CSV = os.path.join(REPO, "benchmarks/robustness_tuned.csv")
+CSV = os.path.join(REPO, "benchmarks/robustness_seis.csv")
 OUT = os.path.join(HERE, "figures/fig_robustness_box.pdf")
 
 plt.rcParams.update({"font.size": 11, "figure.facecolor": "white"})
 
-COL = {"GP": "#d68910", "MOR": "#5d6d7e",
-       "GT-MWKR": "#0e8a7d", "GP-nowidth": "#a04000"}
-METHODS = ["GP", "MOR", "GT-MWKR", "GP-nowidth"]
+COL = {"GP": "#d68910", "GP-rob1": "#b0632c", "GP-rob1-nw": "#c7a740",
+       "GT-MWKR": "#0e8a7d", "EST": "#5d6d7e"}
+METHODS = ["GP", "GP-rob1", "GP-rob1-nw", "GT-MWKR", "EST"]
 WIDTHS = ["1.0", "1.2", "1.4"]
 
 data = defaultdict(list)
@@ -44,11 +44,11 @@ for r in csv.DictReader(open(CSV, encoding="utf-8")):
 
 fig, ax = plt.subplots(figsize=(4.98, 3.0))
 
-off = [-0.27, -0.09, 0.09, 0.27]
+off = [-0.30, -0.15, 0.0, 0.15, 0.30]
 for m, o in zip(METHODS, off):
     pos = [g + o for g in range(len(WIDTHS))]
     bp = ax.boxplot([data[(m, w)] for w in WIDTHS], positions=pos,
-                    widths=0.16, patch_artist=True, showfliers=False,
+                    widths=0.13, patch_artist=True, showfliers=False,
                     medianprops=dict(color="black", linewidth=0.9))
     for patch in bp["boxes"]:
         patch.set_facecolor(COL[m]); patch.set_alpha(0.75)
@@ -62,7 +62,7 @@ ax.set_xlim(-0.5, len(WIDTHS) - 0.5)
 ax.spines[["top", "right"]].set_visible(False)
 ax.legend(handles=[Patch(facecolor=COL[m], alpha=0.75, label=m)
                    for m in METHODS],
-          ncol=4, fontsize=8.5, frameon=False, loc="upper center",
+          ncol=3, fontsize=8, frameon=False, loc="upper center",
           bbox_to_anchor=(0.5, 1.16), columnspacing=1.1, handlelength=1.3)
 
 fig.tight_layout()

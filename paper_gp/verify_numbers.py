@@ -96,8 +96,8 @@ if os.path.exists(sw):
                   f"{float(r['width_mean']):.2f} \\pm "
                   f"{float(r['width_sd']):.2f}", "lambda_sweep_tuned.csv")
 
-# ---- robustez, desde robustness_tuned.csv ------------------------------
-rob = os.path.join(REPO, "benchmarks/robustness_tuned.csv")
+# ---- robustez, desde robustness_seis.csv -------------------------------
+rob = os.path.join(REPO, "benchmarks/robustness_seis.csv")
 if os.path.exists(rob):
     eps = defaultdict(lambda: defaultdict(list))
     wid = defaultdict(list)
@@ -105,14 +105,33 @@ if os.path.exists(rob):
         eps[r["method"]][r["width"]].append(float(r["eps_bar"]))
         if r["rel_width"]:
             wid[r["method"]].append(float(r["rel_width"]))
-    print("\n== robustez (robustness_tuned.csv) ==")
-    for m in ("GP", "GP-nowidth", "GT-MWKR", "MOR"):
+    print("\n== robustez (robustness_seis.csv) ==")
+    for m in ("GP", "GP-nowidth", "GP-rob1", "GP-rob1-nw", "GP-rob4",
+              "GT-MWKR", "EST"):
         w = sum(wid[m]) / len(wid[m])
         e = [sum(eps[m][k]) / len(eps[m][k]) for k in ("1.0", "1.2", "1.4")]
-        check(f"{m}: ancho", f"{w:.1f}", "robustness_tuned.csv")
+        check(f"{m}: ancho", f"{w:.2f}", "robustness_seis.csv")
         check(f"{m}: eps +0/+20/+40",
-              " & ".join(f"{x:.1f}" for x in e).replace(" & ", " & "),
-              "robustness_tuned.csv")
+              " & ".join(f"{x:.2f}" for x in e),
+              "robustness_seis.csv")
+
+# ---- columna RE de tab:robustness, desde los CSV por regla -------------
+apr = os.path.join(REPO, "benchmarks/ablation_por_regla.csv")
+lpr = os.path.join(REPO, "benchmarks/lambda_por_regla.csv")
+if os.path.exists(apr):
+    porregla = {(r["objetivo"], r["terminales"], r["seed"]): float(r["re"])
+                for r in csv.DictReader(open(apr, encoding="utf-8"))}
+    print("\n== RE de tab:robustness (ablation_por_regla.csv) ==")
+    for key, label in ((("makespan", "full", "1"), "GP makespan"),
+                       (("makespan", "nowidth", "25"), "GP makespan sin anchura"),
+                       (("robust", "full", "13"), "GP robusto l=1"),
+                       (("robust", "nowidth", "8"), "GP robusto l=1 sin anchura")):
+        check(f"RE {label}", f"{porregla[key]:.2f}", "ablation_por_regla.csv")
+if os.path.exists(lpr):
+    lam4 = {r["seed"]: float(r["re"])
+            for r in csv.DictReader(open(lpr, encoding="utf-8"))
+            if r["lam"] == "4.0"}
+    check("RE GP robusto l=4", f"{lam4['10']:.2f}", "lambda_por_regla.csv")
 
 # ---- 12 clasicas -------------------------------------------------------
 cl = os.path.join(REPO, "benchmarks/classic12_tuned.csv")
