@@ -943,14 +943,13 @@ uncertainty to the rule.}
 \section{Analysis}
 \label{sec:analysis}
 
-Beyond aggregate quality, this section examines the evolved rules
-themselves. Section~\ref{sec:anatomy} dissects what they are made of.
-The remaining subsections address the two questions that motivate the
-interval-aware design: whether the evolution driven by the makespan
-objective turns the width information it reads into anything measurable
-(Section~\ref{sec:ablation}), and whether an objective that explicitly
-penalises interval width produces genuinely more robust schedules, and
-at what cost (Section~\ref{sec:robustness}).
+This section analyses the evolved rules. Section~\ref{sec:anatomy}
+examines their composition. The remaining subsections address two
+questions: whether the evolution driven by the makespan objective
+extracts measurable value from the width terminals
+(Section~\ref{sec:ablation}), and whether an objective that penalises
+interval width yields more robust schedules, and at what cost
+(Section~\ref{sec:robustness}).
 
 \begin{figure}[t]
 \centering
@@ -1040,14 +1039,13 @@ quantity being optimised. Removing the three of them leaves the
 expected makespan unchanged: $18.66 \pm 1.08$ mean $\RE$ over the 70
 instances without them versus $18.99 \pm 1.33$ with them, a difference
 that is not significant ($z=-0.83$) and, if anything, favours the smaller
-terminal set. They do, however, leave a mark on the schedules: the
-relative width of the predicted makespan interval is significantly
-narrower when the rule can read widths ($12.41 \pm 0.30$ versus
-$12.62 \pm 0.23$; paired Wilcoxon $z=3.40$, $p<0.001$), even though
-nothing in this objective rewards narrowness. The evolution does reach
-for these terminals, which appear in 27 of the 30 rules
-(Section~\ref{sec:anatomy}), and what it obtains from them here is a
-tighter interval at no cost in expected makespan.
+terminal set. They do, however, affect the schedules: the relative
+width of the predicted makespan interval is significantly narrower when
+the rule can read widths ($12.41 \pm 0.30$ versus $12.62 \pm 0.23$;
+paired Wilcoxon $z=3.40$, $p<0.001$), even though nothing in this
+objective rewards narrowness. The terminals appear in 27 of the 30
+rules (Section~\ref{sec:anatomy}); their effect under this objective is
+a slightly tighter interval at no cost in expected makespan.
 
 The makespan fitness gives the evolution no incentive to trade expected
 makespan for predictability. To test whether it can make that trade
@@ -1064,8 +1062,8 @@ here. Under this objective the separation widens. Rules evolved with the
 width terminals produce schedules whose makespan interval is
 significantly narrower than those evolved without them
 ($12.04 \pm 0.75$ versus $12.47 \pm 0.20$ relative width; paired
-Wilcoxon $z=3.22$, $p<0.01$). Deprived of
-width terminals, the evolution stays at ${\approx}12.5\%$ under both
+Wilcoxon $z=3.22$, $p<0.01$). Without the
+width terminals the evolution stays at ${\approx}12.5\%$ under both
 objectives, $12.62$ under makespan and
 $12.47$ under the robust fitness, whereas with them it moves from
 $12.41$ to $12.04\%$ as soon as narrowness is rewarded, and further
@@ -1106,18 +1104,17 @@ both objectives it was evolved for.
 \includegraphics[width=.72\linewidth]{figures/fig_arms.pdf}
 \caption{The four ablation arms rule by rule: each point is one evolved
 rule, evaluated on the 70 instances. The arms without width terminals
-occupy a band between $12.05$ and $12.98\%$ whatever their objective;
-only the width-equipped robust arm stretches along the trade-off, down
-to $9.24\%$.}
+occupy a band between $12.05$ and $12.98\%$ under either objective;
+only the robust arm with the full terminal set reaches below it, down to
+$9.24\%$.}
 \label{fig:arms}
 \end{figure}
 
-Figure~\ref{fig:arms} shows the same four arms rule by rule. The width
-terminals do not shift the whole arm: most rules of the robust arm
-remain near the band of the ablated ones, and a minority stretches far
-along the trade-off. What the terminals provide is reach, and what the
-robust objective provides is the incentive to use it; with either one
-missing, no rule leaves the band.
+Figure~\ref{fig:arms} shows the four arms rule by rule. Without the
+width terminals no rule goes below $12.05\%$ under either objective;
+with them, the minimum is $11.60\%$ under the makespan objective and
+$9.24\%$ under the robust one. Both conditions are therefore necessary:
+the terminals and an objective that rewards narrowness.
 
 Taken together, these experiments delimit the contribution of interval
 awareness. The width of an interval is exploitable information for a
@@ -1182,30 +1179,25 @@ without the width terminals.}
 \label{fig:robustness}
 \end{figure}
 
-Under the makespan objective, the answer to the first question is
-negative also here (Table~\ref{tab:robustness}). The featured rule and
-its ablated counterpart are statistically indistinguishable in
+Under the makespan objective the first question receives the same
+negative answer (Table~\ref{tab:robustness}): the featured rule and its
+ablated counterpart are statistically indistinguishable in
 $\bar\varepsilon$ ($5.70$ against $5.75$ at the nominal width; paired
-Wilcoxon over the 70 instances, $z=-0.17$): the width terminals, which
-this evolution does use, do not translate into schedules that track
-their prediction better. The rule is more robust than G\&T-MWKR ($6.29$,
-$z=-4.42$, $p<0.001$) but no more robust than EST ($5.66$, $z=0.42$),
-even though it beats EST by $24$ points of $\RE$. A low deviation
-therefore does not require a low makespan, and robustness behaves as a
-dimension of its own, which is what the second question asks about.
+Wilcoxon over the 70 instances, $z=-0.17$). The rule is more robust than
+G\&T-MWKR ($6.29$, $z=-4.42$, $p<0.001$) but not than EST ($5.66$,
+$z=0.42$), although it improves on EST by $24$ points of $\RE$. A low
+deviation does not require a low makespan, so robustness must be
+optimised for directly.
 
-The robust arms answer it. The narrowest rule of the $\lambda{=}1$ arm
-lowers $\bar\varepsilon$ from $5.70$ to $4.52$ ($z=-6.40$ against the
-makespan rule), and the reduction requires the width terminals: under
-the same fitness, its ablated counterpart reaches only $5.54$
-($z=-6.25$), close to the makespan arms. Increasing the weight continues
-the movement, to $4.21$ at $\lambda{=}4$. The narrowing of
-Section~\ref{sec:ablation} is therefore honoured at execution: rules
-that promise a tighter interval also deviate less from it, provided the
-promise was built with access to the widths. The cost is the one already
-traced by Figure~\ref{fig:lambda}: $24.95$ and $28.27$ $\RE$ for the
-rules shown, against $17.71$ for the makespan rule, and the RE column of
-Table~\ref{tab:robustness} keeps that trade visible.
+The robust fitness achieves this. The narrowest rule of the
+$\lambda{=}1$ arm reduces $\bar\varepsilon$ from $5.70$ to $4.52$
+($z=-6.40$ against the makespan rule), and the reduction requires the
+width terminals: under the same fitness, its ablated counterpart reaches
+$5.54$ ($z=-6.25$). At $\lambda{=}4$ the deviation falls to $4.21$. The
+narrower predicted intervals of Section~\ref{sec:ablation} thus
+correspond to smaller realised deviations, at the cost in expected
+makespan reported in the RE column: $24.95$ and $28.27$ against
+$17.71$.
 
 Figure~\ref{fig:robustness} shows the per-instance $\bar\varepsilon$
 distributions. The ordering is stable as uncertainty grows, and the
