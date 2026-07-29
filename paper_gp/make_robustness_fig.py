@@ -35,6 +35,12 @@ plt.rcParams.update({"font.size": 11, "figure.facecolor": "white"})
 COL = {"GP": "#d68910", "GP-rob1": "#b0632c", "GP-rob1-nw": "#c7a740",
        "GT-MWKR": "#0e8a7d", "EST": "#5d6d7e"}
 METHODS = ["GP", "GP-rob1", "GP-rob1-nw", "GT-MWKR", "EST"]
+# etiquetas visibles: las mismas denominaciones que usa tab:robustness, para
+# que la leyenda y la tabla se lean con el mismo vocabulario
+LABELS = {"GP": "GP, makespan",
+          "GP-rob1": r"GP, robust $\lambda{=}1$",
+          "GP-rob1-nw": r"GP, robust $\lambda{=}1$, no widths",
+          "GT-MWKR": "G&T-MWKR", "EST": "EST"}
 WIDTHS = ["1.0", "1.2", "1.4"]
 
 data = defaultdict(list)
@@ -60,10 +66,10 @@ ax.set_xlabel("interval width")
 ax.set_ylabel(r"$\bar{\varepsilon}$ ($\times 10^{3}$)")
 ax.set_xlim(-0.5, len(WIDTHS) - 0.5)
 ax.spines[["top", "right"]].set_visible(False)
-ax.legend(handles=[Patch(facecolor=COL[m], alpha=0.75, label=m)
+ax.legend(handles=[Patch(facecolor=COL[m], alpha=0.75, label=LABELS[m])
                    for m in METHODS],
-          ncol=3, fontsize=8, frameon=False, loc="upper center",
-          bbox_to_anchor=(0.5, 1.16), columnspacing=1.1, handlelength=1.3)
+          ncol=2, fontsize=7.5, frameon=False, loc="upper center",
+          bbox_to_anchor=(0.5, 1.24), columnspacing=1.0, handlelength=1.2)
 
 fig.tight_layout()
 fig.savefig(OUT)
