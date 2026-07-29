@@ -530,7 +530,8 @@ paper.}
 \begin{tabular}{ll}
 \toprule
 Population / generations & $100$ / $50$ \\
-Initialization & ramped half-and-half (depths $2$--$4$) + 2 seeded rules \\
+Initialization & ramped half-and-half (depths $2$--$4$) \\
+Seeded individuals & $\mathit{PT}$ and $\mathrm{neg}(\mathit{WKR})$ \\
 Selection & tournament, size $k = 7$ \\
 Crossover / mutation prob. & $p_c = 0.77$ / $0.23$ (subtree, depth $\le 3$) \\
 Elitism & $e = 2$ \\
@@ -1170,10 +1171,11 @@ negative bounds to zero), re-evaluating the same processing orders.
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_robustness_box.pdf}
-\caption{Per-instance $\bar\varepsilon$ by method at each uncertainty
-level (lower is better). The robust $\lambda{=}1$ entries are the
-narrowest rule of that arm and its counterpart evolved without the
-width terminals, as in Table~\ref{tab:robustness}.}
+\caption{Per-instance $\bar\varepsilon$ by method, with the duration
+intervals at their nominal widths and widened by $+20\%$ and $+40\%$
+(lower is better). The robust $\lambda{=}1$ entries are the narrowest
+rule of that arm and its counterpart evolved without the width
+terminals, as in Table~\ref{tab:robustness}.}
 \label{fig:robustness}
 \end{figure}
 

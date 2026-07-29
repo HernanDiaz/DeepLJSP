@@ -62,7 +62,10 @@ for m, o in zip(METHODS, off):
 
 ax.set_xticks(range(len(WIDTHS)))
 ax.set_xticklabels([f"+{round((float(w)-1)*100)}%" for w in WIDTHS])
-ax.set_xlabel("interval width")
+# etiqueta: el eje son incrementos sobre las anchuras de las DURACIONES, no
+# una anchura; 'interval width' ya designa en el paper la anchura relativa
+# del intervalo de makespan predicho (Tabla 8, Figura 7)
+ax.set_xlabel("widening of the duration intervals")
 ax.set_ylabel(r"$\bar{\varepsilon}$ ($\times 10^{3}$)")
 ax.set_xlim(-0.5, len(WIDTHS) - 0.5)
 ax.spines[["top", "right"]].set_visible(False)
