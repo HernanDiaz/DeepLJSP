@@ -25,12 +25,17 @@ TEX = open(os.path.join(HERE, "main.tex"), encoding="utf-8").read()
 TEX = re.sub(r"\\textbf\{([^{}]*)\}", r"\1", TEX)
 
 ok = bad = 0
+# version con los espacios colapsados: una afirmacion en prosa puede quedar
+# partida por el salto de linea, y entonces la busqueda literal falla aunque el
+# paper este bien. Comparar tambien asi hace las comprobaciones inmunes al
+# reflujo del texto.
+TEX_1L = re.sub(r"\s+", " ", TEX)
 
 
 def check(label, expected, source):
-    """expected: cadena que debe aparecer en el tex tal cual."""
+    """expected: cadena que debe aparecer en el tex, ignorando el reflujo."""
     global ok, bad
-    if expected in TEX:
+    if expected in TEX or re.sub(r"\s+", " ", expected) in TEX_1L:
         ok += 1
         print(f"  OK    {label:<46} {expected}")
     else:
@@ -146,6 +151,47 @@ if os.path.exists(cl):
         check(f"{r['inst']}: fila completa",
               f"{float(r['gp']):.1f} & {float(r['gp64']):.1f} & "
               f"{float(r['gp1024']):.1f}", "classic12_tuned.csv")
+
+# ---- lo que 5.3 afirma de las elites, contra el log de irace -----------
+# el paper describe el conjunto elite en prosa; se comprueba contra el log en
+# vez de fiarse de la memoria, que es como llego a decir que las cuatro
+# coincidian en torneo 7 cuando una tiene 4.
+ir = os.path.join(REPO, "tuning/gp/irace_gp.log")
+if os.path.exists(ir):
+    log = open(ir, encoding="utf-8", errors="replace").read()
+    blq = log.rsplit("# Best configurations as commandlines", 1)
+    elites = re.findall(r"--tournament (\S+) --crossover (\S+) "
+                        r"--maxtree (\S+) --elitism (\S+)", blq[-1])
+    if elites:
+        print("\n== elites de irace (tuning/gp/irace_gp.log) ==")
+        tor = [e[0] for e in elites]
+        cro = [float(e[1]) for e in elites]
+        cap = sorted({e[2] for e in elites}, key=int)
+        check("numero de elites", str(len(elites)), ir)
+        check("elites con torneo 7", str(tor.count("7")), ir)
+        check("banda de crossover",
+              f"${min(cro):.2f}$--${max(cro):.2f}$", ir)
+        check("caps que sobreviven",
+              "$" + "$, $".join(cap[:-1]) + "$ and $" + cap[-1] + "$", ir)
+        # la ganadora es la primera del bloque y tiene que ser la que imprime
+        # tab:irace, celda a celda dentro del bloque de esa tabla
+        w = elites[0]
+        blq_tab = TEX[TEX.index("\\label{tab:irace}"):]
+        blq_tab = blq_tab[:blq_tab.index("\\end{tabular}")]
+        for fila, val in (("Tournament size", w[0]),
+                          ("Crossover prob.", f"{float(w[1]):.2f}"),
+                          ("Tree-size cap", w[2]),
+                          ("Elitism", w[3])):
+            linea = next((l for l in blq_tab.split("\n")
+                          if l.startswith(fila)), "")
+            marca = f"& ${val}$"
+            if marca in linea:
+                ok += 1
+                print(f"  OK    {'ganadora irace: ' + fila:<46} {val}")
+            else:
+                bad += 1
+                print(f"  FALLA {'ganadora irace: ' + fila:<46} "
+                      f"esperaba '{marca}' de {ir}")
 
 # ---- barrido de lambda SIN anchuras, citado en 7.2 ---------------------
 nwl = os.path.join(REPO, "benchmarks/lambda_nowidth_por_regla.csv")

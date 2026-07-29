@@ -606,9 +606,9 @@ We use two benchmarks, both taken from the IJSP
 literature~\cite{DiazGA2020,DiazFEABC2023,DiazICAE2023}: the 70 interval
 versions of Taillard's instances (TA1--TA70, seven size classes from
 $15{\times}15$ to $50{\times}20$), and the 12 classical instances on
-which the published IJSP metaheuristics report results (FT10, FT20, six
-instances of the La family and ABZ7--9, of sizes $10{\times}10$ to
-$20{\times}15$). Both were obtained from their crisp counterparts with
+which the published IJSP metaheuristics report results (FT10, FT20, seven
+instances of the La family and ABZ7--9, from $10$ to $20$ jobs and $5$ to
+$15$ machines). Both were obtained from their crisp counterparts with
 the generation scheme introduced in~\cite{DiazGA2020}: for every
 operation a value $\delta$ is drawn uniformly at random in
 $[0,\, 0.15\,p]$, where $p$ is its original duration, and that duration
@@ -626,8 +626,11 @@ Rules are evolved on TA11--TA14
 contribute to fitness, but design and configuration decisions (including
 the irace study of Section~\ref{sec:irace}) were selected on their
 performance, so we flag them as subject to development reuse. The
-remaining 60 Taillard instances and the 12 classical instances are fully
-unseen by every design decision and constitute the generalization test.
+remaining 60 Taillard instances and the 12 classical instances take no
+part in the evolution or in the configuration study and constitute the
+generalization test. They do enter one later choice, which of the 30
+evolved rules is featured, so every table reports the mean over the 30
+rules beside the featured rule's figure.
 
 Each evolution runs a population of $100$ rules for $50$ generations and
 returns the best rule of its final population. Thirty independent
@@ -638,18 +641,20 @@ with the lowest mean $\RE$ is the \emph{featured rule}.
 
 \subsection{Hyperparameter configuration with irace}
 \label{sec:irace}
-Four parameters govern the behavior of the evolution: tournament size,
-crossover probability, tree-size cap and elitism. We configured them
-with irace over a budget of 200 experiments, each one a full evolution
+Four parameters of the evolution were configured with irace: tournament
+size, crossover probability, tree-size cap and elitism. Population size
+and number of generations were held fixed, so that every configuration is
+evaluated under the same evolution budget. The budget was 200
+experiments, each one a full evolution
 (population $100$, $50$ generations) on the training instances, scored by
 the resulting rule's $\RE$ on the development set.
 Table~\ref{tab:irace} lists the parameter space and the winning
 configuration, which is the one used for every experiment reported in
-this paper (Table~\ref{tab:gpparams}). The elite configurations agree on
-a high selection pressure (tournament size $7$) and a crossover
-probability in the range $0.72$--$0.77$; the tree-size cap does not
-discriminate, with surviving elites spanning caps of $20$, $30$ and
-$40$.
+this paper (Table~\ref{tab:gpparams}). Of the four elite configurations
+irace retains, three favor a high selection pressure (tournament size
+$7$) and all four fall in a narrow crossover band, $0.72$--$0.77$; the
+tree-size cap does not discriminate, the elites spanning caps of $20$,
+$30$ and $40$.
 
 \begin{table}[t]
 \centering\small
