@@ -962,8 +962,7 @@ interval-width term switched off.}
 
 \subsection{Rule anatomy and interpretability}
 \label{sec:anatomy}
-A practical appeal of GP over neural policies is that its output is a
-readable expression. Evolved rules are compact, with a mean tree size of
+A practical appeal of GP is that its output is a readable expression. Evolved rules are compact, with a mean tree size of
 $26$ nodes ($20$--$30$) and mean depth $9$, so a rule can be inspected
 and simplified by hand. Figure~\ref{fig:terminals} reports how often each
 terminal is used across the 30 evolved rules. The backbone is the
@@ -994,12 +993,7 @@ practical consequence of the output being an expression rather than a
 network.
 
 Setting $\beta = 0$ removes the width term from the deployed rule and
-costs $0.5$ points of $\RE$ ($18.23$ against $17.71$). This is a
-different question from the ablation of Section~\ref{sec:ablation},
-which withholds the width terminals from the language \emph{before}
-evolution and lets the search compensate with the remaining ones; here
-the term is switched off in a rule already built around it. The two
-answers are therefore not in conflict.
+costs $0.5$ points of $\RE$ ($18.23$ against $17.71$).
 
 
 
