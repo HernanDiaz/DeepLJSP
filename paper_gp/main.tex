@@ -585,10 +585,11 @@ Table~\ref{tab:gpparams} lists the parameter values.
 \label{sec:grasp}
 A deterministic rule produces one schedule. For matched comparisons with
 sampling-based methods we wrap the evolved rule in GRASP-style
-randomization: with probability $\varepsilon{=}0.1$ the dispatched
-operation is drawn uniformly from the eligible set, otherwise the rule
-decides; sample $0$ remains deterministic. Best-of-$N$ then reports the
-lexicographically best schedule. This uniform perturbation of a single
+randomization: with probability $0.1$ the dispatched operation is
+drawn uniformly from the eligible set, otherwise the rule decides;
+sample $0$ remains deterministic. The wrapper, which we call
+GP-best-of-$N$, reports the lexicographically best of its $N$
+schedules. This uniform perturbation of a single
 rule is the simplest member of a family of randomized rule-based
 builders; an alternative swaps among a \emph{set} of evolved rules
 during construction~\cite{GilGala2025GRASB}.
@@ -853,15 +854,14 @@ evolving a population of permutations~\cite{DiazGA2020} and three
 artificial bee colony variants~\cite{DiazFEABC2023,DiazICAE2023}, each
 of which runs a separate search on every instance. Alongside the
 deterministic pass, Table~\ref{tab:classics} reports the randomized
-extension of Section~\ref{sec:grasp} at best-of-$64$ and best-of-$1024$:
-$N$ independent $\varepsilon$-randomized passes of the same rule, of
-which the best schedule is kept, with no refinement or recombination
-among samples.
+extension of Section~\ref{sec:grasp} at $N = 64$ and $N = 1024$:
+independent randomized passes of the same rule, of which the best
+schedule is kept, with no refinement or recombination among samples.
 
 \begin{table}[t]
 \centering\small
 \caption{RE (\%) on the 12 classical interval instances: our methods
-(deterministic single pass and GP-$\varepsilon$ best-of-$N$; rule evolved
+(deterministic single pass and GP-best-of-$N$; rule evolved
 on interval Taillard $20{\times}15$, applied zero-shot) versus the
 published average results (30 runs per instance) of the IJSP
 metaheuristics GA~\cite{DiazGA2020}, ABC$_{E3}$, fEABC~\cite{DiazFEABC2023}
@@ -874,7 +874,7 @@ expected makespan.}
 & & & \multicolumn{3}{c}{Ours (zero-shot)} &
 \multicolumn{4}{c}{Published (avg of 30)} \\
 \cmidrule(lr){4-6}\cmidrule(l){7-10}
-Inst. & LB & & GP & GP-$\varepsilon_{64}$ & GP-$\varepsilon_{1024}$ &
+Inst. & LB & & GP & GP-64 & GP-1024 &
 GA & ABC$_{E3}$ & fEABC & ESABC \\
 \midrule
 FT10 & 930 & & 20.4 & 8.4 & 6.6 & 5.2 & 4.1 & 3.5 & 3.0 \\
@@ -896,7 +896,7 @@ Mean & & & 17.9 & 14.2 & 11.3 & 9.8 & 6.4 & 5.8 & 5.5 \\
 \end{table}
 
 The two families also differ in how they spend computation:
-best-of-1024 evaluates $1024$ mutually independent samples per instance,
+GP-1024 evaluates $1024$ mutually independent samples per instance,
 whereas the metaheuristics evolve a population of $250$
 individuals~\cite{DiazGA2020,DiazFEABC2023} through successive
 generations, each of which depends on the previous one. In wall-clock
@@ -905,7 +905,7 @@ $0.03$--$0.13$~s in our Python implementation, $0.07$~s on average,
 against the $0.5$--$2.2$~s reported for the genetic algorithm and the
 $1.9$--$6.8$~s reported for fEABC on the same
 instances~\cite{DiazFEABC2023}, both implemented in C\texttt{++}.
-Best-of-1024, however, requires $37$--$134$~s of sequential Python time
+GP-1024, however, requires $37$--$134$~s of sequential Python time
 depending on instance size, and is therefore \emph{not} faster than the
 published metaheuristics.
 
@@ -923,8 +923,8 @@ $2.40$ times better than MOR and $1.58$ times better than G\&T-MWKR,
 against $2.40$ and $1.55$ on the interval Taillard benchmark they were
 evolved for.
 
-In terms of quality, the featured rule wrapped in GP-$\varepsilon$ at
-best-of-1024 reaches $11.3\%$ $\RE$ against the $9.8\%$ published average
+In terms of quality, the featured rule wrapped as
+GP-1024 reaches $11.3\%$ $\RE$ against the $9.8\%$ published average
 of the genetic algorithm, beating it on $3$ of the $12$ instances; a
 Wilcoxon signed-rank test on the paired per-instance values puts the
 difference at the edge of significance ($z = 1.96$, $p \approx 0.05$).
@@ -1275,7 +1275,7 @@ ensembles of complementary rules~\cite{GilGala2021Ensembles} and
 co-evolution of construction and tie-breaking. Third, using evolved
 rules as inexpensive, high-quality population initializers for the
 leading IJSP metaheuristics: the pools of diverse, high-quality
-sequences produced by GP-$\varepsilon$ are directly usable as seeded
+sequences produced by GP-best-of-$N$ are directly usable as seeded
 initial populations, and quantifying the effect of such seeding is
 ongoing work. Fourth, a controlled comparison with learned
 neural constructive policies under matched training and inference
