@@ -758,11 +758,11 @@ deterministic, the standard deviation is taken across instances and
 measures how uniform a method is over the benchmark rather than any
 run-to-run variability; the random dispatcher, the one stochastic entry,
 is averaged over 10 dispatches per instance. Times are wall-clock
-averages over the same 70 instances with 5 repetitions each, measured
-for the featured rule in the case of GP; being implementation-bound,
-they are informative only in comparison between rows. The two GP entries
-are the mean over the 30 evolved rules and the best of them, the mean
-being what a single evolution should be expected to yield.
+averages over the same 70 instances with 5 repetitions each; being
+implementation-bound, they are informative only in comparison between
+rows. The two GP entries are the mean over the 30 evolved rules and the
+best of them, the mean being what a single evolution should be expected
+to yield.
 
 Two observations are needed to read the table correctly. First, the
 plain rules that ignore machine availability (SPT, LPT and the critical
@@ -805,7 +805,7 @@ MOR & 45.5 & 10.1 & 0.33 \\
 EST & 42.3 & 10.6 & 0.28 \\
 G\&T-MWKR & \textbf{29.5} & 6.4 & 0.38 \\
 \midrule
-GP rule (mean of 30) & 18.99 & 4.96 & --- \\
+GP rule (mean of 30) & 18.99 & 4.96 & 0.41 \\
 GP rule (best of 30) & \textbf{17.71} & 5.23 & 0.34 \\
 \bottomrule
 \end{tabular}
