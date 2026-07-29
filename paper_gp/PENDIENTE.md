@@ -35,6 +35,50 @@ regla destacada, anadiendo una frase en el texto con el contraste de brazos.
 **No lanzar hasta** que termine `scripts/time_gp_arm.py`, que ocupa la maquina
 y cuyo resultado va a la celda vacia de la columna de tiempos en tab:baselines.
 
-## 2. DOI de Zenodo
+## 2. Barrido de lambda tambien para el brazo sin anchura
+
+**Motivo.** El barrido de la Ec. 13 solo esta hecho para el brazo CON
+terminales de anchura (lambda = 0.5, 1, 2, 4). Del brazo sin anchura solo
+tenemos dos puntos: 12.62 bajo objetivo makespan y 12.47 bajo lambda = 1. De
+ahi sale la linea discontinua de fig:lambda y la afirmacion de 7.2 de que ese
+brazo "se queda en ~12.5% bajo ambos objetivos".
+
+Con el barrido completo la linea pasaria a ser una **segunda curva**, y se
+veria si el brazo ablado es realmente plano frente a lambda o si tambien
+desciende, mas lentamente. La afirmacion "no tiene frontera disponible" pasaria
+de aserción sobre dos puntos a resultado medido.
+
+**Que lanzar.** 30 evoluciones: 10 semillas x lambda en {0.5, 2, 4}, con
+`--no-width` y la configuracion de irace. Unas 5 h. Reutilizar
+`scripts/lambda_sweep.py` anadiendo `--no-width` a los argumentos de cada job,
+y escribir a un directorio propio para no pisar
+`benchmarks/lambda_sweep/`.
+
+**Que cambiaria en el paper.** fig:lambda con dos curvas en vez de curva +
+linea; el parrafo final de 7.2 podria comparar pendientes en lugar de comparar
+una curva contra un punto.
+
+## 3. irace no se corrio para el brazo sin anchura
+
+**Motivo.** irace se ejecuto **una sola vez**, sobre el conjunto de terminales
+completo, y su configuracion ganadora (tournament 7, crossover 0.7695, maxtree
+30, elitism 2) se aplica a todos los brazos, incluido el ablado. Ese brazo
+compite por tanto con hiperparametros ajustados para un espacio de busqueda que
+no es el suyo.
+
+**No es necesariamente un fallo:** mantener la configuracion fija es lo que
+hace que la ablacion sea *controlada*; si cada brazo se tunease por separado
+cambiarian dos cosas a la vez y el efecto medido ya no seria atribuible a los
+terminales. Pero conviene **decirlo explicitamente en 7.2** en lugar de dejarlo
+implicito, porque un revisor puede plantearlo.
+
+**Opcion barata (recomendada):** una frase en 7.2 declarando que la
+configuracion se mantiene fija entre brazos y por que.
+
+**Opcion cara:** repetir el estudio de irace con el terminal set reducido y
+relanzar el brazo ablado con su propia configuracion. Anade ~200 evoluciones y
+debilita la comparacion controlada; solo si un revisor lo exige.
+
+## 4. DOI de Zenodo
 
 Unico `\todo` que queda en main.tex. Al depositar.
