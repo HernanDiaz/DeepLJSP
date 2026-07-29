@@ -52,7 +52,7 @@ unexploited, and their automated design has scarcely been explored for
 scheduling problems with non-deterministic processing times. We present
 a genetic programming (GP) hyper-heuristic for the job shop scheduling
 problem with interval durations (IJSP), in which durations are known
-only to lie within an interval and schedules are evaluated by interval
+only within an interval and schedules are evaluated by interval
 arithmetic. The GP evolves priority expressions over an
 \emph{interval-aware} terminal set that exposes both the worst-case
 values and the widths of the uncertain quantities, so that reacting to
@@ -68,10 +68,11 @@ instances, applied without re-evolution. Evolved rules are compact,
 human-readable expressions, with the evolutionary hyperparameters
 configured by irace. A controlled ablation over 30 evolutions per arm
 delimits the contribution of interval awareness: the width terminals do
-not improve the expected makespan, since the worst-case bounds carry
-that signal, but they yield significantly narrower makespan intervals,
-modestly under a makespan objective and substantially under one that
-rewards predictability, with a single weight governing the trade-off.
+not improve the expected makespan, but under an objective penalizing
+interval width they yield substantially narrower predicted intervals and
+a correspondingly lower deviation of the executed makespan from its
+prediction, neither attainable without them; a single weight governs the
+trade-off.
 \end{abstract}
 
 \begin{keyword}
@@ -142,7 +143,7 @@ This paper makes the following contributions:
   intervals, modestly under a makespan objective and substantially under
   an objective that rewards predictability
   (Section~\ref{sec:ablation}); and an executional-robustness
-  study showing that the evolved rule yields schedules whose realised
+  study showing that the evolved rule yields schedules whose realized
   makespan deviates less from its prediction than the baselines',
   increasingly so as uncertainty grows (Section~\ref{sec:robustness}).
 \item An automatic configuration study (irace, 200 experiments) of the
@@ -178,7 +179,7 @@ in~\cite{Allahverdi2022}. It has also been studied analytically, through measure
 the problem uncertainty induced by the intervals and of the stability of
 optimal sequences~\cite{Sotskov2013}.
 
-For the job shop with makespan minimisation, which concerns us here, the
+For the job shop with makespan minimization, which concerns us here, the
 literature is dominated by population-based metaheuristics. Lei's
 population-based neighbourhood search~\cite{Lei2011}, which ranks
 interval makespans by a possibility degree, was an early reference
@@ -187,7 +188,7 @@ systematic study of interval rankings~\cite{DiazGA2020} and by
 artificial bee colony variants~\cite{DiazFEABC2023,DiazICAE2023}, which
 report the best published results for this problem. Related objectives
 have also been addressed under interval uncertainty, notably tardiness
-minimisation~\cite{DiazTardiness2022}. All of these are iterative search
+minimization~\cite{DiazTardiness2022}. All of these are iterative search
 methods: they build and evaluate a population of complete solutions and
 refine it over many iterations for each instance solved. Fast
 constructive methods for the IJSP have received far less attention;
@@ -206,7 +207,7 @@ operation itself. \emph{Earliest starting time} (EST) prefers the
 operation that can begin soonest given the current state of its job and
 its machine. \emph{Most work remaining} (MWKR) and \emph{most operations
 remaining} (MOR) look instead at the job the operation belongs to, and
-favour the one with the largest amount of pending work, measured
+favor the one with the largest amount of pending work, measured
 respectively in time units and in number of operations. The
 \emph{critical ratio} (CR) weighs the work still to be done against the
 time available until a due date. Surveys catalogue more than a hundred
@@ -221,7 +222,7 @@ for the \emph{deterministic} job shop, notably the shifting bottleneck
 heuristic~\cite{Adams1988}, which repeatedly solves one-machine
 subproblems with heads and tails by means of Carlier's
 algorithm~\cite{Carlier1982}. These fall outside the scope of the present work: their machinery rests
-on exact one-machine optimisation and critical-path arguments that do
+on exact one-machine optimization and critical-path arguments that do
 not extend directly to interval arithmetic, where no natural total order
 is available. Two lessons emerge from this literature: rules
 are fast, transparent and easy to deploy, but hand-crafting them
@@ -251,7 +252,7 @@ al.~\cite{Karunakaran2017} evolve rules for dynamic job shops with
 uncertain processing times, exposing summary statistics of observed
 deviations (an exponential moving average) to the rule; uncertainty there
 is realized stochastically during simulation, and rules are evaluated on
-sampled scenarios. A recent survey of learned optimisation for the job
+sampled scenarios. A recent survey of learned optimization for the job
 shop~\cite{Xu2025}, covering both GP and DRL constructive approaches,
 records no work on interval-valued processing times. To the best of our
 knowledge, evolving rules whose \emph{inputs} are interval
@@ -280,7 +281,7 @@ realized duration lies within these bounds.
 
 Schedule construction uses interval arithmetic. For intervals
 $a=[\underline{a},\overline{a}]$ and $b=[\underline{b},\overline{b}]$,
-the two operations required by makespan minimisation are
+the two operations required by makespan minimization are
 \begin{align}
 a + b &= [\underline{a}+\underline{b},\, \overline{a}+\overline{b}],\\
 \max(a,b) &= [\max(\underline{a},\underline{b}),\,
@@ -458,7 +459,7 @@ evaluated on the attributes of every $o \in \mathcal{E}$, and the
 operation with \emph{lowest} priority value is appended at its earliest
 feasible start on its machine, Eq.~(3).
 
-Because the lowest value is dispatched, a criterion that seeks to \emph{maximise}
+Because the lowest value is dispatched, a criterion that seeks to \emph{maximize}
 an attribute must be expressed through the unary $\mathrm{neg}$
 operator. Classic rules are thus points of this search space: shortest
 processing time is the single-node tree $\mathit{PT}$, whereas most work
@@ -627,7 +628,7 @@ with the lowest mean $\RE$ is the \emph{featured rule}.
 
 \subsection{Hyperparameter configuration with irace}
 \label{sec:irace}
-Four parameters govern the behaviour of the evolution: tournament size,
+Four parameters govern the behavior of the evolution: tournament size,
 crossover probability, tree-size cap and elitism. We configured them
 with irace over a budget of 200 experiments, each one a full evolution
 (population $100$, $50$ generations) on the training instances, scored by
@@ -662,7 +663,7 @@ Elitism & $\{1, 2, 4\}$ & $2$ \\
 \label{sec:results}
 
 
-\subsection{Evolution behaviour and seed stability}
+\subsection{Evolution behavior and seed stability}
 Over 30 independent evolutions, training $\RE$ converges to
 $14.9 \pm 1.5$ (range $12.4$--$19.7$), with most of the improvement
 realized by generation $25$--$30$ (Figure~\ref{fig:convergence}). The
@@ -684,7 +685,7 @@ the rule takes on the benchmark ($1.29$ million candidate evaluations).
 Since the lowest value is dispatched, the
 rule reads directly: $-\mathit{WKR}$ is most-work-remaining, $2\,
 \mathit{PT}$ is shortest-processing-time at double weight, $\mathit{
-SLACK}^{2}$ penalises quadratically any operation that cannot start at
+SLACK}^{2}$ penalizes quadratically any operation that cannot start at
 the earliest available time, and the constant is immaterial to the
 ranking. The remaining term, $-\mathit{WKRW}$, is the interval-aware
 one: among jobs with comparable remaining work the rule advances those
@@ -943,11 +944,11 @@ uncertainty to the rule.}
 \section{Analysis}
 \label{sec:analysis}
 
-This section analyses the evolved rules. Section~\ref{sec:anatomy}
+This section analyzes the evolved rules. Section~\ref{sec:anatomy}
 examines their composition. The remaining subsections address two
 questions: whether the evolution driven by the makespan objective
 extracts measurable value from the width terminals
-(Section~\ref{sec:ablation}), and whether an objective that penalises
+(Section~\ref{sec:ablation}), and whether an objective that penalizes
 interval width yields more robust schedules, and at what cost
 (Section~\ref{sec:robustness}).
 
@@ -986,7 +987,7 @@ $\alpha = 2$ and $\mathit{WKRW}$ by $\beta = 1$, and we swept each
 weight over the 70 instances holding the other at its evolved value
 (Figure~\ref{fig:sensitivity}). Both curves have a single broad
 minimum. The evolved $\alpha$ coincides with the minimum of its sweep,
-indicating that this weight was effectively optimised by the evolution;
+indicating that this weight was effectively optimized by the evolution;
 the evolved $\beta$ lies near, but not at, the minimum of its own,
 where $\beta = 0.5$ yields $17.54\%$ against $17.71\%$. Such a
 post-hoc adjustment is available for any evolved rule. Setting
@@ -1032,10 +1033,10 @@ Fitness objective & Terminal set & RE (\%) & Width (\%) \\
 \end{table}
 
 Under the makespan objective, the width terminals do not improve the
-quantity being optimised. Removing the three of them leaves the
+quantity being optimized. Removing the three of them leaves the
 expected makespan unchanged: $18.66 \pm 1.08$ mean $\RE$ over the 70
 instances without them versus $18.99 \pm 1.33$ with them, a difference
-that is not significant ($z=-0.83$) and, if anything, favours the smaller
+that is not significant ($z=-0.83$) and, if anything, favors the smaller
 terminal set. They do, however, affect the schedules: the relative
 width of the predicted makespan interval is significantly narrower when
 the rule can read widths ($12.41 \pm 0.30$ versus $12.62 \pm 0.23$;
@@ -1047,7 +1048,7 @@ a slightly tighter interval at no cost in expected makespan.
 The makespan fitness gives the evolution no incentive to trade expected
 makespan for predictability. To test whether it can make that trade
 when rewarded for it, we repeat the ablation with a \emph{robust}
-fitness that explicitly rewards predictability, minimising
+fitness that explicitly rewards predictability, minimizing
 \begin{equation}
 f_{\lambda} = \overline{C}_{\max} + \lambda\,
 \big(\overline{C}_{\max}-\underline{C}_{\max}\big),
@@ -1133,7 +1134,7 @@ of the predicted makespan interval, and $\bar\varepsilon$
 $+40\%$ (Monte Carlo, $K{=}1000$ realizations, common random numbers
 across methods). Each GP arm is represented by one rule: the makespan
 arms by their best $\RE$, the robust arms by their narrowest predicted
-interval, which is what their fitness optimises.}
+interval, which is what their fitness optimizes.}
 \label{tab:robustness}
 \begin{tabular}{lccccc}
 \toprule
@@ -1162,7 +1163,7 @@ prediction survives execution, and is the quantity examined here. We
 estimate it by Monte Carlo, drawing $K{=}1000$ realizations of the
 durations uniformly on each operation's interval and executing the fixed
 processing order on each of them; lower is more robust. To probe
-behaviour under growing uncertainty we also widen every interval
+behavior under growing uncertainty we also widen every interval
 symmetrically about its midpoint by $+20\%$ and $+40\%$ (clipping
 negative bounds to zero), re-evaluating the same processing orders.
 
@@ -1184,7 +1185,7 @@ Wilcoxon over the 70 instances, $z=-0.17$). The rule is more robust than
 G\&T-MWKR ($6.29$, $z=-4.42$, $p<0.001$) but not than EST ($5.66$,
 $z=0.42$), although it improves on EST by $24$ points of $\RE$. A low
 deviation does not require a low makespan, so robustness must be
-optimised for directly.
+optimized for directly.
 
 The robust fitness achieves this. The narrowest rule of the
 $\lambda{=}1$ arm reduces $\bar\varepsilon$ from $5.70$ to $4.52$
@@ -1192,7 +1193,7 @@ $\lambda{=}1$ arm reduces $\bar\varepsilon$ from $5.70$ to $4.52$
 width terminals: under the same fitness, its ablated counterpart reaches
 $5.54$ ($z=-6.25$). At $\lambda{=}4$ the deviation falls to $4.21$. The
 narrower predicted intervals of Section~\ref{sec:ablation} thus
-correspond to smaller realised deviations, at the cost in expected
+correspond to smaller realized deviations, at the cost in expected
 makespan reported in the RE column: $24.95$ and $28.27$ against
 $17.71$.
 
@@ -1236,12 +1237,14 @@ classes, evolved on $20{\times}15$ and best on the unseen
 $50{\times}15$, because the representation contains no size-bound
 quantities. (iii)~Exposing the widths of the uncertain quantities does
 not improve the expected makespan, since the worst-case bounds already
-carry that signal, but it yields significantly narrower makespan intervals,
-modestly under a makespan objective and substantially under an objective
-that rewards predictability, with the weight $\lambda$ governing the
+carry that signal; under an objective that penalizes interval width,
+however, it yields substantially narrower predicted intervals and a
+deviation of the executed makespan from its prediction about one fifth
+lower ($4.52$ against $5.70 \times 10^{-3}$), and neither reduction is
+attainable without the width terminals. The weight $\lambda$ governs the
 extent of the trade-off.
 
-Future work follows four lines. First, optimising the numeric weights of
+Future work follows four lines. First, optimizing the numeric weights of
 an evolved rule, which the sensitivity analysis of
 Section~\ref{sec:anatomy} suggests the evolution leaves unfinished: the
 weight of $\mathit{WKRW}$ in the featured rule is $\beta = 1$, whereas
