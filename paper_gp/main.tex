@@ -1289,10 +1289,11 @@ the IJSP~\cite{Xu2025}.
 \label{sec:conclusions}
 
 We presented what is, to the best of our knowledge, the first GP
-hyper-heuristic for job shop scheduling with interval durations, built on
-a terminal set that exposes interval widths as first-class attributes,
-with the evolutionary hyperparameters configured automatically by a
-200-experiment irace study. The empirical conclusions are three. (i)~Evolved rules outperform every
+hyper-heuristic for job shop scheduling with interval durations:
+priority rules evolved over a terminal set that exposes both the
+worst-case values and the widths of the uncertain quantities, compact
+enough to be read and simplified by hand. The empirical conclusions are
+three. (i)~Evolved rules outperform every
 deterministic constructive baseline on the 70-instance benchmark by a
 wide, statistically significant margin ($18.99 \pm 1.33$ over 30
 evolutions, $17.71\%$ for the best rule, versus $29.5\%$ for the
@@ -1323,10 +1324,9 @@ price in expected makespan.
 
 Future work follows four lines. First, optimizing the numeric weights of
 an evolved rule, which the sensitivity analysis of
-Section~\ref{sec:anatomy} suggests the evolution leaves unfinished: the
-weight of $\mathit{WKRW}$ in the featured rule is $\beta = 1$, whereas
-$\beta = 0.5$ scores $17.54\%$ against $17.71\%$. Two properties of this
-setting shape how such a search should be posed. Because operations are
+Section~\ref{sec:anatomy} suggests the evolution leaves unfinished.
+Two properties of this setting shape how such a search should be
+posed. Because operations are
 dispatched by \emph{argmin}, the priority is invariant to adding a
 constant and to multiplying by a positive one, so the standard technique
 of linear scaling~\cite{Keijzer2003} cannot help and only the
@@ -1341,10 +1341,8 @@ Second, richer symbolic models:
 ensembles of complementary rules~\cite{GilGala2021Ensembles} and
 co-evolution of construction and tie-breaking. Third, using evolved
 rules as inexpensive, high-quality population initializers for the
-leading IJSP metaheuristics: the pools of diverse, high-quality
-sequences produced by GP-best-of-$N$ are directly usable as seeded
-initial populations, and quantifying the effect of such seeding is
-ongoing work. Fourth, a controlled comparison with learned
+leading IJSP metaheuristics: the pools of diverse sequences produced by
+GP-best-of-$N$ are directly usable as seeded initial populations. Fourth, a controlled comparison with learned
 neural constructive policies under matched training and inference
 budgets, the head-to-head evaluation that the recent
 literature~\cite{Xu2025} identifies as missing.
