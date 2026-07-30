@@ -127,11 +127,13 @@ alternatives found most robust~\cite{DiazGA2020}.
 
 This paper makes the following contributions:
 \begin{enumerate}
-\item A GP hyper-heuristic for the IJSP whose terminal set is
-  \emph{interval-aware}: alongside worst-case processing time, earliest
-  start and work remaining, rules can read the \emph{widths} of these
-  quantities, so that uncertainty-sensitive prioritization is
-  expressible at all (Section~\ref{sec:method}).
+\item A GP hyper-heuristic that brings automated rule design to the
+  IJSP: priority expressions over a terminal set in which the duration,
+  earliest start and work remaining of a candidate operation appear
+  both as worst-case values and as widths, with fitness computed by
+  interval arithmetic. The rules it produces are compact enough to be
+  simplified and read by hand (Sections~\ref{sec:method}
+  and~\ref{sec:anatomy}).
 \item An empirical study on the 70 interval Taillard instances showing
   that evolved rules (i) outperform every deterministic constructive
   baseline by a wide margin at equal cost, (ii) generalize zero-shot across instance
@@ -139,20 +141,16 @@ This paper makes the following contributions:
   (iii) transfer to a second benchmark of classical instances, keeping
   the same margin over the constructive baselines
   (Section~\ref{sec:results}).
-\item An analysis of \emph{why} the rules work: an anatomy of the evolved
-  expressions (Section~\ref{sec:anatomy}); an ablation that isolates the
-  contribution of the interval-width terminals, which under a makespan
-  objective leave the expected makespan unchanged and narrow the
-  predicted interval only modestly, and under an objective that rewards
-  predictability narrow it substantially at a cost in expected makespan,
-  together with a control showing that for expected makespan interval
-  arithmetic in the fitness is equally unnecessary, evolving on the
-  crisp midpoint instances does as well
-  (Section~\ref{sec:ablation}); and an executional-robustness study
-  showing that the deviation of the realized makespan from its
-  prediction falls only when it is optimized for directly, by about a
-  fifth under the robust objective, that this reduction requires the
-  width terminals, and that the advantage widens as uncertainty grows
+\item A delimitation of what interval awareness contributes, in two
+  halves. It contributes nothing to expected makespan: removing the
+  width terminals leaves it unchanged, and so does replacing the
+  interval-arithmetic fitness by scalar evolution on the crisp midpoint
+  instances (Section~\ref{sec:ablation}). Its value is robustness: an
+  objective that penalizes interval width, which has no crisp
+  counterpart, cuts the deviation of the executed makespan from its
+  prediction by about a fifth, a reduction unattainable without the
+  width terminals and paid for in expected makespan, with the weight of
+  the penalty tracing the frontier between the two
   (Section~\ref{sec:robustness}).
 \end{enumerate}
 
@@ -1334,6 +1332,14 @@ reduction requires the width terminals, since under the same objective
 the ablated arm reaches only $5.54$ and no value of $\lambda$ narrows its
 intervals. The gain is paid for in expected
 makespan, and the weight $\lambda$ governs the trade-off.
+
+Returning to the questions of Section~\ref{sec:intro}: the evolution
+selects the classical scheduling attributes first, with the width
+terminals present in most rules but not required; the magnitude of the
+uncertainty adds nothing to the expected makespan, which the evolution
+attains from the worst-case values alone; and an objective that rewards
+a narrow interval does yield executions closer to their prediction, at a
+price in expected makespan.
 
 Future work follows four lines. First, optimizing the numeric weights of
 an evolved rule, which the sensitivity analysis of
