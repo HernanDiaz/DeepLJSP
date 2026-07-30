@@ -56,8 +56,8 @@ problem with interval durations (IJSP), where durations are known
 only within an interval and schedules are evaluated by interval
 arithmetic. The GP evolves priority expressions over an
 \emph{interval-aware} terminal set exposing both the worst-case
-values and the widths of the uncertain quantities, so that reacting to
-uncertainty is expressible. On the 70 interval Taillard instances, rules
+values and the widths of the uncertain quantities. On the 70 interval
+Taillard instances, rules
 from 30 independent evolutions average a relative error
 of $18.99\%$ ($\pm1.33$) in a single constructive pass, and the best
 rule attains $17.71\%$, improving on the strongest constructive baseline
@@ -66,12 +66,13 @@ They generalize zero-shot across all seven size classes though evolved
 on four $20{\times}15$ instances, and keep the
 same margin over the constructive baselines on a second benchmark of
 classical instances, applied without re-evolution. Evolved rules are compact,
-human-readable expressions, with hyperparameters configured by irace. A controlled ablation over 30 evolutions per arm
-delimits the contribution of interval awareness: the width terminals do
-not improve the expected makespan, but under an objective penalizing
-width they yield substantially narrower predicted intervals and
-a lower deviation of the executed makespan from its prediction, neither
-reached without them and both paid for in expected makespan, a trade-off
+human-readable expressions, with hyperparameters configured by irace. Controlled ablations over 30 evolutions per arm
+delimit the contribution of interval awareness: neither the width
+terminals nor an interval-arithmetic fitness improves the expected
+makespan, but under an objective penalizing interval width rules yield
+substantially narrower predicted intervals and a lower deviation of the
+executed makespan from its prediction, neither reached without the
+width terminals and both paid for in expected makespan, a trade-off
 governed by a single weight.
 \end{abstract}
 
@@ -145,7 +146,10 @@ This paper makes the following contributions:
   contribution of the interval-width terminals, which under a makespan
   objective leave the expected makespan unchanged and narrow the
   predicted interval only modestly, and under an objective that rewards
-  predictability narrow it substantially at a cost in expected makespan
+  predictability narrow it substantially at a cost in expected makespan,
+  together with a control showing that for expected makespan interval
+  arithmetic in the fitness is equally unnecessary, evolving on the
+  crisp midpoint instances does as well
   (Section~\ref{sec:ablation}); and an executional-robustness study
   showing that the deviation of the realized makespan from its
   prediction falls only when it is optimized for directly, by about a
@@ -1024,7 +1028,7 @@ $\mathit{WKRW}$) in the terminal set, everything else held fixed, and
 compare the resulting rules with a paired Wilcoxon signed-rank test on
 the shared seeds, reporting the normal-approximation statistic $z$,
 exact two-sided $p$-values, and the matched-pairs rank-biserial
-correlation $|r|$ as effect size. Holm's correction across the four
+correlation $|r|$ as effect size. Holm's correction across the
 tests of Table~\ref{tab:ablation}, and across each later family of
 comparisons, changes no verdict reported in this paper. The irace configuration of
 Section~\ref{sec:irace} was selected on the full terminal set and is used
@@ -1040,7 +1044,9 @@ relative width of the predicted makespan interval.
 Under both objectives the arm with width terminals produces
 significantly narrower intervals; the expected makespan does not differ
 under the makespan objective and is significantly worse under the robust
-one.}
+one. The control row evolves on the crisp midpoint counterparts of the
+training instances with scalar fitness; its tests compare it with the
+interval-trained arm above it.}
 \label{tab:ablation}
 % la celda del test de RE bajo el objetivo robusto ensancha la tabla 12.9pt
 % sobre los 360pt de caja; a 4pt mide 356.9pt
@@ -1053,6 +1059,10 @@ Fitness objective & Terminal set & RE (\%) & Width (\%) \\
  & full & $18.99 \pm 1.33$ & $12.41 \pm 0.30$ \\
  & without widths & $18.66 \pm 1.08$ & $12.62 \pm 0.23$ \\
  & \textit{test} & \textit{n.s.} ($z=-0.83$) & $z=3.40$, $p<0.001$ \\
+\midrule
+\multirow{2}{*}{Midpoint control}
+ & without widths & $18.63 \pm 0.99$ & $12.55 \pm 0.17$ \\
+ & \textit{test} & \textit{n.s.} ($z=-0.13$) & \textit{n.s.} ($z=-1.29$) \\
 \midrule
 \multirow{3}{*}{Robust, Eq.~\eqref{eq:robustfit}}
  & full & $19.62 \pm 1.52$ & $12.04 \pm 0.75$ \\
@@ -1074,6 +1084,26 @@ paired Wilcoxon $z=3.40$, $p<0.001$, $|r|=0.71$), even though nothing in this
 objective rewards narrowness. The terminals appear in 27 of the 30
 rules (Section~\ref{sec:anatomy}); their effect under this objective is
 a slightly tighter interval at no cost in expected makespan.
+
+The makespan objective admits a sharper control. The crisp instance is
+exactly the midpoint scenario of its interval version
+(Section~\ref{sec:instances}), so we repeated the 30 evolutions on the
+crisp counterparts of the training instances, with the same seeds,
+configuration and reduced terminal set, scoring fitness with plain
+scalar arithmetic, and deployed the resulting rules unchanged on the
+interval benchmark. The two objectives differ in principle, since the
+interval arm optimizes the midpoint of the makespan interval, whose two
+bounds may be attained by different jobs, while the control optimizes
+the makespan of the midpoint scenario, a single maximum; empirically the
+difference does not matter: $18.63 \pm 0.99$ $\RE$ against
+$18.66 \pm 1.08$ ($z=-0.13$, n.s.), with predicted widths equally
+indistinguishable ($12.55 \pm 0.17$ against $12.62 \pm 0.23$,
+$z=-1.29$, n.s.). For expected makespan, then, nothing in the interval
+machinery is needed at evolution time, neither the width terminals nor
+interval arithmetic in the fitness. The next experiment shows what that
+machinery is for; note that it has no crisp counterpart at all, since on
+a crisp instance the width penalty vanishes and the robust objective
+collapses to the makespan objective for every $\lambda$.
 
 The makespan fitness gives the evolution no incentive to trade expected
 makespan for predictability. To test whether it can make that trade
@@ -1278,10 +1308,12 @@ the cost of a single constructive pass, and (ii)~they
 generalize zero-shot across all size classes, evolved on
 $20{\times}15$ and best on the unseen $50{\times}15$; since every
 terminal is a per-operation attribute with no size-bound quantities,
-that transfer requires no retraining or rescaling. (iii)~Exposing the widths of the uncertain quantities does
-not improve the expected makespan. Under an objective that penalizes
-interval width, however, the predicted intervals become substantially
-narrower and the deviation of the executed makespan from its prediction
+that transfer requires no retraining or rescaling. (iii)~For expected makespan, interval awareness at evolution time is
+unnecessary: removing the width terminals leaves it unchanged, and
+evolving on the crisp midpoint instances with scalar fitness does
+equally well. Under an objective that penalizes interval width, however,
+an objective with no crisp counterpart, the predicted intervals become
+substantially narrower and the deviation of the executed makespan from its prediction
 falls by about a fifth ($4.52$ against $5.70 \times 10^{-3}$); that
 reduction requires the width terminals, since under the same objective
 the ablated arm reaches only $5.54$ and no value of $\lambda$ narrows its

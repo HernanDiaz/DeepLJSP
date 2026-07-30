@@ -277,6 +277,19 @@ if os.path.exists(abl):
                       f"|r|={rank_biserial([eps1[a][i] for i in com], [eps1[b][i] for i in com]):.2f}",
                       rob)
 
+# ---- control del punto medio, citado en 7.2 y tab:ablation -------------
+mpc = os.path.join(REPO, "benchmarks/midpoint_control_por_regla.csv")
+if os.path.exists(mpc):
+    res, anc = [], []
+    for r in csv.DictReader(open(mpc, encoding="utf-8")):
+        res.append(float(r["re"]))
+        anc.append(float(r["ancho"]))
+    print("\n== control del punto medio (midpoint_control_por_regla.csv) ==")
+    mu, sd = stats(res)
+    check("control: RE", f"{mu:.2f} \\pm {sd:.2f}", mpc)
+    mu, sd = stats(anc)
+    check("control: ancho", f"{mu:.2f} \\pm {sd:.2f}", mpc)
+
 # ---- columna Time de tab:baselines -------------------------------------
 # esta columna no estaba comprobada, y por eso sobrevivio una celda medida en
 # otra tirada y con deriva de maquina. Todos los tiempos que el paper imprime
