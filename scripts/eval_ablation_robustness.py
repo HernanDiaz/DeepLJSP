@@ -94,7 +94,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--arm", action="append", required=True,
                     help="nombre=patron_glob")
+    ap.add_argument("--out", default=None,
+                    help="CSV por regla (arm,rule,eps_bar_x1000); no "
+                         "sobrescribe si existe")
     args = ap.parse_args()
+    if args.out and __import__("os").path.exists(args.out):
+        sys.exit(f"{args.out} ya existe; borralo a mano para recalcular")
 
     insts = [p for p in sorted(PROBLEM_REGISTRY)
              if re.match(r"int__tai\d+_\d+_\d+$", p)
@@ -102,15 +107,27 @@ def main():
     cache = {pid: instance_data(pid) for pid in insts}
 
     out = {}
+    filas = []            # (brazo, fichero, eps) para el CSV por regla
     for spec in args.arm:
         name, pattern = spec.split("=", 1)
         vals = []
         for p in sorted(glob.glob(pattern)):
-            vals.append(eps_bar_of_rule(
-                json.load(open(p, encoding="utf-8"))["tree"], insts, cache))
+            e = eps_bar_of_rule(
+                json.load(open(p, encoding="utf-8"))["tree"], insts, cache)
+            vals.append(e)
+            filas.append((name, __import__("os").path.basename(p),
+                          round(1000 * e, 4)))
             print(".", end="", flush=True)
         print(f" {name}: {len(vals)} reglas", flush=True)
         out[name] = vals
+
+    if args.out:
+        import csv as _csv
+        with open(args.out, "w", encoding="utf-8", newline="") as fh:
+            w = _csv.writer(fh)
+            w.writerow(["arm", "rule", "eps_bar_x1000"])
+            w.writerows(filas)
+        print(f"\nCSV por regla -> {args.out}", flush=True)
 
     print(f"\n=== eps-robustez (x10^3), media +- sd entre reglas del brazo ===")
     for name, v in out.items():

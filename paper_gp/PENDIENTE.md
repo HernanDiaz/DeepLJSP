@@ -1,4 +1,14 @@
-# Pendiente del paper GP
+﻿# Pendiente del paper GP
+
+## 1. eps-robustez sobre las 30 reglas -- HECHO (30 jul 2026)
+
+Lanzado sobre los CUATRO brazos al ancho nominal (benchmarks/eps_por_regla.csv,
+scripts/eval_ablation_robustness.py --out). Parrafo a nivel de brazo anadido a
+7.3 con Holm y rango-biserial; los efectos de metodo son modestos (<=3%) y el
+texto lo dice, junto con que las anchuras reducen eps tambien bajo makespan a
+nivel de brazo (z=-2.58), cosa que el par destacado no detectaba.
+
+### Nota original
 
 ## 1. eps-robustez sobre las 30 reglas (asimetria entre 7.2 y 7.3)
 
@@ -35,21 +45,13 @@ regla destacada, anadiendo una frase en el texto con el contraste de brazos.
 **No lanzar hasta** que termine `scripts/time_gp_arm.py`, que ocupa la maquina
 y cuyo resultado va a la celda vacia de la columna de tiempos en tab:baselines.
 
-## 2. Barrido de lambda tambien para el brazo sin anchura — PARCIALMENTE HECHO
+## 2. Barrido de lambda tambien para el brazo sin anchura -- HECHO (30 jul 2026)
 
-**Estado (30 jul 2026).** Lanzado como paso 2 de la cadena. Completos lambda=0
-y lambda=0.5 (10 semillas cada uno); lambda=2 a 4/10; lambda=4 sin empezar. Las
-reglas disponibles ya estan evaluadas sobre las 70 instancias con
-`scripts/lambda_nowidth_per_rule.py` ->
-`benchmarks/lambda_nowidth_por_regla.csv`, y 7.2 ya cita el resultado: el ancho
-del brazo ablado **no responde a lambda** (12.43 a 12.50, recorrido de 0.05
-puntos, frente a 1.65 del brazo completo), con sd cuatro veces menor.
-
-**Falta** completar lambda=2 (6 semillas) y lambda=4 (10), reejecutar
-`lambda_nowidth_per_rule.py` **con `--out` distinto** para no pisar el CSV
-actual, y entonces convertir la linea discontinua de fig:lambda en una segunda
-curva. La afirmacion del paper ya no depende de ello: con lambda = 0, 0.5 y 1
-completos el brazo ablado ya se ve plano.
+Barrido completo (40/40, benchmarks/lambda_nowidth/), evaluado en
+`benchmarks/lambda_nowidth_por_regla_completo.csv`. fig:lambda es ahora una
+figura fusionada con dos curvas de medias y las 190 reglas individuales como
+nube; 7.2 cita el barrido completo: recorrido de 0.13 puntos (lambda 0 a 4)
+frente a 1.64 del brazo completo, con el maximo ancho en el maximo peso.
 
 ### Nota original
 
@@ -64,7 +66,7 @@ brazo "se queda en ~12.5% bajo ambos objetivos".
 Con el barrido completo la linea pasaria a ser una **segunda curva**, y se
 veria si el brazo ablado es realmente plano frente a lambda o si tambien
 desciende, mas lentamente. La afirmacion "no tiene frontera disponible" pasaria
-de aserción sobre dos puntos a resultado medido.
+de aserciÃ³n sobre dos puntos a resultado medido.
 
 **Que lanzar.** 30 evoluciones: 10 semillas x lambda en {0.5, 2, 4}, con
 `--no-width` y la configuracion de irace. Unas 5 h. Reutilizar
@@ -76,7 +78,7 @@ y escribir a un directorio propio para no pisar
 linea; el parrafo final de 7.2 podria comparar pendientes en lugar de comparar
 una curva contra un punto.
 
-## 3. irace no se corrio para el brazo sin anchura — DECLARADO EN 7.2
+## 3. irace no se corrio para el brazo sin anchura â€” DECLARADO EN 7.2
 
 **Estado (30 jul 2026).** Aplicada la opcion barata: 7.2 dice ahora que la
 configuracion de irace se eligio sobre el conjunto completo de terminales y se

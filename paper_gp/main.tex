@@ -1260,6 +1260,23 @@ correspond to smaller realized deviations, at the cost in expected
 makespan reported in the RE column: $24.95$ and $28.27$ against
 $17.71$.
 
+The comparisons above select one representative rule per arm; at the
+level of the method the ordering is the same. Recomputing
+$\bar\varepsilon$ at the nominal width for all 30 rules of each arm
+and pairing by seed, the makespan arm averages $5.67 \pm 0.16$ against
+$5.77 \pm 0.14$ for its ablation ($z=-2.58$, $p<0.05$ after Holm's
+correction over the three arm-level tests, $|r|=0.54$), the robust
+$\lambda{=}1$ arm $5.50 \pm 0.30$ against $5.68 \pm 0.11$ for its own
+($z=-3.26$, $p<0.01$, $|r|=0.68$), and the robust arm improves on the
+makespan arm with the same terminals ($z=-2.46$, $p<0.05$, $|r|=0.51$).
+Two things follow. The width terminals do reduce
+$\bar\varepsilon$ slightly even under the makespan objective, a
+method-level effect too small to show in the single featured pair; and
+the arm-level reductions are modest, three percent or less, against the
+fifth separating the featured rules, so selecting the narrowest rule of
+the robust arm amplifies an effect that at the method level is
+consistent but small.
+
 Figure~\ref{fig:robustness} shows the per-instance $\bar\varepsilon$
 distributions. The ordering is stable as uncertainty grows, and the
 advantage of the robust rule widens with it: at $+40\%$ its deviation is

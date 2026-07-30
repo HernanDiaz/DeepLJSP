@@ -290,6 +290,17 @@ if os.path.exists(mpc):
     mu, sd = stats(anc)
     check("control: ancho", f"{mu:.2f} \\pm {sd:.2f}", mpc)
 
+# ---- eps-barra a nivel de brazo, citado en 7.3 -------------------------
+epr = os.path.join(REPO, "benchmarks/eps_por_regla.csv")
+if os.path.exists(epr):
+    braz = defaultdict(list)
+    for r in csv.DictReader(open(epr, encoding="utf-8")):
+        braz[r["arm"]].append(float(r["eps_bar_x1000"]))
+    print("\n== eps-barra por brazo (eps_por_regla.csv) ==")
+    for a in ("full", "nowidth", "rob-full", "rob-nowidth"):
+        mu, sd = stats(braz[a])
+        check(f"brazo {a}: eps", f"{mu:.2f} \\pm {sd:.2f}", epr)
+
 # ---- columna Time de tab:baselines -------------------------------------
 # esta columna no estaba comprobada, y por eso sobrevivio una celda medida en
 # otra tirada y con deriva de maquina. Todos los tiempos que el paper imprime
