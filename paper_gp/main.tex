@@ -110,10 +110,10 @@ substantially~\cite{Branke2016,Nguyen2017}. For scheduling
 under interval uncertainty, however, the automated design of dispatching
 rules remains, to the best of our knowledge, unexplored. Moving automated
 rule design to interval durations raises questions that do not
-arise in the deterministic case: which attributes a rule should read,
-when the quantities describing a candidate operation (its duration, its
-earliest start, the work remaining in its job) are intervals rather
-than numbers; whether the \emph{magnitude} of the uncertainty carries
+arise in the deterministic case: which attributes the evolution
+actually selects, when the quantities describing a candidate operation
+(its duration, its earliest start, the work remaining in its job) are
+intervals rather than numbers; whether the \emph{magnitude} of the uncertainty carries
 information that is useful for dispatching, or whether it is the
 position of the intervals that drives the decision; and whether an
 objective that rewards a narrow makespan interval, rather than a low
@@ -962,11 +962,11 @@ uncertainty to the rule.}
 \section{Analysis}
 \label{sec:analysis}
 
-This section analyzes the evolved rules. Section~\ref{sec:anatomy}
-examines their composition. The remaining subsections address two
-questions: whether the evolution driven by the makespan objective
-extracts measurable value from the width terminals
-(Section~\ref{sec:ablation}), and whether an objective that penalizes
+This section takes up the three questions of
+Section~\ref{sec:intro} in turn: which attributes the evolution selects
+(Section~\ref{sec:anatomy}); whether the evolution driven by the
+makespan objective extracts measurable value from the width terminals
+(Section~\ref{sec:ablation}); and whether an objective that penalizes
 interval width yields more robust schedules, and at what cost
 (Section~\ref{sec:robustness}).
 
