@@ -1113,14 +1113,15 @@ objective asks for.
 \begin{figure}[t]
 \centering
 \includegraphics[width=.8\linewidth]{figures/fig_lambda.pdf}
-\caption{Quality--predictability frontier traced by the weight $\lambda$
-of the robust fitness, Eq.~\eqref{eq:robustfit}, for the arm evolved
-\emph{with} the interval-width terminals and the arm evolved
-\emph{without} them. Each point is the mean over the independent
-evolutions of that arm at that $\lambda$, every rule evaluated on the 70
-instances; grey bars span $\pm 1$ sd in both coordinates. With the width
-terminals, increasing $\lambda$ trades expected makespan for narrower
-intervals; without them, the same weights leave the width unmoved.}
+\caption{Quality--predictability plane over the 70 instances. Faint
+markers are individual evolved rules: amber with the interval-width
+terminals, grey without them; open markers for the makespan objective,
+filled for the robust one at any $\lambda$. Solid curves join the mean
+of each arm at each $\lambda$ of the robust-fitness sweep,
+Eq.~\eqref{eq:robustfit}. With the width terminals, increasing
+$\lambda$ trades expected makespan for narrower intervals; without
+them the five means, $\lambda = 0$ to $4$, fall within $0.13$ points
+of width and are left unlabeled.}
 \label{fig:lambda}
 \end{figure}
 
@@ -1147,18 +1148,8 @@ when the rule has terminals through which to act on it: the objective
 and the representation are not two independent routes to the same end,
 the first works through the second.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=.72\linewidth]{figures/fig_arms.pdf}
-\caption{The four ablation arms rule by rule: each point is one evolved
-rule, evaluated on the 70 instances. The arms without width terminals
-occupy a band between $12.05$ and $12.98\%$ under either objective;
-only the robust arm with the full terminal set reaches below it, down to
-$9.24\%$.}
-\label{fig:arms}
-\end{figure}
-
-Figure~\ref{fig:arms} shows the four arms rule by rule. Without the
+The rule-level layer of Figure~\ref{fig:lambda} shows the same
+separation rule by rule. Without the
 width terminals no rule goes below $12.05\%$ under either objective;
 with them, the minimum is $11.60\%$ under the makespan objective and
 $9.24\%$ under the robust one. The terminals alone therefore suffice to
