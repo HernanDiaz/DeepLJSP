@@ -917,33 +917,28 @@ GP-1024, however, requires $37$--$134$~s of sequential Python time
 depending on instance size, and is therefore \emph{not} faster than the
 published metaheuristics.
 
-We report this transfer as a property of the method rather than of one
-rule. Over the 30 independently evolved rules the deterministic pass
-averages $19.04 \pm 1.97\%$ $\RE$ on these instances, individual rules
-ranging from $15.3\%$ to $23.3\%$, so the figure attached to any single
-rule should be read with that spread in mind. The two benchmarks are
-referred to different bounds, Taillard's for the Taillard-derived
-instances and best-known ones for the classical set, so their $\RE$ values
-are not directly comparable; what does carry across is the margin over
-the baselines evaluated on the same instances against the same bound.
-That margin is preserved: on the classical set the evolved rules average
-$2.40$ times better than MOR and $1.58$ times better than G\&T-MWKR,
-against $2.40$ and $1.55$ on the interval Taillard benchmark they were
-evolved for.
+Transfer is a property of the method rather than of one rule: over the
+30 evolved rules the deterministic pass averages $19.04 \pm 1.97\%$
+$\RE$ on these instances, single rules ranging from $15.3\%$ to
+$23.3\%$. Since the two benchmarks use different reference bounds
+(Section~\ref{sec:problem}), $\RE$ values do not compare across them,
+but margins over baselines evaluated on the same instances do, and that
+margin is preserved: $2.40$ times over MOR and $1.58$ over G\&T-MWKR on
+the classical set, against $2.40$ and $1.55$ on the benchmark the rules
+were evolved for.
 
-In terms of quality, the featured rule wrapped as
-GP-1024 reaches $11.3\%$ $\RE$ against the $9.8\%$ published average
-of the genetic algorithm, beating it on $3$ of the $12$ instances; a
-Wilcoxon signed-rank test on the paired per-instance values puts the
-difference at the edge of significance ($z = 1.96$, $p \approx 0.05$).
-The evolved rules therefore do not match the per-instance metaheuristics
-on this benchmark, and the purpose-built ABC variants remain clearly
-ahead ($5.5$--$6.4\%$), as expected of iterative search. What the
-comparison locates is the constructive frontier: rules evolved once on
-another benchmark and applied here with no retraining land $1.5$ points
-of $\RE$ from a population-based method that searches every instance
-separately, while the deterministic baselines average $30.1\%$
-(G\&T-MWKR) and $45.8\%$ (MOR) on the same instances.
+Against the per-instance metaheuristics the evolved rules do not
+compete: the purpose-built ABC variants remain clearly ahead
+($5.5$--$6.4\%$), as expected of iterative search, and even wrapped as
+GP-1024 the featured rule reaches $11.3\%$ against the genetic
+algorithm's published $9.8\%$, better on $3$ of the $12$ instances
+(paired Wilcoxon $z = 1.96$, $p \approx 0.05$). What the comparison
+locates is the constructive frontier: rules evolved once on another
+benchmark and applied here with no retraining average $19.04\%$ in a
+single pass, against $30.1\%$ (G\&T-MWKR) and $45.8\%$ (MOR) for the
+deterministic baselines, and the best rule with a $1024$-sample budget
+comes within $1.5$ points of a population-based method that searches
+every instance separately.
 
 
 \begin{figure}[htbp]
