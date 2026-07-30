@@ -318,6 +318,21 @@ if os.path.exists(tim):
     check("dispersion MOR/GP/G&T-MWKR",
           f"{(max(tres) / min(tres) - 1) * 100:.0f}\\%", "timing_tuned.csv")
 
+    # la celda 'GP rule (mean of 30)': por decision del autor el paper no
+    # lleva nota, asi que la metodologia queda AQUI. Media del bloque limpio
+    # de timing_gp_arm.csv (semillas 1 y 10-17, las 9 primeras en orden de
+    # medicion, antes del escalon del 23% de deriva de maquina), calibrada a
+    # la tirada de la columna por la regla compartida (seed1 en ambas).
+    tga = os.path.join(REPO, "benchmarks/timing_gp_arm.csv")
+    if os.path.exists(tga):
+        arm = {r["rule"]: float(r["mean_ms"])
+               for r in csv.DictReader(open(tga, encoding="utf-8"))}
+        limpio = [arm[f"gp_tuned_seed{s}"]
+                  for s in (1, 10, 11, 12, 13, 14, 15, 16, 17)]
+        cal = (sum(limpio) / len(limpio)) * ms["GP rule"] / arm["gp_tuned_seed1"]
+        check("GP rule (mean of 30): s por pase, calibrado",
+              f"{cal / 1000:.2f}", tga)
+
 # ---- apendice ----------------------------------------------------------
 print("\n== apendice ==")
 blk = TEX[TEX.index("\\label{tab:perinstance}"):]

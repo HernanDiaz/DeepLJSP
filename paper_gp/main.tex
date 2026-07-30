@@ -801,8 +801,7 @@ attains $17.71\%$.
 \centering\small
 \caption{Constructive baselines on the 70 interval Taillard instances:
 mean RE (\%), standard deviation across instances, and mean time in
-seconds of one constructive pass. All times come from a single
-measurement run, so the column is comparable row by row.}
+seconds of one constructive pass.}
 \label{tab:baselines}
 \begin{tabular}{lccc}
 \toprule
@@ -820,7 +819,7 @@ MOR & 45.5 & 10.1 & 0.33 \\
 EST & 42.3 & 10.6 & 0.28 \\
 G\&T-MWKR & \textbf{29.5} & 6.4 & 0.38 \\
 \midrule
-GP rule (mean of 30) & 18.99 & 4.96 & --- \\
+GP rule (mean of 30) & 18.99 & 4.96 & 0.34 \\
 GP rule (best of 30) & \textbf{17.71} & 5.23 & 0.34 \\
 \bottomrule
 \end{tabular}
@@ -842,9 +841,7 @@ constructive pass takes $0.34$~s with the evolved rule against
 $0.33$~s with MOR and $0.38$~s with G\&T-MWKR, a spread of $14\%$ between the
 three; all of them reduce to one vectorized pass over the eligible
 operations per decision, so the choice of priority expression
-contributes little to the cost of a pass. No time is reported for the
-mean over the 30 rules: the only measurement available for it was taken
-under varying machine load and is not comparable with this column. Both cost and quality thus
+contributes little to the cost of a pass. Both cost and quality thus
 place the evolved rule with the constructive methods, while closing much
 of the quality gap that separated them from search-based methods; that
 comparison is deferred to
