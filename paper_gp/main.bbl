@@ -50,10 +50,31 @@ W.~Xu, W.~Wu, Y.~Wang, Y.~He, Z.~Lei, Flexible job-shop scheduling method based
   on interval grey processing time, Applied Intelligence 53 (2023)
   14876--14891.
 
+\bibitem{Zheng2024}
+P.~Zheng, S.~Xiao, P.~Zhang, Y.~Lv, A two-individual-based evolutionary
+  algorithm for the flexible assembly job shop scheduling problem with
+  uncertain interval processing times, Applied Sciences 14~(22) (2024) 10304.
+\newblock \href {https://doi.org/10.3390/app142210304}
+  {\path{doi:10.3390/app142210304}}.
+
+\bibitem{Afsar2025}
+S.~Af{\c{s}}ar, J.~Puente, J.~J. Palacios, I.~Gonz{\'a}lez-Rodr{\'i}guez, C.~R.
+  Vela, Solving the energy-aware flexible job shop problem using a memetic
+  algorithm, Integrated Computer-Aided Engineering 32~(4) (2025) 397--414.
+\newblock \href {https://doi.org/10.1177/10692509251353343}
+  {\path{doi:10.1177/10692509251353343}}.
+
 \bibitem{Sotskov2013}
 Y.~N. Sotskov, T.-C. Lai, F.~Werner, Measures of problem uncertainty for
   scheduling with interval processing times, OR Spectrum 35~(3) (2013)
   659--689.
+
+\bibitem{Sotskov2020}
+Y.~N. Sotskov, N.~M. Matsveichuk, V.~D. Hatsura, Schedule execution for
+  two-machine job-shop to minimize makespan with uncertain processing times,
+  Mathematics 8~(8) (2020) 1314.
+\newblock \href {https://doi.org/10.3390/math8081314}
+  {\path{doi:10.3390/math8081314}}.
 
 \bibitem{Lei2011}
 D.~Lei, Population-based neighborhood search for job shop scheduling with
@@ -156,10 +177,23 @@ J.~Park, J.~Chun, S.~H. Kim, Y.~Kim, J.~Park, Learning to schedule job-shop
   reinforcement learning, International Journal of Production Research 59~(11)
   (2021) 3360--3377.
 
+\bibitem{Moore2009}
+R.~E. Moore, R.~B. Kearfott, M.~J. Cloud, Introduction to Interval Analysis,
+  SIAM, Philadelphia, PA, 2009.
+\newblock \href {https://doi.org/10.1137/1.9780898717716}
+  {\path{doi:10.1137/1.9780898717716}}.
+
 \bibitem{Sprecher1995}
 A.~Sprecher, R.~Kolisch, A.~Drexl, Semi-active, active, and non-delay schedules
   for the resource-constrained project scheduling problem, European Journal of
   Operational Research 80~(1) (1995) 94--102.
+
+\bibitem{Ishibuchi1990}
+H.~Ishibuchi, H.~Tanaka, Multiobjective programming in optimization of the
+  interval objective function, European Journal of Operational Research 48~(2)
+  (1990) 219--225.
+\newblock \href {https://doi.org/10.1016/0377-2217(90)90375-L}
+  {\path{doi:10.1016/0377-2217(90)90375-L}}.
 
 \bibitem{Taillard1993}
 E.~Taillard, Benchmarks for basic scheduling problems, European Journal of

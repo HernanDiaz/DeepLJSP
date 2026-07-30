@@ -178,9 +178,13 @@ decision maker can only supply a minimum and a maximum duration.
 Scheduling with interval processing times has been studied across
 machine environments, from the single machine~\cite{Allahverdi2014} to
 the flexible job shop~\cite{Xu2023}, with the flow shop and others
-surveyed in~\cite{Allahverdi2022}. It has also been studied analytically, through measures of
+surveyed in~\cite{Allahverdi2022}; recent work extends the model to
+richer variants such as assembly~\cite{Zheng2024} and energy-aware
+flexible~\cite{Afsar2025} shops. It has also been studied analytically, through measures of
 the problem uncertainty induced by the intervals and of the stability of
-optimal sequences~\cite{Sotskov2013}.
+optimal sequences~\cite{Sotskov2013}, and through the execution of
+schedules built under uncertain durations~\cite{Sotskov2020}, the
+question Section~\ref{sec:robustness} examines for evolved rules.
 
 For the job shop with makespan minimization, which concerns us here, the
 literature is dominated by population-based metaheuristics. Lei's
@@ -298,7 +302,7 @@ the two operations required by makespan minimization are
 \max(\mathbf{a},\mathbf{b}) &= [\max(\underline{a},\underline{b}),\,
 \max(\overline{a},\overline{b})],
 \end{align}
-both component-wise~\cite{DiazGA2020}. A solution determines a task
+both component-wise, the standard operations of interval arithmetic~\cite{Moore2009} as used in the IJSP literature~\cite{DiazGA2020}. A solution determines a task
 processing order $\pi$ (a permutation with repetition of jobs, decoded
 left to right). Following the notation of~\cite{DiazGA2020,DiazICAE2023},
 let $\mathrm{PM}_o(\pi)$ and $\mathrm{PJ}_o$ denote the predecessors of task $o$ in its
@@ -331,7 +335,8 @@ Eq.~\eqref{eq:prec} enforces precedence within each job and
 Eq.~\eqref{eq:cap} forbids overlaps on each machine, in both interval
 components~\cite{DiazGA2020,DiazICAE2023}. The minimum
 in~\eqref{eq:obj} is taken with respect to an interval ranking $R$,
-since intervals admit no natural total order. We rank schedules
+since intervals admit no natural total order and any ranking embodies a
+modeling choice~\cite{Ishibuchi1990}. We rank schedules
 lexicographically, comparing upper bounds first and using the lower
 bound only to break ties:
 \begin{equation}
