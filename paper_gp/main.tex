@@ -1000,8 +1000,10 @@ since each point is a deterministic evaluation over the 70 instances,
 that ruggedness belongs to the landscape rather than to sampling noise.
 The evolved $\alpha = 2$ is nonetheless the global minimum of its sweep;
 the evolved $\beta$ is not, giving $17.71\%$ against the $17.54\%$ of
-$\beta = 0.5$. Such a post-hoc adjustment is available for any evolved
-rule, though the ruggedness makes it a search rather than a correction. Setting
+$\beta = 0.5$. A post-evolution weight sweep is thus a cheap refinement
+for any simplified rule. The multimodality matters if the sweep is
+replaced by local descent: started at $\alpha = 4$, a descent stalls in
+a secondary minimum $0.6$ points above the global one. Setting
 $\beta = 0$ removes the width term from the deployed rule and costs
 $0.5$ points of $\RE$ ($18.23$ against $17.71$).
 

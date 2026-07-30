@@ -277,6 +277,28 @@ if os.path.exists(abl):
                       f"|r|={rank_biserial([eps1[a][i] for i in com], [eps1[b][i] for i in com]):.2f}",
                       rob)
 
+# ---- el minimo local de alpha=4 que cita 7.1 ---------------------------
+cs = os.path.join(REPO, "benchmarks/coefficient_sweep.csv")
+if os.path.exists(cs):
+    alfa = sorted((float(r["value"]), float(r["re"]))
+                  for r in csv.DictReader(open(cs, encoding="utf-8"))
+                  if r["coef"] == "alpha_PT")
+    vals = dict(alfa)
+    print("\n== barrido de coeficientes (coefficient_sweep.csv) ==")
+    # 7.1 afirma que un descenso local desde alpha=4 se atasca en un minimo
+    # secundario a 0.6 puntos del global: comprobar que 4.0 ES minimo local
+    # y que la distancia formateada es la que el texto imprime
+    es_min = vals[4.0] < vals[3.75] and vals[4.0] < vals[4.25]
+    if es_min:
+        ok += 1
+        print("  OK    alpha=4.0 es minimo local del barrido")
+    else:
+        bad += 1
+        print("  FALLA alpha=4.0 ya no es minimo local; reescribir 7.1")
+    glob = min(re_ for _, re_ in alfa)
+    check("distancia del minimo secundario",
+          f"{vals[4.0] - glob:.1f}$ points", cs)
+
 # ---- control del punto medio, citado en 7.2 y tab:ablation -------------
 mpc = os.path.join(REPO, "benchmarks/midpoint_control_por_regla.csv")
 if os.path.exists(mpc):
