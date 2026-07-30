@@ -194,16 +194,18 @@ if os.path.exists(ir):
                       f"esperaba '{marca}' de {ir}")
 
 # ---- barrido de lambda SIN anchuras, citado en 7.2 ---------------------
-nwl = os.path.join(REPO, "benchmarks/lambda_nowidth_por_regla.csv")
+# el CSV _completo sustituye al parcial (40/40 evoluciones); el parcial se
+# conserva en el repositorio pero ya no es la fuente de ninguna cifra
+nwl = os.path.join(REPO, "benchmarks/lambda_nowidth_por_regla_completo.csv")
 if os.path.exists(nwl):
     porlam = defaultdict(list)
     for r in csv.DictReader(open(nwl, encoding="utf-8")):
         porlam[r["lam"]].append(float(r["ancho"]))
-    print("\n== barrido sin anchuras (lambda_nowidth_por_regla.csv) ==")
+    print("\n== barrido sin anchuras (lambda_nowidth_por_regla_completo) ==")
     for lam in sorted(porlam):
         mu, sd = stats(porlam[lam])
         check(f"lambda={lam} sin anchuras: ancho",
-              f"{mu:.2f} \\pm {sd:.2f}", "lambda_nowidth_por_regla.csv")
+              f"{mu:.2f} \\pm {sd:.2f}", "lambda_nowidth_por_regla_completo")
 
 # ---- los cuatro tests de tab:ablation, desde los datos por regla -------
 # RESULTADOS.md solo recoge los dos del objetivo de makespan, asi que el test
@@ -216,6 +218,22 @@ if os.path.exists(abl):
     except ImportError:
         wilcoxon = None
     if wilcoxon is not None:
+        def rank_biserial(x, y):
+            """|r| = |W+ - W-|/(W+ + W-) sobre diferencias no nulas."""
+            d = [a - b for a, b in zip(x, y) if a != b]
+            orden = sorted(range(len(d)), key=lambda i: abs(d[i]))
+            ranks, i = {}, 0
+            while i < len(d):
+                j = i
+                while j + 1 < len(d) and abs(d[orden[j + 1]]) == abs(d[orden[i]]):
+                    j += 1
+                for k in range(i, j + 1):
+                    ranks[orden[k]] = (i + j) / 2 + 1
+                i = j + 1
+            wp = sum(ranks[i] for i in range(len(d)) if d[i] > 0)
+            wn = sum(ranks[i] for i in range(len(d)) if d[i] < 0)
+            return abs(wp - wn) / (wp + wn)
+
         por = defaultdict(dict)
         for r in csv.DictReader(open(abl, encoding="utf-8")):
             por[(r["objetivo"], r["terminales"])][r["seed"]] = (
@@ -239,6 +257,25 @@ if os.path.exists(abl):
                     tramo = ("p<0.001" if p < 0.001 else
                              "p<0.01" if p < 0.01 else "p<0.05")
                     check(f"{obj}/{que}: test", f"z={z:.2f}$, ${tramo}", abl)
+                    if que == "ancho":     # los |r| que la prosa de 7.2 cita
+                        check(f"{obj}/{que}: efecto",
+                              f"|r|={rank_biserial(x, y):.2f}", abl)
+
+        # los |r| de eps-barra que cita 7.3, desde robustness_seis.csv
+        rob = os.path.join(REPO, "benchmarks/robustness_seis.csv")
+        if os.path.exists(rob):
+            eps1 = defaultdict(dict)
+            for r in csv.DictReader(open(rob, encoding="utf-8")):
+                if r["width"] == "1.0":
+                    eps1[r["method"]][r["instance"]] = float(r["eps_bar"])
+            print("\n== efectos de eps-barra (robustness_seis.csv) ==")
+            for a, b, label in (("GP", "GP-rob1", "GP vs robusto"),
+                                ("GP-rob1", "GP-rob1-nw", "robusto vs ablacion"),
+                                ("GP", "GT-MWKR", "GP vs G&T-MWKR")):
+                com = sorted(set(eps1[a]) & set(eps1[b]))
+                check(f"eps {label}: efecto",
+                      f"|r|={rank_biserial([eps1[a][i] for i in com], [eps1[b][i] for i in com]):.2f}",
+                      rob)
 
 # ---- columna Time de tab:baselines -------------------------------------
 # esta columna no estaba comprobada, y por eso sobrevivio una celda medida en
