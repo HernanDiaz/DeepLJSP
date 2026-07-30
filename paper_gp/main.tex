@@ -619,22 +619,23 @@ cross-family generalization test (Section~\ref{sec:classics}). Both sets
 are released with this paper (see Data availability).
 
 \subsection{Training protocol, data split and baselines}
-Rules are evolved on TA11--TA14
-($20{\times}15$), and TA15--TA20 serve as development set: they never
-contribute to fitness, but design and configuration decisions (including
-the irace study of Section~\ref{sec:irace}) were selected on their
-performance, so we flag them as subject to development reuse. The
-remaining 60 Taillard instances and the 12 classical instances take no
-part in the evolution or in the configuration study and constitute the
-generalization test. They do enter one later choice, which of the 30
-evolved rules is featured, so every table reports the mean over the 30
-rules beside the featured rule's figure.
+The 70 interval Taillard instances are split three ways. Rules are
+evolved on TA11--TA14 ($20{\times}15$). TA15--TA20 form the
+development set: they never contribute to fitness, but the design and
+configuration decisions of this paper, including the irace study of
+Section~\ref{sec:irace}, were selected on their performance. The
+remaining 60 instances are unseen by every design and configuration
+decision and, together with the 12 classical instances, constitute the
+generalization test.
 
-Each evolution runs a population of $100$ rules for $50$ generations and
-returns the best rule of its final population. Thirty independent
-evolutions, differing only in their random seed, therefore yield thirty
-rules; these are evaluated on the 70 benchmark instances, and the one
-with the lowest mean $\RE$ is the \emph{featured rule}.
+Each evolution runs a population of $100$ rules for $50$ generations
+and returns the best rule of its final population; thirty independent
+evolutions, differing only in their random seed, yield thirty rules.
+All thirty are evaluated on the 70 Taillard instances, and the one with
+the lowest mean $\RE$ is the \emph{featured rule}. This selection
+does look at the 60 held-out Taillard instances, which is why every
+table reports the mean over the 30 rules beside the featured rule's
+value; the 12 classical instances play no part in any choice.
 
 
 \subsection{Hyperparameter configuration with irace}
