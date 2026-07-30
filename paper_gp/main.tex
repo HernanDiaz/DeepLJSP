@@ -941,15 +941,6 @@ comes within $1.5$ points of a population-based method that searches
 every instance separately.
 
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=.8\linewidth]{figures/fig_terminals.pdf}
-\caption{Terminal usage across the 30 evolved rules, as a share of all
-terminals. Interval-width terminals (amber) expose the magnitude of the
-uncertainty to the rule.}
-\label{fig:terminals}
-\end{figure}
-
 \section{Analysis}
 \label{sec:analysis}
 
@@ -961,7 +952,16 @@ makespan objective extracts measurable value from the width terminals
 interval width yields more robust schedules, and at what cost
 (Section~\ref{sec:robustness}).
 
-\begin{figure}[t]
+\begin{figure}[!t]
+\centering
+\includegraphics[width=.8\linewidth]{figures/fig_terminals.pdf}
+\caption{Terminal usage across the 30 evolved rules, as a share of all
+terminals. Interval-width terminals (amber) expose the magnitude of the
+uncertainty to the rule.}
+\label{fig:terminals}
+\end{figure}
+
+\begin{figure}[!t]
 \centering
 \includegraphics[width=.9\linewidth]{figures/fig_sensitivity.pdf}
 \caption{Sensitivity of the featured rule to the two weights of its
