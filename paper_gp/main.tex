@@ -1315,12 +1315,12 @@ intervals. The gain is paid for in expected
 makespan, and the weight $\lambda$ governs the trade-off.
 
 Returning to the questions of Section~\ref{sec:intro}: the evolution
-selects the classical scheduling attributes first, with the width
-terminals present in most rules but not required; the magnitude of the
-uncertainty adds nothing to the expected makespan, which the evolution
-attains from the worst-case values alone; and an objective that rewards
-a narrow interval does yield executions closer to their prediction, at a
-price in expected makespan.
+selects the classical scheduling attributes most often, with the width
+terminals present in most rules; the magnitude of the uncertainty adds
+nothing to the expected makespan, which rules without any width
+information, reading bounds or midpoints alone, attain equally well; and
+an objective that rewards a narrow interval does yield executions closer
+to their prediction, at a price in expected makespan.
 
 Future work follows four lines. First, optimizing the numeric weights of
 an evolved rule, which the sensitivity analysis of
