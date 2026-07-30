@@ -52,25 +52,24 @@ time budgets, but hand-crafted rules leave substantial performance
 unexploited, and their automated design has scarcely been explored for
 scheduling problems with non-deterministic processing times. We present
 a genetic programming (GP) hyper-heuristic for the job shop scheduling
-problem with interval durations (IJSP), in which durations are known
+problem with interval durations (IJSP), where durations are known
 only within an interval and schedules are evaluated by interval
 arithmetic. The GP evolves priority expressions over an
-\emph{interval-aware} terminal set that exposes both the worst-case
+\emph{interval-aware} terminal set exposing both the worst-case
 values and the widths of the uncertain quantities, so that reacting to
 uncertainty is expressible. On the 70 interval Taillard instances, rules
 from 30 independent evolutions average a relative error
 of $18.99\%$ ($\pm1.33$) in a single constructive pass, and the best
 rule attains $17.71\%$, improving on the strongest constructive baseline
 (Giffler--Thompson with MWKR tie-breaking, $29.5\%$) on every instance.
-They generalize zero-shot across all seven size classes despite being
-evolved on four instances of one class ($20{\times}15$), and keep the
+They generalize zero-shot across all seven size classes though evolved
+on four $20{\times}15$ instances, and keep the
 same margin over the constructive baselines on a second benchmark of
 classical instances, applied without re-evolution. Evolved rules are compact,
-human-readable expressions, with the evolutionary hyperparameters
-configured by irace. A controlled ablation over 30 evolutions per arm
+human-readable expressions, with hyperparameters configured by irace. A controlled ablation over 30 evolutions per arm
 delimits the contribution of interval awareness: the width terminals do
 not improve the expected makespan, but under an objective penalizing
-interval width they yield substantially narrower predicted intervals and
+width they yield substantially narrower predicted intervals and
 a lower deviation of the executed makespan from its prediction, neither
 reached without them and both paid for in expected makespan, a trade-off
 governed by a single weight.
@@ -1356,6 +1355,8 @@ are shared in a Zenodo repository.
 \bibliography{refs}
 
 \appendix
+\setcounter{table}{0}
+\setcounter{figure}{0}
 \section{Per-instance results}
 Table~\ref{tab:perinstance} lists, for each of the 70 interval Taillard
 instances, the crisp lower bound and the single-pass $\RE$ (\%) of the
