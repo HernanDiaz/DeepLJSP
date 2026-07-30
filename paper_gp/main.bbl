@@ -75,6 +75,13 @@ S.~S. Panwalkar, W.~Iskander, A survey of scheduling rules, Operations Research
 R.~Haupt, A survey of priority rule-based scheduling, OR Spektrum 11~(1) (1989)
   3--16.
 
+\bibitem{Durasevic2018}
+M.~{\DJ}ura{\v{s}}evi{\'c}, D.~Jakobovi{\'c}, A survey of dispatching rules for
+  the dynamic unrelated machines environment, Expert Systems with Applications
+  113 (2018) 555--569.
+\newblock \href {https://doi.org/10.1016/j.eswa.2018.06.053}
+  {\path{doi:10.1016/j.eswa.2018.06.053}}.
+
 \bibitem{Giffler1960}
 B.~Giffler, G.~L. Thompson, Algorithms for solving production-scheduling
   problems, Operations Research 8~(4) (1960) 487--503.
@@ -132,11 +139,48 @@ A.~Sprecher, R.~Kolisch, A.~Drexl, Semi-active, active, and non-delay schedules
   for the resource-constrained project scheduling problem, European Journal of
   Operational Research 80~(1) (1995) 94--102.
 
+\bibitem{Taillard1993}
+E.~Taillard, Benchmarks for basic scheduling problems, European Journal of
+  Operational Research 64~(2) (1993) 278--285.
+\newblock \href {https://doi.org/10.1016/0377-2217(93)90182-M}
+  {\path{doi:10.1016/0377-2217(93)90182-M}}.
+
+\bibitem{Leon1994}
+V.~J. Leon, S.~D. Wu, R.~H. Storer, Robustness measures and robust scheduling
+  for job shops, IIE Transactions 26~(5) (1994) 32--43.
+\newblock \href {https://doi.org/10.1080/07408179408966626}
+  {\path{doi:10.1080/07408179408966626}}.
+
+\bibitem{Feo1995}
+T.~A. Feo, M.~G.~C. Resende, Greedy randomized adaptive search procedures,
+  Journal of Global Optimization 6~(2) (1995) 109--133.
+\newblock \href {https://doi.org/10.1007/BF01096763}
+  {\path{doi:10.1007/BF01096763}}.
+
 \bibitem{GilGala2025GRASB}
 F.~J. Gil-Gala, M.~{\DJ}ura{\v{s}}evi{\'c}, M.~R. Sierra, J.~Puente, Greedy
   randomised adaptive solution builder using priority rules, in: Proceedings of
   the Genetic and Evolutionary Computation Conference Companion ({GECCO} '25),
   ACM, 2025, pp. 211--214.
+
+\bibitem{FisherThompson1963}
+H.~Fisher, G.~L. Thompson, Probabilistic learning combinations of local
+  job-shop scheduling rules, in: J.~F. Muth, G.~L. Thompson (Eds.), Industrial
+  Scheduling, Prentice-Hall, Englewood Cliffs, NJ, 1963, pp. 225--251.
+
+\bibitem{Lawrence1984}
+S.~Lawrence, Resource constrained project scheduling: an experimental
+  investigation of heuristic scheduling techniques (supplement), Tech. rep.,
+  Graduate School of Industrial Administration, Carnegie-Mellon University,
+  Pittsburgh, PA (1984).
+
+\bibitem{LopezIbanez2016}
+M.~L{\'o}pez-Ib{\'a}{\~n}ez, J.~Dubois-Lacoste, L.~P{\'e}rez~C{\'a}ceres,
+  M.~Birattari, T.~St{\"u}tzle, The irace package: Iterated racing for
+  automatic algorithm configuration, Operations Research Perspectives 3 (2016)
+  43--58.
+\newblock \href {https://doi.org/10.1016/j.orp.2016.09.002}
+  {\path{doi:10.1016/j.orp.2016.09.002}}.
 
 \bibitem{Keijzer2003}
 M.~Keijzer, Improving symbolic regression with interval arithmetic and linear

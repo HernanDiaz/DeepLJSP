@@ -216,7 +216,9 @@ favor the one with the largest amount of pending work, measured
 respectively in time units and in number of operations. The
 \emph{critical ratio} (CR) weighs the work still to be done against the
 time available until a due date. Surveys catalogue more than a hundred
-such variants~\cite{Panwalkar1977,Haupt1989}. A step
+such variants~\cite{Panwalkar1977,Haupt1989}, and more recent ones
+compare those in current use across machine
+environments~\cite{Durasevic2018}. A step
 above single-attribute rules, the algorithm of Giffler and
 Thompson (G\&T)~\cite{Giffler1960} restricts each choice to a machine's
 conflict set, guaranteeing \emph{active} schedules and markedly
@@ -355,14 +357,17 @@ E[\mathbf{C}_{\max}] = \frac{\underline{C}_{\max} +
 where $E[\mathbf{C}_{\max}]$ is the expected value of the interval
 makespan under the uniform distribution on
 $[\underline{C}_{\max},\overline{C}_{\max}]$, and $\LB$ is a bound of the
-underlying deterministic instance: Taillard's bounds for the
+underlying deterministic instance: Taillard's bounds~\cite{Taillard1993} for the
 Taillard-derived instances, the best known ones~\cite{DiazFEABC2023} for
 the classical set. It serves as an indicative common reference, not as a
 bound for the interval problem, for which none is available.
 
 A schedule is eventually \emph{executed} under one realization of the
 durations, and a second quantity of interest is how well its a-priori
-interval predicts that execution. Following~\cite{DiazGA2020}, the
+interval predicts that execution. Measuring the gap between a predicted
+schedule and its execution is the classical notion of schedule
+robustness~\cite{Leon1994}, here specialized to interval
+predictions. Following~\cite{DiazGA2020}, the
 $\bar\varepsilon$ robustness of a schedule with a fixed processing order
 is the average relative deviation of its executed makespan from the
 predicted expected value, over $K$ realizations of the durations:
@@ -589,7 +594,7 @@ Table~\ref{tab:gpparams} lists the parameter values.
 \label{sec:grasp}
 A deterministic rule produces one schedule. For matched comparisons with
 sampling-based methods we wrap the evolved rule in GRASP-style
-randomization: with probability $0.1$ the dispatched operation is
+randomization~\cite{Feo1995}: with probability $0.1$ the dispatched operation is
 drawn uniformly from the eligible set, otherwise the rule decides;
 sample $0$ remains deterministic. The wrapper, which we call
 GP-best-of-$N$, reports the lexicographically best of its $N$
@@ -605,10 +610,10 @@ during construction~\cite{GilGala2025GRASB}.
 \label{sec:instances}
 We use two benchmarks, both taken from the IJSP
 literature~\cite{DiazGA2020,DiazFEABC2023,DiazICAE2023}: the 70 interval
-versions of Taillard's instances (TA1--TA70, seven size classes from
+versions of Taillard's instances~\cite{Taillard1993} (TA1--TA70, seven size classes from
 $15{\times}15$ to $50{\times}20$), and the 12 classical instances on
-which the published IJSP metaheuristics report results (FT10, FT20, seven
-instances of the La family and ABZ7--9, from $10$ to $20$ jobs and $5$ to
+which the published IJSP metaheuristics report results (FT10, FT20~\cite{FisherThompson1963}, seven
+instances of the La family~\cite{Lawrence1984} and ABZ7--9~\cite{Adams1988}, from $10$ to $20$ jobs and $5$ to
 $15$ machines). Both were obtained from their crisp counterparts with
 the generation scheme introduced in~\cite{DiazGA2020}: for every
 operation a value $\delta$ is drawn uniformly at random in
@@ -642,7 +647,7 @@ with the lowest mean $\RE$ is the \emph{featured rule}.
 
 \subsection{Hyperparameter configuration with irace}
 \label{sec:irace}
-Four parameters of the evolution were configured with irace: tournament
+Four parameters of the evolution were configured with irace~\cite{LopezIbanez2016}: tournament
 size, crossover probability, tree-size cap and elitism. Population size
 and number of generations were held fixed, so that every configuration is
 evaluated under the same evolution budget. The budget was 200
