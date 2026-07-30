@@ -1091,12 +1091,10 @@ $18.66 \pm 1.08$ $\RE$ ($z=-0.13$, n.s.), with predicted widths
 equally close ($12.55 \pm 0.17$ against $12.62 \pm 0.23$, $z=-1.29$,
 n.s.), although the two fitness functions are not identical, since
 $\max$ does not commute with taking midpoints. For expected makespan,
-then, neither component is needed: rules as good as any in this paper
-can be evolved with no interval information at all. The robust
-objective of Eq.~\eqref{eq:robustfit} is different in kind, and is
-what the interval machinery is for: it cannot even be posed on a crisp
-instance, where the width penalty vanishes and $f_{\lambda}$ reduces
-to the makespan for every $\lambda$.
+then, neither component is needed: rules evolved with no interval
+information at all match the interval-trained arm. The objective of the
+next section penalizes the width of the makespan interval and cannot be
+replicated on a crisp instance, where that width is identically zero.
 
 \subsection{The robust objective: trading expected makespan for
 predictability}
