@@ -24,7 +24,9 @@ REPO = os.path.dirname(HERE)
 CSV = os.path.join(REPO, "benchmarks/coefficient_sweep.csv")
 OUT = os.path.join(HERE, "figures/fig_sensitivity.pdf")
 
-plt.rcParams.update({"font.size": 11, "figure.facecolor": "white"})
+# 8 pt es el tamano EFECTIVO porque la figura se genera al ancho al que
+# se imprime: no hay reduccion de LaTeX que encoja las letras
+plt.rcParams.update({"font.size": 8.0, "figure.facecolor": "white"})
 AMBAR, GRIS = "#d68910", "#5d6d7e"
 MEAN30 = 18.99          # media de las 30 evoluciones (tab:gp70)
 
@@ -32,7 +34,7 @@ data = defaultdict(list)
 for r in csv.DictReader(open(CSV, encoding="utf-8")):
     data[r["coef"]].append((float(r["value"]), float(r["re"])))
 
-fig, axes = plt.subplots(1, 2, figsize=(6.4, 3.2), sharey=True)
+fig, axes = plt.subplots(1, 2, figsize=(4.48, 2.24), sharey=True)
 PANELS = [("alpha_PT", r"weight $\alpha$ of $\mathit{PT}$", 2.0),
           ("beta_WKRW", r"weight $\beta$ of $\mathit{WKRW}$", 1.0)]
 
@@ -46,15 +48,17 @@ for ax, (key, label, evolved) in zip(axes, PANELS):
     ax.set_xlabel(label)
     ax.spines[["top", "right"]].set_visible(False)
 
-axes[0].set_ylabel("mean RE over the 70 instances (%)")
-axes[0].text(2.1, MEAN30, " mean of 30 evolutions", fontsize=8, color=GRIS,
+# la etiqueta larga se recortaba al estrechar el lienzo, y fig_lambda ya
+# llama "mean RE (%)" a esta misma magnitud; sobre que se mide, el pie
+axes[0].set_ylabel("mean RE (%)")
+axes[0].text(2.1, MEAN30, " mean of 30 evolutions", fontsize=7.5, color=GRIS,
              va="bottom")
 axes[1].annotate("evolved value", xy=(1.0, 0), xycoords=("data",
                  "axes fraction"), xytext=(4, 6), textcoords="offset points",
-                 fontsize=8, color=GRIS)
+                 fontsize=7.5, color=GRIS)
 axes[0].annotate("evolved value", xy=(2.0, 0), xycoords=("data",
                  "axes fraction"), xytext=(4, 6), textcoords="offset points",
-                 fontsize=8, color=GRIS)
+                 fontsize=7.5, color=GRIS)
 
 fig.tight_layout()
 fig.savefig(OUT)

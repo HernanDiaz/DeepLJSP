@@ -28,7 +28,9 @@ REPO = os.path.dirname(HERE)
 CSV = os.path.join(REPO, "benchmarks/ablation_por_regla.csv")
 OUT = os.path.join(HERE, "figures/fig_arms.pdf")
 
-plt.rcParams.update({"font.size": 11, "figure.facecolor": "white"})
+# 8 pt es el tamano EFECTIVO porque la figura se genera al ancho al que
+# se imprime: no hay reduccion de LaTeX que encoja las letras
+plt.rcParams.update({"font.size": 8.0, "figure.facecolor": "white"})
 AMBAR, GRIS = "#d68910", "#5d6d7e"
 
 pts = defaultdict(list)
@@ -36,7 +38,7 @@ for r in csv.DictReader(open(CSV, encoding="utf-8")):
     pts[(r["objetivo"], r["terminales"])].append(
         (float(r["re"]), float(r["ancho"])))
 
-fig, ax = plt.subplots(figsize=(5.2, 3.9))
+fig, ax = plt.subplots(figsize=(3.59, 2.69))
 SERIES = [(("makespan", "nowidth"), GRIS, "s", False, "makespan, no widths"),
           (("makespan", "full"), AMBAR, "o", False, "makespan, full terminals"),
           (("robust", "nowidth"), GRIS, "s", True,
@@ -53,7 +55,7 @@ for key, col, mk, fill, lab in SERIES:
 ax.set_xlabel("mean RE over the 70 instances (%)")
 ax.set_ylabel("relative width of the makespan interval (%)")
 ax.spines[["top", "right"]].set_visible(False)
-ax.legend(fontsize=8.5, frameon=False, loc="lower left",
+ax.legend(fontsize=7.5, frameon=False, loc="lower left",
           handletextpad=0.3, labelspacing=0.4)
 
 fig.tight_layout()

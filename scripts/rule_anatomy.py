@@ -99,21 +99,27 @@ def _figure(term_count, total_terms):
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
+    # mismo esquema que el resto de las figuras del paper: la figura se genera
+    # al ancho al que se imprime, asi que 8 pt es lo que llega al papel. Antes
+    # no se fijaba y el defecto de 10 acababa imprimiendose a 6.2 pt.
+    plt.rcParams.update({"font.size": 8.0, "figure.facecolor": "white"})
+
     os.makedirs("paper_gp/figures", exist_ok=True)
     order = sorted(TERMINALS, key=lambda x: -term_count[x])
     shares = [100 * term_count[t] / total_terms if total_terms else 0
               for t in order]
     colors = ["#d68910" if t in WIDTH_TERMS else "#5d6d7e" for t in order]
-    fig, ax = plt.subplots(figsize=(6.4, 3.4))
+    fig, ax = plt.subplots(figsize=(3.99, 2.12))
     ax.bar(range(len(order)), shares, color=colors)
     ax.set_xticks(range(len(order)))
-    ax.set_xticklabels(order, rotation=0, fontsize=9)
+    # a 8 pt y con el lienzo al ancho impreso, ESTW y WKRW se tocaban
+    ax.set_xticklabels(order, rotation=30, ha="right")
     ax.set_ylabel("share of terminals (%)")
     ax.spines[["top", "right"]].set_visible(False)
     from matplotlib.patches import Patch
     ax.legend(handles=[Patch(color="#d68910", label="interval width"),
                        Patch(color="#5d6d7e", label="other")],
-              frameon=False, fontsize=9)
+              frameon=False, fontsize=7.5)
     fig.tight_layout()
     fig.savefig("paper_gp/figures/fig_terminals.pdf")
     plt.close(fig)

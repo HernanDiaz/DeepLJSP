@@ -25,7 +25,9 @@ OUT = os.path.join(HERE, "figures/fig_lambda.pdf")
 
 # mismos ajustes que make_figures.py, para que el tamano de fuente sea
 # homogeneo entre todas las figuras del paper (todas se incluyen a .8\linewidth)
-plt.rcParams.update({"font.size": 11, "figure.facecolor": "white"})
+# 8 pt es el tamano EFECTIVO porque la figura se genera al ancho al que
+# se imprime: no hay reduccion de LaTeX que encoja las letras
+plt.rcParams.update({"font.size": 8.0, "figure.facecolor": "white"})
 
 AMBAR, GRIS = "#d68910", "#5d6d7e"
 # Ancho del brazo sin terminales de anchura bajo el objetivo robusto
@@ -38,12 +40,12 @@ rows = sorted((float(r["lambda"]), float(r["re_mean"]), float(r["re_sd"]),
                float(r["width_mean"]), float(r["width_sd"]))
               for r in csv.DictReader(open(CSV, encoding="utf-8")))
 
-fig, ax = plt.subplots(figsize=(6.4, 3.8))
+fig, ax = plt.subplots(figsize=(3.99, 2.37))
 
 # referencia plana: el brazo sin terminales de anchura
 ax.axvline(NOWIDTH, color=GRIS, linestyle="--", linewidth=1.2, zorder=1)
 ymax = max(r[1] + r[2] for r in rows)
-ax.text(NOWIDTH - 0.06, ymax, "without width terminals", fontsize=9,
+ax.text(NOWIDTH - 0.06, ymax, "without width terminals", fontsize=7.5,
         color=GRIS, ha="right", va="top")
 
 # dispersion entre evoluciones: en gris fino y detras, para que se lea como
@@ -60,7 +62,7 @@ ax.plot([r[3] for r in rows], [r[1] for r in rows], "-o", color=AMBAR,
 OFF = {0.5: (9, -9), 1.0: (10, 1), 2.0: (7, 8), 4.0: (9, 2)}
 for lam, re_m, _, w_m, _ in rows:
     ax.annotate(f"$\\lambda$={lam:g}", (w_m, re_m), textcoords="offset points",
-                xytext=OFF.get(lam, (8, 4)), fontsize=10, zorder=4)
+                xytext=OFF.get(lam, (8, 4)), fontsize=7.5, zorder=4)
 ax.set_xlabel("relative width of the makespan interval (%)")
 ax.set_ylabel("mean RE (%)")
 ax.spines[["top", "right"]].set_visible(False)

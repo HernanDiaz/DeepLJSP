@@ -30,7 +30,9 @@ REPO = os.path.dirname(HERE)
 CSV = os.path.join(REPO, "benchmarks/robustness_seis.csv")
 OUT = os.path.join(HERE, "figures/fig_robustness_box.pdf")
 
-plt.rcParams.update({"font.size": 11, "figure.facecolor": "white"})
+# 8 pt es el tamano EFECTIVO porque la figura se genera al ancho al que
+# se imprime: no hay reduccion de LaTeX que encoja las letras
+plt.rcParams.update({"font.size": 8.0, "figure.facecolor": "white"})
 
 COL = {"GP": "#d68910", "GP-rob1": "#b0632c", "GP-rob1-nw": "#c7a740",
        "GT-MWKR": "#0e8a7d", "EST": "#5d6d7e"}

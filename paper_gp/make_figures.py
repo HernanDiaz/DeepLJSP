@@ -18,7 +18,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 FIGS = os.path.join(HERE, "figures")
 os.makedirs(FIGS, exist_ok=True)
 
-plt.rcParams.update({"font.size": 11, "figure.facecolor": "white"})
+# 8 pt es el tamano EFECTIVO porque la figura se genera al ancho al que
+# se imprime: no hay reduccion de LaTeX que encoja las letras
+plt.rcParams.update({"font.size": 8.0, "figure.facecolor": "white"})
 
 AZUL, AMBAR, GRIS, TEAL = "#1f5fa8", "#d68910", "#5d6d7e", "#0e8a7d"
 
@@ -44,7 +46,7 @@ if curves:
     json.dump(curves, open(os.path.join(FIGS, "convergence_data.json"), "w"),
               indent=1)
     L = min(len(v) for v in curves.values())
-    fig, ax = plt.subplots(figsize=(6.4, 3.8))
+    fig, ax = plt.subplots(figsize=(3.99, 2.37))
     # curvas individuales muy tenues: son contexto, no el mensaje
     for i, (seed, ys) in enumerate(sorted(curves.items())):
         ax.plot(range(L), ys[:L], color="#9aa5b1", linewidth=0.45, alpha=0.22,
