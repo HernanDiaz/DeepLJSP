@@ -950,7 +950,7 @@ Section~\ref{sec:intro} in turn: which attributes the evolution selects
 makespan objective extracts measurable value from the width terminals
 (Section~\ref{sec:ablation}); and whether an objective that penalizes
 interval width yields more robust schedules, and at what cost
-(Section~\ref{sec:robustness}).
+(Sections~\ref{sec:frontier} and~\ref{sec:robustness}).
 
 \begin{figure}[!t]
 \centering
@@ -988,7 +988,7 @@ artifacts. The \emph{interval-width} terminals ($\mathit{PTW}$,
 $\mathit{ESTW}$, $\mathit{WKRW}$) account for ${\approx}21\%$ of all
 terminal usage and appear in $27$ of the $30$ evolved rules. Whether
 that width information translates into better schedules is quantified in
-Sections~\ref{sec:ablation} and~\ref{sec:robustness}.
+Sections~\ref{sec:ablation}--\ref{sec:robustness}.
 
 The simplified form of the featured rule, Eq.~\eqref{eq:besttree}, also
 admits a direct sensitivity analysis: it weighs $\mathit{PT}$ by
@@ -1009,7 +1009,7 @@ $0.5$ points of $\RE$ ($18.23$ against $17.71$).
 
 
 
-\subsection{The value of interval-awareness: terminal ablation}
+\subsection{The value of interval awareness: ablations}
 \label{sec:ablation}
 The interval-width terminals are the distinctive ingredient of this
 setting, so we isolate their contribution by ablation: we repeat the
@@ -1029,15 +1029,12 @@ larger primitive set than its own. Table~\ref{tab:ablation} collects the outcome
 
 \begin{table}[t]
 \centering\small
-\caption{Terminal ablation under two fitness objectives (30 independent
-evolutions per arm; rank-based tests between arms). \emph{Width} is the
-relative width of the predicted makespan interval.
-Under both objectives the arm with width terminals produces
-significantly narrower intervals; the expected makespan does not differ
-under the makespan objective and is significantly worse under the robust
-one. The control row evolves on the crisp midpoint counterparts of the
-training instances with scalar fitness; its tests compare it with the
-interval-trained arm above it.}
+\caption{Ablations of the interval machinery (30 independent evolutions
+per arm; paired rank tests between arms): the terminal ablation under
+two fitness objectives, and the crisp-midpoint control, evolved with
+scalar fitness and no interval information, tested against the
+interval-trained arm above it. \emph{Width} is the relative width of
+the predicted makespan interval.}
 \label{tab:ablation}
 % la celda del test de RE bajo el objetivo robusto ensancha la tabla 12.9pt
 % sobre los 360pt de caja; a 4pt mide 356.9pt
@@ -1076,30 +1073,38 @@ objective rewards narrowness. The terminals appear in 27 of the 30
 rules (Section~\ref{sec:anatomy}); their effect under this objective is
 a slightly tighter interval at no cost in expected makespan.
 
-The makespan objective admits a sharper control. The crisp instance is
-exactly the midpoint scenario of its interval version
-(Section~\ref{sec:instances}), so we repeated the 30 evolutions on the
-crisp counterparts of the training instances, with the same seeds,
-configuration and reduced terminal set, scoring fitness with plain
-scalar arithmetic, and deployed the resulting rules unchanged on the
-interval benchmark. The two objectives differ in principle, since the
-interval arm optimizes the midpoint of the makespan interval, whose two
-bounds may be attained by different jobs, while the control optimizes
-the makespan of the midpoint scenario, a single maximum; empirically the
-difference does not matter: $18.63 \pm 0.99$ $\RE$ against
-$18.66 \pm 1.08$ ($z=-0.13$, n.s.), with predicted widths equally
-indistinguishable ($12.55 \pm 0.17$ against $12.62 \pm 0.23$,
-$z=-1.29$, n.s.). For expected makespan, then, nothing in the interval
-machinery is needed at evolution time, neither the width terminals nor
-interval arithmetic in the fitness. The next experiment shows what that
-machinery is for; note that it has no crisp counterpart at all, since on
-a crisp instance the width penalty vanishes and the robust objective
-collapses to the makespan objective for every $\lambda$.
+Interval information enters the evolution at two points: through the
+terminal set, which fixes what a rule can read, and through the
+fitness, which scores every candidate schedule by interval arithmetic.
+The ablation above removes the first but keeps the second: rules
+evolved without width terminals are still selected by the
+interval-evaluated expected makespan.
 
+To remove the second as well, we evolve 30 further rules on the crisp
+counterparts of the training instances, exactly their midpoint
+scenarios (Section~\ref{sec:instances}), with the same seeds,
+configuration and reduced terminal set: these evolutions never see an
+interval, and their fitness is the plain scalar makespan. Deployed
+unchanged on the interval benchmark, they are indistinguishable from
+the arm evolved with interval fitness, $18.63 \pm 0.99$ against
+$18.66 \pm 1.08$ $\RE$ ($z=-0.13$, n.s.), with predicted widths
+equally close ($12.55 \pm 0.17$ against $12.62 \pm 0.23$, $z=-1.29$,
+n.s.), although the two fitness functions are not identical, since
+$\max$ does not commute with taking midpoints. For expected makespan,
+then, neither component is needed: rules as good as any in this paper
+can be evolved with no interval information at all. The robust
+objective of Eq.~\eqref{eq:robustfit} is different in kind, and is
+what the interval machinery is for: it cannot even be posed on a crisp
+instance, where the width penalty vanishes and $f_{\lambda}$ reduces
+to the makespan for every $\lambda$.
+
+\subsection{The robust objective: trading expected makespan for
+predictability}
+\label{sec:frontier}
 The makespan fitness gives the evolution no incentive to trade expected
 makespan for predictability. To test whether it can make that trade
-when rewarded for it, we repeat the ablation with a \emph{robust}
-fitness that explicitly rewards predictability, minimizing
+when rewarded for it, we repeat the terminal ablation with a
+\emph{robust} fitness that explicitly rewards predictability, minimizing
 \begin{equation}
 f_{\lambda} = \overline{C}_{\max} + \lambda\,
 \big(\overline{C}_{\max}-\underline{C}_{\max}\big),
@@ -1111,13 +1116,8 @@ here. Under this objective the separation widens. Rules evolved with the
 width terminals produce schedules whose makespan interval is
 significantly narrower than those evolved without them
 ($12.04 \pm 0.75$ versus $12.47 \pm 0.20$ relative width; paired
-Wilcoxon $z=3.22$, $p<0.001$, $|r|=0.67$). Without the
-width terminals the evolution stays at ${\approx}12.5\%$ under both
-objectives, $12.62$ under makespan and
-$12.47$ under the robust fitness, whereas with them it moves from
-$12.41$ to $12.04\%$ as soon as narrowness is rewarded, and further
-still as $\lambda$ grows. That movement is paid for in expected makespan
-($19.62$ versus $18.42$ $\RE$), which is the trade-off the robust
+Wilcoxon $z=3.22$, $p<0.001$, $|r|=0.67$), and the gain is paid for in
+expected makespan ($19.62$ versus $18.42$ $\RE$), the trade the robust
 objective asks for.
 
 \begin{figure}[t]
@@ -1165,16 +1165,6 @@ with them, the minimum is $11.60\%$ under the makespan objective and
 $9.24\%$ under the robust one. The terminals alone therefore suffice to
 leave the ablated band, but reaching $9.24\%$ takes both them and an
 objective that rewards narrowness.
-
-Taken together, these experiments delimit the contribution of interval
-awareness. The width of an interval is exploitable information for a
-dispatching rule, but its effect falls on the predictability of the
-schedule rather than on its expected makespan: exposing the widths
-narrows the predicted interval under both objectives, modestly when the
-objective disregards narrowness and substantially when it rewards it.
-Under the makespan objective that comes at no cost in expected makespan;
-under the robust objective it does cost, $19.62$ against $18.42$ $\RE$,
-and $\lambda$ governs the extent of the trade-off.
 
 
 
@@ -1246,7 +1236,7 @@ $\lambda{=}1$ arm reduces $\bar\varepsilon$ from $5.70$ to $4.52$
 ($z=-6.40$, $|r|=0.88$ against the makespan rule), and the reduction requires the
 width terminals: under the same fitness, its ablated counterpart reaches
 $5.54$ ($z=-6.25$, $|r|=0.86$). At $\lambda{=}4$ the deviation falls to $4.21$. The
-narrower predicted intervals of Section~\ref{sec:ablation} thus
+narrower predicted intervals of Section~\ref{sec:frontier} thus
 correspond to smaller realized deviations, at the cost in expected
 makespan reported in the RE column: $24.95$ and $28.27$ against
 $17.71$.
