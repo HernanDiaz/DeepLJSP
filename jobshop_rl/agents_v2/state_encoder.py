@@ -8,6 +8,8 @@ GLOBAL_FEATURE_DIM del contexto) son FIJAS, independientes de num_jobs y
 num_machines — la misma red sirve para cualquier tamaño de problema.
 """
 
+import os
+
 import numpy as np
 
 from jobshop_rl.models.interval import Interval
@@ -15,6 +17,12 @@ from jobshop_rl.models.interval import Interval
 OP_FEATURE_DIM = 16
 GLOBAL_FEATURE_DIM = 12
 _EPS = 1e-8
+
+# Ablación de representación (espejo del brazo no-width del paper del GP):
+# con DEEPLJSP_V2_WORSTCASE_ONLY=1 el encoder colapsa cada intervalo a su
+# peor caso (lower := upper), de modo que las features de anchura son cero
+# y la política queda ciega a la incertidumbre. Mismas dimensiones, misma
+# red; el entorno sigue ejecutando la semántica de intervalos.
 
 
 def _lo(x) -> float:
@@ -30,6 +38,8 @@ class StateEncoder:
 
     def __init__(self, env):
         self.env = env
+        self.worstcase_only = os.environ.get(
+            "DEEPLJSP_V2_WORSTCASE_ONLY", "") == "1"
 
         # Factor de normalización temporal: LB del problema (peor caso si es
         # intervalo). Toda feature temporal se divide por él.
@@ -49,6 +59,7 @@ class StateEncoder:
              global_feats (GLOBAL_FEATURE_DIM,) float32)
         """
         env, lb = self.env, self.lb
+        lo_f = _up if self.worstcase_only else _lo
         eligible = state["eligible_ops"]
         job_status = state["job_status"]
         jc = state["job_completion_time"]
@@ -67,7 +78,7 @@ class StateEncoder:
             scheduled += k0
             for k in range(k0, nm):
                 d = env.durations[j][k]
-                lo, up = _lo(d), _up(d)
+                lo, up = lo_f(d), _up(d)
                 machine_load[env.sequences[j][k]] += up
                 job_rem_total[j] += up
                 pending_width += up - lo
@@ -90,14 +101,14 @@ class StateEncoder:
             m = env.sequences[j][k]
             d = env.durations[j][k]
 
-            d_lo, d_up = _lo(d), _up(d)
+            d_lo, d_up = lo_f(d), _up(d)
             d_mid = (d_lo + d_up) / 2.0
 
-            est_lo = max(_lo(jc[j]), _lo(mc[m]))
+            est_lo = max(lo_f(jc[j]), lo_f(mc[m]))
             est_up = est_up_by_job[j]
             est_mid = (est_lo + est_up) / 2.0
 
-            rem_lo = sum(_lo(env.durations[j][q]) for q in range(k + 1, nm))
+            rem_lo = sum(lo_f(env.durations[j][q]) for q in range(k + 1, nm))
             rem_up = sum(_up(env.durations[j][q]) for q in range(k + 1, nm))
 
             rows.append([

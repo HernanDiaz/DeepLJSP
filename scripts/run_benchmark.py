@@ -50,6 +50,19 @@ TIERS = {
         "episodes": 100,
         "seeds": [2, 3, 4],
     },
+    # Control del punto medio (espejo del control del paper del GP): las
+    # instancias crisp SON el escenario del punto medio de sus versiones
+    # intervalares (perturbacion simetrica), asi que entrenar en crisp y
+    # evaluar en intervalo mide que aporta entrenar con intervalos.
+    "midpoint": {
+        "train": ["tai20_15_01", "tai20_15_02", "tai20_15_03", "tai20_15_04"],
+        "eval": [
+            "int__tai20_15_05", "int__tai20_15_06", "int__tai20_15_07",
+            "int__tai20_15_08", "int__tai20_15_09", "int__tai20_15_10",
+        ],
+        "episodes": 1000,
+        "seeds": [2, 3, 4],
+    },
 }
 
 
