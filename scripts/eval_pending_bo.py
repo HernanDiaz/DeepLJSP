@@ -76,7 +76,9 @@ def corre(salida, trabajos, n_samples):
         with open(salida, encoding="utf-8") as f:
             hechas = {(r["checkpoint"], r["instance"])
                       for r in csv.DictReader(f)}
-    nuevo = not os.path.exists(salida)
+    # cabecera si el fichero no existe O esta vacio (un proceso matado
+    # antes del primer flush deja un fichero de 0 bytes)
+    nuevo = not os.path.exists(salida) or os.path.getsize(salida) == 0
     with open(salida, "a", encoding="utf-8", newline="") as f:
         w = csv.writer(f)
         if nuevo:
