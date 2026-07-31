@@ -9,6 +9,8 @@
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 \usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
 
 % la clase carga hyperref; DOIs como enlaces completos, como pide la guia
 \providecommand{\doi}[1]{\href{https://doi.org/#1}{\nolinkurl{https://doi.org/#1}}}
@@ -274,6 +276,23 @@ midpoint-scenario bound).
 \section{Method}
 \label{sec:method}
 
+Figure~\ref{fig:arch} summarizes the decision loop. At every step the
+policy observes the partial schedule and the set of eligible
+operations---the next unscheduled operation of each unfinished job.
+Each candidate is described by $16$ dimensionless quantities and the
+overall shop state by $12$ more
+(Section~\ref{sec:features}). A shared network embeds every candidate
+independently; the embeddings are pooled into a single context vector
+that summarizes the decision as a whole; and a scoring head rates each
+candidate against that context, yielding a probability distribution
+over the eligible operations (Section~\ref{sec:arch}). The sampled or
+argmax choice is scheduled at its earliest feasible interval start
+(Eq.~\eqref{eq:semiactive}), and the loop repeats until all $nm$
+operations are placed. Training adjusts the shared weights with PPO
+from episode rewards (Section~\ref{sec:training}); because no weight
+dimension depends on $n$ or $m$, the same trained network dispatches
+instances of any size.
+
 \subsection{Dispatching as a Markov decision process}
 \label{sec:mdp}
 
@@ -287,16 +306,25 @@ applies Eq.~\eqref{eq:semiactive}. Episodes always terminate after $nm$
 steps.
 
 The \emph{reward} is a weighted sum of six shaping components, each
-collapsing intervals by their worst case (upper bound): a terminal
-makespan term (weight $1.0$; negative scaled makespan plus a bonus
-within $5\%$ of the instance bound), a dense local-improvement term
-(weight $0.3$; the step change of the projected makespan, penalizing
-deteriorations twice as much as it rewards improvements), machine
-idleness (weight $0.15$), machine load balance (weight $0.15$),
-operation criticality (weight $0.05$) and job progress (weight $0.05$).
-The weights were tuned through the benchmark-gated protocol of
-Section~\ref{sec:protocol}; component scales adapt automatically to each
-instance through its lower bound.
+collapsing intervals by their worst case (upper bound); component
+scales adapt automatically to each instance through its lower bound,
+and the weights were tuned through the benchmark-gated protocol of
+Section~\ref{sec:protocol}:
+\begin{itemize}
+\item \emph{terminal makespan} (weight $1.0$): the negative scaled
+  makespan at episode end, plus a bonus when the schedule lands within
+  $5\%$ of the instance bound---the quantity actually being minimized;
+\item \emph{local improvement} (weight $0.3$): the step change of the
+  projected makespan, penalizing deteriorations twice as much as it
+  rewards improvements---a dense signal so early decisions are not
+  credited only $nm$ steps later;
+\item \emph{machine idleness} ($0.15$) and \emph{load balance}
+  ($0.15$): discourage gaps on machines and lopsided load, the classic
+  proxies for a compact schedule;
+\item \emph{operation criticality} ($0.05$) and \emph{job progress}
+  ($0.05$): small nudges towards operations on the emerging critical
+  path and towards finishing what is started.
+\end{itemize}
 
 \subsection{Dimensionless, uncertainty-aware features}
 \label{sec:features}
@@ -365,17 +393,75 @@ total load & $\sum_\mu L(\mu)/(\mathrm{LB}\cdot m)$ \\
 \subsection{Size-invariant architecture}
 \label{sec:arch}
 
+\begin{figure}[t]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[
+  font=\small,
+  caja/.style={draw, rounded corners=2pt, align=center,
+               minimum height=7mm, inner sep=3pt},
+  flecha/.style={->, >=stealth}]
+\node[caja] (ops) {eligible ops\\ $|\mathcal{E}|\times 16$};
+\node[caja, right=9mm of ops] (phi) {shared MLP $\phi$\\ (weights
+  independent\\ of $n$, $m$)};
+\node[caja, right=9mm of phi] (emb) {embeddings\\ $|\mathcal{E}|\times h$};
+\node[caja, right=9mm of emb, yshift=7mm] (pool) {mean $+$ max\\ pooling};
+\node[caja, below=4mm of pool] (glob) {global state\\ $12$};
+\node[caja, right=9mm of pool, yshift=-5.5mm] (ctx) {$\mathrm{MLP}_{ctx}$\\
+  context $g$};
+\node[caja, right=10mm of ctx, yshift=7mm] (pol) {$\mathrm{MLP}_{\pi}([\phi_i;g])$\\
+  masked softmax};
+\node[caja, below=4mm of pol] (val) {$\mathrm{MLP}_{V}(g)$};
+\node[right=6mm of pol] (pi) {$\pi(i\,|\,s)$};
+\node[right=6mm of val] (v) {$V(s)$};
+\draw[flecha] (ops) -- (phi);
+\draw[flecha] (phi) -- (emb);
+\draw[flecha] (emb) -- (pool);
+\draw[flecha] (pool.east) -- (ctx.west |- pool.east) -- (ctx);
+\draw[flecha] (glob.east) -- (ctx.west |- glob.east) -- (ctx);
+\draw[flecha] (ctx) -- (pol);
+\draw[flecha] (ctx) -- (val);
+\draw[flecha] (emb.north) to[out=35, in=160] (pol.north west);
+\draw[flecha] (pol) -- (pi);
+\draw[flecha] (val) -- (v);
+\end{tikzpicture}}
+\caption{The size-invariant network. Every eligible operation is
+embedded by the same MLP $\phi$; mean and max pooling collapse the
+variable-size candidate set into fixed-size summaries that, joined
+with the global features, form the context $g$. The policy head
+scores each candidate embedding against $g$; the value head reads $g$
+alone. No dimension depends on the numbers of jobs or machines.}
+\label{fig:arch}
+\end{figure}
+
+
 Let $x_i\in\mathbb{R}^{16}$ be the features of eligible operation $i$
-and $g_0\in\mathbb{R}^{12}$ the global features. A shared two-layer MLP
-$\phi$ (width $h{=}128$, LayerNorm, ReLU, orthogonal initialization)
-embeds each candidate, $\phi_i=\phi(x_i)$. The context vector aggregates
-the candidate set permutation-invariantly~\citep{Zaheer2017}:
+and $g_0\in\mathbb{R}^{12}$ the global features (Figure~\ref{fig:arch}).
+The construction has three stages.
+
+\emph{Embed.} A shared two-layer MLP $\phi$ (width $h{=}128$,
+LayerNorm, ReLU, orthogonal initialization) maps each candidate to an
+embedding $\phi_i=\phi(x_i)$. Because the same weights process every
+candidate, the layer accepts any number of them---this is where size
+invariance over jobs comes from.
+
+\emph{Pool into a context.} The variable-size set
+$\{\phi_1,\dots,\phi_{|\mathcal{E}|}\}$ must be summarized into a
+fixed-size vector before anything global can be computed. Mean and max
+pooling provide two complementary permutation-invariant
+summaries~\citep{Zaheer2017}---the average candidate and the extreme
+one---which, concatenated with the global features $g_0$, are mixed
+into the context:
 \begin{equation}
 g=\mathrm{MLP}_{ctx}\big(\big[\textstyle\frac1{|\mathcal{E}|}\sum_i\phi_i;\;
 \max_i\phi_i;\;g_0\big]\big)\in\mathbb{R}^{h}.
 \end{equation}
-The \emph{policy head} scores each candidate and applies a masked
-softmax, and the \emph{value head} reads the context alone:
+\emph{Score.} The \emph{policy head} rates each pair (candidate
+embedding, context)---``how good is operation $i$ given the decision
+as a whole''---and a softmax over the true candidates (padding masked
+out) turns the scores into probabilities. The \emph{value head}
+estimates the expected return from the context alone, since the
+baseline of PPO needs the state, not the candidates:
 \begin{equation}
 \pi(i\,|\,s)=\mathrm{softmax}_i\,\mathrm{MLP}_{\pi}([\phi_i;g]),
 \qquad
