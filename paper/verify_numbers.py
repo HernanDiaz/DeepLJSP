@@ -283,7 +283,24 @@ check("politica greedy sobre las 70 (texto 19.4)", 19.4,
 pendiente("best-of-1024 = 12.7 sobre las 70",
           "sin CSV localizado (solo fair_gp_eps.csv, que es del GP)")
 pendiente("a 2.2-4.6 puntos del fEABC por clase",
-          "necesita las medias por clase de fEABC y el bo1024 por clase")
+          "necesita el bo1024 por clase (los publicados ya estan)")
+
+# los publicados por instancia del suplemento (compare_pools_published)
+_pub = {}
+_t = open("scripts/compare_pools_published.py", encoding="utf-8").read()
+exec(re.search(r"(FEABC_BEST.*?)(?=\n# |\ndef |\Z)", _t, re.S).group(1),
+     {}, _pub)
+feabc_clases = [sum(_pub["FEABC_AVG"][i * 10:(i + 1) * 10]) / 10
+                for i in range(7)]
+ts_clases = [sum(_pub["TS_AVG"][i * 10:(i + 1) * 10]) / 10
+             for i in range(7)]
+check_exacto("intro: metaheuristicas ~0-16% por clase y metodo",
+             min(ts_clases) < 0.5 and 15.5 <= max(feabc_clases) <= 16.5,
+             f"TS {min(ts_clases):.1f} .. fEABC {max(feabc_clases):.1f}")
+check("posicionamiento: TS medio (texto 3.7)", 3.7,
+      sum(_pub["TS_AVG"]) / 70)
+check("posicionamiento: fEABC medio (texto 9.4)", 9.4,
+      sum(_pub["FEABC_AVG"]) / 70)
 
 # =========================================================================
 print("\n== coste computacional ==")

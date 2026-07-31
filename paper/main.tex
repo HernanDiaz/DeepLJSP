@@ -91,7 +91,8 @@ per-instance metaheuristic search: artificial bee colony
 algorithms~\citep{DiazFEABC2023,DiazICAE2023} and irace-tuned tabu search
 with dedicated neighbourhood structures~\citep{DiazTS2026} reach mean
 relative errors (RE, measured against crisp Taillard lower bounds)
-between roughly $0\%$ and $14\%$ depending on the size class. The price
+between roughly $0\%$ and $16\%$ depending on the method and the size
+class. The price
 is structural: every new instance restarts the search from scratch, for
 seconds to minutes per run on dedicated hardware.
 
@@ -719,7 +720,8 @@ $2.2$--$4.6$ points of the fEABC 30-run average per class, and behind
 tuned tabu search everywhere. The policy's standalone RE ($13.4\%$
 in-size; $7$--$25\%$ zero-shot) thus sits between dispatching rules
 ($42.3\%$ for the best of them, EST) and per-instance metaheuristics
-($4$--$10\%$)---establishing, for the IJSP, the computational-class
+($3.7\%$ mean RE for the tuned tabu search and $9.4\%$ for fEABC,
+30-run averages)---establishing, for the IJSP, the computational-class
 trade-off documented for the deterministic JSP~\citep{Zhang2020L2D}.
 
 \section{Conclusions and Future Work}
