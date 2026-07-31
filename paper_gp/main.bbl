@@ -8,47 +8,65 @@
 \bibitem{Allahverdi2022}
 A.~Allahverdi, A survey of scheduling problems with uncertain interval/bounded
   processing/setup times, Journal of Project Management 7~(4) (2022) 255--264.
+\newblock \href {https://doi.org/10.5267/j.jpm.2022.3.003}
+  {\path{doi:10.5267/j.jpm.2022.3.003}}.
 
 \bibitem{DiazGA2020}
 H.~D{\'i}az, I.~Gonz{\'a}lez-Rodr{\'i}guez, J.~J. Palacios, I.~D{\'i}az, C.~R.
   Vela, A genetic approach to the job shop scheduling problem with interval
   uncertainty, in: Information Processing and Management of Uncertainty in
   Knowledge-Based Systems ({IPMU}), Springer, 2020, pp. 663--676.
+\newblock \href {https://doi.org/10.1007/978-3-030-50143-3_52}
+  {\path{doi:10.1007/978-3-030-50143-3_52}}.
 
 \bibitem{DiazFEABC2023}
 H.~D{\'i}az, J.~J. Palacios, I.~Gonz{\'a}lez-Rodr{\'i}guez, C.~R. Vela, Fast
   elitist {ABC} for makespan optimisation in interval {JSP}, Natural Computing
   22~(4) (2023) 645--657.
+\newblock \href {https://doi.org/10.1007/s11047-023-09953-2}
+  {\path{doi:10.1007/s11047-023-09953-2}}.
 
 \bibitem{DiazICAE2023}
 H.~D{\'i}az, J.~J. Palacios, I.~Gonz{\'a}lez-Rodr{\'i}guez, C.~R. Vela, An
   elitist seasonal artificial bee colony algorithm for the interval job shop,
   Integrated Computer-Aided Engineering 30~(3) (2023) 223--242.
+\newblock \href {https://doi.org/10.3233/ica-230705}
+  {\path{doi:10.3233/ica-230705}}.
 
 \bibitem{Branke2016}
 J.~Branke, S.~Nguyen, C.~W. Pickardt, M.~Zhang, Automated design of production
   scheduling heuristics: a review, IEEE Transactions on Evolutionary
   Computation 20~(1) (2016) 110--124.
+\newblock \href {https://doi.org/10.1109/tevc.2015.2429314}
+  {\path{doi:10.1109/tevc.2015.2429314}}.
 
 \bibitem{Nguyen2017}
 S.~Nguyen, Y.~Mei, M.~Zhang, Genetic programming for production scheduling: a
   survey with a unified framework, Complex \& Intelligent Systems 3~(1) (2017)
   41--66.
+\newblock \href {https://doi.org/10.1007/s40747-017-0036-x}
+  {\path{doi:10.1007/s40747-017-0036-x}}.
 
 \bibitem{Palacios2015}
 J.~J. Palacios, I.~Gonz{\'a}lez-Rodr{\'i}guez, C.~R. Vela, J.~Puente,
   Coevolutionary makespan optimisation through different ranking methods for
   the fuzzy flexible job shop, Fuzzy Sets and Systems 278 (2015) 81--97.
+\newblock \href {https://doi.org/10.1016/j.fss.2014.12.003}
+  {\path{doi:10.1016/j.fss.2014.12.003}}.
 
 \bibitem{Allahverdi2014}
 A.~Allahverdi, H.~Aydilek, A.~Aydilek, Single machine scheduling problem with
   interval processing times to minimize mean weighted completion time,
   Computers \& Operations Research 51 (2014) 200--207.
+\newblock \href {https://doi.org/10.1016/j.cor.2014.06.003}
+  {\path{doi:10.1016/j.cor.2014.06.003}}.
 
 \bibitem{Xu2023}
 W.~Xu, W.~Wu, Y.~Wang, Y.~He, Z.~Lei, Flexible job-shop scheduling method based
   on interval grey processing time, Applied Intelligence 53 (2023)
   14876--14891.
+\newblock \href {https://doi.org/10.1007/s10489-022-04213-9}
+  {\path{doi:10.1007/s10489-022-04213-9}}.
 
 \bibitem{Zheng2024}
 P.~Zheng, S.~Xiao, P.~Zhang, Y.~Lv, A two-individual-based evolutionary
@@ -68,6 +86,8 @@ S.~Af{\c{s}}ar, J.~Puente, J.~J. Palacios, I.~Gonz{\'a}lez-Rodr{\'i}guez, C.~R.
 Y.~N. Sotskov, T.-C. Lai, F.~Werner, Measures of problem uncertainty for
   scheduling with interval processing times, OR Spectrum 35~(3) (2013)
   659--689.
+\newblock \href {https://doi.org/10.1007/s00291-012-0306-3}
+  {\path{doi:10.1007/s00291-012-0306-3}}.
 
 \bibitem{Sotskov2020}
 Y.~N. Sotskov, N.~M. Matsveichuk, V.~D. Hatsura, Schedule execution for
@@ -80,6 +100,8 @@ Y.~N. Sotskov, N.~M. Matsveichuk, V.~D. Hatsura, Schedule execution for
 D.~Lei, Population-based neighborhood search for job shop scheduling with
   interval processing time, Computers \& Industrial Engineering 61~(4) (2011)
   1200--1208.
+\newblock \href {https://doi.org/10.1016/j.cie.2011.07.010}
+  {\path{doi:10.1016/j.cie.2011.07.010}}.
 
 \bibitem{DiazTardiness2022}
 H.~D{\'i}az, J.~J. Palacios, I.~D{\'i}az, C.~R. Vela,
@@ -91,10 +113,14 @@ H.~D{\'i}az, J.~J. Palacios, I.~D{\'i}az, C.~R. Vela,
 \bibitem{Panwalkar1977}
 S.~S. Panwalkar, W.~Iskander, A survey of scheduling rules, Operations Research
   25~(1) (1977) 45--61.
+\newblock \href {https://doi.org/10.1287/opre.25.1.45}
+  {\path{doi:10.1287/opre.25.1.45}}.
 
 \bibitem{Haupt1989}
 R.~Haupt, A survey of priority rule-based scheduling, OR Spektrum 11~(1) (1989)
   3--16.
+\newblock \href {https://doi.org/10.1007/bf01721162}
+  {\path{doi:10.1007/bf01721162}}.
 
 \bibitem{Durasevic2018}
 M.~{\DJ}ura{\v{s}}evi{\'c}, D.~Jakobovi{\'c}, A survey of dispatching rules for
@@ -106,14 +132,20 @@ M.~{\DJ}ura{\v{s}}evi{\'c}, D.~Jakobovi{\'c}, A survey of dispatching rules for
 \bibitem{Giffler1960}
 B.~Giffler, G.~L. Thompson, Algorithms for solving production-scheduling
   problems, Operations Research 8~(4) (1960) 487--503.
+\newblock \href {https://doi.org/10.1287/opre.8.4.487}
+  {\path{doi:10.1287/opre.8.4.487}}.
 
 \bibitem{Adams1988}
 J.~Adams, E.~Balas, D.~Zawack, The shifting bottleneck procedure for job shop
   scheduling, Management Science 34~(3) (1988) 391--401.
+\newblock \href {https://doi.org/10.1287/mnsc.34.3.391}
+  {\path{doi:10.1287/mnsc.34.3.391}}.
 
 \bibitem{Carlier1982}
 J.~Carlier, The one-machine sequencing problem, European Journal of Operational
   Research 11~(1) (1982) 42--47.
+\newblock \href {https://doi.org/10.1016/s0377-2217(82)80007-6}
+  {\path{doi:10.1016/s0377-2217(82)80007-6}}.
 
 \bibitem{Koza1992}
 J.~R. Koza, Genetic Programming: On the Programming of Computers by Means of
@@ -150,21 +182,29 @@ S.~Nguyen, M.~Zhang, M.~Johnston, K.~C. Tan, Automatic design of scheduling
 F.~J. Gil-Gala, C.~Menc{\'i}a, M.~R. Sierra, R.~Varela, Learning ensembles of
   priority rules for online scheduling by hybrid evolutionary algorithms,
   Integrated Computer-Aided Engineering 28~(1) (2021) 65--80.
+\newblock \href {https://doi.org/10.3233/ica-200634}
+  {\path{doi:10.3233/ica-200634}}.
 
 \bibitem{GilGala2025SSHE}
 F.~J. Gil-Gala, M.~{\DJ}ura{\v{s}}evi{\'c}, M.~R. Sierra, R.~Varela, Tree
   search hyper-heuristic with application to combinatorial optimization,
   Journal of Heuristics 31 (2025) 25.
+\newblock \href {https://doi.org/10.1007/s10732-025-09560-7}
+  {\path{doi:10.1007/s10732-025-09560-7}}.
 
 \bibitem{Karunakaran2017}
 D.~Karunakaran, Y.~Mei, G.~Chen, M.~Zhang, Dynamic job shop scheduling under
   uncertainty using genetic programming, in: Intelligent and Evolutionary
   Systems, Springer, 2017, pp. 195--210.
+\newblock \href {https://doi.org/10.1007/978-3-319-49049-6_14}
+  {\path{doi:10.1007/978-3-319-49049-6_14}}.
 
 \bibitem{Xu2025}
 M.~Xu, Y.~Mei, F.~Zhang, M.~Zhang, Learn to optimise for job shop scheduling: a
   survey with comparison between genetic programming and reinforcement
   learning, Artificial Intelligence Review 58 (2025) 160.
+\newblock \href {https://doi.org/10.1007/s10462-024-11059-9}
+  {\path{doi:10.1007/s10462-024-11059-9}}.
 
 \bibitem{Zhang2020L2D}
 C.~Zhang, W.~Song, Z.~Cao, J.~Zhang, P.~S. Tan, C.~Xu, Learning to dispatch for
@@ -176,6 +216,8 @@ J.~Park, J.~Chun, S.~H. Kim, Y.~Kim, J.~Park, Learning to schedule job-shop
   problems: representation and policy learning using graph neural network and
   reinforcement learning, International Journal of Production Research 59~(11)
   (2021) 3360--3377.
+\newblock \href {https://doi.org/10.1080/00207543.2020.1870013}
+  {\path{doi:10.1080/00207543.2020.1870013}}.
 
 \bibitem{Moore2009}
 R.~E. Moore, R.~B. Kearfott, M.~J. Cloud, Introduction to Interval Analysis,
@@ -187,6 +229,8 @@ R.~E. Moore, R.~B. Kearfott, M.~J. Cloud, Introduction to Interval Analysis,
 A.~Sprecher, R.~Kolisch, A.~Drexl, Semi-active, active, and non-delay schedules
   for the resource-constrained project scheduling problem, European Journal of
   Operational Research 80~(1) (1995) 94--102.
+\newblock \href {https://doi.org/10.1016/0377-2217(93)e0294-8}
+  {\path{doi:10.1016/0377-2217(93)e0294-8}}.
 
 \bibitem{Ishibuchi1990}
 H.~Ishibuchi, H.~Tanaka, Multiobjective programming in optimization of the
@@ -218,6 +262,8 @@ F.~J. Gil-Gala, M.~{\DJ}ura{\v{s}}evi{\'c}, M.~R. Sierra, J.~Puente, Greedy
   randomised adaptive solution builder using priority rules, in: Proceedings of
   the Genetic and Evolutionary Computation Conference Companion ({GECCO} '25),
   ACM, 2025, pp. 211--214.
+\newblock \href {https://doi.org/10.1145/3712255.3726547}
+  {\path{doi:10.1145/3712255.3726547}}.
 
 \bibitem{FisherThompson1963}
 H.~Fisher, G.~L. Thompson, Probabilistic learning combinations of local
@@ -241,5 +287,7 @@ M.~L{\'o}pez-Ib{\'a}{\~n}ez, J.~Dubois-Lacoste, L.~P{\'e}rez~C{\'a}ceres,
 \bibitem{Keijzer2003}
 M.~Keijzer, Improving symbolic regression with interval arithmetic and linear
   scaling, in: Genetic Programming ({EuroGP}), Springer, 2003, pp. 70--82.
+\newblock \href {https://doi.org/10.1007/3-540-36599-0_7}
+  {\path{doi:10.1007/3-540-36599-0_7}}.
 
 \end{thebibliography}
