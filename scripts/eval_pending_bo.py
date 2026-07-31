@@ -113,8 +113,13 @@ def main():
         # protocolo del borrador: el pool mezcla las tres semillas; aqui
         # 342+341+341 muestras por instancia, el mejor global se decide
         # al agregar (columna mid_comp minima por instancia)
+        # las 70 del benchmark: interval Taillard CON cota de literatura
+        # (el registro tambien tiene las 100x20, fuera del benchmark)
         universo = sorted(k for k in PROBLEM_REGISTRY
-                          if k.startswith("int__tai"))
+                          if k.startswith("int__tai")
+                          and not k.startswith("int__tai100")
+                          and lb_for_problem_name(k) is not None)
+        assert len(universo) == 70, f"esperaba 70, hay {len(universo)}"
         trabajos = [(c, i) for i in universo for c in CKPTS_FINALES]
         corre("benchmarks/eval_fair_bo1024.csv", trabajos, 342)
     else:
