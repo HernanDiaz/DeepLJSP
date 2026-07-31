@@ -8,43 +8,43 @@ Database file #1: refs.bib
 Warning--empty pages in Zhang2020L2D
 You've used 43 entries,
             2952 wiz_defined-function locations,
-            1014 strings with 14023 characters,
-and the built_in function-call counts, 14462 in all, are:
-= -- 1457
+            1015 strings with 14031 characters,
+and the built_in function-call counts, 14544 in all, are:
+= -- 1468
 > -- 449
 < -- 5
 + -- 178
 - -- 135
-* -- 1185
-:= -- 1918
+* -- 1201
+:= -- 1925
 add.period$ -- 81
 call.type$ -- 43
 change.case$ -- 42
 chr.to.int$ -- 0
 cite$ -- 44
 duplicate$ -- 404
-empty$ -- 1576
+empty$ -- 1583
 format.name$ -- 171
-if$ -- 3684
+if$ -- 3700
 int.to.chr$ -- 0
 int.to.str$ -- 43
 missing$ -- 45
 newline$ -- 175
 num.names$ -- 45
-pop$ -- 236
+pop$ -- 234
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
 skip$ -- 924
 stack$ -- 0
-substring$ -- 866
+substring$ -- 891
 swap$ -- 153
 text.length$ -- 5
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
 warning$ -- 1
-while$ -- 119
+while$ -- 121
 width$ -- 45
 write$ -- 432
 (There was 1 warning)
