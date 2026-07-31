@@ -413,5 +413,105 @@ check_exacto("mas presupuesto -> mejor transferencia en ambas",
              and _c300["TA51"] > sum(_cs["TA51"]) / 3)
 
 # =========================================================================
+print("\n== robustez ejecucional (eval_eps_policy.csv, x1000) ==")
+_eps = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_eps_policy.csv", encoding="utf-8")):
+    m = r["method"]
+    g = ("policy-greedy" if m.startswith("policy-greedy") else
+         "policy-bo64" if m.startswith("policy-bo64") else m)
+    _eps.setdefault(g, {}).setdefault(r["instance"], []).append(
+        float(r["eps"]) * 1000)
+_eps = {g: {i: sum(v) / len(v) for i, v in d.items()}
+        for g, d in _eps.items()}
+for g, v_tex in [("MOR", 7.0), ("GT-MWKR", 6.9), ("EST", 6.3),
+                 ("policy-greedy", 6.1), ("policy-bo64", 6.1)]:
+    vals = list(_eps[g].values())
+    check(f"eps x1000 {g} (texto {v_tex})", v_tex, sum(vals) / len(vals))
+_ii = sorted(_eps["EST"])
+for g, gana_tex in [("MOR", 15), ("GT-MWKR", 14), ("EST", 9)]:
+    gana = sum(_eps[g][i] > _eps["policy-bo64"][i] for i in _ii)
+    check_exacto(f"bo64 mas robusto que {g} en {gana_tex}/15",
+                 gana == gana_tex, f"{gana}/15")
+try:
+    from scipy import stats as _st
+    d = [_eps["EST"][i] - _eps["policy-bo64"][i] for i in _ii]
+    p = _st.wilcoxon(d)[1]
+    check_exacto("frente a EST no significativo (p=0.36)",
+                 0.3 <= p <= 0.45, f"p={p:.3f}")
+except ImportError:
+    pendiente("Wilcoxon eps vs EST", "sin scipy")
+
+print("\n== clasicas (tab:classics) ==")
+_clas = {r["inst"]: r for r in __import__("csv").DictReader(
+    open("benchmarks/classic12_tuned.csv", encoding="utf-8"))}
+_est12 = {r["inst"]: float(r["est_re"]) for r in __import__("csv").DictReader(
+    open("benchmarks/classic12_est.csv", encoding="utf-8"))}
+_pol12 = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_classic12_policy.csv", encoding="utf-8")):
+    _pol12.setdefault(r["name"], []).append(float(r["re"]))
+TAB_CLASSICS = {
+    "FT10": (32.6, 41.8, 32.2, 8.5, 6.3, 5.2, 4.1, 3.5, 3.0),
+    "FT20": (27.7, 43.5, 40.0, 5.8, 4.4, 4.4, 1.7, 1.8, 1.8),
+    "La21": (40.2, 48.7, 24.1, 12.6, 10.4, 5.0, 5.0, 4.2, 4.0),
+    "La24": (42.2, 34.3, 26.3, 11.9, 10.9, 6.3, 5.1, 4.9, 5.0),
+    "La25": (36.6, 47.4, 16.9, 9.6, 9.2, 5.1, 3.9, 3.4, 2.7),
+    "La27": (47.2, 45.0, 34.8, 11.3, 10.9, 10.2, 4.7, 4.6, 4.1),
+    "La29": (47.9, 46.4, 24.5, 16.6, 14.0, 14.2, 8.6, 7.4, 7.0),
+    "La38": (54.8, 47.7, 27.0, 12.8, 11.7, 9.2, 6.9, 6.1, 5.8),
+    "La40": (20.9, 41.6, 27.9, 9.3, 8.1, 8.7, 4.2, 4.6, 4.1),
+    "ABZ7": (51.6, 36.1, 28.7, 13.4, 12.0, 12.5, 7.3, 6.6, 6.7),
+    "ABZ8": (43.0, 57.7, 36.9, 17.3, 16.9, 18.5, 12.1, 11.1, 10.9),
+    "ABZ9": (42.7, 59.0, 41.8, 19.2, 18.8, 18.0, 13.1, 11.6, 11.2),
+}
+fallos_clas = 0
+for inst, fila in TAB_CLASSICS.items():
+    c = _clas[inst]
+    reales = (_est12[inst], float(c["mor"]), float(c["gt"]),
+              sum(_pol12[inst]) / len(_pol12[inst]), min(_pol12[inst]),
+              float(c["GA"]), float(c["ABCE3"]), float(c["fEABC"]),
+              float(c["ESABC"]))
+    for v_tex, v_dat in zip(fila, reales):
+        if abs(v_tex - v_dat) > 0.051:
+            print(f"  FALLO celda {inst}: texto={v_tex} datos={v_dat:.2f}")
+            fallos_clas += 1
+check_exacto("las 108 celdas de tab:classics", fallos_clas == 0,
+             f"{fallos_clas} celdas mal")
+_medias_pol = [sum(v) / len(v) for v in _pol12.values()]
+check("clasicas: politica media (texto 12.4)", 12.4,
+      sum(_medias_pol) / 12)
+check("clasicas: G&T media (texto 30.1)", 30.1,
+      sum(float(c["gt"]) for c in _clas.values()) / 12)
+for col, v_tex in [("GA", 9.8), ("fEABC", 5.8), ("ESABC", 5.5)]:
+    check(f"clasicas: {col} media (texto {v_tex})", v_tex,
+          sum(float(c[col]) for c in _clas.values()) / 12)
+gana12 = sum(sum(_pol12[i]) / len(_pol12[i]) <
+             min(_est12[i], float(_clas[i]["mor"]), float(_clas[i]["gt"]))
+             for i in _clas)
+check_exacto("la politica gana a las tres reglas en las 12", gana12 == 12,
+             f"{gana12}/12")
+mejor = {i: min(_pol12[i]) for i in _pol12}
+check_exacto("mejor semilla < GA en La40, ABZ7 y ABZ8",
+             all(mejor[i] < float(_clas[i]["GA"])
+                 for i in ("La40", "ABZ7", "ABZ8")))
+
+print("\n== importancia de features ==")
+_imp = {r["feature"]: float(r["delta_puntos"])
+        for r in __import__("csv").DictReader(
+            open("benchmarks/feature_importance.csv", encoding="utf-8"))}
+_base = float(next(__import__("csv").DictReader(
+    open("benchmarks/feature_importance.csv",
+         encoding="utf-8")))["re_base"])
+check("base greedy del test (texto 18.2)", 18.2, _base)
+for f, v_tex in [("holgura", 51.0), ("pos_restante", 28.1),
+                 ("rem_up", 10.6), ("dur_up", 3.9)]:
+    check(f"permutar {f} (texto +{v_tex})", v_tex, _imp[f], tol=0.06)
+check_exacto("las features de anchura no aportan (|delta|<=0.5)",
+             abs(_imp["dur_width_rel"]) <= 0.5
+             and abs(_imp["est_width_rel"]) <= 0.5,
+             f"{_imp['dur_width_rel']:+.2f} / {_imp['est_width_rel']:+.2f}")
+
+# =========================================================================
 print(f"\n{ok_n} comprobaciones correctas, {fallo_n} fallos, "
       f"{pend_n} pendientes de fuente")
