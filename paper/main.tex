@@ -309,14 +309,32 @@ schedule builder of Eq.~\eqref{eq:semiactive}, the interval
 arithmetic, the evaluation) is the same machinery every baseline in
 this paper uses.
 
-Figure~\ref{fig:arch} shows the network, and the rest of the section
-makes each piece precise: Section~\ref{sec:mdp} states the
-construction loop formally (states, actions, rewards);
-Section~\ref{sec:features} describes what the policy \emph{sees},
-i.e.\ how a candidate operation and the shop state become a handful
-of numbers; Section~\ref{sec:arch}, how those numbers become a
-choice; and Section~\ref{sec:training}, how the network is trained
-and used afterwards.
+Figure~\ref{fig:arch} shows the network, read left to right. Each
+eligible operation enters as a row of $16$ numbers that describe it:
+how long it may take, how much work its job still carries, how soon it
+could start (Section~\ref{sec:features}). A small multilayer
+perceptron (MLP)---the \emph{same} one for every candidate---turns
+each row into an \emph{embedding}: a vector of $h$ learned quantities
+that re-describes the candidate in terms the network finds useful.
+The number of candidates varies from step to step, so the embeddings
+are \emph{pooled}: their mean and their componentwise maximum are two
+fixed-size summaries of the whole set (the typical candidate and the
+extreme one). Joined with $12$ numbers describing the shop as a whole
+(the \emph{global state}), these summaries are condensed by another
+MLP into a single \emph{context} vector $g$---the network's picture
+of the current situation. The two heads of the previous paragraph read
+from here. The policy head looks at each candidate's embedding next to
+$g$ and scores it; a \emph{softmax} turns the scores into the
+probabilities $\pi(i\,|\,s)$ (\emph{masked} means that unused
+padding slots are excluded). The value head reads $g$ alone and
+outputs $V(s)$.
+
+The rest of the section makes each stage precise:
+Section~\ref{sec:mdp} states the construction loop formally (states,
+actions, rewards); Section~\ref{sec:features} defines the $16{+}12$
+input quantities; Section~\ref{sec:arch}, the three network stages;
+and Section~\ref{sec:training}, how the network is trained and used
+afterwards.
 
 \begin{figure}[t]
 \centering
@@ -477,7 +495,7 @@ $x_i\in\mathbb{R}^{16}$ be the features of eligible operation $i$ and
 $g_0\in\mathbb{R}^{12}$ the global features; the construction has
 three stages (Figure~\ref{fig:arch}).
 
-\emph{Embed.} A shared two-layer MLP $\phi$ (width $h{=}128$,
+\emph{Embed.} The shared two-layer MLP $\phi$ (width $h{=}128$,
 LayerNorm, ReLU, orthogonal initialization) maps each candidate to an
 embedding $\phi_i=\phi(x_i)$. Because the same weights process every
 candidate, the layer accepts any number of them---this is where size
