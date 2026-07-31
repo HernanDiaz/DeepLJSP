@@ -539,12 +539,15 @@ near-equivalent configurations.
 
 Constructive baselines comprise priority dispatching rules (SPT, LPT,
 MOR, MWKR, with lexicographic interval comparisons; MOR is uniformly the
-strongest of the four) and the Giffler--Thompson active schedule
+strongest of the four), the earliest-start rule EST, and the
+Giffler--Thompson active schedule
 generator~\citep{GifflerThompson1960} with rule tie-breaks inside the
 machine conflict set. G\&T with MWKR tie-break is the strongest
 deterministic constructive baseline on this benchmark: $29.5\%$ mean RE
-across the 70 instances, versus $45.5\%$ for plain MOR dispatching (the
-SPT tie-break variant performs poorly, $70.6\%$). Published IJSP
+across the 70 instances, versus $42.3\%$ for EST---the strongest plain
+rule overall, though weaker than MOR on the $20{\times}15$ training
+class---and $45.5\%$ for MOR (the SPT tie-break variant performs
+poorly, $70.6\%$). Published IJSP
 metaheuristics (fEABC~\citep{DiazFEABC2023}, ESABC~\citep{DiazICAE2023},
 TS~\citep{DiazTS2026}; 30 runs and minutes of per-instance search on
 dedicated hardware) are included as reference yardsticks from a
@@ -705,13 +708,16 @@ representation changes must be co-designed with optimization.
 Training the final model takes $66$--$123$ minutes per seed across
 the three seeds ($4{\times}1000$ episodes) on a commodity CPU; constructing a solution
 takes milliseconds (greedy) to a few seconds (best-of-64 on
-$50{\times}20$). Raising the inference budget to best-of-$1024$ brings
+$50{\times}20$). Per-instance comparisons are one-sided: a single
+greedy pass already improves on MOR, EST and G\&T-MWKR on each of the
+70 instances (paired Wilcoxon, $p<10^{-12}$; matched-pairs rank-biserial
+correlation $1$). Raising the inference budget to best-of-$1024$ brings
 the full-benchmark mean RE to $12.7\%$ over the 70 instances---ahead of
 every deterministic constructive baseline on every instance, within
 $2.2$--$4.6$ points of the fEABC 30-run average per class, and behind
 tuned tabu search everywhere. The policy's standalone RE ($13.4\%$
 in-size; $7$--$25\%$ zero-shot) thus sits between dispatching rules
-(${\approx}46\%$) and per-instance metaheuristics
+($42.3\%$ for the best of them, EST) and per-instance metaheuristics
 ($4$--$10\%$)---establishing, for the IJSP, the computational-class
 trade-off documented for the deterministic JSP~\citep{Zhang2020L2D}.
 

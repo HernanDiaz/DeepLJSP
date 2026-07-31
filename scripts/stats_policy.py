@@ -23,12 +23,15 @@ if hasattr(sys.stdout, "reconfigure"):
 
 
 def carga_baselines():
-    """{TA: (lb, MOR_re, GT_re)} y el mapa instancia->TA."""
+    """{TA: (lb, MOR_re, GT_re, EST_re)}."""
+    est = {r["ta"]: float(r["est_re"])
+           for r in csv.DictReader(open("benchmarks/est_per_instance.csv",
+                                        encoding="utf-8"))}
     filas = {}
     for r in csv.DictReader(open("benchmarks/constructive_per_instance.csv",
                                  encoding="utf-8")):
         filas[r["ta"]] = (float(r["lb"]), float(r["MOR_re"]),
-                          float(r["GT-MWKR_re"]))
+                          float(r["GT-MWKR_re"]), est[r["ta"]])
     return filas
 
 
@@ -86,11 +89,13 @@ def main():
     g = politica_greedy()
     test("vs MOR    ", g, 1, baselines)
     test("vs G&T-MWKR", g, 2, baselines)
+    test("vs EST    ", g, 3, baselines)
     bo = politica_bo1024()
     if bo:
         print("== politica best-of-1024 (mejor por instancia) ==")
         test("vs MOR    ", bo, 1, baselines)
         test("vs G&T-MWKR", bo, 2, baselines)
+        test("vs EST    ", bo, 3, baselines)
         media = sum(bo.values()) / len(bo)
         print(f"  RE medio bo1024 sobre las 70: {media:.2f}%")
 

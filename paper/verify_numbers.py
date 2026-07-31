@@ -125,9 +125,31 @@ en_tex("$29.5\\%$ mean RE")
 check("G&T-MWKR sobre las 70 (texto 29.5)", 29.5, ab["G&T-MWKR"])
 check("MOR sobre las 70 (texto 45.5)", 45.5, ab["MOR"])
 check("G&T-SPT sobre las 70 (texto 70.6)", 70.6, ab["G&T-SPT"])
-if ab["EST"] < ab["MOR"]:
-    print(f"  AVISO EST ({ab['EST']:.1f}) < MOR ({ab['MOR']:.1f}): 'MOR is "
-          "uniformly the strongest' vale solo dentro de {SPT,LPT,MOR,MWKR}")
+check("EST sobre las 70 (texto 42.3)", 42.3, ab["EST"])
+check_exacto("EST es la mejor regla suelta sobre las 70",
+             ab["EST"] < min(ab["MOR"], ab["MWKR"], ab["SPT"], ab["LPT"]),
+             f"EST {ab['EST']:.1f}")
+
+# EST en desarrollo es PEOR que MOR: el ~46 del abstract (MOR) sigue siendo
+# la mejor regla en la clase de entrenamiento
+est_pi = {r.split(",")[0]: float(r.split(",")[3])
+          for r in open("benchmarks/est_per_instance.csv",
+                        encoding="utf-8").read().splitlines()[1:]}
+est_dev = sum(est_pi[f"TA{k}"] for k in range(15, 21)) / 6
+check_exacto("en desarrollo MOR < EST (sostiene el ~46 del abstract)",
+             est_dev > 46.0, f"EST dev {est_dev:.1f}")
+
+# la frase estadistica de 6.6: greedy gana a MOR, EST y G&T en las 70
+gre = {}
+for r in open("benchmarks/fair_v2_greedy.csv",
+              encoding="utf-8").read().splitlines()[1:]:
+    c = r.split(",")
+    gre.setdefault(ta_de(c[0]), []).append(float(c[3]))
+gre = {ta: sum(v) / len(v) for ta, v in gre.items()}
+for nombre, otro in [("MOR", MOR_RE), ("G&T", GT_RE), ("EST", est_pi)]:
+    gana = sum(gre[ta] < otro[ta] for ta in gre)
+    check_exacto(f"greedy gana a {nombre} en las 70", gana == 70,
+                 f"{gana}/70")
 
 DEV = [f"TA{k}" for k in range(15, 21)]
 mor_dev = sum(MOR_RE[t] for t in DEV) / len(DEV)
