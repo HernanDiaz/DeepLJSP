@@ -242,36 +242,34 @@ for tag_a, tag_b, delta_tex in [("v2-full-300ep", "v2-attn-300ep", 0.9),
 
 # =========================================================================
 print("\n== especialista vs multi-tamano ==")
-ESPECIALISTA = {"TA5": 8.7, "TA25": 15.9, "TA31": 13.9,
-                "TA41": 24.5, "TA61": 15.1}  # tab:crosssize
-CLAIM_12K = {"TA5": 9.5, "TA25": 18.5, "TA41": 28.3}
-for etiqueta, patron in [("matched-total (3000)", "benchmarks/v2-multisize_seed*.json"),
-                         ("matched-per-instance (12k)", "benchmarks/v2-multisize-12k_seed*.json")]:
-    ficheros = sorted(glob.glob(patron))
-    if not ficheros:
-        pendiente(etiqueta, "sin registros")
-        continue
-    acum = {}
-    for f in ficheros:
-        d = json.load(open(f, encoding="utf-8"))
-        for inst, r in d["results"].items():
-            ta = ta_de(inst)
-            lb = r.get("lower_bound_lit") or LB[ta]
-            acum.setdefault(ta, []).append((r["rl_makespan"] - lb) / lb * 100)
-    medias = {ta: sum(v) / len(v) for ta, v in acum.items()}
-    if "12k" in patron:
-        # los registros guardan el mejor makespan de ENTRENAMIENTO; las
-        # celdas del texto (9.5/18.5/28.3) salieron de una evaluacion
-        # best-of-64 de los checkpoints que no quedo registrada
-        for ta, v_tex in CLAIM_12K.items():
-            pendiente(f"multi-12k {ta} (texto {v_tex})",
-                      f"registro de entrenamiento da {medias[ta]:.1f}; "
-                      "falta la eval bo64")
-    comunes = [ta for ta in ESPECIALISTA if ta in medias]
-    gana = [ta for ta in comunes if ESPECIALISTA[ta] < medias[ta]]
-    check_exacto(f"{etiqueta}: especialista gana en las {len(comunes)} comunes",
-                 len(gana) == len(comunes),
-                 f"gana {len(gana)}/{len(comunes)}")
+# bo64, media de 3 semillas, la MISMA agregacion en ambos lados
+_multi = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_multisize_bo64.csv", encoding="utf-8")):
+    brazo = "12k" if "-12k" in r["checkpoint"] else "3000"
+    _multi.setdefault((brazo, ta_de(r["instance"])), []).append(
+        float(r["re_comp"]))
+_multi = {k: sum(v) / len(v) for k, v in _multi.items()}
+_espec = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_crosssize_bo64.csv", encoding="utf-8")):
+    _espec.setdefault(ta_de(r["instance"]), []).append(float(r["re_comp"]))
+_espec = {ta: sum(v) / len(v) for ta, v in _espec.items()}
+CINCO = ["TA5", "TA25", "TA31", "TA41", "TA61"]
+for ta, v_tex in [("TA5", 15.9), ("TA25", 20.0), ("TA41", 30.6)]:
+    check(f"multi-3000 {ta} (texto {v_tex})", v_tex, _multi[("3000", ta)])
+for ta, v_tex in [("TA5", 9.6), ("TA25", 19.4), ("TA41", 28.3),
+                  ("TA61", 15.8)]:
+    check(f"multi-12k {ta} (texto {v_tex})", v_tex, _multi[("12k", ta)])
+for ta, v_tex in [("TA5", 10.5), ("TA25", 15.0), ("TA31", 15.8),
+                  ("TA41", 25.9), ("TA61", 16.8)]:
+    check(f"especialista {ta} (texto {v_tex})", v_tex, _espec[ta])
+gana3000 = sum(_espec[ta] < _multi[("3000", ta)] for ta in CINCO)
+check_exacto("presupuesto total igualado: especialista 5/5",
+             gana3000 == 5, f"{gana3000}/5")
+gana12k = sum(_espec[ta] < _multi[("12k", ta)] for ta in CINCO)
+check_exacto("triple presupuesto: el multi recupera 2 de 5",
+             gana12k == 3, f"especialista gana {gana12k}/5")
 
 # =========================================================================
 print("\n== presupuesto de inferencia y posicionamiento ==")
@@ -386,16 +384,21 @@ check_exacto("campana 2: 295 de 300",
 
 # =========================================================================
 print("\n== tab:crosssize (zero-shot) ==")
-CROSS = {"TA1": (14.4, 29.7), "TA2": (7.0, 34.8), "TA5": (8.7, 50.7),
-         "TA21": (9.6, 40.8), "TA25": (15.9, 53.2), "TA31": (13.9, 34.4),
-         "TA41": (24.5, 53.5), "TA51": (25.0, 38.2), "TA61": (15.1, 48.7)}
-for ta, (pol, mor) in CROSS.items():
-    check(f"columna MOR {ta}", mor, MOR_RE[ta])
-gana_todas = all(pol < mor for pol, mor in CROSS.values())
-check_exacto("la politica bate a MOR en las 9 de la tabla", gana_todas)
-pendiente("columna Policy de tab:crosssize",
-          "sin registro guardado; recomputar requiere rerun de "
-          "eval_v2_crosssize con los checkpoints (best-of-64)")
+CROSS = {"TA1": (13.1, 11.0, 29.7), "TA2": (9.7, 7.0, 34.8),
+         "TA5": (10.5, 8.8, 50.7), "TA21": (13.2, 11.1, 40.8),
+         "TA25": (15.0, 14.4, 53.2), "TA31": (15.8, 13.9, 34.4),
+         "TA41": (25.9, 24.5, 53.5), "TA51": (15.3, 12.9, 38.2),
+         "TA61": (16.8, 15.5, 48.7)}
+_cs = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_crosssize_bo64.csv", encoding="utf-8")):
+    _cs.setdefault(ta_de(r["instance"]), []).append(float(r["re_comp"]))
+for ta, (media_tex, mejor_tex, mor_tex) in CROSS.items():
+    check(f"crosssize {ta} media", media_tex, sum(_cs[ta]) / len(_cs[ta]))
+    check(f"crosssize {ta} mejor", mejor_tex, min(_cs[ta]))
+    check(f"columna MOR {ta}", mor_tex, MOR_RE[ta])
+check_exacto("cada semilla bate a MOR en las 9",
+             all(max(_cs[ta]) < MOR_RE[ta] for ta in CROSS))
 
 # =========================================================================
 print(f"\n{ok_n} comprobaciones correctas, {fallo_n} fallos, "

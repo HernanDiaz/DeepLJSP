@@ -63,13 +63,13 @@ def fig_scaling():
 def fig_crosssize():
     labels = ["TA1\n15×15", "TA2\n15×15", "TA5\n15×15", "TA21\n20×20", "TA25\n20×20",
               "TA31\n30×15", "TA41\n30×20", "TA51\n50×15", "TA61\n50×20"]
-    v2 = [14.4, 7.0, 8.7, 9.6, 15.9, 13.9, 24.5, 25.0, 15.1]
+    v2 = [13.1, 9.7, 10.5, 13.2, 15.0, 15.8, 25.9, 15.3, 16.8]
     mor = [29.7, 34.8, 50.7, 40.8, 53.2, 34.4, 53.5, 38.2, 48.7]
 
     x = range(len(labels))
     width = 0.38
     fig, ax = plt.subplots(figsize=(8, 4))
-    ax.bar([i - width / 2 for i in x], v2, width, color="seagreen", label="v2 (zero-shot)")
+    ax.bar([i - width / 2 for i in x], v2, width, color="seagreen", label="Policy (zero-shot, mean of 3 seeds)")
     ax.bar([i + width / 2 for i in x], mor, width, color="steelblue", label="MOR")
     ax.set_xticks(list(x))
     ax.set_xticklabels(labels, fontsize=8)

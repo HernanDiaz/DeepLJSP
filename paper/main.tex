@@ -59,8 +59,8 @@ rule on every tested instance of all seven size classes. A pre-specified
 acceptance protocol with deterministic anchors supports three further
 findings: best-of-$N$ sampling yields consistent gains; self-attention
 does not improve on pooling at practical budgets; and multi-size
-training loses to a single-size specialist even at an equalized
-per-instance budget.}
+training does not overtake a single-size specialist even at three
+times its training cost.}
 
 \keywords{job shop scheduling, interval uncertainty, deep reinforcement
 learning, neural combinatorial optimization, size invariance,
@@ -609,29 +609,29 @@ MOR & 51.3 & 35.8 & 50.1 & 54.2 & 43.2 & 43.7 \\
 The size-invariant design allows direct evaluation of the
 $20{\times}15$-trained network on any class.
 Figure~\ref{fig:crosssize} and Table~\ref{tab:crosssize} report
-zero-shot RE on unseen instances of all seven classes: the policy
-outperforms MOR on \emph{every} tested instance, with graceful
-degradation (best classes: $7$--$10\%$; hardest transfers,
-$30{\times}20$ and $50{\times}15$: $24$--$25\%$) and no failure mode up
-to $1000$-operation episodes. Notably, transfer quality improves with
+zero-shot RE on unseen instances of all seven classes: every
+seed's network outperforms MOR on \emph{every} tested instance, with
+graceful degradation (means from ${\approx}10\%$ on $15{\times}15$ to
+$25.9\%$ on the hardest transfer, $30{\times}20$) and no failure mode
+up to $1000$-operation episodes. Notably, transfer quality improves with
 in-size training budget (e.g.\ $30{\times}20$: $32.3\%$ with the
 $300$-episode checkpoint versus $24.5\%$ with the $1000$-episode one),
 i.e.\ the specialist learns structure that is not size-bound.
 
 \begin{table}[t]
 \centering\small
-\caption{Zero-shot RE (\%) of the $20{\times}15$ specialist (single
-network, best-of-64) versus MOR. $\dagger$: $300$-episode checkpoint.}
+\caption{Zero-shot RE (\%) of the $20{\times}15$-trained network
+(best-of-64), mean [best] over the three training seeds, versus MOR.}
 \label{tab:crosssize}
 \begin{tabular}{lcc@{\qquad}lcc}
 \toprule
 Instance & Policy & MOR & Instance & Policy & MOR \\
 \midrule
-TA1 ($15{\times}15$) & 14.4 & 29.7 & TA31 ($30{\times}15$) & 13.9 & 34.4 \\
-TA2 ($15{\times}15$) & 7.0 & 34.8 & TA41 ($30{\times}20$) & 24.5 & 53.5 \\
-TA5 ($15{\times}15$) & 8.7 & 50.7 & TA51 ($50{\times}15$)$^\dagger$ & 25.0 & 38.2 \\
-TA21 ($20{\times}20$) & 9.6 & 40.8 & TA61 ($50{\times}20$) & 15.1 & 48.7 \\
-TA25 ($20{\times}20$) & 15.9 & 53.2 & & & \\
+TA1 ($15{\times}15$) & 13.1 [11.0] & 29.7 & TA31 ($30{\times}15$) & 15.8 [13.9] & 34.4 \\
+TA2 ($15{\times}15$) & 9.7 [7.0] & 34.8 & TA41 ($30{\times}20$) & 25.9 [24.5] & 53.5 \\
+TA5 ($15{\times}15$) & 10.5 [8.8] & 50.7 & TA51 ($50{\times}15$) & 15.3 [12.9] & 38.2 \\
+TA21 ($20{\times}20$) & 13.2 [11.1] & 40.8 & TA61 ($50{\times}20$) & 16.8 [15.5] & 48.7 \\
+TA25 ($20{\times}20$) & 15.0 [14.4] & 53.2 & & & \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -689,16 +689,20 @@ Deep Sets & \textbf{16.6} [15.6] & \textbf{13.4} [12.3] \\
 Size invariance enables training on mixed size classes, a natural
 hypothesis for improving transfer. We trained agents on twelve
 instances spanning $15{\times}15$, $20{\times}15$ and $20{\times}20$,
-at matched total budget ($3000$ episodes) and at matched
-\emph{per-instance} budget ($12{,}000$ episodes), against the
-$20{\times}15$ specialist. The specialist won on \emph{all} five common
-evaluation instances in both settings---including instances of the size
-classes the multi-size agent itself trained on (budget-equalized: $8.7$
-vs.\ $9.5$ on $15{\times}15$; $15.9$ vs.\ $18.5$ on $20{\times}20$;
-$24.5$ vs.\ $28.3$ on the unseen $30{\times}20$). Per-instance training
-depth dominates size diversity, and---contrary to the intuition that
-transfer requires diverse training---specialist generalization is the
-stronger phenomenon. Earlier development iterations provide the
+at matched total budget ($3000$ episodes) and at equalized
+\emph{per-instance} budget ($12{,}000$ episodes---three times the
+specialist's total cost), against the $20{\times}15$ specialist, all
+sides with best-of-64 inference and averaged over their three seeds. At
+matched total budget the specialist wins on all five common evaluation
+instances ($10.5$ vs.\ $15.9$ on $15{\times}15$; $15.0$ vs.\ $20.0$
+on $20{\times}20$; $25.9$ vs.\ $30.6$ on the unseen $30{\times}20$).
+Tripling the multi-size budget recovers two of the five ($9.6$ vs.\
+$10.5$ on $15{\times}15$; $15.8$ vs.\ $16.8$ on the unseen
+$50{\times}20$) but not the rest: the specialist stays ahead on
+$20{\times}20$ ($15.0$ vs.\ $19.4$), a class the multi-size agent
+itself trained on, and on both $30{\times}15$ and $30{\times}20$. At
+matched cost, per-instance training depth dominates size diversity;
+even at triple cost, diversity buys back a minority of instances. Earlier development iterations provide the
 complementary caution: appending features that are linear combinations
 of existing ones, or retrofitting input normalization onto a system
 co-adapted to raw scales, degraded performance by $9$--$113\%$;
@@ -718,7 +722,7 @@ the full-benchmark mean RE to $12.7\%$ over the 70 instances---ahead of
 every deterministic constructive baseline on every instance, within
 $2.2$--$4.6$ points of the fEABC 30-run average per class, and behind
 tuned tabu search everywhere. The policy's standalone RE ($13.4\%$
-in-size; $7$--$25\%$ zero-shot) thus sits between dispatching rules
+in-size; $10$--$26\%$ zero-shot) thus sits between dispatching rules
 ($42.3\%$ for the best of them, EST) and per-instance metaheuristics
 ($3.7\%$ mean RE for the tuned tabu search and $9.4\%$ for fEABC,
 30-run averages)---establishing, for the IJSP, the computational-class
@@ -737,8 +741,9 @@ the entire benchmark: evaluated zero-shot, it outperforms the best
 dispatching rule on every tested instance of all seven size classes
 (Q2). And of the standard toolbox, only best-of-$N$ inference paid off
 at practical budgets: self-attention did not improve on pooling,
-multi-size training lost to the single-size specialist even
-budget-equalized, and two independent automatic-configuration campaigns
+multi-size training did not overtake the single-size specialist even
+at three times its cost, and two independent automatic-configuration
+campaigns
 failed to beat literature-standard hyperparameters at the operating
 budget (Q3)---three negative results we document with the same care as
 the positive ones.
