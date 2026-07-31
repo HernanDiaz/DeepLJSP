@@ -276,27 +276,47 @@ midpoint-scenario bound).
 \section{Method}
 \label{sec:method}
 
-The policy plays the same role as a classical dispatching rule. At any
-moment while a schedule is being built, some operations are
-\emph{eligible}: the next unscheduled operation of each job. A rule
-like SPT or MOR ranks these candidates with a hand-written
-formula---shortest processing time, most operations remaining---and
-schedules the winner at its earliest feasible start. Our policy does
-exactly the same job, with one difference: the ranking is produced by
-a small neural network that has \emph{learned} its preferences on the
-training instances, instead of being fixed in advance by a human.
-Everything around that choice (the schedule builder of
-Eq.~\eqref{eq:semiactive}, the interval arithmetic, the evaluation)
-is the same machinery every baseline in this paper uses.
+Reinforcement learning is learning to decide from experience. An
+\emph{agent} interacts with an environment in steps: it observes the
+current \emph{state}, chooses an \emph{action} among those available,
+and receives a numeric \emph{reward} signalling how good the
+consequences were. The agent's behaviour is its \emph{policy}
+$\pi(a\,|\,s)$: a function that, given the state, assigns a
+probability to each available action. The policy is the object being
+learned---training nudges it so that actions followed by a high
+cumulative reward (the \emph{return}) become more likely.
+
+Policy-gradient methods such as PPO~\citep{Schulman2017} judge an
+action not by its return alone but by comparing that return with what
+was \emph{expected} from the state where the action was taken; only
+the surplus---the \emph{advantage}---moves the policy. The
+expectation is itself learned: a \emph{value function} $V(s)$
+estimates the return attainable from state $s$. In practice both
+functions share one network with two outputs, a \emph{policy head}
+that scores the available actions and a \emph{value head} that
+estimates $V(s)$, trained jointly. This is why the network in this
+paper has two heads.
+
+Instantiated on scheduling, the agent is a dispatcher. The state is
+the partial schedule; the available actions are the \emph{eligible}
+operations---the next unscheduled operation of each job; an
+\emph{episode} is the construction of one complete schedule, and the
+reward rests on the makespan achieved. The trained policy then plays
+the same role as a classical dispatching rule: where SPT or MOR rank
+the eligible operations with a hand-written formula, the policy ranks
+them with learned preferences, and everything around that choice (the
+schedule builder of Eq.~\eqref{eq:semiactive}, the interval
+arithmetic, the evaluation) is the same machinery every baseline in
+this paper uses.
 
 Figure~\ref{fig:arch} shows the network, and the rest of the section
-walks through it one piece at a time: Section~\ref{sec:mdp} states
-the construction loop in the form reinforcement learning requires
-(states, actions, rewards); Section~\ref{sec:features} describes what
-the policy \emph{sees}, i.e.\ how a candidate operation and the shop
-state become a handful of numbers; Section~\ref{sec:arch}, how those
-numbers become a choice; and Section~\ref{sec:training}, how the
-network is trained and used afterwards.
+makes each piece precise: Section~\ref{sec:mdp} states the
+construction loop formally (states, actions, rewards);
+Section~\ref{sec:features} describes what the policy \emph{sees},
+i.e.\ how a candidate operation and the shop state become a handful
+of numbers; Section~\ref{sec:arch}, how those numbers become a
+choice; and Section~\ref{sec:training}, how the network is trained
+and used afterwards.
 
 \begin{figure}[t]
 \centering
@@ -342,9 +362,8 @@ alone. No dimension depends on the numbers of jobs or machines.}
 \subsection{Dispatching as a Markov decision process}
 \label{sec:mdp}
 
-Reinforcement learning requires the loop above to be written as
-states, actions and rewards. Cast that way, schedule construction is a
-finite-horizon MDP of exactly $nm$ steps. The \emph{state} after $t$ steps comprises the partial
+Cast in the terms above, schedule construction is a finite-horizon
+Markov decision process of exactly $nm$ steps. The \emph{state} after $t$ steps comprises the partial
 schedule (job pointers, job and machine completion intervals) and the
 set $\mathcal{E}_t$ of eligible operations---the next unscheduled
 operation of each unfinished job, so $1\le|\mathcal{E}_t|\le n$. The
@@ -479,8 +498,10 @@ g=\mathrm{MLP}_{ctx}\big(\big[\textstyle\frac1{|\mathcal{E}|}\sum_i\phi_i;\;
 embedding, context)---``how good is operation $i$ given the decision
 as a whole''---and a softmax over the true candidates (padding masked
 out) turns the scores into probabilities. The \emph{value head}
-estimates the expected return from the context alone, since the
-baseline of PPO needs the state, not the candidates:
+estimates the return attainable from the current state---the $V(s)$
+of the advantage computation introduced above---and reads the context
+alone, since expectations concern the situation, not any one
+candidate:
 \begin{equation}
 \pi(i\,|\,s)=\mathrm{softmax}_i\,\mathrm{MLP}_{\pi}([\phi_i;g]),
 \qquad
