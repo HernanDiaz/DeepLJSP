@@ -400,6 +400,18 @@ for ta, (media_tex, mejor_tex, mor_tex) in CROSS.items():
 check_exacto("cada semilla bate a MOR en las 9",
              all(max(_cs[ta]) < MOR_RE[ta] for ta in CROSS))
 
+# la transferencia mejora con el presupuesto (300ep vs 1000ep, medias)
+_c300 = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_crosssize_bo64_300ep.csv", encoding="utf-8")):
+    _c300.setdefault(ta_de(r["instance"]), []).append(float(r["re_comp"]))
+_c300 = {ta: sum(v) / len(v) for ta, v in _c300.items()}
+check("TA41 con 300 eps (texto 30.3)", 30.3, _c300["TA41"])
+check("TA51 con 300 eps (texto 22.2)", 22.2, _c300["TA51"])
+check_exacto("mas presupuesto -> mejor transferencia en ambas",
+             _c300["TA41"] > sum(_cs["TA41"]) / 3
+             and _c300["TA51"] > sum(_cs["TA51"]) / 3)
+
 # =========================================================================
 print(f"\n{ok_n} comprobaciones correctas, {fallo_n} fallos, "
       f"{pend_n} pendientes de fuente")

@@ -613,10 +613,11 @@ zero-shot RE on unseen instances of all seven classes: every
 seed's network outperforms MOR on \emph{every} tested instance, with
 graceful degradation (means from ${\approx}10\%$ on $15{\times}15$ to
 $25.9\%$ on the hardest transfer, $30{\times}20$) and no failure mode
-up to $1000$-operation episodes. Notably, transfer quality improves with
-in-size training budget (e.g.\ $30{\times}20$: $32.3\%$ with the
-$300$-episode checkpoint versus $24.5\%$ with the $1000$-episode one),
-i.e.\ the specialist learns structure that is not size-bound.
+up to $1000$-operation episodes. Notably, transfer quality improves
+with in-size training budget (mean over seeds: $30{\times}20$ from
+$30.3\%$ with the $300$-episode checkpoints to $25.9\%$ with the
+$1000$-episode ones; $50{\times}15$ from $22.2\%$ to $15.3\%$), i.e.\
+the specialist learns structure that is not size-bound.
 
 \begin{table}[t]
 \centering\small
