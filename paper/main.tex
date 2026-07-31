@@ -11,6 +11,10 @@
 \usepackage{algpseudocode}
 \usepackage{hyperref}
 \usepackage{xcolor}
+\usepackage[round]{natbib}
+% plainnat emite \doi{...}; lo definimos antes para que salga el enlace
+% completo, como pide la guia de JIM
+\providecommand{\doi}[1]{\href{https://doi.org/#1}{\nolinkurl{https://doi.org/#1}}}
 
 \hypersetup{colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue}
 
@@ -25,7 +29,8 @@ for the Interval Job Shop Scheduling Problem}}
 
 \author{Hern\'an D\'iaz Rodr\'iguez\\[2pt]
 \small Department of Computing, University of Oviedo, Gij\'on, Spain\\
-\small \texttt{diazhernan@uniovi.es}}
+\small \texttt{diazhernan@uniovi.es}\\
+\small ORCID: \todo{ORCID del autor}}
 \date{}
 
 \begin{document}
@@ -34,32 +39,27 @@ for the Interval Job Shop Scheduling Problem}}
 \begin{abstract}
 Task durations on a shop floor are seldom known exactly at the moment
 scheduling decisions must be made. The interval job shop scheduling
-problem (IJSP) captures this uncertainty with the weakest possible
-commitment---each processing time is only assumed to lie in a closed
-interval---and evaluates schedules by interval arithmetic. Its published
-solvers search every instance separately with metaheuristics, at a cost
-of seconds to minutes per instance and per run. This paper studies the
-complementary regime: a constructive policy, trained once by deep
-reinforcement learning, that dispatches operations one at a time and
-delivers a complete schedule in milliseconds. The policy is
-size-invariant by construction. Every input feature is
-dimensionless---temporal quantities are normalized by an instance lower
-bound, and uncertainty enters as relative interval widths---and a
-permutation-invariant set encoder over the eligible operations feeds
-policy and value heads whose parameter count does not depend on the
-numbers of jobs or machines. Trained with proximal policy optimization
+problem (IJSP) models each processing time as a closed interval and
+evaluates schedules by interval arithmetic; its published solvers search
+every instance separately with metaheuristics, at a cost of seconds to
+minutes per instance and per run. This paper studies the complementary
+regime: a constructive policy, trained once by deep reinforcement
+learning, that dispatches operations one at a time and delivers a
+schedule in milliseconds. The policy is size-invariant by construction:
+every feature is dimensionless, uncertainty enters as relative interval
+widths, and a permutation-invariant encoder over the eligible operations
+feeds policy and value heads whose parameter count is independent of the
+numbers of jobs and machines. Trained with proximal policy optimization
 on four $20{\times}15$ instances of the interval Taillard benchmark, the
 policy reaches $13.4\%$ mean relative error against crisp lower bounds
-on unseen instances of its training size ($12.3\%$ best of three seeds),
-against ${\approx}46\%$ for the best priority dispatching rule; with the
-same weights, evaluated zero-shot, it beats that rule on every tested
-instance of all seven benchmark size classes ($15{\times}15$ to
-$50{\times}20$). A pre-specified acceptance protocol with deterministic
-anchor baselines supports three further findings: sampling-based
-best-of-$N$ inference yields consistent gains; self-attention over the
-candidate set does not improve on pooling at practical training budgets;
-and multi-size training loses to a single-size specialist even at an
-equalized per-instance budget.
+on unseen instances of its training size, against ${\approx}46\%$ for
+the best priority dispatching rule, and, evaluated zero-shot, beats that
+rule on every tested instance of all seven size classes. A pre-specified
+acceptance protocol with deterministic anchors supports three further
+findings: best-of-$N$ sampling yields consistent gains; self-attention
+does not improve on pooling at practical budgets; and multi-size
+training loses to a single-size specialist even at an equalized
+per-instance budget.
 \end{abstract}
 
 \noindent\textbf{Keywords:} job shop scheduling; interval uncertainty;
@@ -70,24 +70,24 @@ invariance; dispatching.
 \label{sec:intro}
 
 The job shop scheduling problem (JSP) has accompanied combinatorial
-optimization since its beginnings: it is NP-hard~\cite{GareyJohnson1976},
+optimization since its beginnings: it is NP-hard~\citep{GareyJohnson1976},
 industrially ubiquitous, and hard enough in practice that instances
 posed in the 1960s stayed open for decades. Its textbook formulation,
 however, presumes exact knowledge of every processing time, and shop
 floors rarely oblige---tool wear, operator variability and material
 differences all perturb durations. Of the formalisms proposed for this
-uncertainty, stochastic and fuzzy models~\cite{GonzalezRodriguez2010}
+uncertainty, stochastic and fuzzy models~\citep{GonzalezRodriguez2010}
 demand distributions or membership functions from the decision maker;
 the \emph{interval} model asks only for bounds. In the resulting
 interval JSP (IJSP), each duration is a closed interval, schedule
 evaluation propagates those intervals, and the makespan is itself an
-interval, compared through a ranking criterion~\cite{Lei2012,
+interval, compared through a ranking criterion~\citep{Lei2011,
 DiazICAE2023}.
 
 Makespan minimization in the IJSP is currently the territory of
 per-instance metaheuristic search: artificial bee colony
-algorithms~\cite{DiazFEABC2023,DiazICAE2023} and irace-tuned tabu search
-with dedicated neighbourhood structures~\cite{DiazTS2026} reach mean
+algorithms~\citep{DiazFEABC2023,DiazICAE2023} and irace-tuned tabu search
+with dedicated neighbourhood structures~\citep{DiazTS2026} reach mean
 relative errors (RE, measured against crisp Taillard lower bounds)
 between roughly $0\%$ and $14\%$ depending on the size class. The price
 is structural: every new instance restarts the search from scratch, for
@@ -96,12 +96,12 @@ seconds to minutes per run on dedicated hardware.
 The deterministic scheduling literature has developed a complementary
 paradigm, \emph{learning to dispatch}: a deep reinforcement learning
 (DRL) agent builds the schedule constructively, choosing one eligible
-operation at a time~\cite{Zhang2020L2D,Park2021GNN,Tassel2021}. The
+operation at a time~\citep{Zhang2020L2D,Park2021GNN,Tassel2021}. The
 training cost is paid once; afterwards the policy prices any instance in
 milliseconds, which makes it attractive both as a standalone solver
 under tight time budgets and as an initializer for search. Yet this
 paradigm has not crossed over to interval durations: a recent survey of
-learning-based job shop scheduling~\cite{Xu2025} lists no method
+learning-based job shop scheduling~\citep{Xu2025} lists no method
 addressing interval-valued processing times.
 
 Two obstacles stand between standard JSP-DRL designs and the IJSP.
@@ -127,7 +127,7 @@ pay off at practical training budgets?
 \item \textbf{A size-invariant, uncertainty-aware policy for the IJSP}
   (Section~\ref{sec:method}). All features are dimensionless: temporal
   quantities are scaled by a per-instance lower bound and interval
-  uncertainty enters as relative widths. A Deep Sets~\cite{Zaheer2017}
+  uncertainty enters as relative widths. A Deep Sets~\citep{Zaheer2017}
   encoder over the eligible-operation set, combined with a pooled global
   context, yields policy \emph{and} value networks of
   ${\approx}1.2\times10^{5}$ parameters, independent of the numbers of
@@ -162,17 +162,17 @@ concludes.
 
 Uncertain processing times have been modelled with probability
 distributions, fuzzy numbers and intervals. The fuzzy JSP line is
-mature~\cite{GonzalezRodriguez2010,Palacios2015}; the interval model can
+mature~\citep{GonzalezRodriguez2010,Palacios2015}; the interval model can
 be read as its minimal-commitment limit, retaining only support bounds.
-Lei~\cite{Lei2012} opened the interval line with population-based
+\citet{Lei2011} opened the interval line with population-based
 neighbourhood search; genetic algorithms with interval
-rankings~\cite{DiazGA2020}, robustness-oriented tardiness
-models~\cite{DiazTardiness2022}, and analytical treatments of special
-cases~\cite{Sotskov2020} followed, and interval durations now appear in
-richer shop variants as well~\cite{Zheng2024}. On the Taillard-derived
+rankings~\citep{DiazGA2020}, robustness-oriented tardiness
+models~\citep{DiazTardiness2022}, and analytical treatments of special
+cases~\citep{Sotskov2020} followed, and interval durations now appear in
+richer shop variants as well~\citep{Zheng2024}. On the Taillard-derived
 benchmark used here, the strongest published results belong to elitist
-artificial bee colony algorithms~\cite{DiazFEABC2023,DiazICAE2023} and
-to tabu search with specialized neighbourhoods~\cite{DiazTS2026}; these
+artificial bee colony algorithms~\citep{DiazFEABC2023,DiazICAE2023} and
+to tabu search with specialized neighbourhoods~\citep{DiazTS2026}; these
 works also fixed the evaluation conventions this paper adopts (interval
 arithmetic, lexicographic ranking during construction, expected makespan
 for reporting).
@@ -180,25 +180,23 @@ for reporting).
 \subsection{Learning constructive heuristics for scheduling}
 
 Neural combinatorial optimization began with pointer
-networks~\cite{Vinyals2015} and their RL training~\cite{Bello2016};
-attention encoders became standard for routing~\cite{Kool2019,
-Nazari2018}. For the deterministic JSP, Zhang et
-al.~\cite{Zhang2020L2D} learn dispatching policies over
-disjunctive-graph GNN embeddings, Park et al.~\cite{Park2021GNN} refine
-such representations and report cross-size generalization, and Tassel et
-al.~\cite{Tassel2021} contribute an efficient environment formulation.
+networks~\citep{Vinyals2015} and their RL training~\citep{Bello2016};
+attention encoders became standard for routing~\citep{Kool2019,
+Nazari2018}. For the deterministic JSP, \citet{Zhang2020L2D} learn dispatching policies over
+disjunctive-graph GNN embeddings, \citet{Park2021GNN} refine
+such representations and report cross-size generalization, and \citet{Tassel2021} contribute an efficient environment formulation.
 Sampling several rollouts and keeping the best is a standard
-inference-time lever~\cite{Kool2019}. Permutation-invariant set encoders
-were formalized as Deep Sets~\cite{Zaheer2017}, of which attention is
+inference-time lever~\citep{Kool2019}. Permutation-invariant set encoders
+were formalized as Deep Sets~\citep{Zaheer2017}, of which attention is
 the natural strict generalization; our architecture starts from the
 simpler construction and evaluates attention as a controlled ablation.
 
 Learning constructive heuristics is older than its neural incarnation:
 genetic programming (GP) hyper-heuristics evolve interpretable priority
-expressions over hand-crafted attributes~\cite{Branke2016,Nguyen2017}.
-The survey of Xu et al.~\cite{Xu2025} compares the GP and RL families
+expressions over hand-crafted attributes~\citep{Branke2016,Nguyen2017}.
+The survey by \citet{Xu2025} compares the GP and RL families
 for job shop scheduling and notes the scarcity of comparisons under a
-common protocol. A companion study~\cite{DiazGP2026} develops the GP
+common protocol. A companion study~\citep{DiazGP2026} develops the GP
 side for the interval benchmark used here; a controlled comparison of
 the two learning paradigms under matched budgets is beyond the scope of
 either paper and is the subject of dedicated ongoing work.
@@ -248,16 +246,16 @@ a^{U}<b^{U} \;\vee\; \big(a^{U}=b^{U}\wedge a^{L}<b^{L}\big),
 \label{eq:lex}
 \end{equation}
 which prioritizes the worst case, in line with min--max robust
-optimization and with the IJSP literature~\cite{DiazGA2020,
+optimization and with the IJSP literature~\citep{DiazGA2020,
 DiazICAE2023}. For reporting we follow the field
-convention~\cite{DiazICAE2023,DiazTS2026}:
+convention~\citep{DiazICAE2023,DiazTS2026}:
 \begin{equation}
 \mathrm{RE}(\%)=\frac{\ECmax-\mathrm{LB}}{\mathrm{LB}}\times100,
 \qquad \ECmax=\tfrac12\big(C^L_{\max}+C^U_{\max}\big),
 \label{eq:re}
 \end{equation}
 with LB the published lower bound of the crisp Taillard
-counterpart~\cite{Taillard1993}---an indicative, hardware-independent
+counterpart~\citep{Taillard1993}---an indicative, hardware-independent
 yardstick rather than a strict optimality gap, since the crisp JSP and
 the IJSP are different problems.
 
@@ -367,7 +365,7 @@ Let $x_i\in\mathbb{R}^{16}$ be the features of eligible operation $i$
 and $g_0\in\mathbb{R}^{12}$ the global features. A shared two-layer MLP
 $\phi$ (width $h{=}128$, LayerNorm, ReLU, orthogonal initialization)
 embeds each candidate, $\phi_i=\phi(x_i)$. The context vector aggregates
-the candidate set permutation-invariantly~\cite{Zaheer2017}:
+the candidate set permutation-invariantly~\citep{Zaheer2017}:
 \begin{equation}
 g=\mathrm{MLP}_{ctx}\big(\big[\textstyle\frac1{|\mathcal{E}|}\sum_i\phi_i;\;
 \max_i\phi_i;\;g_0\big]\big)\in\mathbb{R}^{h}.
@@ -396,7 +394,7 @@ numerically identical to unpadded ones.
 \subsection{Training and inference}
 \label{sec:training}
 
-We train with PPO~\cite{Schulman2017}; Table~\ref{tab:hyper} lists all
+We train with PPO~\citep{Schulman2017}; Table~\ref{tab:hyper} lists all
 hyperparameters. Two choices depart from common JSP-DRL practice and are
 enabled by co-design with the normalized representation: $\gamma=1$
 (undiscounted finite horizon---with $\gamma=0.99$ the terminal makespan
@@ -431,7 +429,7 @@ choice is motivated empirically in Section~\ref{sec:ablations-bon}:
 during training, the best solutions frequently originate from sampled
 episodes, i.e.\ the policy is more valuable as a \emph{distribution}
 than as its argmax---consistent with sampling-based decoding in neural
-combinatorial optimization~\cite{Kool2019}.
+combinatorial optimization~\citep{Kool2019}.
 
 \begin{algorithm}[t]
 \caption{Best-of-$N$ inference}
@@ -454,12 +452,12 @@ combinatorial optimization~\cite{Kool2019}.
 \label{sec:instances}
 
 Experiments use the 70 interval Taillard instances TA1--TA70 that
-anchor the recent IJSP literature~\cite{DiazFEABC2023,DiazICAE2023,
+anchor the recent IJSP literature~\citep{DiazFEABC2023,DiazICAE2023,
 DiazTS2026}: seven size classes from $15{\times}15$ to $50{\times}20$,
 each crisp duration replaced by an integer interval symmetric around
 it, with half-width drawn uniformly up to $15\%$ of the original
-value~\cite{DiazGA2020}. The benchmark is openly
-available~\cite{DiazDataset2026}. Of the 70 instances, four carry
+value~\citep{DiazGA2020}. The benchmark is openly
+available~\citep{DiazDataset2026}. Of the 70 instances, four carry
 gradients: the final model trains on \textbf{TA11--TA14}
 ($20{\times}15$) only. Six more of the same class,
 \textbf{TA15--TA20}, form the \emph{development set}---never used for
@@ -497,7 +495,7 @@ results were clearly negative.
 All reported results use the literature-standard hyperparameters of
 Table~\ref{tab:hyper} \emph{without problem-specific tuning}. To assess
 whether this leaves performance on the table, we ran an automatic
-configuration study with irace~\cite{LopezIbanez2016}, racing an
+configuration study with irace~\citep{LopezIbanez2016}, racing an
 8-parameter space (learning rate, entropy coefficient, PPO clip, epochs,
 minibatch size, update period, GAE $\lambda$, hidden width) over $330$
 tuning experiments at reduced fidelity ($1$ training instance, $300$
@@ -540,13 +538,13 @@ near-equivalent configurations.
 Constructive baselines comprise priority dispatching rules (SPT, LPT,
 MOR, MWKR, with lexicographic interval comparisons; MOR is uniformly the
 strongest) and the Giffler--Thompson active schedule
-generator~\cite{GifflerThompson1960} with rule tie-breaks inside the
+generator~\citep{GifflerThompson1960} with rule tie-breaks inside the
 machine conflict set. G\&T with MWKR tie-break is the strongest
 deterministic constructive baseline on this benchmark: $29.4\%$ mean RE
 across the 70 instances, versus $45.4\%$ for plain MOR dispatching (the
 SPT tie-break variant performs poorly, $70.6\%$). Published IJSP
-metaheuristics (fEABC~\cite{DiazFEABC2023}, ESABC~\cite{DiazICAE2023},
-TS~\cite{DiazTS2026}; 30 runs and minutes of per-instance search on
+metaheuristics (fEABC~\citep{DiazFEABC2023}, ESABC~\citep{DiazICAE2023},
+TS~\citep{DiazTS2026}; 30 runs and minutes of per-instance search on
 dedicated hardware) are included as reference yardsticks from a
 different computational class rather than as direct competitors.
 
@@ -713,7 +711,7 @@ tuned tabu search everywhere. The policy's standalone RE ($13.4\%$
 in-size; $7$--$25\%$ zero-shot) thus sits between dispatching rules
 (${\approx}46\%$) and per-instance metaheuristics
 ($4$--$10\%$)---establishing, for the IJSP, the computational-class
-trade-off documented for the deterministic JSP~\cite{Zhang2020L2D}.
+trade-off documented for the deterministic JSP~\citep{Zhang2020L2D}.
 
 \section{Conclusions and Future Work}
 \label{sec:conclusions}
@@ -743,200 +741,34 @@ quality is bounded by that space. Results aggregate three training
 seeds---enough to report means, bests and seed variance, not formal
 significance across seeds. Finally, this paper characterizes the policy
 in isolation; a controlled comparison with learned symbolic rules
-under matched budgets~\cite{DiazGP2026,Xu2025}, and the use of the
+under matched budgets~\citep{DiazGP2026,Xu2025}, and the use of the
 policy's sampling distribution to initialize population-based
-search~\cite{DiazTS2026}, are the subject of dedicated ongoing work.
+search~\citep{DiazTS2026}, are the subject of dedicated ongoing work.
 
 Beyond these, we see two directions: instance distributions with
 heterogeneous uncertainty, and curricula or fine-tuning protocols that
 exploit size invariance to specialize cheaply on new size classes.
 
-\paragraph{Reproducibility.} Code, benchmark harness, all experiment
-records (accepted and rejected), final checkpoints and
-figure-generation scripts will be deposited openly; the benchmark
-instances are already available~\cite{DiazDataset2026}. \todo{DOI del
-dep\'osito propio al enviar}
+\section*{Statements and Declarations}
 
-\paragraph{Funding.} Supported by the Spanish Ministry of Science,
-Innovation and Universities (MCIN/AEI/10.13039/501100011033) under
-grant PID2022-141746OB-I00.
+\paragraph{Funding.} This work was supported by the Spanish Ministry of
+Science, Innovation and Universities
+(MCIN/AEI/10.13039/501100011033) under grant PID2022-141746OB-I00.
+
+\paragraph{Competing interests.} The author has no competing interests
+to declare that are relevant to the content of this article.
+
+\paragraph{Data availability.} The benchmark instances are openly
+available in a Zenodo repository~\citep{DiazDataset2026}. Code,
+benchmark harness, all experiment records (accepted and rejected),
+final checkpoints and figure-generation scripts will be deposited
+openly upon submission. \todo{DOI del dep\'osito propio al enviar}
 
 % NOTA: declaración de uso de IA generativa pendiente de decisión del
 % autor antes del envío (política de Springer Nature: en métodos o
 % agradecimientos).
 
-\begin{thebibliography}{99}
-
-\bibitem{GareyJohnson1976}
-M.~R.~Garey, D.~S.~Johnson, R.~Sethi.
-\newblock The complexity of flowshop and jobshop scheduling.
-\newblock \textit{Mathematics of Operations Research}, 1(2):117--129, 1976.
-
-\bibitem{GonzalezRodriguez2010}
-I.~Gonz\'alez-Rodr\'iguez, C.~R.~Vela, J.~Puente.
-\newblock A genetic solution based on lexicographical goal programming
-  for a multiobjective job shop with uncertainty.
-\newblock \textit{Journal of Intelligent Manufacturing}, 21(1):65--73,
-  2010.
-
-\bibitem{Palacios2015}
-J.~J.~Palacios, I.~Gonz\'alez-Rodr\'iguez, C.~R.~Vela, J.~Puente.
-\newblock Coevolutionary makespan optimisation through different ranking
-  methods for the fuzzy flexible job shop.
-\newblock \textit{Fuzzy Sets and Systems}, 278:81--97, 2015.
-
-\bibitem{Lei2012}
-D.~Lei.
-\newblock Population-based neighborhood search for job shop scheduling
-  with interval processing time.
-\newblock \textit{Computers \& Industrial Engineering}, 62(4):1200--1208,
-  2012.
-
-\bibitem{DiazGA2020}
-H.~D\'iaz, I.~Gonz\'alez-Rodr\'iguez, J.~J.~Palacios, I.~D\'iaz,
-C.~R.~Vela.
-\newblock A genetic approach to the job shop scheduling problem with
-  interval uncertainty.
-\newblock In \textit{Information Processing and Management of
-  Uncertainty in Knowledge-Based Systems (IPMU)}, pages 663--676.
-  Springer, 2020.
-
-\bibitem{DiazTardiness2022}
-H.~D\'iaz, J.~J.~Palacios, I.~D\'iaz, C.~R.~Vela,
-I.~Gonz\'alez-Rodr\'iguez.
-\newblock Robust schedules for tardiness optimization in job shop with
-  interval uncertainty.
-\newblock \textit{Logic Journal of the IGPL}, 31(2):240--254, 2022.
-
-\bibitem{Sotskov2020}
-Y.~N.~Sotskov, N.~M.~Matsveichuk, V.~D.~Hatsura.
-\newblock Schedule execution for two-machine job-shop to minimize
-  makespan with uncertain processing times.
-\newblock \textit{Mathematics}, 8(8):1314, 2020.
-
-\bibitem{Zheng2024}
-P.~Zheng, S.~Xiao, P.~Zhang, Y.~Lv.
-\newblock A two-individual-based evolutionary algorithm for flexible
-  assembly job shop scheduling problem with uncertain interval
-  processing times.
-\newblock \textit{Applied Sciences}, 14(22):10304, 2024.
-
-\bibitem{DiazFEABC2023}
-H.~D\'iaz, J.~J.~Palacios, I.~Gonz\'alez-Rodr\'iguez, C.~R.~Vela.
-\newblock Fast elitist {ABC} for makespan optimisation in interval {JSP}.
-\newblock \textit{Natural Computing}, 22(4):645--657, 2023.
-
-\bibitem{DiazICAE2023}
-H.~D\'iaz, J.~J.~Palacios, I.~Gonz\'alez-Rodr\'iguez, C.~R.~Vela.
-\newblock An elitist seasonal artificial bee colony algorithm for the
-  interval job shop.
-\newblock \textit{Integrated Computer-Aided Engineering}, 30(3):223--242,
-  2023.
-
-\bibitem{DiazTS2026}
-H.~D\'iaz et al.
-\newblock Neighbourhood structures and ranking operators for the interval
-  job shop scheduling problem.
-\newblock Under review, 2026.
-
-\bibitem{DiazGP2026}
-H.~D\'iaz Rodr\'iguez.
-\newblock Genetic programming hyper-heuristics for the job shop
-  scheduling problem with interval durations: robustness-aware
-  interpretable rules that generalize across instance sizes.
-\newblock Under review, 2026.
-
-\bibitem{DiazDataset2026}
-H.~D\'iaz Rodr\'iguez.
-\newblock Genetic programming dispatching rules for the interval job
-  shop: instances, evolved rules, results and code.
-\newblock Zenodo, 2026. \texttt{doi:10.5281/zenodo.21716972}.
-
-\bibitem{Taillard1993}
-E.~Taillard.
-\newblock Benchmarks for basic scheduling problems.
-\newblock \textit{European Journal of Operational Research},
-  64(2):278--285, 1993.
-
-\bibitem{Xu2025}
-M.~Xu, Y.~Mei, F.~Zhang, M.~Zhang.
-\newblock Learn to optimise for job shop scheduling: a survey with
-  comparison between genetic programming and reinforcement learning.
-\newblock \textit{Artificial Intelligence Review}, 58:160, 2025.
-
-\bibitem{Vinyals2015}
-O.~Vinyals, M.~Fortunato, N.~Jaitly.
-\newblock Pointer networks.
-\newblock \textit{NeurIPS}, 2015.
-
-\bibitem{Bello2016}
-I.~Bello, H.~Pham, Q.~V.~Le, M.~Norouzi, S.~Bengio.
-\newblock Neural combinatorial optimization with reinforcement learning.
-\newblock \textit{arXiv:1611.09940}, 2016.
-
-\bibitem{Nazari2018}
-M.~Nazari, A.~Oroojlooy, L.~Snyder, M.~Tak\'a\v{c}.
-\newblock Reinforcement learning for solving the vehicle routing problem.
-\newblock \textit{NeurIPS}, 2018.
-
-\bibitem{Kool2019}
-W.~Kool, H.~van Hoof, M.~Welling.
-\newblock Attention, learn to solve routing problems!
-\newblock \textit{ICLR}, 2019.
-
-\bibitem{Zhang2020L2D}
-C.~Zhang, W.~Song, Z.~Cao, J.~Zhang, P.~S.~Tan, C.~Xu.
-\newblock Learning to dispatch for job shop scheduling via deep
-  reinforcement learning.
-\newblock \textit{NeurIPS}, 2020.
-
-\bibitem{Park2021GNN}
-J.~Park, J.~Chun, S.~H.~Kim, Y.~Kim, J.~Park.
-\newblock Learning to schedule job-shop problems: representation and
-  policy learning using graph neural network and reinforcement learning.
-\newblock \textit{International Journal of Production Research},
-  59(11):3360--3377, 2021.
-
-\bibitem{Tassel2021}
-P.~Tassel, M.~Gebser, K.~Schekotihin.
-\newblock A reinforcement learning environment for job-shop scheduling.
-\newblock \textit{arXiv:2104.03760}, 2021.
-
-\bibitem{Zaheer2017}
-M.~Zaheer, S.~Kottur, S.~Ravanbakhsh, B.~P\'oczos, R.~Salakhutdinov,
-A.~Smola.
-\newblock Deep sets.
-\newblock \textit{NeurIPS}, 2017.
-
-\bibitem{Schulman2017}
-J.~Schulman, F.~Wolski, P.~Dhariwal, A.~Radford, O.~Klimov.
-\newblock Proximal policy optimization algorithms.
-\newblock \textit{arXiv:1707.06347}, 2017.
-
-\bibitem{GifflerThompson1960}
-B.~Giffler, G.~L.~Thompson.
-\newblock Algorithms for solving production-scheduling problems.
-\newblock \textit{Operations Research}, 8(4):487--503, 1960.
-
-\bibitem{Branke2016}
-J.~Branke, S.~Nguyen, C.~W.~Pickardt, M.~Zhang.
-\newblock Automated design of production scheduling heuristics: a review.
-\newblock \textit{IEEE Transactions on Evolutionary Computation},
-  20(1):110--124, 2016.
-
-\bibitem{Nguyen2017}
-S.~Nguyen, Y.~Mei, M.~Zhang.
-\newblock Genetic programming for production scheduling: a survey with a
-  unified framework.
-\newblock \textit{Complex \& Intelligent Systems}, 3(1):41--66, 2017.
-
-\bibitem{LopezIbanez2016}
-M.~L\'opez-Ib\'a\~nez, J.~Dubois-Lacoste, L.~P\'erez~C\'aceres,
-M.~Birattari, T.~St\"utzle.
-\newblock The irace package: Iterated racing for automatic algorithm
-  configuration.
-\newblock \textit{Operations Research Perspectives}, 3:43--58, 2016.
-
-\end{thebibliography}
+\bibliographystyle{plainnat}
+\bibliography{refs}
 
 \end{document}
