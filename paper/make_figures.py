@@ -41,8 +41,6 @@ def fig_scaling():
     ax.text(1000, 46.4, " MOR", va="center", fontsize=9, color="gray")
     ax.axhline(9.6, color="indianred", linestyle=":", linewidth=1.2)
     ax.text(1000, 9.6, " fEABC", va="center", fontsize=9, color="indianred")
-    ax.axhline(3.9, color="darkred", linestyle=":", linewidth=1.2)
-    ax.text(1000, 3.9, " TS-N$_2$", va="center", fontsize=9, color="darkred")
 
     ax.set_xscale("log")
     ax.set_xticks(episodes)

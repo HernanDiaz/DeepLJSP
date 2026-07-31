@@ -89,12 +89,10 @@ interval, compared through a ranking criterion~\citep{Lei2011,
 DiazICAE2023}.
 
 Makespan minimization in the IJSP is currently the territory of
-per-instance metaheuristic search: artificial bee colony
-algorithms~\citep{DiazFEABC2023,DiazICAE2023} and irace-tuned tabu search
-with dedicated neighbourhood structures~\citep{DiazTS2026} reach mean
-relative errors (RE, measured against crisp Taillard lower bounds)
-between roughly $0\%$ and $16\%$ depending on the method and the size
-class. The price
+per-instance metaheuristic search: elitist artificial bee colony
+algorithms~\citep{DiazFEABC2023,DiazICAE2023} reach mean relative
+errors (RE, measured against crisp Taillard lower bounds) between
+roughly $6\%$ and $16\%$ depending on the size class. The price
 is structural: every new instance restarts the search from scratch, for
 seconds to minutes per run on dedicated hardware.
 
@@ -178,9 +176,8 @@ models~\citep{DiazTardiness2022}, and analytical treatments of special
 cases~\citep{Sotskov2020} followed, and interval durations now appear in
 richer shop variants as well~\citep{Zheng2024}. On the Taillard-derived
 benchmark used here, the strongest published results belong to elitist
-artificial bee colony algorithms~\citep{DiazFEABC2023,DiazICAE2023} and
-to tabu search with specialized neighbourhoods~\citep{DiazTS2026}; these
-works also fixed the evaluation conventions this paper adopts (interval
+artificial bee colony algorithms~\citep{DiazFEABC2023,DiazICAE2023};
+these works also fixed the evaluation conventions this paper adopts (interval
 arithmetic, lexicographic ranking during construction, expected makespan
 for reporting).
 
@@ -255,7 +252,7 @@ a^{U}<b^{U} \;\vee\; \big(a^{U}=b^{U}\wedge a^{L}<b^{L}\big),
 which prioritizes the worst case, in line with min--max robust
 optimization and with the IJSP literature~\citep{DiazGA2020,
 DiazICAE2023}. For reporting we follow the field
-convention~\citep{DiazICAE2023,DiazTS2026}:
+convention~\citep{DiazGA2020,DiazICAE2023}:
 \begin{equation}
 \mathrm{RE}(\%)=\frac{\ECmax-\mathrm{LB}}{\mathrm{LB}}\times100,
 \qquad \ECmax=\tfrac12\big(C^L_{\max}+C^U_{\max}\big),
@@ -459,8 +456,9 @@ combinatorial optimization~\citep{Kool2019}.
 \label{sec:instances}
 
 Experiments use the 70 interval Taillard instances TA1--TA70 that
-anchor the recent IJSP literature~\citep{DiazFEABC2023,DiazICAE2023,
-DiazTS2026}: seven size classes from $15{\times}15$ to $50{\times}20$,
+anchor the recent IJSP
+literature~\citep{DiazFEABC2023,DiazICAE2023}: seven size classes from
+$15{\times}15$ to $50{\times}20$,
 each crisp duration replaced by an integer interval symmetric around
 it, with half-width drawn uniformly up to $15\%$ of the original
 value~\citep{DiazGA2020}. The benchmark is openly
@@ -554,9 +552,9 @@ across the 70 instances, versus $42.3\%$ for EST---the strongest plain
 rule overall, though weaker than MOR on the $20{\times}15$ training
 class---and $45.5\%$ for MOR (the SPT tie-break variant performs
 poorly, $70.6\%$). Published IJSP
-metaheuristics (fEABC~\citep{DiazFEABC2023}, ESABC~\citep{DiazICAE2023},
-TS~\citep{DiazTS2026}; 30 runs and minutes of per-instance search on
-dedicated hardware) are included as reference yardsticks from a
+metaheuristics (fEABC~\citep{DiazFEABC2023} and
+ESABC~\citep{DiazICAE2023}; 30 runs and minutes of per-instance search
+on dedicated hardware) are included as reference yardsticks from a
 different computational class rather than as direct competitors.
 
 \section{Results}
@@ -860,8 +858,7 @@ $2.2$--$4.6$ points of the fEABC 30-run average per class, and behind
 tuned tabu search everywhere. The policy's standalone RE ($13.4\%$
 in-size; $10$--$26\%$ zero-shot) thus sits between dispatching rules
 ($42.3\%$ for the best of them, EST) and per-instance metaheuristics
-($3.7\%$ mean RE for the tuned tabu search and $9.4\%$ for fEABC,
-30-run averages)---establishing, for the IJSP, the computational-class
+($9.4\%$ mean RE for fEABC over 30 runs)---establishing, for the IJSP, the computational-class
 trade-off documented for the deterministic JSP~\citep{Zhang2020L2D}.
 
 \section{Conclusions and Future Work}
@@ -901,8 +898,8 @@ seeds---enough to report means, bests and seed variance, not formal
 significance across seeds. Finally, this paper characterizes the policy
 in isolation; a controlled comparison with learned symbolic rules
 under matched budgets~\citep{DiazGP2026,Xu2025}, and the use of the
-policy's sampling distribution to initialize population-based
-search~\citep{DiazTS2026}, are the subject of dedicated ongoing work.
+policy's sampling distribution to initialize population-based search,
+are the subject of dedicated ongoing work.
 
 Beyond these, we see two directions: instance distributions with
 heterogeneous uncertainty, and curricula or fine-tuning protocols that
