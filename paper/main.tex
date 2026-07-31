@@ -276,28 +276,75 @@ midpoint-scenario bound).
 \section{Method}
 \label{sec:method}
 
-Figure~\ref{fig:arch} summarizes the decision loop. At every step the
-policy observes the partial schedule and the set of eligible
-operations---the next unscheduled operation of each unfinished job.
-Each candidate is described by $16$ dimensionless quantities and the
-overall shop state by $12$ more
-(Section~\ref{sec:features}). A shared network embeds every candidate
-independently; the embeddings are pooled into a single context vector
-that summarizes the decision as a whole; and a scoring head rates each
-candidate against that context, yielding a probability distribution
-over the eligible operations (Section~\ref{sec:arch}). The sampled or
-argmax choice is scheduled at its earliest feasible interval start
-(Eq.~\eqref{eq:semiactive}), and the loop repeats until all $nm$
-operations are placed. Training adjusts the shared weights with PPO
-from episode rewards (Section~\ref{sec:training}); because no weight
-dimension depends on $n$ or $m$, the same trained network dispatches
-instances of any size.
+The policy plays the same role as a classical dispatching rule. At any
+moment while a schedule is being built, some operations are
+\emph{eligible}: the next unscheduled operation of each job. A rule
+like SPT or MOR ranks these candidates with a hand-written
+formula---shortest processing time, most operations remaining---and
+schedules the winner at its earliest feasible start. Our policy does
+exactly the same job, with one difference: the ranking is produced by
+a small neural network that has \emph{learned} its preferences on the
+training instances, instead of being fixed in advance by a human.
+Everything around that choice (the schedule builder of
+Eq.~\eqref{eq:semiactive}, the interval arithmetic, the evaluation)
+is the same machinery every baseline in this paper uses.
+
+Figure~\ref{fig:arch} shows the network, and the rest of the section
+walks through it one piece at a time: Section~\ref{sec:mdp} states
+the construction loop in the form reinforcement learning requires
+(states, actions, rewards); Section~\ref{sec:features} describes what
+the policy \emph{sees}, i.e.\ how a candidate operation and the shop
+state become a handful of numbers; Section~\ref{sec:arch}, how those
+numbers become a choice; and Section~\ref{sec:training}, how the
+network is trained and used afterwards.
+
+\begin{figure}[t]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[
+  font=\small,
+  caja/.style={draw, rounded corners=2pt, align=center,
+               minimum height=7mm, inner sep=3pt},
+  flecha/.style={->, >=stealth}]
+\node[caja] (ops) {eligible ops\\ $|\mathcal{E}|\times 16$};
+\node[caja, right=9mm of ops] (phi) {shared MLP $\phi$\\ (weights
+  independent\\ of $n$, $m$)};
+\node[caja, right=9mm of phi] (emb) {embeddings\\ $|\mathcal{E}|\times h$};
+\node[caja, right=9mm of emb, yshift=7mm] (pool) {mean $+$ max\\ pooling};
+\node[caja, below=4mm of pool] (glob) {global state\\ $12$};
+\node[caja, right=9mm of pool, yshift=-5.5mm] (ctx) {$\mathrm{MLP}_{ctx}$\\
+  context $g$};
+\node[caja, right=10mm of ctx, yshift=7mm] (pol) {$\mathrm{MLP}_{\pi}([\phi_i;g])$\\
+  masked softmax};
+\node[caja, below=4mm of pol] (val) {$\mathrm{MLP}_{V}(g)$};
+\node[right=6mm of pol] (pi) {$\pi(i\,|\,s)$};
+\node[right=6mm of val] (v) {$V(s)$};
+\draw[flecha] (ops) -- (phi);
+\draw[flecha] (phi) -- (emb);
+\draw[flecha] (emb) -- (pool);
+\draw[flecha] (pool.east) -- (ctx.west |- pool.east) -- (ctx);
+\draw[flecha] (glob.east) -- (ctx.west |- glob.east) -- (ctx);
+\draw[flecha] (ctx) -- (pol);
+\draw[flecha] (ctx) -- (val);
+\draw[flecha] (emb.north) to[out=35, in=160] (pol.north west);
+\draw[flecha] (pol) -- (pi);
+\draw[flecha] (val) -- (v);
+\end{tikzpicture}}
+\caption{The size-invariant network. Every eligible operation is
+embedded by the same MLP $\phi$; mean and max pooling collapse the
+variable-size candidate set into fixed-size summaries that, joined
+with the global features, form the context $g$. The policy head
+scores each candidate embedding against $g$; the value head reads $g$
+alone. No dimension depends on the numbers of jobs or machines.}
+\label{fig:arch}
+\end{figure}
 
 \subsection{Dispatching as a Markov decision process}
 \label{sec:mdp}
 
-We formulate schedule construction as a finite-horizon MDP of exactly
-$nm$ steps. The \emph{state} after $t$ steps comprises the partial
+Reinforcement learning requires the loop above to be written as
+states, actions and rewards. Cast that way, schedule construction is a
+finite-horizon MDP of exactly $nm$ steps. The \emph{state} after $t$ steps comprises the partial
 schedule (job pointers, job and machine completion intervals) and the
 set $\mathcal{E}_t$ of eligible operations---the next unscheduled
 operation of each unfinished job, so $1\le|\mathcal{E}_t|\le n$. The
@@ -329,8 +376,15 @@ Section~\ref{sec:protocol}:
 \subsection{Dimensionless, uncertainty-aware features}
 \label{sec:features}
 
-Let $\mathrm{LB}$ denote the instance lower bound (worst case if the
-bound is itself an interval), used as the single temporal scale. Each
+Raw times do not travel between instances: a duration of $80$ is
+long when the whole schedule spans $1{,}200$ time units and short when
+it spans $3{,}000$, so a network fed raw values would be tied to the
+scale it was trained on. The representation therefore expresses every
+temporal quantity as a fraction of the instance's lower bound
+$\mathrm{LB}$ (worst case if the bound is itself an interval), and
+every uncertainty as a ratio of interval width to magnitude. What the
+policy sees is thereby comparable across instances---and across
+sizes, which is half of the size invariance. Each
 eligible operation $o=o_{jk}$ on machine $\mu=\nu_{jk}$ is described by
 the 16 dimensionless quantities of Table~\ref{tab:opfeatures}; the
 global context is the 12-dimensional aggregate of
@@ -393,51 +447,16 @@ total load & $\sum_\mu L(\mu)/(\mathrm{LB}\cdot m)$ \\
 \subsection{Size-invariant architecture}
 \label{sec:arch}
 
-\begin{figure}[t]
-\centering
-\resizebox{\linewidth}{!}{%
-\begin{tikzpicture}[
-  font=\small,
-  caja/.style={draw, rounded corners=2pt, align=center,
-               minimum height=7mm, inner sep=3pt},
-  flecha/.style={->, >=stealth}]
-\node[caja] (ops) {eligible ops\\ $|\mathcal{E}|\times 16$};
-\node[caja, right=9mm of ops] (phi) {shared MLP $\phi$\\ (weights
-  independent\\ of $n$, $m$)};
-\node[caja, right=9mm of phi] (emb) {embeddings\\ $|\mathcal{E}|\times h$};
-\node[caja, right=9mm of emb, yshift=7mm] (pool) {mean $+$ max\\ pooling};
-\node[caja, below=4mm of pool] (glob) {global state\\ $12$};
-\node[caja, right=9mm of pool, yshift=-5.5mm] (ctx) {$\mathrm{MLP}_{ctx}$\\
-  context $g$};
-\node[caja, right=10mm of ctx, yshift=7mm] (pol) {$\mathrm{MLP}_{\pi}([\phi_i;g])$\\
-  masked softmax};
-\node[caja, below=4mm of pol] (val) {$\mathrm{MLP}_{V}(g)$};
-\node[right=6mm of pol] (pi) {$\pi(i\,|\,s)$};
-\node[right=6mm of val] (v) {$V(s)$};
-\draw[flecha] (ops) -- (phi);
-\draw[flecha] (phi) -- (emb);
-\draw[flecha] (emb) -- (pool);
-\draw[flecha] (pool.east) -- (ctx.west |- pool.east) -- (ctx);
-\draw[flecha] (glob.east) -- (ctx.west |- glob.east) -- (ctx);
-\draw[flecha] (ctx) -- (pol);
-\draw[flecha] (ctx) -- (val);
-\draw[flecha] (emb.north) to[out=35, in=160] (pol.north west);
-\draw[flecha] (pol) -- (pi);
-\draw[flecha] (val) -- (v);
-\end{tikzpicture}}
-\caption{The size-invariant network. Every eligible operation is
-embedded by the same MLP $\phi$; mean and max pooling collapse the
-variable-size candidate set into fixed-size summaries that, joined
-with the global features, form the context $g$. The policy head
-scores each candidate embedding against $g$; the value head reads $g$
-alone. No dimension depends on the numbers of jobs or machines.}
-\label{fig:arch}
-\end{figure}
-
-
-Let $x_i\in\mathbb{R}^{16}$ be the features of eligible operation $i$
-and $g_0\in\mathbb{R}^{12}$ the global features (Figure~\ref{fig:arch}).
-The construction has three stages.
+The remaining obstacle is that the number of candidates changes at
+every step and from instance to instance, while a neural network wants
+inputs of a fixed size. The architecture dissolves this with two
+ideas: the \emph{same} small network reads every candidate, so any
+number of them can be processed; and the resulting embeddings are
+\emph{pooled} into fixed-size summaries, so the scoring stage can see
+the whole decision at once. Formally, let
+$x_i\in\mathbb{R}^{16}$ be the features of eligible operation $i$ and
+$g_0\in\mathbb{R}^{12}$ the global features; the construction has
+three stages (Figure~\ref{fig:arch}).
 
 \emph{Embed.} A shared two-layer MLP $\phi$ (width $h{=}128$,
 LayerNorm, ReLU, orthogonal initialization) maps each candidate to an
