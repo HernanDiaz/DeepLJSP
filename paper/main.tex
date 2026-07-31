@@ -499,10 +499,10 @@ Table~\ref{tab:hyper} \emph{without problem-specific tuning}. To assess
 whether this leaves performance on the table, we ran an automatic
 configuration study with irace~\citep{LopezIbanez2016}, racing an
 8-parameter space (learning rate, entropy coefficient, PPO clip, epochs,
-minibatch size, update period, GAE $\lambda$, hidden width) over $330$
-tuning experiments at reduced fidelity ($1$ training instance, $300$
-episodes, ${\sim}8$ minutes per evaluation), with training seeds as
-racing instances. The five elite configurations agreed on a coherent
+minibatch size, update period, GAE $\lambda$, hidden width) over a
+budget of $330$ tuning experiments ($309$ raced) at reduced fidelity
+($1$ training instance, $300$ episodes, ${\sim}8$ minutes per
+evaluation), with training seeds as racing instances. The five elite configurations agreed on a coherent
 faster-learning regime (learning rate $7$--$9{\cdot}10^{-4}$, clip
 $0.3$, minibatch $128$, updates every $2$ episodes, $\lambda{=}0.90$)
 and were insensitive to network width. However, at the full
@@ -513,8 +513,9 @@ ${\sim}60\%$ higher training cost: the low-fidelity optimum did not
 transfer.
 
 To rule out that this non-transfer was an artifact of the reduced tuning
-fidelity, a second, \emph{operating-fidelity} campaign ran $300$
-experiments, each training at the full $1000$ episodes on two instances
+fidelity, a second, \emph{operating-fidelity} campaign raced $295$
+experiments of a $300$ budget, each training at the full $1000$
+episodes on two instances
 (enabled by a ${\sim}3\times$ GPU-vectorized rollout implementation),
 over a $6$-parameter space seeded with the defaults and the low-fidelity
 elites. This campaign converged to a coherent region \emph{distinct}

@@ -337,10 +337,35 @@ if datos_e:
           f"{media_e_lex:.2f}% lex (texto: 14.5 campana 1 / 14.73 campana 2)")
     check_exacto("el elite confirmado no mejora el 13.4 por defecto",
                  media_e > 13.4, f"{media_e:.2f} > 13.4")
-pendiente("14.73 vs 13.52 (campana 2, elite #22)",
-          "registro del elite 22 no localizado en benchmarks/")
-pendiente("330 y 300 experimentos de las dos campanas",
-          "contar en tuning/ (rdata_backups, runner_logs)")
+# confirmacion del elite 22 (campana 2): tuning/confirm_elite22.log
+t22 = open("tuning/confirm_elite22.log", encoding="utf-8",
+           errors="replace").read()
+m = re.search(r"MEDIA\s+([\d.]+)\s+([\d.]+)\s+\+([\d.]+)", t22)
+if m:
+    check("elite 22: media (texto 14.73)", 14.73, float(m.group(1)))
+    check("default en esa confirmacion (texto 13.52)", 13.52,
+          float(m.group(2)))
+    check("delta (texto +1.21)", 1.21, float(m.group(3)))
+    check_exacto("mejor en 2, peor en 4",
+                 "mejor en 2 instancias, peor en 4" in t22)
+else:
+    pendiente("confirmacion del elite 22", "formato inesperado del log")
+
+# presupuestos de las dos campanas de irace
+raw = open("tuning/irace_deepsets.log", "rb").read()
+try:
+    t1 = raw.decode("utf-16")
+except Exception:
+    t1 = raw.decode("utf-8", errors="replace").replace(chr(0), "")
+u1 = [int(x) for x in re.findall(r"experimentsUsed:\s*(\d+)", t1)]
+t2 = open("tuning/irace_serious.log", encoding="utf-8",
+          errors="replace").read()
+u2 = [int(x) for x in re.findall(r"experimentsUsed:\s*(\d+)", t2)]
+check_exacto("campana 1: presupuesto 330, 309 usados",
+             bool(u1) and max(u1) == 309 and "remainingBudget: 330" in t1,
+             f"usados {max(u1) if u1 else '?'}")
+check_exacto("campana 2: 295 de 300",
+             bool(u2) and max(u2) == 295, f"usados {max(u2) if u2 else '?'}")
 
 # =========================================================================
 print("\n== tab:crosssize (zero-shot) ==")
