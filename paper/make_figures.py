@@ -28,9 +28,9 @@ plt.rcParams.update({"font.size": 11, "figure.dpi": 150})
 # ----------------------------------------------------------------------
 def fig_scaling():
     episodes = [100, 300, 1000]
-    ds_mean = [28.0, 16.4, 13.4]
-    ds_best = [25.0, 15.5, 12.3]
-    attn_mean = [17.5, 15.0]
+    ds_mean = [28.1, 16.6, 13.4]
+    ds_best = [25.2, 15.6, 12.3]
+    attn_mean = [17.6, 15.2]
 
     fig, ax = plt.subplots(figsize=(6, 4))
     ax.plot(episodes, ds_mean, "o-", color="seagreen", label="Deep Sets (mean of 3 seeds)")

@@ -539,11 +539,11 @@ near-equivalent configurations.
 
 Constructive baselines comprise priority dispatching rules (SPT, LPT,
 MOR, MWKR, with lexicographic interval comparisons; MOR is uniformly the
-strongest) and the Giffler--Thompson active schedule
+strongest of the four) and the Giffler--Thompson active schedule
 generator~\citep{GifflerThompson1960} with rule tie-breaks inside the
 machine conflict set. G\&T with MWKR tie-break is the strongest
-deterministic constructive baseline on this benchmark: $29.4\%$ mean RE
-across the 70 instances, versus $45.4\%$ for plain MOR dispatching (the
+deterministic constructive baseline on this benchmark: $29.5\%$ mean RE
+across the 70 instances, versus $45.5\%$ for plain MOR dispatching (the
 SPT tie-break variant performs poorly, $70.6\%$). Published IJSP
 metaheuristics (fEABC~\citep{DiazFEABC2023}, ESABC~\citep{DiazICAE2023},
 TS~\citep{DiazTS2026}; 30 runs and minutes of per-instance search on
@@ -559,11 +559,11 @@ different computational class rather than as direct competitors.
 Table~\ref{tab:insize} reports per-instance RE on the development set
 for increasing training budgets, and Figure~\ref{fig:scaling} the
 aggregate picture. Three observations: (i) the policy scales
-monotonically with budget ($28.0\%\to16.4\%\to13.4\%$ mean RE at
+monotonically with budget ($28.1\%\to16.6\%\to13.4\%$ mean RE at
 $100/300/1000$ episodes per instance) with clearly diminishing returns
 at the last step, locating the pure-budget ceiling near $11$--$12\%$;
 (ii) seed variance collapses with budget (per-instance makespan std of
-$10$--$24$ units at $1000$ episodes), indicating consistent learning
+$6$--$22$ units at $1000$ episodes), indicating consistent learning
 rather than lucky sampling; (iii) the gap to the best dispatching rule
 is a factor ${\approx}3.5$.
 
@@ -576,15 +576,15 @@ Deep Sets model, best-of-64 inference.}
 \toprule
 Budget & TA15 & TA16 & TA17 & TA18 & TA19 & TA20 \\
 \midrule
-100 eps & 34.1 [31.9] & 26.8 [22.8] & 28.1 [24.8] & 26.2 [24.9] &
-28.9 [24.1] & 24.0 [21.6] \\
-300 eps & 18.7 [17.1] & 16.1 [15.4] & 13.5 [12.3] & 16.9 [16.4] &
+100 eps & 34.1 [31.9] & 26.8 [22.8] & 28.2 [24.9] & 26.2 [24.9] &
+29.2 [24.1] & 24.3 [22.4] \\
+300 eps & 18.7 [17.1] & 16.1 [15.4] & 14.6 [13.3] & 16.9 [16.4] &
 16.3 [15.5] & 16.8 [16.1] \\
-1000 eps & \textbf{13.6} [12.1] & \textbf{12.5} [11.8] &
-\textbf{13.0} [11.8] & \textbf{15.9} [14.6] & \textbf{12.0} [11.6] &
-\textbf{13.4} [12.0] \\
+1000 eps & \textbf{13.7} [12.1] & \textbf{12.6} [11.8] &
+\textbf{13.0} [11.8] & \textbf{15.9} [14.6] & \textbf{12.1} [11.6] &
+\textbf{13.4} [12.2] \\
 \midrule
-MOR & 51.3 & 35.8 & 50.1 & 54.3 & 43.2 & 43.7 \\
+MOR & 51.3 & 35.8 & 50.1 & 54.2 & 43.2 & 43.7 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -655,8 +655,8 @@ concentrates in its sampling distribution.
 
 Two pre-LN self-attention blocks over the candidate embeddings
 (identical code path, one flag) were evaluated at both operating points
-with paired seeds: $+1.2\%$ mean makespan at $300$ episodes (all six
-instances within the noise threshold) and $+1.6\%$ at $1000$ (one
+with paired seeds: $+0.9\%$ mean makespan at $300$ episodes (all six
+instances within the noise threshold) and $+1.5\%$ at $1000$ (one
 instance significantly worse), at ${\approx}30\%$ higher per-episode
 cost (Table~\ref{tab:insize-attn}). At these budgets the pooled context
 already conveys the interaction information the policy can exploit;
@@ -672,8 +672,8 @@ set.}
 \toprule
 Configuration & 300 eps & 1000 eps \\
 \midrule
-Deep Sets & \textbf{16.4} [15.5] & \textbf{13.4} [12.3] \\
-+ attention ($B{=}2$) & 17.5 [16.1] & 15.0 [13.9] \\
+Deep Sets & \textbf{16.6} [15.6] & \textbf{13.4} [12.3] \\
++ attention ($B{=}2$) & 17.6 [16.3] & 15.2 [14.0] \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -702,8 +702,8 @@ representation changes must be co-designed with optimization.
 \subsection{Positioning and computational cost}
 \label{sec:positioning}
 
-Training the final model takes ${\approx}80$ minutes per seed
-($4{\times}1000$ episodes) on a commodity CPU; constructing a solution
+Training the final model takes $66$--$123$ minutes per seed across
+the three seeds ($4{\times}1000$ episodes) on a commodity CPU; constructing a solution
 takes milliseconds (greedy) to a few seconds (best-of-64 on
 $50{\times}20$). Raising the inference budget to best-of-$1024$ brings
 the full-benchmark mean RE to $12.7\%$ over the 70 instances---ahead of
@@ -721,7 +721,7 @@ trade-off documented for the deterministic JSP~\citep{Zhang2020L2D}.
 The three questions posed in the introduction now have answers. A
 constructive policy trained by PPO on four interval instances beats the
 best hand-crafted constructive baselines by a wide margin on its
-training class (Q1: $13.4\%$ versus $29.4\%$ for G\&T-MWKR and
+training class (Q1: $13.4\%$ versus $29.5\%$ for G\&T-MWKR and
 ${\approx}46\%$ for the best plain rule). Because the representation is
 dimensionless and the encoder permutation-invariant, one network serves
 the entire benchmark: evaluated zero-shot, it outperforms the best

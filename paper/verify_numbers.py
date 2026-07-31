@@ -121,9 +121,9 @@ for linea in open("benchmarks/all_baselines.csv",
                   encoding="utf-8").read().splitlines()[1:]:
     c = linea.split(",")
     ab[c[0]] = float(c[8])
-en_tex("$29.4\\%$ mean RE")
-check("G&T-MWKR sobre las 70 (texto 29.4)", 29.4, ab["G&T-MWKR"])
-check("MOR sobre las 70 (texto 45.4)", 45.4, ab["MOR"])
+en_tex("$29.5\\%$ mean RE")
+check("G&T-MWKR sobre las 70 (texto 29.5)", 29.5, ab["G&T-MWKR"])
+check("MOR sobre las 70 (texto 45.5)", 45.5, ab["MOR"])
 check("G&T-SPT sobre las 70 (texto 70.6)", 70.6, ab["G&T-SPT"])
 if ab["EST"] < ab["MOR"]:
     print(f"  AVISO EST ({ab['EST']:.1f}) < MOR ({ab['MOR']:.1f}): 'MOR is "
@@ -137,16 +137,16 @@ check("MOR medio en desarrollo (abstract ~46)", 46.0, mor_dev, tol=0.55)
 print("\n== tab:insize: recomputo desde schedules (componentwise) ==")
 TAB_INSIZE = {
     "v2-full":        {"TA15": (34.1, 31.9), "TA16": (26.8, 22.8),
-                       "TA17": (28.1, 24.8), "TA18": (26.2, 24.9),
-                       "TA19": (28.9, 24.1), "TA20": (24.0, 21.6)},
+                       "TA17": (28.2, 24.9), "TA18": (26.2, 24.9),
+                       "TA19": (29.2, 24.1), "TA20": (24.3, 22.4)},
     "v2-full-300ep":  {"TA15": (18.7, 17.1), "TA16": (16.1, 15.4),
-                       "TA17": (13.5, 12.3), "TA18": (16.9, 16.4),
+                       "TA17": (14.6, 13.3), "TA18": (16.9, 16.4),
                        "TA19": (16.3, 15.5), "TA20": (16.8, 16.1)},
-    "v2-full-1000ep": {"TA15": (13.6, 12.1), "TA16": (12.5, 11.8),
+    "v2-full-1000ep": {"TA15": (13.7, 12.1), "TA16": (12.6, 11.8),
                        "TA17": (13.0, 11.8), "TA18": (15.9, 14.6),
-                       "TA19": (12.0, 11.6), "TA20": (13.4, 12.0)},
+                       "TA19": (12.1, 11.6), "TA20": (13.4, 12.2)},
 }
-MEDIAS = {"v2-full": 28.0, "v2-full-300ep": 16.4, "v2-full-1000ep": 13.4}
+MEDIAS = {"v2-full": 28.1, "v2-full-300ep": 16.6, "v2-full-1000ep": 13.4}
 delta_max = 0.0
 for tag, celdas in TAB_INSIZE.items():
     datos = bench_por_instancia(tag)
@@ -169,7 +169,7 @@ print(f"  nota: delta maximo lex vs componentwise = {delta_max:.3f} puntos")
 
 # fila MOR de la tabla (viene de constructive_per_instance)
 FILA_MOR = {"TA15": 51.3, "TA16": 35.8, "TA17": 50.1,
-            "TA18": 54.3, "TA19": 43.2, "TA20": 43.7}
+            "TA18": 54.2, "TA19": 43.2, "TA20": 43.7}
 for ta, v in FILA_MOR.items():
     check(f"fila MOR {ta}", v, MOR_RE[ta])
 
@@ -187,13 +187,13 @@ if datos1000:
         m = sum(d["mids"]) / len(d["mids"])
         stds.append(math.sqrt(sum((x - m) ** 2 for x in d["mids"])
                               / (len(d["mids"]) - 1)))
-    check_exacto("std de makespan por instancia 10-24 unidades",
-                 8.0 <= min(stds) and max(stds) <= 26.0,
+    check_exacto("std de makespan por instancia 6-22 unidades",
+                 5.5 <= min(stds) and max(stds) <= 22.5,
                  f"rango {min(stds):.0f}-{max(stds):.0f}")
 
 # =========================================================================
 print("\n== tab:insize-attn ==")
-TAB_ATTN = {"v2-attn-300ep": (17.5, 16.1), "v2-attn-1000ep": (15.0, 13.9)}
+TAB_ATTN = {"v2-attn-300ep": (17.6, 16.3), "v2-attn-1000ep": (15.2, 14.0)}
 attn_media = {}
 for tag, (m_tex, b_tex) in TAB_ATTN.items():
     datos = bench_por_instancia(tag)
@@ -209,8 +209,8 @@ for tag, (m_tex, b_tex) in TAB_ATTN.items():
           sum(bests.values()) / len(bests))
 
 # +1.2% / +1.6% de makespan medio (pareado por instancia y semilla)
-for tag_a, tag_b, delta_tex in [("v2-full-300ep", "v2-attn-300ep", 1.2),
-                                ("v2-full-1000ep", "v2-attn-1000ep", 1.6)]:
+for tag_a, tag_b, delta_tex in [("v2-full-300ep", "v2-attn-300ep", 0.9),
+                                ("v2-full-1000ep", "v2-attn-1000ep", 1.5)]:
     da, db = bench_por_instancia(tag_a), bench_por_instancia(tag_b)
     if da and db:
         base = sum(sum(d["mids"]) for d in da.values())
@@ -269,8 +269,8 @@ d = json.load(open(sorted(glob.glob(
     "benchmarks/v2-full-1000ep__*.json"))[-1], encoding="utf-8"))
 minutos = [s["wall_time_s"] / 60 for s in d["seeds"].values()]
 media_min = sum(minutos) / len(minutos)
-check_exacto("~80 min por semilla (4x1000 episodios)",
-             70 <= media_min <= 90,
+check_exacto("66-123 min por semilla (4x1000 episodios)",
+             round(min(minutos)) == 66 and round(max(minutos)) == 123,
              f"semillas: {', '.join(f'{m:.0f}' for m in minutos)} min "
              f"(media {media_min:.0f})")
 
