@@ -1,43 +1,44 @@
-\documentclass[a4paper,11pt]{article}
-\usepackage[margin=2.2cm]{geometry}
-\usepackage[T1]{fontenc}
-\usepackage[utf8]{inputenc}
-\usepackage{lmodern}
-\usepackage{microtype}
-\usepackage{amsmath,amssymb,amsthm}
-\usepackage{booktabs}
+%% Plantilla oficial Springer Nature (sn-jnl v3.1, dic. 2024).
+%% JIM pide referencias APA autor-anyo -> opcion sn-apa.
+\documentclass[pdflatex,sn-apa]{sn-jnl}
+
 \usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{amsthm}
+\usepackage{booktabs}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
-\usepackage{hyperref}
 \usepackage{xcolor}
-\usepackage[round]{natbib}
-% plainnat emite \doi{...}; lo definimos antes para que salga el enlace
-% completo, como pide la guia de JIM
-\providecommand{\doi}[1]{\href{https://doi.org/#1}{\nolinkurl{https://doi.org/#1}}}
 
-\hypersetup{colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue}
+% la clase carga hyperref; DOIs como enlaces completos, como pide la guia
+\providecommand{\doi}[1]{\href{https://doi.org/#1}{\nolinkurl{https://doi.org/#1}}}
 
 \newcommand{\ECmax}{E[\mathbf{C}_{\max}]}
 \newcommand{\Cmax}{\mathbf{C}_{\max}}
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+
+\theoremstyle{thmstylethree}%
 \newtheorem{definition}{Definition}
+\theoremstyle{thmstyletwo}%
 \newtheorem{remark}{Remark}
 
-\title{\textbf{A Size-Invariant Deep Reinforcement Learning Policy\\
-for the Interval Job Shop Scheduling Problem}}
-
-\author{Hern\'an D\'iaz Rodr\'iguez\\[2pt]
-\small Department of Computing, University of Oviedo, Gij\'on, Spain\\
-\small \texttt{diazhernan@uniovi.es}\\
-\small ORCID: \todo{ORCID del autor}}
-\date{}
+\raggedbottom
 
 \begin{document}
-\maketitle
 
-\begin{abstract}
-Task durations on a shop floor are seldom known exactly at the moment
+\title[A Size-Invariant DRL Policy for the Interval Job Shop]{A
+Size-Invariant Deep Reinforcement Learning Policy for the Interval Job
+Shop Scheduling Problem}
+
+% ORCID: se introduce en Editorial Manager al enviar (obligatorio para
+% el autor de correspondencia); la clase no lo compone en la portada.
+\author*[1]{\fnm{Hern\'an} \sur{D\'iaz Rodr\'iguez}}\email{diazhernan@uniovi.es}
+
+\affil*[1]{\orgdiv{Department of Computing},
+\orgname{University of Oviedo}, \orgaddress{\city{Gij\'on},
+\country{Spain}}}
+
+\abstract{Task durations on a shop floor are seldom known exactly at the moment
 scheduling decisions must be made. The interval job shop scheduling
 problem (IJSP) models each processing time as a closed interval and
 evaluates schedules by interval arithmetic; its published solvers search
@@ -59,12 +60,13 @@ acceptance protocol with deterministic anchors supports three further
 findings: best-of-$N$ sampling yields consistent gains; self-attention
 does not improve on pooling at practical budgets; and multi-size
 training loses to a single-size specialist even at an equalized
-per-instance budget.
-\end{abstract}
+per-instance budget.}
 
-\noindent\textbf{Keywords:} job shop scheduling; interval uncertainty;
-deep reinforcement learning; neural combinatorial optimization; size
-invariance; dispatching.
+\keywords{job shop scheduling, interval uncertainty, deep reinforcement
+learning, neural combinatorial optimization, size invariance,
+dispatching}
+
+\maketitle
 
 \section{Introduction}
 \label{sec:intro}
@@ -749,6 +751,8 @@ Beyond these, we see two directions: instance distributions with
 heterogeneous uncertainty, and curricula or fine-tuning protocols that
 exploit size invariance to specialize cheaply on new size classes.
 
+\backmatter
+
 \section*{Statements and Declarations}
 
 \paragraph{Funding.} This work was supported by the Spanish Ministry of
@@ -768,7 +772,7 @@ openly upon submission. \todo{DOI del dep\'osito propio al enviar}
 % autor antes del envío (política de Springer Nature: en métodos o
 % agradecimientos).
 
-\bibliographystyle{plainnat}
+% el estilo lo fija la opcion de clase (sn-apa -> sn-apacite.bst)
 \bibliography{refs}
 
 \end{document}
