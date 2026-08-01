@@ -992,7 +992,12 @@ duration (lower) & $+0.8$ & job makespan & $-0.4$ \\
 \label{sec:positioning}
 
 Training the final model takes $66$--$123$ minutes per seed across
-the three seeds ($4{\times}1000$ episodes) on a commodity CPU; constructing a solution
+the three seeds ($4{\times}1000$ episodes) on a commodity CPU. The
+cost is dominated by environment interaction, not by the small
+network: a seed dispatches $1.2$ million operations, each paying for
+feature extraction over the unscheduled work, and the
+GPU-vectorization of rollouts in Section~\ref{sec:hyperconfig} bought
+its ${\sim}3\times$ precisely there. Constructing a solution
 takes milliseconds (greedy) to a few seconds (best-of-64 on
 $50{\times}20$). Per-instance comparisons are one-sided: a single
 greedy pass already improves on MOR, EST and G\&T-MWKR on each of the
