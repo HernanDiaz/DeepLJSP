@@ -327,7 +327,9 @@ from here. The policy head looks at each candidate's embedding next to
 $g$ and scores it; a \emph{softmax} turns the scores into the
 probabilities $\pi(i\,|\,s)$ (\emph{masked} means that unused
 padding slots are excluded). The value head reads $g$ alone and
-outputs $V(s)$.
+outputs $V(s)$. In total, four small two-layer MLPs---the candidate
+encoder $\phi$, the context combiner, and the two heads---composed
+into a single network and trained jointly end to end.
 
 The rest of the section makes each stage precise:
 Section~\ref{sec:mdp} states the construction loop formally (states,
