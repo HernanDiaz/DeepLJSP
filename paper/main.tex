@@ -514,6 +514,13 @@ into the context:
 g=\mathrm{MLP}_{ctx}\big(\big[\textstyle\frac1{|\mathcal{E}|}\sum_i\phi_i;\;
 \max_i\phi_i;\;g_0\big]\big)\in\mathbb{R}^{h}.
 \end{equation}
+This embed-then-pool pattern is the \emph{Deep Sets} construction
+of~\citet{Zaheer2017}, whose central result is that \emph{any}
+function invariant to the order of a set can be written in this
+form---so the simplicity costs no expressiveness in principle. The
+result tables refer to the base model by this name, in contrast to
+its attention variant (Section~\ref{sec:ablations-attn}).
+
 \emph{Score.} The \emph{policy head} rates each pair (candidate
 embedding, context)---``how good is operation $i$ given the decision
 as a whole''---and a softmax over the true candidates (padding masked
