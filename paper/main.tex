@@ -55,7 +55,7 @@ numbers of jobs and machines. Trained with proximal policy optimization
 on four $20{\times}15$ instances of the interval Taillard benchmark, the
 policy reaches $13.4\%$ mean relative error against crisp lower bounds
 on unseen instances of its training size, against ${\approx}46\%$ for
-the best priority dispatching rule, and, evaluated zero-shot, beats that
+the best priority dispatching rule, and, evaluated zero-shot (no further training), beats that
 rule on every tested instance of all seven size classes; the same
 weights transfer to the classical FT, La and ABZ families, and in
 Monte Carlo execution the policy's schedules are the most dependable
@@ -536,10 +536,12 @@ V(s)=\mathrm{MLP}_{V}(g).
 \end{equation}
 No parameter dimension depends on $n$ or $m$: the same
 ${\approx}1.2\times10^{5}$-parameter network dispatches any instance.
-The last policy layer is initialized with gain $10^{-2}$ so initial
-logits are near-uniform. Optionally, a stack of $B$ pre-LN
-self-attention blocks (multi-head, $4$ heads, no positional encoding,
-padding-masked) transforms $\{\phi_i\}$ before pooling; $B{=}0$ recovers
+The last policy layer is initialized with gain $10^{-2}$, so at the
+start every candidate receives a nearly equal score and the untrained
+policy is close to uniform. Optionally, a stack of $B$ \emph{self-attention} blocks---layers in
+which each candidate's embedding is updated by attending to every
+other candidate's (pre-LN, $4$ heads, no positional encoding,
+padding-masked)---transforms $\{\phi_i\}$ before pooling; $B{=}0$ recovers
 the base model exactly, and Section~\ref{sec:ablations-attn} evaluates
 $B{=}2$.
 
@@ -558,9 +560,13 @@ enabled by co-design with the normalized representation: $\gamma=1$
 signal reaches early decisions attenuated by $0.99^{nm}\!\approx\!0.05$
 for $20{\times}15$ instances) and batched minibatch updates with
 advantage normalization. Training on a set of instances proceeds in
-blocks (one instance at a time) with full weight transfer; sampled
-training episodes are interleaved with periodic greedy evaluations, and
-the best solution/model is tracked across both.
+blocks (one instance at a time) with full weight transfer. A \emph{rollout} is one complete
+construction episode played by the current policy: \emph{sampled} if
+each operation is drawn from $\pi$, as during training, or
+\emph{greedy} if every step takes the most probable one. Sampled
+training episodes are interleaved with periodic greedy evaluations,
+and the best solution and best saved weights (the \emph{checkpoint})
+are tracked across both.
 
 \begin{table}[t]
 \centering\small
@@ -580,7 +586,8 @@ advantage norm. & per update & initialization & orthogonal \\
 \end{table}
 
 \paragraph{Best-of-$N$ inference.} At evaluation time we exploit the
-stochastic policy: one greedy rollout plus $N-1$ samples, keeping the
+stochastic policy: one greedy rollout plus $N-1$ sampled ones,
+keeping the
 best solution under the ranking of Eq.~\eqref{eq:lex} ($N{=}64$). This
 choice is motivated empirically in Section~\ref{sec:ablations-bon}:
 during training, the best solutions frequently originate from sampled
@@ -622,8 +629,8 @@ gradients: the final model trains on \textbf{TA11--TA14}
 gradients, but every design and configuration decision was judged on
 their performance, so they are reported separately and excluded from
 claims about unseen data. The remaining 60 instances were touched by
-neither training nor development. Three independent training seeds are
-reported as mean and best. Performance is measured by RE,
+neither training nor development. Three independent training runs, differing only in their random
+seed, are reported as mean and best. Performance is measured by RE,
 Eq.~\eqref{eq:re}, using the published crisp lower bounds.
 
 \subsection{A pre-specified, anchor-verified protocol}
@@ -653,10 +660,15 @@ results were clearly negative.
 All reported results use the literature-standard hyperparameters of
 Table~\ref{tab:hyper} \emph{without problem-specific tuning}. To assess
 whether this leaves performance on the table, we ran an automatic
-configuration study with irace~\citep{LopezIbanez2016}, racing an
-8-parameter space (learning rate, entropy coefficient, PPO clip, epochs,
-minibatch size, update period, GAE $\lambda$, hidden width) over a
-budget of $330$ tuning experiments ($309$ raced) at reduced fidelity
+configuration study with irace~\citep{LopezIbanez2016}. irace
+\emph{races} candidate configurations: they are evaluated side by
+side on a growing set of instances (here, training seeds),
+statistical losers are dropped early, and the budget concentrates on
+the survivors, called the \emph{elite} configurations. The race
+covered an 8-parameter space (learning rate, entropy coefficient, PPO
+clip, epochs, minibatch size, update period, GAE $\lambda$, hidden
+width) over a budget of $330$ tuning experiments ($309$ raced) at
+reduced fidelity
 ($1$ training instance, $300$ episodes, ${\sim}8$ minutes per
 evaluation), with training seeds as racing instances. The five elite configurations agreed on a coherent
 faster-learning regime (learning rate $7$--$9{\cdot}10^{-4}$, clip
@@ -763,7 +775,9 @@ MOR & 51.3 & 35.8 & 50.1 & 54.2 & 43.2 & 43.7 \\
 \label{sec:results-crosssize}
 
 The size-invariant design allows direct evaluation of the
-$20{\times}15$-trained network on any class.
+$20{\times}15$-trained network on any class. Evaluation is
+\emph{zero-shot}: the trained weights are applied to sizes they never
+saw, with no additional training or fine-tuning of any kind.
 Figure~\ref{fig:crosssize} and Table~\ref{tab:crosssize} report
 zero-shot RE on unseen instances of all seven classes: every
 seed's network outperforms MOR on \emph{every} tested instance, with
@@ -773,7 +787,9 @@ up to $1000$-operation episodes. Notably, transfer quality improves
 with in-size training budget (mean over seeds: $30{\times}20$ from
 $30.3\%$ with the $300$-episode checkpoints to $25.9\%$ with the
 $1000$-episode ones; $50{\times}15$ from $22.2\%$ to $15.3\%$), i.e.\
-the specialist learns structure that is not size-bound.
+the \emph{specialist}---our shorthand for the network trained on the
+single $20{\times}15$ class---learns structure that is not
+size-bound.
 
 \begin{table}[t]
 \centering\small
@@ -946,7 +962,7 @@ pool: $\bar\varepsilon\times10^{3}=6.1$ for greedy and best-of-64
 alike---optimizing the worst case costs nothing in
 predictability---against $6.3$ for EST, $6.9$ for G\&T-MWKR and $7.0$
 for MOR. The advantage over MOR and G\&T-MWKR is systematic ($15/15$
-and $14/15$ instances, paired Wilcoxon $p{=}10^{-4}$); the edge over
+and $14/15$ instances, paired Wilcoxon signed-rank test $p{=}10^{-4}$); the edge over
 EST is not significant ($9/15$, $p{=}0.36$). EST's role as the
 robustness benchmark that learned schedulers match but do not beat
 mirrors what the companion study observes for evolved
@@ -1008,8 +1024,9 @@ its ${\sim}3\times$ precisely there. Constructing a solution
 takes milliseconds (greedy) to a few seconds (best-of-64 on
 $50{\times}20$). Per-instance comparisons are one-sided: a single
 greedy pass already improves on MOR, EST and G\&T-MWKR on each of the
-70 instances (paired Wilcoxon, $p<10^{-12}$; matched-pairs rank-biserial
-correlation $1$). Raising the inference budget to best-of-$1024$ brings
+70 instances (paired Wilcoxon, $p<10^{-12}$; the matched-pairs rank-biserial
+correlation, an effect size that reaches $1$ only when one side wins
+every single pair, is exactly $1$). Raising the inference budget to best-of-$1024$ brings
 the full-benchmark mean RE to $12.7\%$ over the 70 instances---ahead of
 every deterministic constructive baseline on every instance, within
 $2.2$--$4.6$ points of the fEABC 30-run average per class, and behind
