@@ -191,6 +191,12 @@ class AgentV2:
             self.training_losses["policy"].append(losses["policy_loss"])
             self.training_losses["value"].append(losses["value_loss"])
 
+        # El logger vuelca a disco cada 10 filas y nadie lo cierra: sin este
+        # flush se pierden los ultimos episodios cuando el total no es
+        # multiplo de 10 (con 1000 no se notaba; con 25 se pierden 5).
+        if self.csv_logger is not None:
+            self.csv_logger.save()
+
         return self, {"best_makespan": self.best_makespan}
 
     # ------------------------------------------------------------------
