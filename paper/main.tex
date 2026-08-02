@@ -885,10 +885,12 @@ Taillard tables.
 Table~\ref{tab:classics} positions the policy (best-of-64, mean and
 best of the three seeds) against the shared-evaluator rules and the
 published 30-run averages of the per-instance metaheuristics. The
-policy improves on EST, MOR and G\&T-MWKR on all twelve instances and
-lands at $12.4\%$ mean RE---between the constructive baselines
+policy improves on EST and G\&T-MWKR on all twelve instances and lands
+at $12.4\%$ mean RE---between the hand-crafted constructive baselines
 ($30.1\%$ for G\&T-MWKR) and the per-instance searchers (GA at
-$9.8\%$, fEABC at $5.8\%$, ESABC at $5.5\%$). On La40, ABZ7 and ABZ8
+$9.8\%$, fEABC at $5.8\%$, ESABC at $5.5\%$), and ahead of the
+evolved rule of the companion study ($17.9\%$), which occupies
+the same one-pass computational class. On La40, ABZ7 and ABZ8
 its best seed edges past the GA average itself, with single-pass
 inference and no retraining. Figure~\ref{fig:ladder} orders the
 methods by mean RE and colours them by computational class: the
@@ -909,27 +911,29 @@ policy sits alone between the two.
 \centering\small
 \caption{RE (\%) on the 12 classical interval instances (cross-family
 zero-shot). Policy: best-of-64, mean over the three seeds;
-Policy$^{b}$: best seed. Published metaheuristics are 30-run averages.
-Reference bounds are the best-known expected-makespan values, a
-different scale from Taillard's crisp bounds.}
+Policy$^{b}$: best seed. GP is the featured evolved rule of the companion
+study~\citep{DiazGP2026}, one pass like the other constructive
+methods. Published metaheuristics are 30-run averages. Reference
+bounds are the best-known expected-makespan values, a different scale
+from Taillard's crisp bounds.}
 \label{tab:classics}
 \begin{tabular}{lccccccccc}
 \toprule
-Inst. & EST & MOR & G\&T & Policy & Policy$^{b}$ & GA & ABC$_{E3}$ &
+Inst. & EST & G\&T & GP & Policy & Policy$^{b}$ & GA & ABC$_{E3}$ &
 fEABC & ESABC \\
 \midrule
-FT10 & 32.6 & 41.8 & 32.2 & 8.5 & 6.3 & 5.2 & 4.1 & 3.5 & 3.0 \\
-FT20 & 27.7 & 43.5 & 40.0 & 5.8 & 4.4 & 4.4 & 1.7 & 1.8 & 1.8 \\
-La21 & 40.2 & 48.7 & 24.1 & 12.6 & 10.4 & 5.0 & 5.0 & 4.2 & 4.0 \\
-La24 & 42.2 & 34.3 & 26.3 & 11.9 & 10.9 & 6.3 & 5.1 & 4.9 & 5.0 \\
-La25 & 36.6 & 47.4 & 16.9 & 9.6 & 9.2 & 5.1 & 3.9 & 3.4 & 2.7 \\
-La27 & 47.2 & 45.0 & 34.8 & 11.3 & 10.9 & 10.2 & 4.7 & 4.6 & 4.1 \\
-La29 & 47.9 & 46.4 & 24.5 & 16.6 & 14.0 & 14.2 & 8.6 & 7.4 & 7.0 \\
-La38 & 54.8 & 47.7 & 27.0 & 12.8 & 11.7 & 9.2 & 6.9 & 6.1 & 5.8 \\
-La40 & 20.9 & 41.6 & 27.9 & 9.3 & 8.1 & 8.7 & 4.2 & 4.6 & 4.1 \\
-ABZ7 & 51.6 & 36.1 & 28.7 & 13.4 & 12.0 & 12.5 & 7.3 & 6.6 & 6.7 \\
-ABZ8 & 43.0 & 57.7 & 36.9 & 17.3 & 16.9 & 18.5 & 12.1 & 11.1 & 10.9 \\
-ABZ9 & 42.7 & 59.0 & 41.8 & 19.2 & 18.8 & 18.0 & 13.1 & 11.6 & 11.2 \\
+FT10 & 32.6 & 32.2 & 20.4 & 8.5 & 6.3 & 5.2 & 4.1 & 3.5 & 3.0 \\
+FT20 & 27.7 & 40.0 & 13.2 & 5.8 & 4.4 & 4.4 & 1.7 & 1.8 & 1.8 \\
+La21 & 40.2 & 24.1 & 15.0 & 12.6 & 10.4 & 5.0 & 5.0 & 4.2 & 4.0 \\
+La24 & 42.2 & 26.3 & 10.1 & 11.9 & 10.9 & 6.3 & 5.1 & 4.9 & 5.0 \\
+La25 & 36.6 & 16.9 & 11.8 & 9.6 & 9.2 & 5.1 & 3.9 & 3.4 & 2.7 \\
+La27 & 47.2 & 34.8 & 25.0 & 11.3 & 10.9 & 10.2 & 4.7 & 4.6 & 4.1 \\
+La29 & 47.9 & 24.5 & 13.4 & 16.6 & 14.0 & 14.2 & 8.6 & 7.4 & 7.0 \\
+La38 & 54.8 & 27.0 & 15.0 & 12.8 & 11.7 & 9.2 & 6.9 & 6.1 & 5.8 \\
+La40 & 20.9 & 27.9 & 13.3 & 9.3 & 8.1 & 8.7 & 4.2 & 4.6 & 4.1 \\
+ABZ7 & 51.6 & 28.7 & 19.7 & 13.4 & 12.0 & 12.5 & 7.3 & 6.6 & 6.7 \\
+ABZ8 & 43.0 & 36.9 & 24.7 & 17.3 & 16.9 & 18.5 & 12.1 & 11.1 & 10.9 \\
+ABZ9 & 42.7 & 41.8 & 33.4 & 19.2 & 18.8 & 18.0 & 13.1 & 11.6 & 11.2 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -963,10 +967,10 @@ trade-off documented for the deterministic JSP~\citep{Zhang2020L2D}.
 \begin{figure}[t]
   \centering
   \includegraphics[width=.62\linewidth]{figures/fig_headtohead.pdf}
-  \caption{The policy against the strongest constructive baseline, one
-  point per instance over the 70 interval Taillard instances. Points
-  below the diagonal are instances where the policy wins; there are no
-  others, at either inference budget.}
+  \caption{The policy against the strongest published constructive
+  method, the evolved rule of the companion study~\citep{DiazGP2026},
+  one point per instance over the 70 interval Taillard instances.
+  Points below the diagonal are instances where the policy wins.}
   \label{fig:headtohead}
 \end{figure}
 
@@ -985,8 +989,10 @@ trade-off documented for the deterministic JSP~\citep{Zhang2020L2D}.
 \centering\small
 \caption{Mean RE (\%) per size class over the 70 interval Taillard
 instances. Constructive methods are a single deterministic pass unless
-stated; fEABC is a 30-run average on dedicated hardware, quoted as a
-reference from a different computational class. The
+stated; the GP rule is the featured evolved rule of the companion
+study~\citep{DiazGP2026}, also one pass; fEABC is a 30-run average on
+dedicated hardware, quoted as a reference from a different
+computational class. The
 $20{\times}15$ column ($\dagger$) is the training and development
 class: it contains the four instances the policy trained on and the
 six on which the design decisions were made, and is therefore not a
@@ -1002,6 +1008,8 @@ All \\
 EST & 32.3 & 49.2 & 41.5 & 42.4 & 56.6 & 33.2 & 41.0 & 42.3 \\
 MOR & 41.4 & 46.6 & 47.2 & 44.1 & 58.8 & 34.1 & 45.9 & 45.5 \\
 G\&T-MWKR & 26.8 & 28.9 & 30.9 & 33.6 & 36.8 & 23.9 & 25.5 & 29.5 \\
+\midrule
+GP rule & 15.7 & 16.6 & 18.1 & 21.1 & 24.1 & 13.8 & 14.6 & 17.7 \\
 Policy (greedy) & 16.9 & 18.3 & 18.5 & 21.2 & 26.1 & 15.8 & 18.8 & 19.4 \\
 Policy (best-of-1024) & \textbf{8.8} & \textbf{11.2} & \textbf{12.9} &
 \textbf{15.0} & \textbf{19.6} & \textbf{10.4} & \textbf{13.4} &
@@ -1229,6 +1237,73 @@ prices an instance in milliseconds is a natural generator of initial
 solutions for population-based search, and the quality of its sampling
 distribution, documented here at a fixed budget, is what such a use
 would exploit.
+
+
+\begin{appendices}
+
+\section{Per-instance results}\label{sec:appendix}
+
+Table~\ref{tab:perinstance} lists, for each of the 70 interval Taillard
+instances, the crisp lower bound and the RE (\%) of the earliest-start
+rule, of Giffler--Thompson with MWKR tie-breaking, of the evolved rule
+of the companion study~\citep{DiazGP2026}, and of the policy at its two
+inference budgets: greedy, averaged over the three training seeds, and
+best-of-1024. The ten $20{\times}15$ instances TA11--TA20 are the
+training and development set.
+
+\begin{table}[h]
+\centering\scriptsize
+\caption{Per-instance RE (\%) of the constructive methods and of the
+policy. LB is the crisp Taillard lower bound; Pol.\ is the greedy
+policy and Pol.$^{\ast}$ the best-of-1024 policy.}
+\label{tab:perinstance}
+\renewcommand{\arraystretch}{0.92}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrrrrr@{\hskip 0.7em}|@{\hskip 0.7em}lrrrrrr}
+\toprule
+Inst. & LB & EST & G\&T & GP & Pol. & Pol.$^{\ast}$ &
+Inst. & LB & EST & G\&T & GP & Pol. & Pol.$^{\ast}$ \\
+\midrule
+TA1 & 1231 & 49.9 & 26.1 & 19.3 & 16.8 & 11.0 & TA36 & 1819 & 41.1 & 42.8 & 23.8 & 18.9 & 13.3 \\
+TA2 & 1244 & 24.9 & 27.8 & 14.2 & 19.3 & 6.6 & TA37 & 1771 & 43.4 & 35.6 & 18.4 & 24.2 & 17.7 \\
+TA3 & 1218 & 33.0 & 33.2 & 14.1 & 16.8 & 10.1 & TA38 & 1673 & 45.0 & 28.0 & 20.1 & 23.2 & 14.8 \\
+TA4 & 1175 & 32.0 & 27.7 & 13.0 & 21.7 & 10.0 & TA39 & 1795 & 46.6 & 28.9 & 22.4 & 17.2 & 13.5 \\
+TA5 & 1224 & 27.2 & 33.0 & 14.7 & 17.0 & 8.4 & TA40 & 1651 & 46.9 & 42.3 & 26.1 & 27.9 & 20.9 \\
+TA6 & 1238 & 26.8 & 18.2 & 13.7 & 11.0 & 7.4 & TA41 & 1906 & 44.6 & 45.0 & 33.4 & 31.6 & 24.5 \\
+TA7 & 1227 & 30.7 & 26.1 & 17.7 & 16.7 & 7.9 & TA42 & 1884 & 71.1 & 38.1 & 24.3 & 25.4 & 18.3 \\
+TA8 & 1217 & 23.7 & 25.0 & 14.8 & 16.8 & 7.9 & TA43 & 1809 & 68.7 & 39.8 & 22.3 & 29.0 & 20.6 \\
+TA9 & 1274 & 37.7 & 28.2 & 20.0 & 15.6 & 8.9 & TA44 & 1948 & 52.1 & 34.7 & 25.8 & 22.6 & 19.0 \\
+TA10 & 1241 & 37.0 & 22.1 & 15.4 & 16.9 & 10.2 & TA45 & 1997 & 50.2 & 33.7 & 14.9 & 21.2 & 13.1 \\
+TA11 & 1357 & 56.2 & 30.7 & 17.5 & 19.5 & 10.6 & TA46 & 1957 & 60.8 & 31.6 & 22.4 & 23.6 & 17.7 \\
+TA12 & 1367 & 48.8 & 34.6 & 17.6 & 17.1 & 10.9 & TA47 & 1807 & 46.8 & 30.1 & 25.6 & 25.2 & 19.1 \\
+TA13 & 1342 & 60.2 & 26.9 & 13.3 & 19.3 & 13.2 & TA48 & 1912 & 59.1 & 33.7 & 21.1 & 24.4 & 18.4 \\
+TA14 & 1345 & 39.5 & 29.7 & 13.2 & 17.4 & 9.3 & TA49 & 1931 & 51.0 & 35.3 & 20.1 & 27.7 & 21.3 \\
+TA15 & 1339 & 48.1 & 30.6 & 16.7 & 19.7 & 11.4 & TA50 & 1833 & 61.4 & 46.2 & 31.3 & 30.2 & 24.1 \\
+TA16 & 1360 & 45.2 & 34.0 & 15.6 & 17.1 & 10.8 & TA51 & 2760 & 33.8 & 34.7 & 23.2 & 19.1 & 11.9 \\
+TA17 & 1462 & 58.9 & 17.7 & 13.9 & 15.7 & 9.8 & TA52 & 2756 & 38.0 & 26.5 & 12.7 & 16.0 & 11.3 \\
+TA18 & 1377 & 43.8 & 31.8 & 23.6 & 21.1 & 14.3 & TA53 & 2717 & 34.1 & 18.3 & 11.8 & 15.7 & 9.7 \\
+TA19 & 1332 & 45.8 & 29.3 & 20.0 & 16.7 & 11.6 & TA54 & 2839 & 20.9 & 16.1 & 8.2 & 9.3 & 5.6 \\
+TA20 & 1348 & 45.7 & 24.1 & 15.1 & 19.0 & 10.2 & TA55 & 2679 & 31.7 & 29.2 & 15.5 & 19.4 & 14.8 \\
+TA21 & 1642 & 33.4 & 28.0 & 20.2 & 16.6 & 11.1 & TA56 & 2781 & 34.8 & 19.8 & 10.9 & 14.4 & 8.6 \\
+TA22 & 1561 & 44.2 & 30.8 & 17.4 & 20.9 & 14.3 & TA57 & 2943 & 32.9 & 20.0 & 9.6 & 15.5 & 9.6 \\
+TA23 & 1518 & 42.8 & 35.3 & 17.8 & 16.2 & 13.6 & TA58 & 2885 & 37.4 & 26.3 & 13.6 & 14.5 & 9.0 \\
+TA24 & 1644 & 56.3 & 23.8 & 14.1 & 15.1 & 10.3 & TA59 & 2655 & 26.6 & 28.2 & 16.7 & 19.5 & 13.9 \\
+TA25 & 1558 & 45.8 & 33.8 & 16.6 & 19.6 & 14.0 & TA60 & 2723 & 41.7 & 19.8 & 15.5 & 14.3 & 9.7 \\
+TA26 & 1591 & 42.8 & 31.2 & 26.9 & 18.0 & 14.3 & TA61 & 2868 & 45.7 & 25.4 & 15.4 & 20.1 & 13.9 \\
+TA27 & 1652 & 50.0 & 31.1 & 21.4 & 17.4 & 13.6 & TA62 & 2869 & 43.0 & 27.6 & 17.2 & 21.2 & 15.5 \\
+TA28 & 1603 & 36.8 & 26.8 & 12.4 & 18.1 & 10.0 & TA63 & 2755 & 38.8 & 23.8 & 13.4 & 17.5 & 13.7 \\
+TA29 & 1583 & 28.8 & 32.0 & 17.2 & 18.3 & 12.0 & TA64 & 2702 & 38.2 & 28.4 & 12.2 & 17.5 & 11.6 \\
+TA30 & 1528 & 34.2 & 36.1 & 17.0 & 24.3 & 15.8 & TA65 & 2725 & 42.9 & 30.0 & 20.5 & 22.1 & 16.1 \\
+TA31 & 1764 & 30.7 & 34.4 & 24.5 & 21.4 & 12.1 & TA66 & 2845 & 41.8 & 28.0 & 11.9 & 19.3 & 13.8 \\
+TA32 & 1774 & 42.7 & 33.3 & 19.0 & 22.1 & 18.2 & TA67 & 2825 & 31.7 & 26.1 & 15.2 & 18.0 & 12.5 \\
+TA33 & 1788 & 51.3 & 34.8 & 27.5 & 25.4 & 18.2 & TA68 & 2784 & 50.1 & 19.1 & 10.6 & 14.9 & 10.4 \\
+TA34 & 1828 & 45.9 & 31.8 & 20.7 & 21.0 & 15.8 & TA69 & 3071 & 35.3 & 22.8 & 12.9 & 16.2 & 10.6 \\
+TA35 & 2007 & 30.3 & 24.1 & 8.4 & 10.8 & 5.1 & TA70 & 2995 & 42.9 & 23.4 & 16.7 & 21.8 & 15.8 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{appendices}
 
 \backmatter
 

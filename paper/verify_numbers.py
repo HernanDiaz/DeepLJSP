@@ -537,5 +537,66 @@ check_exacto("las features de anchura no aportan (|delta|<=0.5)",
              f"{_imp['dur_width_rel']:+.2f} / {_imp['est_width_rel']:+.2f}")
 
 # =========================================================================
+
+print("\n== la regla del companion como baseline publicado ==")
+_gp = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/reevo_fixedfit/summary.csv", encoding="utf-8")):
+    if r["method"] == "gp_tuned_seed1":
+        _gp[ta_de(r["instance"])] = float(r["re"])
+check_exacto("la regla destacada cubre las 70", len(_gp) == 70, str(len(_gp)))
+check("GP sobre las 70 (publicado 17.71)", 17.71, sum(_gp.values()) / 70)
+_gp_clases = [sum(_gp[f"TA{i * 10 + j + 1}"] for j in range(10)) / 10
+              for i in range(7)]
+for c, v_tex in enumerate([15.7, 16.6, 18.1, 21.1, 24.1, 13.8, 14.6]):
+    check(f"tab:seventy GP clase {c + 1} (texto {v_tex})", v_tex,
+          _gp_clases[c])
+
+# el enfrentamiento: la politica greedy PIERDE, la muestreada gana
+_g70 = {ta: gre[ta] for ta in _gp}
+gana_gre = sum(_g70[ta] < _gp[ta] for ta in _gp)
+gana_bo = sum(_bo[ta] < _gp[ta] for ta in _gp)
+check_exacto("greedy gana al GP en 21 de 70", gana_gre == 21, f"{gana_gre}/70")
+check_exacto("best-of-1024 gana al GP en 67 de 70", gana_bo == 67,
+             f"{gana_bo}/70")
+_d_gre = sorted(_gp[ta] - _g70[ta] for ta in _gp)
+_d_bo = sorted(_gp[ta] - _bo[ta] for ta in _gp)
+check("mediana del deficit greedy (texto -2.0)", -2.0, _d_gre[35], tol=0.06)
+check("mediana de la ventaja bo1024 (texto +4.5)", 4.5, _d_bo[35], tol=0.06)
+try:
+    from scipy import stats as _st
+    p_gre = _st.wilcoxon([_gp[ta] - _g70[ta] for ta in _gp])[1]
+    p_bo = _st.wilcoxon([_gp[ta] - _bo[ta] for ta in _gp])[1]
+    check_exacto("p del deficit greedy ~4.6e-4",
+                 4.0e-4 <= p_gre <= 5.2e-4, f"{p_gre:.2e}")
+    check_exacto("p de la ventaja bo1024 < 1e-11", p_bo < 1e-11,
+                 f"{p_bo:.2e}")
+except ImportError:
+    pendiente("Wilcoxon frente al GP", "sin scipy")
+
+# GP-eps a presupuesto igualado, citado en el texto
+_geps = list(__import__("csv").DictReader(
+    open("benchmarks/fair_gp_eps.csv", encoding="utf-8")))
+check("GP-eps best-of-1024 (texto 14.1)", 14.1,
+      sum(float(x["best_at_1024"]) for x in _geps) / len(_geps))
+
+print("\n== apendice por instancia ==")
+_blk = TEX[TEX.index("\\label{tab:perinstance}"):]
+_blk = _blk[_blk.index("\\midrule"):_blk.index("\\bottomrule")]
+_n = len(re.findall(r"TA\d+ & \d+ &", _blk))
+check_exacto("filas del apendice: 70/70", _n == 70, f"{_n}/70")
+# y sus columnas coinciden con las fuentes, no solo su numero
+_filas = {m[0]: m[1:] for m in re.findall(
+    r"(TA\d+) & \d+ & ([\d.]+) & ([\d.]+) & ([\d.]+) & ([\d.]+) & ([\d.]+)",
+    _blk)}
+_mal = 0
+for ta, celdas in _filas.items():
+    reales = (est_pi[ta], GT_RE[ta], _gp[ta], gre[ta], _bo[ta])
+    for v_tex, v_dat in zip(celdas, reales):
+        if abs(float(v_tex) - v_dat) > 0.051:
+            _mal += 1
+check_exacto(f"las {len(_filas) * 5} celdas del apendice", _mal == 0,
+             f"{_mal} mal")
+
 print(f"\n{ok_n} comprobaciones correctas, {fallo_n} fallos, "
       f"{pend_n} pendientes de fuente")

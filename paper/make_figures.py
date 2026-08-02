@@ -165,13 +165,16 @@ def fig_headtohead():
     import csv
     from collections import defaultdict
 
-    base = {r["ta"]: float(r["GT-MWKR_re"]) for r in
-            csv.DictReader(open("benchmarks/constructive_per_instance.csv",
-                                encoding="utf-8"))}
-
     def _ta(nombre):
         m = re.search(r"tai(\d+_\d+)_(\d+)", nombre.lower())
         return "TA%d" % (TA_BASE[m.group(1)] + int(m.group(2)))
+
+    # el rival es la regla destacada del companion (17.71% sobre las 70),
+    # el mejor metodo constructivo publicado para este benchmark
+    base = {_ta(r["instance"]): float(r["re"]) for r in
+            csv.DictReader(open("benchmarks/reevo_fixedfit/summary.csv",
+                                encoding="utf-8"))
+            if r["method"] == "gp_tuned_seed1"}
 
     gre = defaultdict(list)
     for r in csv.DictReader(open("benchmarks/fair_v2_greedy.csv",
@@ -198,7 +201,7 @@ def fig_headtohead():
                color="seagreen", marker="^", label="Policy, best-of-1024",
                zorder=3)
     ax.set_xlim(lim); ax.set_ylim(lim)
-    ax.set_xlabel("G&T-MWKR: RE (%)")
+    ax.set_xlabel("GP rule: RE (%)")
     ax.set_ylabel("Policy: RE (%)")
     ax.text(0.97, 0.06, "policy better", transform=ax.transAxes,
             ha="right", fontsize=9, color="seagreen")
