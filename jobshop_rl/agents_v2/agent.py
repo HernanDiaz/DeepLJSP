@@ -69,6 +69,28 @@ class AgentV2:
         self.total_episodes = 0
 
     # ------------------------------------------------------------------
+    # Traza de entrenamiento
+    # ------------------------------------------------------------------
+
+    def _log_episode(self, inicio: float, ventana: int = 30):
+        """Una fila por episodio: actual, mejor y media movil del makespan.
+
+        Los makespan del v2 son escalares de peor caso, asi que ambos
+        limites del logger reciben el mismo valor.
+        """
+        actual = self.training_makespan_history[-1]
+        recientes = self.training_makespan_history[-ventana:]
+        media = sum(recientes) / len(recientes)
+        mejor = self.best_makespan
+        self.csv_logger.log_step(
+            episode=self.total_episodes,
+            current_makespan_lower=actual, current_makespan_upper=actual,
+            best_makespan_lower=mejor, best_makespan_upper=mejor,
+            avg_makespan_lower=media, avg_makespan_upper=media,
+            training_time=time.time() - inicio,
+        )
+
+    # ------------------------------------------------------------------
     # Interacción con el entorno
     # ------------------------------------------------------------------
 
@@ -138,6 +160,7 @@ class AgentV2:
 
     def train(self, episodes: int = 100, **_ignored_v1_kwargs):
         """Entrena con muestreo estocástico y evaluación greedy periódica."""
+        inicio = time.time()
         for ep in range(1, episodes + 1):
             makespan, total_reward = self._run_episode(sample=True, store=True)
             self.total_episodes += 1
@@ -155,6 +178,12 @@ class AgentV2:
             if ep % self.greedy_eval_every == 0:
                 greedy_mk, _ = self._run_episode(sample=False, store=False)
                 self._track_best(greedy_mk)
+
+            # Traza por episodio. El v1 la escribia y el v2 no, de modo que
+            # los logs de las campañas quedaban con cabecera y sin filas: sin
+            # ellos no hay curva de aprendizaje que dibujar.
+            if self.csv_logger is not None:
+                self._log_episode(inicio)
 
         # No dejar gradientes parciales pendientes
         if len(self.buffer) > 0:
