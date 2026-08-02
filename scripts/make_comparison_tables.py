@@ -112,7 +112,7 @@ def main():
              medias_por_clase(bo1024) if bo1024 else {}, negrita=True),
         "\\midrule",
         fila("fEABC (30 runs)", medias_por_clase(feabc)),
-        fila("TS (30 runs)", medias_por_clase(ts)),
+        # TS fuera: no publicado (decision de la purga del 2026-08-01)
         "\\bottomrule",
         "\\end{tabular}",
         "\\end{table}",

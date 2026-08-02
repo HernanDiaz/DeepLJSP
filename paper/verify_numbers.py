@@ -278,10 +278,32 @@ filas = open("benchmarks/fair_v2_greedy.csv",
 vals = [float(l.split(",")[3]) for l in filas]
 check("politica greedy sobre las 70 (texto 19.4)", 19.4,
       sum(vals) / len(vals))
-pendiente("best-of-1024 = 12.7 sobre las 70",
-          "sin CSV localizado (solo fair_gp_eps.csv, que es del GP)")
-pendiente("a 2.2-4.6 puntos del fEABC por clase",
-          "necesita el bo1024 por clase (los publicados ya estan)")
+_bo = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_fair_bo1024.csv", encoding="utf-8")):
+    _bo.setdefault(ta_de(r["instance"]), []).append(float(r["re_comp"]))
+_bo = {ta: min(v) for ta, v in _bo.items()}
+check_exacto("bo1024: 70 instancias, 3 checkpoints", len(_bo) == 70,
+             f"{len(_bo)}")
+check("bo1024 media sobre las 70 (texto 13.0)", 13.0,
+      sum(_bo.values()) / 70)
+gana_bo = {n: sum(_bo[ta] < d[ta] for ta in _bo)
+           for n, d in [("MOR", MOR_RE), ("G&T", GT_RE), ("EST", est_pi)]}
+check_exacto("bo1024 gana a MOR, G&T y EST en las 70",
+             all(v == 70 for v in gana_bo.values()), str(gana_bo))
+_bo_clases = [sum(_bo[f"TA{i * 10 + j + 1}"] for j in range(10)) / 10
+              for i in range(7)]
+TAB70_BO = [8.8, 11.2, 12.9, 15.0, 19.6, 10.4, 13.4]
+for c, (v_tex, v_dat) in enumerate(zip(TAB70_BO, _bo_clases)):
+    check(f"tab:seventy bo1024 clase {c + 1} (texto {v_tex})", v_tex,
+          v_dat)
+_gre_clases = [sum(gre[f"TA{i * 10 + j + 1}"] for j in range(10)) / 10
+               for i in range(7)]
+TAB70_GREEDY = [16.9, 18.3, 18.5, 21.2, 26.1, 15.8, 18.8]
+for c, (v_tex, v_dat) in enumerate(zip(TAB70_GREEDY, _gre_clases)):
+    check(f"tab:seventy greedy clase {c + 1} (texto {v_tex})", v_tex,
+          v_dat)
+# distancias al fEABC: tras definirse feabc_clases, mas abajo
 
 # los publicados por instancia del suplemento (compare_pools_published)
 _pub = {}
@@ -298,6 +320,9 @@ check_exacto("intro: fEABC ~6-16% por clase (solo publicado)",
              f"fEABC {min(feabc_clases):.1f} .. {max(feabc_clases):.1f}")
 check("posicionamiento: fEABC medio (texto 9.4)", 9.4,
       sum(_pub["FEABC_AVG"]) / 70)
+_dist = [b - f for b, f in zip(_bo_clases, feabc_clases)]
+check("distancia minima al fEABC (texto 2.5)", 2.5, min(_dist))
+check("distancia maxima al fEABC (texto 5.1)", 5.1, max(_dist))
 
 # =========================================================================
 print("\n== coste computacional ==")

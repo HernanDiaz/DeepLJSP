@@ -1027,14 +1027,41 @@ greedy pass already improves on MOR, EST and G\&T-MWKR on each of the
 70 instances (paired Wilcoxon, $p<10^{-12}$; the matched-pairs rank-biserial
 correlation, an effect size that reaches $1$ only when one side wins
 every single pair, is exactly $1$). Raising the inference budget to best-of-$1024$ brings
-the full-benchmark mean RE to $12.7\%$ over the 70 instances---ahead of
-every deterministic constructive baseline on every instance, within
-$2.2$--$4.6$ points of the fEABC 30-run average per class, and behind
-tuned tabu search everywhere. The policy's standalone RE ($13.4\%$
+the full-benchmark mean RE to $13.0\%$ over the 70 instances
+(Table~\ref{tab:seventy})---ahead of every deterministic constructive
+baseline on every instance, again with rank-biserial correlation $1$,
+and within $2.5$--$5.1$ points of the fEABC 30-run class averages. The policy's standalone RE ($13.4\%$
 in-size; $10$--$26\%$ zero-shot) thus sits between dispatching rules
 ($42.3\%$ for the best of them, EST) and per-instance metaheuristics
 ($9.4\%$ mean RE for fEABC over 30 runs)---establishing, for the IJSP, the computational-class
 trade-off documented for the deterministic JSP~\citep{Zhang2020L2D}.
+
+\begin{table}[t]
+\centering\small
+\caption{Mean RE (\%) per size class over the 70 interval Taillard
+instances. Constructive methods are a single deterministic pass unless
+stated; fEABC is a 30-run average on dedicated hardware, quoted as a
+reference from a different computational class.}
+\label{tab:seventy}
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lcccccccc}
+\toprule
+Method & $15{\times}15$ & $20{\times}15$ & $20{\times}20$ &
+$30{\times}15$ & $30{\times}20$ & $50{\times}15$ & $50{\times}20$ &
+All \\
+\midrule
+EST & 32.3 & 49.2 & 41.5 & 42.4 & 56.6 & 33.2 & 41.0 & 42.3 \\
+MOR & 41.4 & 46.6 & 47.2 & 44.1 & 58.8 & 34.1 & 45.9 & 45.5 \\
+G\&T-MWKR & 26.8 & 28.9 & 30.9 & 33.6 & 36.8 & 23.9 & 25.5 & 29.5 \\
+Policy (greedy) & 16.9 & 18.3 & 18.5 & 21.2 & 26.1 & 15.8 & 18.8 & 19.4 \\
+Policy (best-of-1024) & \textbf{8.8} & \textbf{11.2} & \textbf{12.9} &
+\textbf{15.0} & \textbf{19.6} & \textbf{10.4} & \textbf{13.4} &
+\textbf{13.0} \\
+\midrule
+fEABC (30 runs) & 5.9 & 8.7 & 10.3 & 9.8 & 16.4 & 5.7 & 9.0 & 9.4 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section{Conclusions and Future Work}
 \label{sec:conclusions}
