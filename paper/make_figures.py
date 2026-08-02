@@ -7,6 +7,7 @@ directamente de seeds/. Salida: paper/figures/*.pdf
 """
 
 import os
+import re
 import sys
 
 sys.path.insert(0, ".")
@@ -14,6 +15,9 @@ sys.path.insert(0, ".")
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+TA_BASE = {"15_15": 0, "20_15": 10, "20_20": 20, "30_15": 30,
+           "30_20": 40, "50_15": 50, "50_20": 60}
 
 FIG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "figures")
 os.makedirs(FIG_DIR, exist_ok=True)
@@ -149,9 +153,160 @@ def fig_ablation():
     plt.close(fig)
 
 
+
+
+# ----------------------------------------------------------------------
+# Fig: enfrentamiento por instancia contra el mejor baseline constructivo
+# Origen: constructive_per_instance.csv (G&T-MWKR), fair_v2_greedy.csv y
+#         eval_fair_bo1024.csv. Cada punto es una de las 70 instancias;
+#         por debajo de la diagonal gana la politica.
+# ----------------------------------------------------------------------
+def fig_headtohead():
+    import csv
+    from collections import defaultdict
+
+    base = {r["ta"]: float(r["GT-MWKR_re"]) for r in
+            csv.DictReader(open("benchmarks/constructive_per_instance.csv",
+                                encoding="utf-8"))}
+
+    def _ta(nombre):
+        m = re.search(r"tai(\d+_\d+)_(\d+)", nombre.lower())
+        return "TA%d" % (TA_BASE[m.group(1)] + int(m.group(2)))
+
+    gre = defaultdict(list)
+    for r in csv.DictReader(open("benchmarks/fair_v2_greedy.csv",
+                                 encoding="utf-8")):
+        gre[_ta(r["instance"])].append(float(r["re_mid"]))
+    gre = {k: sum(v) / len(v) for k, v in gre.items()}
+
+    bo = defaultdict(list)
+    for r in csv.DictReader(open("benchmarks/eval_fair_bo1024.csv",
+                                 encoding="utf-8")):
+        bo[_ta(r["instance"])].append(float(r["re_comp"]))
+    bo = {k: min(v) for k, v in bo.items()}
+
+    tas = sorted(base, key=lambda s: int(s[2:]))
+    fig, ax = plt.subplots(figsize=(5.2, 5))
+    lim = [0, max(max(base.values()), max(gre.values())) * 1.06]
+    ax.plot(lim, lim, color="gray", linewidth=1, linestyle="--", zorder=1)
+    # la region bajo la diagonal es donde gana la politica
+    ax.fill_between(lim, 0, lim, color="seagreen", alpha=0.07, zorder=0)
+    ax.scatter([base[t] for t in tas], [gre[t] for t in tas], s=26,
+               facecolor="none", edgecolor="steelblue", linewidth=1.1,
+               label="Policy, greedy", zorder=3)
+    ax.scatter([base[t] for t in tas], [bo[t] for t in tas], s=26,
+               color="seagreen", marker="^", label="Policy, best-of-1024",
+               zorder=3)
+    ax.set_xlim(lim); ax.set_ylim(lim)
+    ax.set_xlabel("G&T-MWKR: RE (%)")
+    ax.set_ylabel("Policy: RE (%)")
+    ax.text(0.97, 0.06, "policy better", transform=ax.transAxes,
+            ha="right", fontsize=9, color="seagreen")
+    ax.legend(frameon=False, loc="upper left", fontsize=9)
+    ax.grid(alpha=0.3, linestyle="--")
+    ax.set_aspect("equal")
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIG_DIR, "fig_headtohead.pdf"))
+    plt.close(fig)
+
+
+# ----------------------------------------------------------------------
+# Fig: importancia por permutacion de las 16 features de operacion
+# Origen: feature_importance.csv
+# ----------------------------------------------------------------------
+def fig_importance():
+    import csv
+
+    ETIQUETAS = {
+        "holgura": "slack", "pos_restante": "job position (remaining)",
+        "rem_up": "remaining work (upper)", "dur_up": "duration (upper)",
+        "pos_hecha": "job position (done)",
+        "rem_lo": "remaining work (lower)",
+        "hueco_potencial": "potential idle gap",
+        "dur_lo": "duration (lower)", "est_lo": "earliest start (lower)",
+        "est_width_rel": "earliest start width", "est_up": "earliest start (upper)",
+        "carga_maquina": "machine load", "congestion": "machine congestion",
+        "makespan_maquina": "machine makespan", "dur_width_rel": "duration width",
+        "makespan_job": "job makespan",
+    }
+    filas = list(csv.DictReader(open("benchmarks/feature_importance.csv",
+                                     encoding="utf-8")))
+    filas.sort(key=lambda r: float(r["delta_puntos"]))
+    nombres = [ETIQUETAS.get(r["feature"], r["feature"]) for r in filas]
+    valores = [float(r["delta_puntos"]) for r in filas]
+    # las dos features de anchura, resaltadas: son las que no aportan
+    colores = ["indianred" if r["feature"].endswith("width_rel")
+               else "steelblue" for r in filas]
+
+    fig, ax = plt.subplots(figsize=(5.6, 4.4))
+    y = range(len(nombres))
+    ax.barh(list(y), valores, color=colores, height=0.7)
+    ax.set_yticks(list(y))
+    ax.set_yticklabels(nombres, fontsize=8.5)
+    # las barras de anchura son demasiado cortas para que el color se vea:
+    # el resaltado va en la etiqueta
+    for etiqueta, fila in zip(ax.get_yticklabels(), filas):
+        if fila["feature"].endswith("width_rel"):
+            etiqueta.set_color("indianred")
+            etiqueta.set_fontweight("bold")
+    ax.axvline(0, color="black", linewidth=0.8)
+    ax.set_xlabel("$\\Delta$ mean RE when the feature is permuted (points)")
+    for i, v in enumerate(valores):
+        ax.text(v + (0.9 if v >= 0 else -0.9), i, "%+.1f" % v, va="center",
+                ha="left" if v >= 0 else "right", fontsize=8)
+    ax.set_xlim(min(valores) - 6, max(valores) + 8)
+    ax.grid(axis="x", alpha=0.3, linestyle="--")
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIG_DIR, "fig_importance.pdf"))
+    plt.close(fig)
+
+
+# ----------------------------------------------------------------------
+# Fig: robustez ejecucional eps-barra por metodo (x1000)
+# Origen: eval_eps_policy.csv (K=1000, numeros aleatorios comunes)
+# ----------------------------------------------------------------------
+def fig_eps():
+    import csv
+    from collections import defaultdict
+
+    por = defaultdict(dict)
+    for r in csv.DictReader(open("benchmarks/eval_eps_policy.csv",
+                                 encoding="utf-8")):
+        m = r["method"]
+        g = ("Policy\n(best-of-64)" if m.startswith("policy-bo64") else
+             "Policy\n(greedy)" if m.startswith("policy-greedy") else m)
+        por[g].setdefault(r["instance"], []).append(float(r["eps"]) * 1000)
+    med = {g: {i: sum(v) / len(v) for i, v in d.items()}
+           for g, d in por.items()}
+
+    orden = ["MOR", "GT-MWKR", "EST", "Policy\n(greedy)",
+             "Policy\n(best-of-64)"]
+    fig, ax = plt.subplots(figsize=(5.6, 3.6))
+    rng = __import__("numpy").random.default_rng(7)
+    for k, g in enumerate(orden):
+        vals = list(med[g].values())
+        ax.scatter(rng.normal(k, 0.055, len(vals)), vals, s=16, alpha=0.45,
+                   color="gray", zorder=2)
+        m = sum(vals) / len(vals)
+        ax.hlines(m, k - 0.28, k + 0.28, color="seagreen"
+                  if "Policy" in g else "steelblue", linewidth=2.4, zorder=3)
+        ax.text(k, m, " %.2f" % m, va="bottom", ha="center", fontsize=8.5,
+                color="seagreen" if "Policy" in g else "steelblue")
+    ax.set_xticks(range(len(orden)))
+    ax.set_xticklabels(orden, fontsize=8.5)
+    ax.set_ylabel("$\\bar\\varepsilon \\times 10^{3}$")
+    ax.grid(axis="y", alpha=0.3, linestyle="--")
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIG_DIR, "fig_eps.pdf"))
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     fig_scaling()
     fig_crosssize()
     fig_pools()
     fig_ablation()
+    fig_headtohead()
+    fig_importance()
+    fig_eps()
     print("Figuras generadas en", FIG_DIR)

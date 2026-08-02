@@ -940,9 +940,10 @@ feature extraction over the unscheduled work, and the
 GPU-vectorization of rollouts in Section~\ref{sec:hyperconfig} bought
 its ${\sim}3\times$ precisely there. Constructing a solution
 takes milliseconds (greedy) to a few seconds (best-of-64 on
-$50{\times}20$). Per-instance comparisons are one-sided: a single
-greedy pass already improves on MOR, EST and G\&T-MWKR on each of the
-70 instances (paired Wilcoxon, $p<10^{-12}$; the matched-pairs rank-biserial
+$50{\times}20$). Per-instance comparisons are one-sided
+(Figure~\ref{fig:headtohead}): a single greedy pass already improves
+on MOR, EST and G\&T-MWKR on each of the 70 instances (paired Wilcoxon
+signed-rank test, $p<10^{-12}$; the matched-pairs rank-biserial
 correlation, an effect size that reaches $1$ only when one side wins
 every single pair, is exactly $1$). Raising the inference budget to best-of-$1024$ brings
 the full-benchmark mean RE to $13.0\%$ over the 70 instances
@@ -953,6 +954,16 @@ in-size; $10$--$26\%$ zero-shot) thus sits between dispatching rules
 ($42.3\%$ for the best of them, EST) and per-instance metaheuristics
 ($9.4\%$ mean RE for fEABC over 30 runs)---establishing, for the IJSP, the computational-class
 trade-off documented for the deterministic JSP~\citep{Zhang2020L2D}.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=.62\linewidth]{figures/fig_headtohead.pdf}
+  \caption{The policy against the strongest constructive baseline, one
+  point per instance over the 70 interval Taillard instances. Points
+  below the diagonal are instances where the policy wins; there are no
+  others, at either inference budget.}
+  \label{fig:headtohead}
+\end{figure}
 
 \begin{table}[t]
 \centering\small
@@ -994,7 +1005,7 @@ durations finally materialize.
 \label{sec:results-importance}
 
 The policy is not interpretable the way a priority expression is, but
-its inputs can be audited. Table~\ref{tab:importance} reports a
+its inputs can be audited. Figure~\ref{fig:importance} reports a
 permutation test: at every decision of a greedy rollout, one feature
 column is shuffled across the eligible operations, and the resulting
 mean RE over the development set and the three seeds is compared with
@@ -1010,28 +1021,16 @@ nothing measurable at inference ($-0.1$ to $+0.2$ points): whatever
 the policy does with uncertainty, its decisions rest on worst-case
 magnitudes rather than on interval widths per se.
 
-\begin{table}[t]
-\centering\small
-\caption{Permutation importance of the 16 operation features: change
-in mean development-set RE (points) when the feature's column is
-shuffled across the eligible operations at every decision (greedy
-rollouts, three seeds; intact baseline $18.2\%$).}
-\label{tab:importance}
-\begin{tabular}{lr@{\qquad}lr}
-\toprule
-Feature & $\Delta$RE & Feature & $\Delta$RE \\
-\midrule
-slack & $+51.0$ & earliest start (lower) & $+0.3$ \\
-job position (remaining) & $+28.1$ & earliest start width & $+0.2$ \\
-remaining work (upper) & $+10.6$ & earliest start (upper) & $+0.2$ \\
-duration (upper) & $+3.9$ & machine load & $+0.1$ \\
-job position (done) & $+2.8$ & machine congestion & $+0.0$ \\
-remaining work (lower) & $+1.5$ & machine makespan & $-0.1$ \\
-potential idle gap & $+1.1$ & duration width & $-0.1$ \\
-duration (lower) & $+0.8$ & job makespan & $-0.4$ \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=.72\linewidth]{figures/fig_importance.pdf}
+  \caption{Permutation importance of the 16 operation features: change
+  in mean development-set RE when the feature's column is shuffled
+  across the eligible operations at every decision (greedy rollouts,
+  three seeds; intact baseline $18.2\%$). The two interval-width
+  features are highlighted.}
+  \label{fig:importance}
+\end{figure}
 
 \subsection{Ablation: best-of-$N$ inference}
 \label{sec:ablations-bon}
@@ -1121,7 +1120,7 @@ predicted interval, as the monotonicity of Eq.~\eqref{eq:semiactive}
 guarantees.
 
 The policy's schedules are the most dependable of the constructive
-pool: $\bar\varepsilon\times10^{3}=6.1$ for greedy and best-of-64
+pool (Figure~\ref{fig:eps}): $\bar\varepsilon\times10^{3}=6.1$ for greedy and best-of-64
 alike---optimizing the worst case costs nothing in
 predictability---against $6.3$ for EST, $6.9$ for G\&T-MWKR and $7.0$
 for MOR. The advantage over MOR and G\&T-MWKR is systematic ($15/15$
@@ -1130,6 +1129,18 @@ EST is not significant ($9/15$, $p{=}0.36$). EST's role as the
 robustness benchmark that learned schedulers match but do not beat
 mirrors what the companion study observes for evolved
 rules~\citep{DiazGP2026}.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=.68\linewidth]{figures/fig_eps.pdf}
+  \caption{Executional robustness by method: mean
+  $\bar\varepsilon\times10^{3}$ (bars) over the fifteen evaluation
+  instances, each shown as a point. Lower is a more faithful a-priori
+  prediction. The policy and EST overlap; MOR and G\&T-MWKR do not
+  reach them.}
+  \label{fig:eps}
+\end{figure}
+
 
 \subsection{Limitations}
 \label{sec:limitations}
