@@ -278,11 +278,11 @@ midpoint-scenario bound).
 
 Reinforcement learning is learning to decide from experience. An
 \emph{agent} interacts with an environment in steps: it observes the
-current \emph{state}, chooses an \emph{action} among those available,
-and receives a numeric \emph{reward} signalling how good the
-consequences were. The agent's behaviour is its \emph{policy}
-$\pi(a\,|\,s)$: a function that, given the state, assigns a
-probability to each available action. The policy is the object being
+current \emph{state} $s$, chooses an \emph{action} $a$ among those
+available, and receives a numeric \emph{reward} signalling how good
+the consequences were. The agent's behaviour is its \emph{policy}
+$\pi(a\,|\,s)$: a function that, given the state $s$, assigns a
+probability to each available action $a$. The policy is the object being
 learned---training nudges it so that actions followed by a high
 cumulative reward (the \emph{return}) become more likely.
 
@@ -299,7 +299,9 @@ paper has two heads.
 
 Instantiated on scheduling, the agent is a dispatcher. The state is
 the partial schedule; the available actions are the \emph{eligible}
-operations---the next unscheduled operation of each job; an
+operations---the next unscheduled operation of each job, so choosing
+an action $a$ means choosing which eligible operation $i$ to schedule
+next, and we write the policy over candidates as $\pi(i\,|\,s)$; an
 \emph{episode} is the construction of one complete schedule, and the
 reward rests on the makespan achieved. The trained policy then plays
 the same role as a classical dispatching rule: where SPT or MOR rank
@@ -555,8 +557,9 @@ numerically identical to unpadded ones.
 
 We train with PPO~\citep{Schulman2017}; Table~\ref{tab:hyper} lists all
 hyperparameters. Two choices depart from common JSP-DRL practice and are
-enabled by co-design with the normalized representation: $\gamma=1$
-(undiscounted finite horizon---with $\gamma=0.99$ the terminal makespan
+enabled by co-design with the normalized representation: a discount
+factor $\gamma=1$ (undiscounted finite horizon---future rewards count
+in full; with the customary $\gamma=0.99$ the terminal makespan
 signal reaches early decisions attenuated by $0.99^{nm}\!\approx\!0.05$
 for $20{\times}15$ instances) and batched minibatch updates with
 advantage normalization. Training on a set of instances proceeds in
