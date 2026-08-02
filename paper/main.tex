@@ -837,8 +837,7 @@ The size-invariant design allows direct evaluation of the
 $20{\times}15$-trained network on any class. Evaluation is
 \emph{zero-shot}: the trained weights are applied to sizes they never
 saw, with no additional training or fine-tuning of any kind.
-Figure~\ref{fig:crosssize} and Table~\ref{tab:crosssize} report
-zero-shot RE on unseen instances of all seven classes: every
+Table~\ref{tab:crosssize} reports zero-shot RE on unseen instances of all seven classes: every
 seed's network outperforms MOR on \emph{every} tested instance, with
 graceful degradation (means from ${\approx}10\%$ on $15{\times}15$ to
 $25.9\%$ on the hardest transfer, $30{\times}20$) and no failure mode
@@ -868,13 +867,6 @@ TA25 ($20{\times}20$) & 15.0 [14.4] & 53.2 & & & \\
 \end{tabular}
 \end{table}
 
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=.9\linewidth]{figures/fig_crosssize.pdf}
-  \caption{Zero-shot RE by instance across all seven Taillard size
-  classes for the $20{\times}15$-trained specialist versus MOR.}
-  \label{fig:crosssize}
-\end{figure}
 
 \subsection{Cross-family generalization: the classical instances}
 \label{sec:results-classics}
@@ -898,7 +890,20 @@ lands at $12.4\%$ mean RE---between the constructive baselines
 ($30.1\%$ for G\&T-MWKR) and the per-instance searchers (GA at
 $9.8\%$, fEABC at $5.8\%$, ESABC at $5.5\%$). On La40, ABZ7 and ABZ8
 its best seed edges past the GA average itself, with single-pass
-inference and no retraining.
+inference and no retraining. Figure~\ref{fig:ladder} orders the
+methods by mean RE and colours them by computational class: the
+policy sits alone between the two.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=.78\linewidth]{figures/fig_ladder.pdf}
+  \caption{Mean RE over the 12 classical interval instances, by
+  computational class. The policy occupies the gap between what a
+  single constructive pass had achieved and what per-instance search
+  achieves, at the cost of the former.}
+  \label{fig:ladder}
+\end{figure}
+
 
 \begin{table}[t]
 \centering\small
@@ -947,7 +952,7 @@ signed-rank test, $p<10^{-12}$; the matched-pairs rank-biserial
 correlation, an effect size that reaches $1$ only when one side wins
 every single pair, is exactly $1$). Raising the inference budget to best-of-$1024$ brings
 the full-benchmark mean RE to $13.0\%$ over the 70 instances
-(Table~\ref{tab:seventy})---ahead of every deterministic constructive
+(Table~\ref{tab:seventy} and Figure~\ref{fig:byclass})---ahead of every deterministic constructive
 baseline on every instance, again with rank-biserial correlation $1$,
 and within $2.5$--$5.1$ points of the fEABC 30-run class averages. The policy's standalone RE ($13.4\%$
 in-size; $10$--$26\%$ zero-shot) thus sits between dispatching rules
@@ -965,17 +970,32 @@ trade-off documented for the deterministic JSP~\citep{Zhang2020L2D}.
   \label{fig:headtohead}
 \end{figure}
 
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig_byclass.pdf}
+  \caption{Per-instance RE by size class over the 70 interval Taillard
+  instances: every instance is a point, bars mark class medians. The
+  $20{\times}15$ class is shaded because it holds the four training and
+  six development instances; the other six classes were touched by
+  neither.}
+  \label{fig:byclass}
+\end{figure}
+
 \begin{table}[t]
 \centering\small
 \caption{Mean RE (\%) per size class over the 70 interval Taillard
 instances. Constructive methods are a single deterministic pass unless
 stated; fEABC is a 30-run average on dedicated hardware, quoted as a
-reference from a different computational class.}
+reference from a different computational class. The
+$20{\times}15$ column ($\dagger$) is the training and development
+class: it contains the four instances the policy trained on and the
+six on which the design decisions were made, and is therefore not a
+generalization result; the other six classes are untouched.}
 \label{tab:seventy}
 \setlength{\tabcolsep}{3.5pt}
 \begin{tabular}{lcccccccc}
 \toprule
-Method & $15{\times}15$ & $20{\times}15$ & $20{\times}20$ &
+Method & $15{\times}15$ & $20{\times}15^{\dagger}$ & $20{\times}20$ &
 $30{\times}15$ & $30{\times}20$ & $50{\times}15$ & $50{\times}20$ &
 All \\
 \midrule

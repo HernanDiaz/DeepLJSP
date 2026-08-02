@@ -301,6 +301,132 @@ def fig_eps():
     plt.close(fig)
 
 
+# ----------------------------------------------------------------------
+# Fig: distribucion del RE por clase de tamano sobre las 70 instancias
+# Origen: constructive_per_instance.csv, fair_v2_greedy.csv,
+#         eval_fair_bo1024.csv
+# ----------------------------------------------------------------------
+def fig_byclass():
+    import csv
+    from collections import defaultdict
+    import numpy as np
+
+    CL = ["15_15", "20_15", "20_20", "30_15", "30_20", "50_15", "50_20"]
+
+    def _n(nombre):
+        m = re.search(r"tai(\d+_\d+)_(\d+)", nombre.lower())
+        return TA_BASE[m.group(1)] + int(m.group(2))
+
+    gt = {int(r["ta"][2:]): float(r["GT-MWKR_re"]) for r in
+          csv.DictReader(open("benchmarks/constructive_per_instance.csv",
+                              encoding="utf-8"))}
+    gre = defaultdict(list)
+    for r in csv.DictReader(open("benchmarks/fair_v2_greedy.csv",
+                                 encoding="utf-8")):
+        gre[_n(r["instance"])].append(float(r["re_mid"]))
+    gre = {k: sum(v) / len(v) for k, v in gre.items()}
+    bo = defaultdict(list)
+    for r in csv.DictReader(open("benchmarks/eval_fair_bo1024.csv",
+                                 encoding="utf-8")):
+        bo[_n(r["instance"])].append(float(r["re_comp"]))
+    bo = {k: min(v) for k, v in bo.items()}
+
+    series = [("G&T-MWKR", gt, "steelblue"),
+              ("Policy, greedy", gre, "sandybrown"),
+              ("Policy, best-of-1024", bo, "seagreen")]
+    # Con diez instancias por clase una caja esconde mas de lo que
+    # resume (en 15x15 seis valores se apilan y el resto quedan fuera de
+    # los bigotes): se dibujan los diez puntos y su mediana.
+    fig, ax = plt.subplots(figsize=(7.0, 3.8))
+    ancho = 0.26
+    rng = np.random.default_rng(11)
+    for k, (nombre, datos, color) in enumerate(series):
+        for i in range(len(CL)):
+            vals = [datos[j] for j in range(i * 10 + 1, i * 10 + 11)]
+            x = i + (k - 1) * ancho
+            ax.scatter(rng.normal(x, 0.028, len(vals)), vals, s=11,
+                       color=color, alpha=0.55, linewidth=0, zorder=2)
+            med = sorted(vals)[len(vals) // 2]
+            ax.hlines(med, x - 0.10, x + 0.10, color=color, linewidth=2.2,
+                      zorder=3)
+        ax.plot([], [], color=color, linewidth=6, alpha=0.75, label=nombre)
+    ax.set_xticks(range(len(CL)))
+    ax.set_xticklabels([c.replace("_", r"$\times$") for c in CL])
+    # la clase de entrenamiento y desarrollo, marcada
+    ax.axvspan(0.5, 1.5, color="gray", alpha=0.10, zorder=0)
+    ax.text(1, ax.get_ylim()[1] * 0.97, "train + dev", ha="center",
+            va="top", fontsize=8, color="dimgray")
+    ax.set_xlabel("Instance size class")
+    ax.set_ylabel("RE (%)")
+    ax.legend(frameon=False, fontsize=9, ncol=3, loc="lower center",
+              bbox_to_anchor=(0.5, 1.01))
+    ax.grid(axis="y", alpha=0.3, linestyle="--")
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIG_DIR, "fig_byclass.pdf"))
+    plt.close(fig)
+
+
+# ----------------------------------------------------------------------
+# Fig: escalera de clases computacionales en las 12 clasicas
+# Origen: classic12_est.csv, classic12_tuned.csv,
+#         eval_classic12_policy.csv
+# ----------------------------------------------------------------------
+def fig_ladder():
+    import csv
+    from collections import defaultdict
+
+    clas = {r["inst"]: r for r in csv.DictReader(
+        open("benchmarks/classic12_tuned.csv", encoding="utf-8"))}
+    est = {r["inst"]: float(r["est_re"]) for r in csv.DictReader(
+        open("benchmarks/classic12_est.csv", encoding="utf-8"))}
+    pol = defaultdict(list)
+    for r in csv.DictReader(open("benchmarks/eval_classic12_policy.csv",
+                                 encoding="utf-8")):
+        pol[r["name"]].append(float(r["re"]))
+
+    def media(d):
+        return sum(d) / len(d)
+
+    filas = [
+        ("MOR", media([float(c["mor"]) for c in clas.values()]), "constructive"),
+        ("EST", media(list(est.values())), "constructive"),
+        ("G&T-MWKR", media([float(c["gt"]) for c in clas.values()]),
+         "constructive"),
+        ("Policy\n(best-of-64)", media([media(v) for v in pol.values()]),
+         "learned"),
+        ("GA", media([float(c["GA"]) for c in clas.values()]), "search"),
+        ("ABC$_{E3}$", media([float(c["ABCE3"]) for c in clas.values()]),
+         "search"),
+        ("fEABC", media([float(c["fEABC"]) for c in clas.values()]), "search"),
+        ("ESABC", media([float(c["ESABC"]) for c in clas.values()]), "search"),
+    ]
+    filas.sort(key=lambda r: -r[1])
+    COLOR = {"constructive": "steelblue", "learned": "seagreen",
+             "search": "indianred"}
+    ETIQ = {"constructive": "hand-crafted, one pass",
+            "learned": "learned, one pass",
+            "search": "per-instance search, 30 runs"}
+
+    fig, ax = plt.subplots(figsize=(6.4, 3.4))
+    vistos = set()
+    for k, (nombre, valor, clase) in enumerate(filas):
+        etiqueta = ETIQ[clase] if clase not in vistos else None
+        vistos.add(clase)
+        ax.barh(k, valor, color=COLOR[clase], alpha=0.8, height=0.66,
+                label=etiqueta)
+        ax.text(valor + 0.7, k, "%.1f" % valor, va="center", fontsize=8.5)
+    ax.set_yticks(range(len(filas)))
+    ax.set_yticklabels([f[0] for f in filas], fontsize=8.5)
+    ax.invert_yaxis()
+    ax.set_xlabel("Mean RE (%) over the 12 classical instances")
+    ax.set_xlim(0, max(f[1] for f in filas) * 1.14)
+    ax.legend(frameon=False, fontsize=8.5, loc="lower right")
+    ax.grid(axis="x", alpha=0.3, linestyle="--")
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIG_DIR, "fig_ladder.pdf"))
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     fig_scaling()
     fig_crosssize()
@@ -309,4 +435,6 @@ if __name__ == "__main__":
     fig_headtohead()
     fig_importance()
     fig_eps()
+    fig_byclass()
+    fig_ladder()
     print("Figuras generadas en", FIG_DIR)
