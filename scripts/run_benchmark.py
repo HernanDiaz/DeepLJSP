@@ -139,6 +139,16 @@ def run_seed(tier_config, seed, episodes, output_name):
 
 
 def main():
+    # Guardia: todos los brazos experimentales del paper son AgentV2. El
+    # selector vive en la variable de entorno DEEPLJSP_AGENT (main.py,
+    # por defecto v1): lanzar sin ella entrena en silencio el agente
+    # equivocado -- exactamente lo que quemo un dia de CPU el 2026-08-02
+    # (tres semillas "nowidth" que resultaron ser v1).
+    if os.environ.get("DEEPLJSP_AGENT") != "v2":
+        raise SystemExit(
+            "ABORTA: DEEPLJSP_AGENT != v2. Exporta DEEPLJSP_AGENT=v2 "
+            "(o ajusta esta guardia si de verdad quieres el v1).")
+
     parser = argparse.ArgumentParser(description="Ejecuta el benchmark del proyecto")
     parser.add_argument("--tier", choices=list(TIERS.keys()), default="quick")
     parser.add_argument("--tag", required=True, help="Nombre para identificar esta ejecución (p.ej. 'baseline', 'fix-entropia')")
