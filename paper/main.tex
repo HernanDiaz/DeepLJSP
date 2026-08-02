@@ -2,6 +2,11 @@
 %% JIM pide referencias APA autor-anyo -> opcion sn-apa.
 \documentclass[pdflatex,sn-apa]{sn-jnl}
 
+% T1: la clase no lo carga y \DJ (Đurašević) no existe en OT1.
+% lmodern ANTES: sin el, T1 cae en las EC de mapa de bits (Type 3) y el
+% PDF de envio deja de ser vectorial.
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
 \usepackage{graphicx}
 \usepackage{amsmath,amssymb}
 \usepackage{amsthm}
@@ -183,6 +188,47 @@ these works also fixed the evaluation conventions this paper adopts (interval
 arithmetic, lexicographic ranking during construction, expected makespan
 for reporting).
 
+\subsection{Priority dispatching rules}
+\label{sec:related-rules}
+
+The oldest constructive approach to the job shop builds a schedule in
+a single left-to-right pass, repeatedly choosing which of the eligible
+operations to place next. A \emph{priority dispatching rule} makes
+that choice by scoring the candidates with a fixed formula over their
+attributes. The rules this paper uses as baselines and as verification
+anchors are the classical single-attribute ones, and we keep their
+usual acronyms. Two look at the operation itself: \emph{shortest} and
+\emph{longest processing time} (SPT, LPT) prefer the smallest and the
+largest duration. One looks at the schedule built so far:
+\emph{earliest starting time} (EST) prefers the operation that could
+begin soonest given the current occupation of its machine and the
+progress of its job. Two look at the job the operation belongs to:
+\emph{most work remaining} and \emph{most operations remaining}
+(MWKR, MOR) prefer the job with the most pending work, counted in
+time units and in operations respectively. Under interval durations
+these attributes are intervals themselves, and candidates are compared
+with the interval ranking introduced in Section~\ref{sec:problem}.
+Surveys catalogue well over a
+hundred variants of such rules~\citep{Panwalkar1977,Haupt1989} and
+recent ones revisit those still in use~\citep{Durasevic2018}.
+
+A refinement worth separating from the rules themselves is the
+active-schedule generator of \citet{GifflerThompson1960}, which at
+each step restricts the candidates to the conflict set of the machine
+that would finish earliest, and applies a priority rule only to break
+ties within that set. The restriction guarantees \emph{active}
+schedules---no operation can be started earlier without delaying
+another---and lifts the plain rules substantially; we write G\&T-SPT
+and G\&T-MWKR for the two combinations used here.
+
+Their appeal is cost: one pass, no search, a solution in
+milliseconds. Their limit is that a fixed formula cannot suit every
+shop and objective~\citep{Haupt1989}, which is the opening the
+learned rules of the next subsection address---and the reason a
+constructive policy is compared against these rules and not against
+per-instance metaheuristics, which belong to a different
+computational class.
+
 \subsection{Learning constructive heuristics for scheduling}
 
 Neural combinatorial optimization began with pointer
@@ -304,11 +350,10 @@ an action $a$ means choosing which eligible operation $i$ to schedule
 next, and we write the policy over candidates as $\pi(i\,|\,s)$; an
 \emph{episode} is the construction of one complete schedule, and the
 reward rests on the makespan achieved. The trained policy then plays
-the same role as a classical priority dispatching rule: where a
-hand-crafted rule orders the eligible operations by a fixed
-criterion---the shortest duration first, the most remaining work
-first---the policy orders them by preferences it has learned from
-experience. Everything around that choice (the schedule builder of
+the same role as the priority dispatching rules of
+Section~\ref{sec:related-rules}: where a hand-crafted rule orders the
+eligible operations by a fixed criterion, the policy orders them by
+preferences it has learned from experience. Everything around that choice (the schedule builder of
 Eq.~\eqref{eq:semiactive}, the interval arithmetic, the evaluation)
 is the same machinery every baseline in this paper uses.
 
@@ -648,10 +693,9 @@ benchmark (1 training instance, 30 episodes, 2 seeds) that can only
 beyond a noise threshold, or strict per-instance dominance) alone could
 \emph{accept}. (ii) \emph{Paired seeds}: identical seeds across
 configurations enable paired comparisons. (iii) \emph{Deterministic
-anchors}: the results of four classical priority rules---shortest
-processing time (SPT), longest processing time (LPT), most operations
-remaining (MOR) and most work remaining (MWKR)---are recomputed in
-every run and verified identical across all code versions; any
+anchors}: the results of the four single-attribute rules of
+Section~\ref{sec:related-rules} (SPT, LPT, MOR, MWKR) are recomputed
+in every run and verified identical across all code versions; any
 deviation indicates an inadvertent change of environment semantics
 and invalidates the comparison. (iv) \emph{Bit-reproducibility}: rerunning a configuration
 with the same seed reproduces results exactly. Every accepted and
@@ -712,12 +756,10 @@ near-equivalent configurations.
 \subsection{Baselines}
 \label{sec:baselines}
 
-Constructive baselines comprise priority dispatching rules (SPT, LPT,
-MOR, MWKR, with lexicographic interval comparisons; MOR is uniformly the
-strongest of the four), the earliest-start rule EST, and the
-Giffler--Thompson active schedule
-generator~\citep{GifflerThompson1960} with rule tie-breaks inside the
-machine conflict set. G\&T with MWKR tie-break is the strongest
+Constructive baselines are the dispatching rules of
+Section~\ref{sec:related-rules}---SPT, LPT, MOR and MWKR, of which
+MOR is uniformly the strongest, plus EST---and the two
+Giffler--Thompson combinations. G\&T-MWKR is the strongest
 deterministic constructive baseline on this benchmark: $29.5\%$ mean RE
 across the 70 instances, versus $42.3\%$ for EST---the strongest plain
 rule overall, though weaker than MOR on the $20{\times}15$ training

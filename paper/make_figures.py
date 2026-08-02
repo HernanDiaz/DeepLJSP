@@ -18,7 +18,10 @@ import matplotlib.pyplot as plt
 FIG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "figures")
 os.makedirs(FIG_DIR, exist_ok=True)
 
-plt.rcParams.update({"font.size": 11, "figure.dpi": 150})
+# fonttype 42 (TrueType): por defecto matplotlib incrusta el texto de los
+# PDF como Type 3 (mapa de bits), que produccion de Springer rechaza
+plt.rcParams.update({"font.size": 11, "figure.dpi": 150,
+                     "pdf.fonttype": 42, "ps.fonttype": 42})
 
 
 # ----------------------------------------------------------------------
