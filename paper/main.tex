@@ -648,10 +648,12 @@ benchmark (1 training instance, 30 episodes, 2 seeds) that can only
 beyond a noise threshold, or strict per-instance dominance) alone could
 \emph{accept}. (ii) \emph{Paired seeds}: identical seeds across
 configurations enable paired comparisons. (iii) \emph{Deterministic
-anchors}: SPT, LPT, MOR and MWKR results are recomputed in every run and
-verified identical across all code versions---any deviation indicates an
-inadvertent change of environment semantics and invalidates the
-comparison. (iv) \emph{Bit-reproducibility}: rerunning a configuration
+anchors}: the results of four classical priority rules---shortest
+processing time (SPT), longest processing time (LPT), most operations
+remaining (MOR) and most work remaining (MWKR)---are recomputed in
+every run and verified identical across all code versions; any
+deviation indicates an inadvertent change of environment semantics
+and invalidates the comparison. (iv) \emph{Bit-reproducibility}: rerunning a configuration
 with the same seed reproduces results exactly. Every accepted and
 rejected experiment, with its data, is versioned in the project
 repository. This protocol rejected, among others, thirteen superficially
