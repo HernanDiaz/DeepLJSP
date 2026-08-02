@@ -304,12 +304,13 @@ an action $a$ means choosing which eligible operation $i$ to schedule
 next, and we write the policy over candidates as $\pi(i\,|\,s)$; an
 \emph{episode} is the construction of one complete schedule, and the
 reward rests on the makespan achieved. The trained policy then plays
-the same role as a classical dispatching rule: where SPT or MOR rank
-the eligible operations with a hand-written formula, the policy ranks
-them with learned preferences, and everything around that choice (the
-schedule builder of Eq.~\eqref{eq:semiactive}, the interval
-arithmetic, the evaluation) is the same machinery every baseline in
-this paper uses.
+the same role as a classical priority dispatching rule: where a
+hand-crafted rule orders the eligible operations by a fixed
+criterion---the shortest duration first, the most remaining work
+first---the policy orders them by preferences it has learned from
+experience. Everything around that choice (the schedule builder of
+Eq.~\eqref{eq:semiactive}, the interval arithmetic, the evaluation)
+is the same machinery every baseline in this paper uses.
 
 Figure~\ref{fig:arch} shows the network, read left to right. Each
 eligible operation enters as a row of $16$ numbers that describe it:
