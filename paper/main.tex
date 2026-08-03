@@ -153,7 +153,10 @@ pay off at practical training budgets?
   (Section~\ref{sec:results}) answering Q1--Q3: budget scaling on the
   training class, zero-shot dominance over the best dispatching rule
   on all seven Taillard size classes from a single network, and
-  transfer to a second benchmark of classical instances.
+  transfer to a second benchmark of classical instances---together
+  with a budget-matched comparison against a rule evolved by genetic
+  programming, which the policy loses pass for pass and wins at equal
+  sampling budgets.
 \item \textbf{An analysis of what earns its cost}
   (Section~\ref{sec:analysis}): a permutation audit of which inputs
   the network consults, five controlled ablations (inference budget,
@@ -1312,12 +1315,17 @@ dimensionless and the encoder permutation-invariant, one network serves
 the entire benchmark: evaluated zero-shot, it outperforms the best
 dispatching rule on every tested instance of all seven size classes,
 and the same weights improve on every rule on all twelve classical
-instances of the FT, La and ABZ families (Q2). And of the standard toolbox, only best-of-$N$ inference paid off
+instances of the FT, La and ABZ families (Q2). Against a rule evolved
+by genetic programming the answer is not one-sided but
+budget-dependent: pass for pass the rule is better, and the policy
+overtakes it only when both are given $1024$ samples
+(Section~\ref{sec:positioning}), so what the network contributes over a
+compact formula is its sampling distribution rather than its argmax.
+And of the standard toolbox, only best-of-$N$ inference paid off
 at practical budgets: self-attention did not improve on pooling,
 multi-size training did not overtake the single-size specialist even
 at three times its cost, and two independent automatic-configuration
-campaigns
-failed to beat literature-standard hyperparameters at the operating
+campaigns failed to beat the untuned defaults at the operating
 budget (Q3)---negative results we document with the same care as
 the positive ones. Two more delimit the interval representation that
 motivated the design: for expected makespan it turns out to be inert,
