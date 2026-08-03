@@ -633,17 +633,30 @@ Eq.~\eqref{eq:re}, using the published crisp lower bounds.
 
 \begin{table}[t]
 \centering\small
-\caption{Hyperparameters (identical across all experiments).}
+\caption{Hyperparameters, identical across every experiment reported in
+this paper. All are literature-standard values for PPO; none was tuned
+for this problem, a decision Section~\ref{sec:hyperconfig} puts to the
+test.}
 \label{tab:hyper}
-\begin{tabular}{llll}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lr@{\hskip 1.1em}|@{\hskip 1.1em}lr}
 \toprule
-optimizer & Adam ($3\!\cdot\!10^{-4}$, $\epsilon{=}10^{-5}$) &
-discount $\gamma$ & $1.0$ \\
-PPO clip & $0.2$ & GAE $\lambda$ & $0.95$ \\
-epochs / minibatch & $4$ / $256$ & update period & $4$ episodes \\
-entropy coef. & $0.01$ & gradient clip & $0.5$ \\
-hidden width & $128$ & greedy eval.\ period & $10$ episodes \\
-advantage norm. & per update & initialization & orthogonal \\
+Hyperparameter & Value & Hyperparameter & Value \\
+\midrule
+\multicolumn{2}{l}{\textit{Optimizer}} &
+\multicolumn{2}{l}{\textit{PPO}} \\
+learning rate (Adam) & $3\cdot10^{-4}$ & clipping range & $0.2$ \\
+Adam $\epsilon$ & $10^{-5}$ & GAE $\lambda$ & $0.95$ \\
+gradient clipping & $0.5$ & discount factor $\gamma$ & $1.0$ \\
+\cmidrule(r){1-2}
+\multicolumn{2}{l}{\textit{Network}} & epochs per update & $4$ \\
+hidden width $h$ & $128$ & minibatch size & $256$ \\
+weight initialization & orthogonal & entropy coefficient & $0.01$ \\
+\cmidrule(r){1-2}
+\multicolumn{2}{l}{\textit{Training schedule}} &
+advantage normalization & per update \\
+policy update & every $4$ ep. & & \\
+greedy evaluation & every $10$ ep. & & \\
 \bottomrule
 \end{tabular}
 \end{table}
