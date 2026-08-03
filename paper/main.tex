@@ -637,9 +637,9 @@ Eq.~\eqref{eq:re}, using the published crisp lower bounds.
 this paper. Most are standard PPO values; the discount factor and the
 batched update scheme depart from common practice for the reasons
 given in Section~\ref{sec:training}. None was tuned for this problem,
-though not for want of trying: two irace campaigns searched for better
-ones and neither transferred to the operating budget
-(Section~\ref{sec:hyperconfig}).}
+though not for want of trying: two irace campaigns searched the space of
+Table~\ref{tab:irace} for better ones and neither transferred to the
+operating budget.}
 \label{tab:hyper}
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{lr@{\hskip 1.3em}|@{\hskip 1.3em}lr}
@@ -695,8 +695,8 @@ update period & $4$ ep. & $2,\ 4,\ 8$ ep. & fixed \\
 \end{tabular}
 \end{table}
 
-All reported results use the literature-standard hyperparameters of
-Table~\ref{tab:hyper} \emph{without problem-specific tuning}. To assess
+All reported results use the hyperparameters of Table~\ref{tab:hyper}
+\emph{without problem-specific tuning}. To assess
 whether this leaves performance on the table, we ran an automatic
 configuration study with irace~\citep{LopezIbanez2016}. irace
 \emph{races} candidate configurations: they are evaluated side by
