@@ -667,6 +667,34 @@ Hyperparameter & Value & Hyperparameter & Value \\
 \end{tabular}
 \end{table}
 
+
+\begin{table}[t]
+\centering\small
+\caption{Search space of the two irace campaigns. Real parameters were
+sampled on a logarithmic scale, the rest from the listed values. Every
+default of Table~\ref{tab:hyper} lies inside the space, so the race
+could have returned it. The second campaign fixed minibatch size and
+update period at their defaults, on which the elites of the first had
+agreed unanimously.}
+\label{tab:irace}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{llll}
+\toprule
+Parameter & Default & Campaign 1 (330 exp.) & Campaign 2 (300 exp.) \\
+\midrule
+learning rate & $3\cdot10^{-4}$ & $[10^{-4},\,10^{-3}]$ &
+  $[10^{-4},\,10^{-3}]$ \\
+entropy coefficient & $0.01$ & $[0.003,\,0.03]$ & $[0.003,\,0.03]$ \\
+clipping range & $0.2$ & $0.1,\ 0.2,\ 0.3$ & $0.1,\ 0.2,\ 0.3$ \\
+epochs per update & $4$ & $2,\ 4,\ 8$ & $4,\ 8$ \\
+GAE $\lambda$ & $0.95$ & $0.90,\ 0.95,\ 0.98$ & $0.90,\ 0.95,\ 0.98$ \\
+hidden width & $128$ & $64,\ 128,\ 256$ & $128,\ 256$ \\
+minibatch size & $256$ & $128,\ 256,\ 512$ & fixed \\
+update period & $4$ ep. & $2,\ 4,\ 8$ ep. & fixed \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 All reported results use the literature-standard hyperparameters of
 Table~\ref{tab:hyper} \emph{without problem-specific tuning}. To assess
 whether this leaves performance on the table, we ran an automatic
@@ -675,10 +703,8 @@ configuration study with irace~\citep{LopezIbanez2016}. irace
 side on a growing set of instances (here, training seeds),
 statistical losers are dropped early, and the budget concentrates on
 the survivors, called the \emph{elite} configurations. The race
-covered an 8-parameter space (learning rate, entropy coefficient, PPO
-clip, epochs, minibatch size, update period, GAE $\lambda$, hidden
-width) over a budget of $330$ tuning experiments ($309$ raced) at
-reduced fidelity
+covered the 8-parameter space of Table~\ref{tab:irace} over a budget
+of $330$ tuning experiments ($309$ raced) at reduced fidelity
 ($1$ training instance, $300$ episodes, ${\sim}8$ minutes per
 evaluation), with training seeds as racing instances. The five elite configurations agreed on a coherent
 faster-learning regime (learning rate $7$--$9{\cdot}10^{-4}$, clip
@@ -695,8 +721,8 @@ fidelity, a second, \emph{operating-fidelity} campaign raced $295$
 experiments of a $300$ budget, each training at the full $1000$
 episodes on two instances
 (enabled by a ${\sim}3\times$ GPU-vectorized rollout implementation),
-over a $6$-parameter space seeded with the defaults and the low-fidelity
-elites. This campaign converged to a coherent region \emph{distinct}
+over the reduced $6$-parameter space of Table~\ref{tab:irace},
+seeded with the defaults and the low-fidelity elites. This campaign converged to a coherent region \emph{distinct}
 from the defaults (clip $0.1$, $8$ epochs, $\lambda{=}0.90$, width
 $256$, learning rate $5$--$9{\cdot}10^{-4}$) and eliminated the seeded
 default during racing. Yet when its winning configuration was retrained on the full

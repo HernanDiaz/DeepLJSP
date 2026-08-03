@@ -692,5 +692,69 @@ for nombre, arm, v_tex in [("no-width", _nw, 13.62),
 check("brazo principal de referencia (texto 13.44)", 13.44,
       sum(_full.values()) / len(_full))
 
+
+print("\n== tab:irace: el espacio de busqueda ==")
+
+
+def _espacio(path):
+    """{nombre: (tipo, [valores])} de un parameters.txt de irace."""
+    out = {}
+    for linea in open(path, encoding="utf-8"):
+        linea = linea.strip()
+        if not linea or linea.startswith("#"):
+            continue
+        m = re.match(r'(\w+)\s+"[^"]*"\s+(\S+)\s+\((.*)\)', linea)
+        if m:
+            out[m.group(1)] = (m.group(2),
+                               [x.strip() for x in m.group(3).split(",")])
+    return out
+
+
+_c1 = _espacio("tuning/parameters.txt")
+_c2 = _espacio("tuning/parameters_serious.txt")
+check_exacto("campana 1: 8 parametros", len(_c1) == 8, str(len(_c1)))
+check_exacto("campana 2: 6 parametros", len(_c2) == 6, str(len(_c2)))
+check_exacto("campana 2 fija minibatch y update-every",
+             "minibatch" not in _c2 and "updateevery" not in _c2)
+
+# los rangos que imprime la tabla, contra los ficheros
+ESPERADO = {
+    "lr": ("0.0001", "0.001"), "entropy": ("0.003", "0.03"),
+    "clip": ("0.1", "0.2", "0.3"), "kepochs": ("2", "4", "8"),
+    "minibatch": ("128", "256", "512"), "updateevery": ("2", "4", "8"),
+    "gae": ("0.90", "0.95", "0.98"), "hidden": ("64", "128", "256"),
+}
+_mal = [k for k, v in ESPERADO.items() if tuple(_c1[k][1]) != v]
+check_exacto("tab:irace, columna de la campana 1", not _mal, str(_mal))
+ESPERADO2 = {"kepochs": ("4", "8"), "hidden": ("128", "256"),
+             "clip": ("0.1", "0.2", "0.3"),
+             "gae": ("0.90", "0.95", "0.98")}
+_mal2 = [k for k, v in ESPERADO2.items() if tuple(_c2[k][1]) != v]
+check_exacto("tab:irace, columna de la campana 2", not _mal2, str(_mal2))
+
+# la afirmacion del pie: todo defecto cae dentro del espacio buscado
+DEFECTOS = {"lr": 3e-4, "entropy": 0.01, "clip": 0.2, "kepochs": 4,
+            "minibatch": 256, "updateevery": 4, "gae": 0.95, "hidden": 128}
+_fuera = []
+for k, d in DEFECTOS.items():
+    tipo, vals = _c1[k]
+    if tipo.startswith("r"):
+        if not float(vals[0]) <= d <= float(vals[1]):
+            _fuera.append(k)
+    elif str(d) not in [v.lstrip("0") or "0" for v in vals] \
+            and not any(abs(float(v) - d) < 1e-9 for v in vals):
+        _fuera.append(k)
+check_exacto("todo defecto esta dentro del espacio buscado", not _fuera,
+             str(_fuera))
+
+# los presupuestos declarados en los escenarios
+for fichero, v_tex in [("tuning/scenario.txt", 330),
+                       ("tuning/scenario_serious.txt", 300)]:
+    txt = open(fichero, encoding="utf-8").read()
+    m = re.search(r"maxExperiments\s*=\s*(\d+)", txt)
+    check_exacto(f"{fichero.split('/')[-1]}: presupuesto {v_tex}",
+                 m and int(m.group(1)) == v_tex,
+                 m.group(1) if m else "?")
+
 print(f"\n{ok_n} comprobaciones correctas, {fallo_n} fallos, "
       f"{pend_n} pendientes de fuente")
