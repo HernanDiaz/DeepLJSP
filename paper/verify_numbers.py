@@ -748,6 +748,31 @@ for nombre, arm, v_tex in [("no-width", _nw, 13.62),
 check("brazo principal de referencia (texto 13.44)", 13.44,
       sum(_full.values()) / len(_full))
 
+# 6.1: las diez semillas. El 13.44 son las tres del paper; conviene que
+# el texto no pueda separarse de la distribucion completa sin avisar
+_ext = _por_par("v2-full-1000ep-ext-c")
+if not _ext:
+    pendiente("extension de semillas", "sin directorios en outputs/")
+else:
+    _diez = {}
+    for k, v in list(_full.items()) + list(_ext.items()):
+        _diez.setdefault(k[1], []).append(v)
+    check_exacto("diez semillas de seis instancias",
+                 len(_diez) == 10 and all(len(v) == 6
+                                          for v in _diez.values()),
+                 f"{len(_diez)} semillas")
+    _m = sorted(sum(v) / len(v) for v in _diez.values())
+    check("diez semillas: media (texto 13.82)", 13.82,
+          sum(_m) / len(_m), tol=0.006)
+    check("diez semillas: minimo (texto 13.12)", 13.12, _m[0], tol=0.006)
+    check("diez semillas: maximo (texto 14.62)", 14.62, _m[-1], tol=0.006)
+    try:
+        import statistics as _stat
+        check("diez semillas: sd entre medias (texto 0.47)", 0.47,
+              _stat.stdev(_m), tol=0.006)
+    except Exception:
+        pendiente("sd de las diez semillas", "no calculable")
+
 
 # --- el brazo robusto lambda=1: RE Y ancho, que es lo que lambda toca ---
 def _extremos(path):
