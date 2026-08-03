@@ -749,6 +749,92 @@ check("brazo principal de referencia (texto 13.44)", 13.44,
       sum(_full.values()) / len(_full))
 
 
+# --- el brazo robusto lambda=1: RE Y ancho, que es lo que lambda toca ---
+def _extremos(path):
+    lo_max = up_max = 0.0
+    for t in json.load(open(path)):
+        e = t["end"]
+        lo, up = (e["lower"], e["upper"]) if isinstance(e, dict) else (e, e)
+        lo_max, up_max = max(lo_max, lo), max(up_max, up)
+    return lo_max, up_max
+
+
+def _re_y_ancho(tag):
+    """{(TA, semilla): (RE, ancho relativo %)} desde los schedules."""
+    out = {}
+    for d in sorted(glob.glob(f"outputs/bench_{tag}__*_seed*")):
+        s = d.split("_seed")[-1]
+        for p in glob.glob(f"{d}/plots/test/*_schedule.json"):
+            ta = ta_de(os.path.basename(p))
+            lo, up = _extremos(p)
+            mid = (lo + up) / 2
+            out[(ta, s)] = (re_pct(mid, ta), (up - lo) / mid * 100)
+    return out
+
+
+_lam = _re_y_ancho("v2-robust-lam1")
+_base_a = _re_y_ancho("v2-full-1000ep")
+if not _lam:
+    pendiente("brazo lambda=1", "sin directorios en outputs/")
+else:
+    check_exacto("lambda=1: 3 semillas x 6 instancias", len(_lam) == 18,
+                 f"{len(_lam)} pares")
+    check("lambda=1: RE media (texto 15.38)", 15.38,
+          sum(v[0] for v in _lam.values()) / len(_lam))
+    check("lambda=1: ancho medio (texto 11.90)", 11.90,
+          sum(v[1] for v in _lam.values()) / len(_lam))
+    check("brazo principal: ancho medio (texto 12.85)", 12.85,
+          sum(v[1] for v in _base_a.values()) / len(_base_a))
+    _com = sorted(set(_base_a) & set(_lam))
+    _dre = [_lam[k][0] - _base_a[k][0] for k in _com]
+    _dan = [_lam[k][1] - _base_a[k][1] for k in _com]
+    check("lambda=1: RE sube 1.94 puntos (texto)", 1.94,
+          sum(_dre) / len(_dre), tol=0.02)
+    check_exacto("lambda=1: mas estrecho en 13 de 18",
+                 sum(x < 0 for x in _dan) == 13,
+                 f"{sum(x < 0 for x in _dan)}/18")
+    try:
+        from scipy import stats as _st
+        _p_re, _p_an = _st.wilcoxon(_dre)[1], _st.wilcoxon(_dan)[1]
+        check_exacto("lambda=1: RE significativa (texto p=0.007)",
+                     0.006 <= _p_re <= 0.009, f"p={_p_re:.4f}")
+        check_exacto("lambda=1: ancho significativo (texto p=0.010)",
+                     0.009 <= _p_an <= 0.012, f"p={_p_an:.4f}")
+    except ImportError:
+        pendiente("Wilcoxon lambda=1", "sin scipy")
+
+# el control que separa entrenamiento de seleccion: mismo deposito de
+# rollouts, mismo criterio, solo cambian los pesos
+_ROLL = "benchmarks/robust_lambda/rollouts.csv"
+if not os.path.exists(_ROLL):
+    pendiente("control de seleccion fijada", "sin rollouts.csv")
+else:
+    import csv as _csv
+    _pool = {}
+    for r in _csv.DictReader(open(_ROLL, encoding="utf-8")):
+        _pool.setdefault((r["arm"], r["seed"], r["instance"]), []).append(
+            (float(r["lower"]), float(r["upper"])))
+    check_exacto("deposito: 36 combinaciones de 64 rollouts",
+                 len(_pool) == 36 and all(len(v) == 64
+                                          for v in _pool.values()),
+                 f"{len(_pool)} combinaciones")
+
+    def _ancho_medio(brazo, criterio):
+        anchos = []
+        for k, v in _pool.items():
+            if k[0] != brazo:
+                continue
+            lo, up = min(v, key=(lambda t: (t[1], t[0])) if criterio == "up"
+                         else (lambda t: 2 * t[1] - t[0]))
+            anchos.append((up - lo) / ((lo + up) / 2) * 100)
+        return sum(anchos) / len(anchos)
+
+    for brazo, crit, v_tex in [("base", "up", 12.80), ("lam1", "up", 12.69),
+                               ("base", "rob", 11.74), ("lam1", "rob", 12.20)]:
+        check(f"seleccion fijada, {brazo} por {crit} (texto {v_tex})",
+              v_tex, _ancho_medio(brazo, crit), tol=0.02)
+
+
 print("\n== tab:irace: el espacio de busqueda ==")
 
 

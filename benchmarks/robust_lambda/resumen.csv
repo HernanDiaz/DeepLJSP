@@ -1,0 +1,29 @@
+fuente,linea
+paquete,Total de problemas registrados: 167
+paquete,brazo         pares       RE    ancho
+paquete,principal        18   13.44%   12.85%
+paquete,no-width         18   13.62%   13.16%
+paquete,punto medio      18   14.18%   13.46%
+paquete,lambda=1         18   15.38%   11.90%
+paquete,pareado contra el brazo principal (mismos TA y semilla):
+paquete,"  no-width (18 pares): RE +0.18 pts, ancho +0.32 pts (mas estrecho en 7/18)"
+paquete,      Wilcoxon  RE p=0.468   ancho p=0.369
+paquete,"  punto medio (18 pares): RE +0.74 pts, ancho +0.61 pts (mas estrecho en 8/18)"
+paquete,      Wilcoxon  RE p=0.284   ancho p=0.108
+paquete,"  lambda=1 (18 pares): RE +1.94 pts, ancho -0.95 pts (mas estrecho en 13/18)"
+paquete,      Wilcoxon  RE p=0.00748   ancho p=0.0104
+seleccion_fijada,"36 combinaciones (brazo, semilla, instancia), 64 rollouts cada una"
+seleccion_fijada,seleccion por upper  | base: RE  14.26%   ancho relativo  12.80%   (n=18)
+seleccion_fijada,seleccion por upper  | lam1: RE  14.37%   ancho relativo  12.69%   (n=18)
+seleccion_fijada,seleccion por robust | base: RE  15.13%   ancho relativo  11.74%   (n=18)
+seleccion_fijada,seleccion por robust | lam1: RE  14.95%   ancho relativo  12.20%   (n=18)
+seleccion_fijada,"pareado, seleccion por upper: lam1 - base sobre 18 pares"
+seleccion_fijada,   RE      +0.11 puntos (peor en 10/18)
+seleccion_fijada,   ancho   -0.10 puntos (mas estrecho en 9/18)
+seleccion_fijada,   Wilcoxon RE     p=0.966
+seleccion_fijada,   Wilcoxon ancho  p=0.932
+seleccion_fijada,"pareado, seleccion por robust: lam1 - base sobre 18 pares"
+seleccion_fijada,   RE      -0.18 puntos (peor en 10/18)
+seleccion_fijada,   ancho   +0.45 puntos (mas estrecho en 7/18)
+seleccion_fijada,   Wilcoxon RE     p=0.799
+seleccion_fijada,   Wilcoxon ancho  p=0.119
