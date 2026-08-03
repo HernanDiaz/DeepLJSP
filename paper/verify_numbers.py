@@ -560,45 +560,42 @@ check_exacto("greedy en las 12: 3 checkpoints cada una",
                                        for v in _gre12.values()),
              f"{len(_gre12)} instancias")
 
-# EST, G&T, GP, Pol.gre [mejor], GP64, Pol.64 [mejor], GA, ABC, fE, ES.
-# Los corchetes son la mejor semilla, como en tab:insize: la tabla ya no
-# usa un Pol.^b que se leia como si fuera otro presupuesto.
+# G&T, GP, Pol.gre [mejor], GP64, Pol.64 [mejor], GA, ESABC.
+# Los corchetes son la mejor semilla, como en tab:insize. EST, ABC_E3 y
+# fEABC salieron de la tabla; EST se sigue leyendo aqui porque otras
+# comprobaciones lo usan, y fEABC porque el texto lo sigue citando.
 TAB_CLASSICS = {
-    "FT10": (32.6, 32.2, 20.4, 16.7, 16.0, 8.4, 8.5, 6.3, 5.2, 4.1, 3.5, 3.0),
-    "FT20": (27.7, 40.0, 13.2, 8.6, 4.4, 12.1, 5.8, 4.4, 4.4, 1.7, 1.8, 1.8),
-    "La21": (40.2, 24.1, 15.0, 18.3, 15.5, 14.4, 12.6, 10.4, 5.0, 5.0, 4.2,
-             4.0),
-    "La24": (42.2, 26.3, 10.1, 19.3, 17.1, 8.8, 11.9, 10.9, 6.3, 5.1, 4.9,
-             5.0),
-    "La25": (36.6, 16.9, 11.8, 17.3, 16.7, 11.6, 9.6, 9.2, 5.1, 3.9, 3.4, 2.7),
-    "La27": (47.2, 34.8, 25.0, 15.0, 13.8, 13.7, 11.3, 10.9, 10.2, 4.7, 4.6,
-             4.1),
-    "La29": (47.9, 24.5, 13.4, 21.1, 16.2, 14.2, 16.6, 14.0, 14.2, 8.6, 7.4,
-             7.0),
-    "La38": (54.8, 27.0, 15.0, 17.2, 16.6, 13.3, 12.8, 11.7, 9.2, 6.9, 6.1,
-             5.8),
-    "La40": (20.9, 27.9, 13.3, 12.0, 9.3, 12.8, 9.3, 8.1, 8.7, 4.2, 4.6, 4.1),
-    "ABZ7": (51.6, 28.7, 19.7, 16.7, 15.9, 14.3, 13.4, 12.0, 12.5, 7.3, 6.6,
-             6.7),
-    "ABZ8": (43.0, 36.9, 24.7, 21.8, 19.1, 22.1, 17.3, 16.9, 18.5, 12.1, 11.1,
-             10.9),
-    "ABZ9": (42.7, 41.8, 33.4, 22.6, 19.7, 25.3, 19.2, 18.8, 18.0, 13.1, 11.6,
-             11.2),
+    "FT10": (32.2, 20.4, 16.7, 16.0, 8.4, 8.5, 6.3, 5.2, 3.0),
+    "FT20": (40.0, 13.2, 8.6, 4.4, 12.1, 5.8, 4.4, 4.4, 1.8),
+    "La21": (24.1, 15.0, 18.3, 15.5, 14.4, 12.6, 10.4, 5.0, 4.0),
+    "La24": (26.3, 10.1, 19.3, 17.1, 8.8, 11.9, 10.9, 6.3, 5.0),
+    "La25": (16.9, 11.8, 17.3, 16.7, 11.6, 9.6, 9.2, 5.1, 2.7),
+    "La27": (34.8, 25.0, 15.0, 13.8, 13.7, 11.3, 10.9, 10.2, 4.1),
+    "La29": (24.5, 13.4, 21.1, 16.2, 14.2, 16.6, 14.0, 14.2, 7.0),
+    "La38": (27.0, 15.0, 17.2, 16.6, 13.3, 12.8, 11.7, 9.2, 5.8),
+    "La40": (27.9, 13.3, 12.0, 9.3, 12.8, 9.3, 8.1, 8.7, 4.1),
+    "ABZ7": (28.7, 19.7, 16.7, 15.9, 14.3, 13.4, 12.0, 12.5, 6.7),
+    "ABZ8": (36.9, 24.7, 21.8, 19.1, 22.1, 17.3, 16.9, 18.5, 10.9),
+    "ABZ9": (41.8, 33.4, 22.6, 19.7, 25.3, 19.2, 18.8, 18.0, 11.2),
 }
 fallos_clas = 0
 for inst, fila in TAB_CLASSICS.items():
     c = _clas[inst]
-    reales = (_est12[inst], float(c["gt"]), float(c["gp"]),
+    reales = (float(c["gt"]), float(c["gp"]),
               sum(_gre12[inst]) / 3, min(_gre12[inst]), float(c["gp64"]),
               sum(_pol12[inst]) / len(_pol12[inst]), min(_pol12[inst]),
-              float(c["GA"]), float(c["ABCE3"]), float(c["fEABC"]),
-              float(c["ESABC"]))
+              float(c["GA"]), float(c["ESABC"]))
     for v_tex, v_dat in zip(fila, reales):
         if abs(v_tex - v_dat) > 0.051:
             print(f"  FALLO celda {inst}: texto={v_tex} datos={v_dat:.2f}")
             fallos_clas += 1
-check_exacto("las 144 celdas de tab:classics", fallos_clas == 0,
+check_exacto("las 108 celdas de tab:classics", fallos_clas == 0,
              f"{fallos_clas} celdas mal")
+check_exacto("tab:classics ya no imprime EST, ABC_E3 ni fEABC",
+             all(x not in TEX[TEX.index("\\label{tab:classics}"):
+                              TEX.index("\\end{table}",
+                                        TEX.index("\\label{tab:classics}"))]
+                 for x in ("EST", "ABC$_{E3}$", "fEABC")))
 check("clasicas: greedy mejor semilla, media (texto 15.0)", 15.0,
       sum(min(v) for v in _gre12.values()) / 12)
 
@@ -632,7 +629,7 @@ check("clasicas: politica media (texto 12.4)", 12.4,
       sum(_medias_pol) / 12)
 check("clasicas: G&T media (texto 30.1)", 30.1,
       sum(float(c["gt"]) for c in _clas.values()) / 12)
-for col, v_tex in [("GA", 9.8), ("fEABC", 5.8), ("ESABC", 5.5)]:
+for col, v_tex in [("GA", 9.8), ("ESABC", 5.5)]:
     check(f"clasicas: {col} media (texto {v_tex})", v_tex,
           sum(float(c[col]) for c in _clas.values()) / 12)
 gana12 = sum(sum(_pol12[i]) / len(_pol12[i]) <
