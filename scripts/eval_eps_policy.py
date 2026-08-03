@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """Robustez ejecucional eps-barra de la politica DRL frente a los baselines.
 
 Para cada instancia se muestrean K=1000 realizaciones de las duraciones
@@ -15,6 +15,7 @@ benchmarks/eval_eps_policy.csv (reanudable por filas).
 """
 import csv
 import importlib.util
+import json
 import os
 import sys
 
@@ -28,6 +29,7 @@ import torch                                                   # noqa: E402
 
 from jobshop_rl.agents_v2 import AgentV2                       # noqa: E402
 from jobshop_rl.experiments.factory import EnvironmentFactory  # noqa: E402
+from jobshop_rl.heuristics.gp_rule import GPRuleHeuristic      # noqa: E402
 from jobshop_rl.heuristics.strategies import (                 # noqa: E402
     ESTHeuristic, GTHeuristic, MORHeuristic)
 
@@ -100,8 +102,14 @@ def main():
         metodos = {}
         env = EnvironmentFactory.create_from_problem_id(pid, "adaptive",
                                                         seed=1)
+        # la regla destacada del companion, evaluada con LOS MISMOS
+        # numeros aleatorios que todo lo demas (el CSV del GP uso otras
+        # semillas de escenario, asi que no estaria pareado)
+        _gp = json.load(open("benchmarks/reevo_fixedfit/gp_tuned_seed1.json",
+                             encoding="utf-8"))["tree"]
         for nombre, h in [("MOR", MORHeuristic()), ("EST", ESTHeuristic()),
-                          ("GT-MWKR", GTHeuristic(tiebreak="mwkr"))]:
+                          ("GT-MWKR", GTHeuristic(tiebreak="mwkr")),
+                          ("GP", GPRuleHeuristic(_gp))]:
             metodos[nombre] = R.heuristic_sequence(env, h)
         for ck in CKPTS:
             etiqueta = os.path.basename(ck).replace(

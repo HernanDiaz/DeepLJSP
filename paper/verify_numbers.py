@@ -448,23 +448,30 @@ for r in __import__("csv").DictReader(
         float(r["eps"]) * 1000)
 _eps = {g: {i: sum(v) / len(v) for i, v in d.items()}
         for g, d in _eps.items()}
-for g, v_tex in [("MOR", 7.0), ("GT-MWKR", 6.9), ("EST", 6.3),
-                 ("policy-greedy", 6.1), ("policy-bo64", 6.1)]:
-    vals = list(_eps[g].values())
-    check(f"eps x1000 {g} (texto {v_tex})", v_tex, sum(vals) / len(vals))
-_ii = sorted(_eps["EST"])
-for g, gana_tex in [("MOR", 15), ("GT-MWKR", 14), ("EST", 9)]:
-    gana = sum(_eps[g][i] > _eps["policy-bo64"][i] for i in _ii)
-    check_exacto(f"bo64 mas robusto que {g} en {gana_tex}/15",
-                 gana == gana_tex, f"{gana}/15")
-try:
-    from scipy import stats as _st
-    d = [_eps["EST"][i] - _eps["policy-bo64"][i] for i in _ii]
-    p = _st.wilcoxon(d)[1]
-    check_exacto("frente a EST no significativo (p=0.36)",
-                 0.3 <= p <= 0.45, f"p={p:.3f}")
-except ImportError:
-    pendiente("Wilcoxon eps vs EST", "sin scipy")
+# El CSV se regenera por instancias: comprobar contra una tirada a medias
+# daria fallos que no son del paper sino del reloj.
+_n_eps = len(_eps.get("EST", {}))
+if _n_eps < 15:
+    pendiente("robustez ejecucional",
+              f"eval_eps_policy.csv incompleto ({_n_eps}/15 instancias)")
+else:
+    for g, v_tex in [("MOR", 7.0), ("GT-MWKR", 6.9), ("EST", 6.3),
+                     ("policy-greedy", 6.1), ("policy-bo64", 6.1)]:
+        vals = list(_eps[g].values())
+        check(f"eps x1000 {g} (texto {v_tex})", v_tex, sum(vals) / len(vals))
+    _ii = sorted(_eps["EST"])
+    for g, gana_tex in [("MOR", 15), ("GT-MWKR", 14), ("EST", 9)]:
+        gana = sum(_eps[g][i] > _eps["policy-bo64"][i] for i in _ii)
+        check_exacto(f"bo64 mas robusto que {g} en {gana_tex}/15",
+                     gana == gana_tex, f"{gana}/15")
+    try:
+        from scipy import stats as _st
+        d = [_eps["EST"][i] - _eps["policy-bo64"][i] for i in _ii]
+        p = _st.wilcoxon(d)[1]
+        check_exacto("frente a EST no significativo (p=0.36)",
+                     0.3 <= p <= 0.45, f"p={p:.3f}")
+    except ImportError:
+        pendiente("Wilcoxon eps vs EST", "sin scipy")
 
 print("\n== clasicas (tab:classics) ==")
 _clas = {r["inst"]: r for r in __import__("csv").DictReader(
@@ -539,6 +546,14 @@ check_exacto("las features de anchura no aportan (|delta|<=0.5)",
 # =========================================================================
 
 print("\n== la regla del companion como baseline publicado ==")
+_clas = {r["inst"]: r for r in __import__("csv").DictReader(
+    open("benchmarks/classic12_tuned.csv", encoding="utf-8"))}
+_est12 = {r["inst"]: float(r["est_re"]) for r in __import__("csv").DictReader(
+    open("benchmarks/classic12_est.csv", encoding="utf-8"))}
+_pol12 = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_classic12_policy.csv", encoding="utf-8")):
+    _pol12.setdefault(r["name"], []).append(float(r["re"]))
 _gp = {}
 for r in __import__("csv").DictReader(
         open("benchmarks/reevo_fixedfit/summary.csv", encoding="utf-8")):
@@ -552,33 +567,54 @@ for c, v_tex in enumerate([15.7, 16.6, 18.1, 21.1, 24.1, 13.8, 14.6]):
     check(f"tab:seventy GP clase {c + 1} (texto {v_tex})", v_tex,
           _gp_clases[c])
 
-# el enfrentamiento: la politica greedy PIERDE, la muestreada gana
-_g70 = {ta: gre[ta] for ta in _gp}
-gana_gre = sum(_g70[ta] < _gp[ta] for ta in _gp)
-gana_bo = sum(_bo[ta] < _gp[ta] for ta in _gp)
-check_exacto("greedy gana al GP en 21 de 70", gana_gre == 21, f"{gana_gre}/70")
-check_exacto("best-of-1024 gana al GP en 67 de 70", gana_bo == 67,
-             f"{gana_bo}/70")
-_d_gre = sorted(_gp[ta] - _g70[ta] for ta in _gp)
-_d_bo = sorted(_gp[ta] - _bo[ta] for ta in _gp)
-check("mediana del deficit greedy (texto -2.0)", -2.0, _d_gre[35], tol=0.06)
-check("mediana de la ventaja bo1024 (texto +4.5)", 4.5, _d_bo[35], tol=0.06)
+# el enfrentamiento, a PRESUPUESTOS EMPAREJADOS: una pasada contra una
+# pasada, y 1024 muestras contra 1024 (comparar 1 contra 1024 sesgaba)
+_gp1024 = {ta_de(r["instance"]): float(r["best_at_1024"]) for r in
+           __import__("csv").DictReader(
+               open("benchmarks/fair_gp_eps.csv", encoding="utf-8"))}
+check("GP una pasada sobre las 70 (texto 17.7)", 17.7,
+      sum(_gp.values()) / 70)
+check("GP con 1024 muestras (texto 14.1)", 14.1,
+      sum(_gp1024.values()) / 70)
+check("politica greedy sobre las 70 (texto 19.4)", 19.4,
+      sum(gre[ta] for ta in _gp) / 70)
+
+for etiqueta, rival, pol, gana_tex, med_tex in [
+        ("una pasada", _gp, gre, 21, -2.0),
+        ("1024 muestras", _gp1024, _bo, 46, 1.3)]:
+    gana = sum(pol[ta] < rival[ta] for ta in rival)
+    check_exacto(f"{etiqueta}: la politica gana {gana_tex} de 70",
+                 gana == gana_tex, f"{gana}/70")
+    d = sorted(rival[ta] - pol[ta] for ta in rival)
+    check(f"{etiqueta}: mediana (texto {med_tex:+.1f})", med_tex, d[35],
+          tol=0.06)
 try:
     from scipy import stats as _st
-    p_gre = _st.wilcoxon([_gp[ta] - _g70[ta] for ta in _gp])[1]
-    p_bo = _st.wilcoxon([_gp[ta] - _bo[ta] for ta in _gp])[1]
-    check_exacto("p del deficit greedy ~4.6e-4",
-                 4.0e-4 <= p_gre <= 5.2e-4, f"{p_gre:.2e}")
-    check_exacto("p de la ventaja bo1024 < 1e-11", p_bo < 1e-11,
-                 f"{p_bo:.2e}")
+    p1 = _st.wilcoxon([_gp[ta] - gre[ta] for ta in _gp])[1]
+    p2 = _st.wilcoxon([_gp1024[ta] - _bo[ta] for ta in _gp1024])[1]
+    check_exacto("una pasada: p ~4.6e-4", 4.0e-4 <= p1 <= 5.2e-4,
+                 f"{p1:.2e}")
+    check_exacto("1024 muestras: p ~1.4e-3", 1.1e-3 <= p2 <= 1.7e-3,
+                 f"{p2:.2e}")
 except ImportError:
     pendiente("Wilcoxon frente al GP", "sin scipy")
 
-# GP-eps a presupuesto igualado, citado en el texto
-_geps = list(__import__("csv").DictReader(
-    open("benchmarks/fair_gp_eps.csv", encoding="utf-8")))
-check("GP-eps best-of-1024 (texto 14.1)", 14.1,
-      sum(float(x["best_at_1024"]) for x in _geps) / len(_geps))
+# la fila de medias de tab:classics
+_med_tex = [40.6, 30.1, 17.9, 12.4, 11.1, 9.8, 6.4, 5.8, 5.5]
+_med_dat = [
+    sum(_est12.values()) / 12,
+    sum(float(c["gt"]) for c in _clas.values()) / 12,
+    sum(float(c["gp"]) for c in _clas.values()) / 12,
+    sum(sum(v) / len(v) for v in _pol12.values()) / 12,
+    sum(min(v) for v in _pol12.values()) / 12,
+    sum(float(c["GA"]) for c in _clas.values()) / 12,
+    sum(float(c["ABCE3"]) for c in _clas.values()) / 12,
+    sum(float(c["fEABC"]) for c in _clas.values()) / 12,
+    sum(float(c["ESABC"]) for c in _clas.values()) / 12,
+]
+_mal_med = sum(abs(a - b) > 0.051 for a, b in zip(_med_tex, _med_dat))
+check_exacto("la fila de medias de tab:classics", _mal_med == 0,
+             f"{_mal_med} mal")
 
 print("\n== apendice por instancia ==")
 _blk = TEX[TEX.index("\\label{tab:perinstance}"):]

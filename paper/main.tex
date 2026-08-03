@@ -936,6 +936,8 @@ La40 & 20.9 & 27.9 & 13.3 & 9.3 & 8.1 & 8.7 & 4.2 & 4.6 & 4.1 \\
 ABZ7 & 51.6 & 28.7 & 19.7 & 13.4 & 12.0 & 12.5 & 7.3 & 6.6 & 6.7 \\
 ABZ8 & 43.0 & 36.9 & 24.7 & 17.3 & 16.9 & 18.5 & 12.1 & 11.1 & 10.9 \\
 ABZ9 & 42.7 & 41.8 & 33.4 & 19.2 & 18.8 & 18.0 & 13.1 & 11.6 & 11.2 \\
+\midrule
+Mean & 40.6 & 30.1 & 17.9 & 12.4 & 11.1 & 9.8 & 6.4 & 5.8 & 5.5 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -951,16 +953,42 @@ feature extraction over the unscheduled work, and the
 GPU-vectorization of rollouts in Section~\ref{sec:hyperconfig} bought
 its ${\sim}3\times$ precisely there. Constructing a solution
 takes milliseconds (greedy) to a few seconds (best-of-64 on
-$50{\times}20$). Per-instance comparisons are one-sided
-(Figure~\ref{fig:headtohead}): a single greedy pass already improves
-on MOR, EST and G\&T-MWKR on each of the 70 instances (paired Wilcoxon
-signed-rank test, $p<10^{-12}$; the matched-pairs rank-biserial
-correlation, an effect size that reaches $1$ only when one side wins
-every single pair, is exactly $1$). Raising the inference budget to best-of-$1024$ brings
-the full-benchmark mean RE to $13.0\%$ over the 70 instances
-(Table~\ref{tab:seventy} and Figure~\ref{fig:byclass})---ahead of every deterministic constructive
-baseline on every instance, again with rank-biserial correlation $1$,
-and within $2.5$--$5.1$ points of the fEABC 30-run class averages. The policy's standalone RE ($13.4\%$
+$50{\times}20$). Against the hand-crafted rules the comparison is
+one-sided: a single greedy pass improves on MOR, EST and G\&T-MWKR on
+each of the 70 instances (paired Wilcoxon signed-rank test,
+$p<10^{-12}$; the matched-pairs rank-biserial correlation, an effect
+size that reaches $1$ only when one side wins every single pair, is
+exactly $1$). Raising the inference budget to best-of-$1024$ brings the
+full-benchmark mean RE to $13.0\%$ over the 70 instances
+(Table~\ref{tab:seventy} and Figure~\ref{fig:byclass})---ahead of
+every deterministic constructive baseline on every instance, again with
+rank-biserial correlation $1$, and within $2.5$--$5.1$ points of the
+fEABC 30-run class averages.
+
+Against the evolved rule of the companion study the comparison is not
+one-sided, and its answer depends on the inference budget the two are
+given (Figure~\ref{fig:headtohead}). Pass for pass, the rule wins: one
+greedy pass of the policy improves on it in only 21 of the 70
+instances, a median deficit of $2.0$ points
+($p=4.6\times10^{-4}$), and averages $19.4\%$ against the rule's
+$17.7\%$. Given $1024$ samples each---the companion randomizes its
+rule with $\epsilon$-greedy dispatching for exactly this
+purpose---the ordering reverses, though by less than the two headline
+averages alone would suggest: the policy wins 46 of 70 with a median
+advantage of $1.3$ points ($p=1.4\times10^{-3}$), $13.0\%$ against
+$14.1\%$.
+
+The two halves say the same thing from opposite sides. A single
+decision sequence drawn greedily from $1.2\times10^{5}$ parameters is
+worse than a compact evolved formula, so the network's advantage does
+not lie in its argmax; what it provides, and the formula does not, is
+a distribution whose samples improve faster with budget---the reading
+the best-of-$N$ ablation of Section~\ref{sec:ablations-bon} reaches
+from within. Both learners saw the same four training instances, but
+under different regimes and costs, so this compares published
+artefacts rather than a controlled study; the latter, with training as
+well as inference budgets matched, is the subject of dedicated ongoing
+work. The policy's standalone RE ($13.4\%$
 in-size; $10$--$26\%$ zero-shot) thus sits between dispatching rules
 ($42.3\%$ for the best of them, EST) and per-instance metaheuristics
 ($9.4\%$ mean RE for fEABC over 30 runs)---establishing, for the IJSP, the computational-class
@@ -968,11 +996,13 @@ trade-off documented for the deterministic JSP~\citep{Zhang2020L2D}.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=.62\linewidth]{figures/fig_headtohead.pdf}
-  \caption{The policy against the strongest published constructive
-  method, the evolved rule of the companion study~\citep{DiazGP2026},
-  one point per instance over the 70 interval Taillard instances.
-  Points below the diagonal are instances where the policy wins.}
+  \includegraphics[width=\linewidth]{figures/fig_headtohead.pdf}
+  \caption{The DRL policy against the evolved rule of the companion
+  study~\citep{DiazGP2026} at matched inference budgets, one point per
+  instance over the 70 interval Taillard instances. Points below the
+  diagonal are instances where the policy wins. Left: one constructive
+  pass each. Right: 1024 samples each, the rule randomized with
+  $\epsilon$-greedy dispatching.}
   \label{fig:headtohead}
 \end{figure}
 

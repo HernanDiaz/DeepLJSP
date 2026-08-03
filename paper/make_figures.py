@@ -162,6 +162,13 @@ def fig_ablation():
 #         por debajo de la diagonal gana la politica.
 # ----------------------------------------------------------------------
 def fig_headtohead():
+    """Politica frente al GP a presupuestos emparejados.
+
+    Panel izquierdo: una pasada contra una pasada (regla destacada del
+    companion frente a la politica greedy). Panel derecho: 1024 muestras
+    contra 1024 (regla aleatorizada del companion frente a best-of-1024).
+    Comparar una pasada con 1024 muestras estaria sesgado.
+    """
     import csv
     from collections import defaultdict
 
@@ -169,45 +176,45 @@ def fig_headtohead():
         m = re.search(r"tai(\d+_\d+)_(\d+)", nombre.lower())
         return "TA%d" % (TA_BASE[m.group(1)] + int(m.group(2)))
 
-    # el rival es la regla destacada del companion (17.71% sobre las 70),
-    # el mejor metodo constructivo publicado para este benchmark
-    base = {_ta(r["instance"]): float(r["re"]) for r in
-            csv.DictReader(open("benchmarks/reevo_fixedfit/summary.csv",
-                                encoding="utf-8"))
-            if r["method"] == "gp_tuned_seed1"}
-
+    gp1 = {_ta(r["instance"]): float(r["re"]) for r in
+           csv.DictReader(open("benchmarks/reevo_fixedfit/summary.csv",
+                               encoding="utf-8"))
+           if r["method"] == "gp_tuned_seed1"}
+    gp1024 = {_ta(r["instance"]): float(r["best_at_1024"]) for r in
+              csv.DictReader(open("benchmarks/fair_gp_eps.csv",
+                                  encoding="utf-8"))}
     gre = defaultdict(list)
     for r in csv.DictReader(open("benchmarks/fair_v2_greedy.csv",
                                  encoding="utf-8")):
         gre[_ta(r["instance"])].append(float(r["re_mid"]))
     gre = {k: sum(v) / len(v) for k, v in gre.items()}
-
     bo = defaultdict(list)
     for r in csv.DictReader(open("benchmarks/eval_fair_bo1024.csv",
                                  encoding="utf-8")):
         bo[_ta(r["instance"])].append(float(r["re_comp"]))
     bo = {k: min(v) for k, v in bo.items()}
 
-    tas = sorted(base, key=lambda s: int(s[2:]))
-    fig, ax = plt.subplots(figsize=(5.2, 5))
-    lim = [0, max(max(base.values()), max(gre.values())) * 1.06]
-    ax.plot(lim, lim, color="gray", linewidth=1, linestyle="--", zorder=1)
-    # la region bajo la diagonal es donde gana la politica
-    ax.fill_between(lim, 0, lim, color="seagreen", alpha=0.07, zorder=0)
-    ax.scatter([base[t] for t in tas], [gre[t] for t in tas], s=26,
-               facecolor="none", edgecolor="steelblue", linewidth=1.1,
-               label="Policy, greedy", zorder=3)
-    ax.scatter([base[t] for t in tas], [bo[t] for t in tas], s=26,
-               color="seagreen", marker="^", label="Policy, best-of-1024",
-               zorder=3)
-    ax.set_xlim(lim); ax.set_ylim(lim)
-    ax.set_xlabel("GP rule: RE (%)")
-    ax.set_ylabel("Policy: RE (%)")
-    ax.text(0.97, 0.06, "policy better", transform=ax.transAxes,
-            ha="right", fontsize=9, color="seagreen")
-    ax.legend(frameon=False, loc="upper left", fontsize=9)
-    ax.grid(alpha=0.3, linestyle="--")
-    ax.set_aspect("equal")
+    paneles = [
+        ("One constructive pass", gp1, gre, "steelblue", "o"),
+        ("Best of 1024 samples", gp1024, bo, "seagreen", "^"),
+    ]
+    tas = sorted(gp1, key=lambda s: int(s[2:]))
+    fig, axes = plt.subplots(1, 2, figsize=(8.4, 4.3))
+    for ax, (titulo, x, y, color, marca) in zip(axes, paneles):
+        lim = [0, max(max(x.values()), max(y.values())) * 1.08]
+        ax.plot(lim, lim, color="gray", linewidth=1, linestyle="--", zorder=1)
+        ax.fill_between(lim, 0, lim, color=color, alpha=0.07, zorder=0)
+        ax.scatter([x[k] for k in tas], [y[k] for k in tas], s=24,
+                   color=color, marker=marca, alpha=0.85, zorder=3)
+        gana = sum(y[k] < x[k] for k in tas)
+        ax.set_xlim(lim); ax.set_ylim(lim); ax.set_aspect("equal")
+        ax.set_title(titulo, fontsize=10)
+        ax.set_xlabel("GP rule: RE (%)")
+        ax.text(0.96, 0.07, "policy wins %d/70" % gana,
+                transform=ax.transAxes, ha="right", fontsize=8.5,
+                color=color)
+        ax.grid(alpha=0.3, linestyle="--")
+    axes[0].set_ylabel("DRL policy: RE (%)")
     fig.tight_layout()
     fig.savefig(os.path.join(FIG_DIR, "fig_headtohead.pdf"))
     plt.close(fig)
@@ -323,6 +330,15 @@ def fig_byclass():
     gt = {int(r["ta"][2:]): float(r["GT-MWKR_re"]) for r in
           csv.DictReader(open("benchmarks/constructive_per_instance.csv",
                               encoding="utf-8"))}
+
+    def _n2(nombre):
+        m = re.search(r"tai(\d+_\d+)_(\d+)", nombre.lower())
+        return TA_BASE[m.group(1)] + int(m.group(2))
+
+    gp = {_n2(r["instance"]): float(r["re"]) for r in
+          csv.DictReader(open("benchmarks/reevo_fixedfit/summary.csv",
+                              encoding="utf-8"))
+          if r["method"] == "gp_tuned_seed1"}
     gre = defaultdict(list)
     for r in csv.DictReader(open("benchmarks/fair_v2_greedy.csv",
                                  encoding="utf-8")):
@@ -335,18 +351,19 @@ def fig_byclass():
     bo = {k: min(v) for k, v in bo.items()}
 
     series = [("G&T-MWKR", gt, "steelblue"),
+              ("GP rule", gp, "mediumpurple"),
               ("Policy, greedy", gre, "sandybrown"),
               ("Policy, best-of-1024", bo, "seagreen")]
     # Con diez instancias por clase una caja esconde mas de lo que
     # resume (en 15x15 seis valores se apilan y el resto quedan fuera de
     # los bigotes): se dibujan los diez puntos y su mediana.
     fig, ax = plt.subplots(figsize=(7.0, 3.8))
-    ancho = 0.26
+    ancho = 0.21
     rng = np.random.default_rng(11)
     for k, (nombre, datos, color) in enumerate(series):
         for i in range(len(CL)):
             vals = [datos[j] for j in range(i * 10 + 1, i * 10 + 11)]
-            x = i + (k - 1) * ancho
+            x = i + (k - 1.5) * ancho
             ax.scatter(rng.normal(x, 0.028, len(vals)), vals, s=11,
                        color=color, alpha=0.55, linewidth=0, zorder=2)
             med = sorted(vals)[len(vals) // 2]
@@ -361,7 +378,7 @@ def fig_byclass():
             va="top", fontsize=8, color="dimgray")
     ax.set_xlabel("Instance size class")
     ax.set_ylabel("RE (%)")
-    ax.legend(frameon=False, fontsize=9, ncol=3, loc="lower center",
+    ax.legend(frameon=False, fontsize=8.5, ncol=4, loc="lower center",
               bbox_to_anchor=(0.5, 1.01))
     ax.grid(axis="y", alpha=0.3, linestyle="--")
     fig.tight_layout()
@@ -395,6 +412,8 @@ def fig_ladder():
         ("EST", media(list(est.values())), "constructive"),
         ("G&T-MWKR", media([float(c["gt"]) for c in clas.values()]),
          "constructive"),
+        ("GP rule", media([float(c["gp"]) for c in clas.values()]),
+         "learned"),
         ("Policy\n(best-of-64)", media([media(v) for v in pol.values()]),
          "learned"),
         ("GA", media([float(c["GA"]) for c in clas.values()]), "search"),
