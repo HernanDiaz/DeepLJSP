@@ -1,6 +1,6 @@
 ---
 name: escribir-papers
-description: Escribir, auditar y preparar para envío artículos de investigación con resultados computacionales (LaTeX + experimentos + datos). Usar siempre que se redacte o revise un paper, se integren resultados nuevos en el texto, se preparen tablas o figuras, se compruebe que las cifras del manuscrito cuadran con los datos, se adapte a las normas de una revista o se prepare el depósito de datos. También cuando el usuario pida "revisa esta sección", "mete estos resultados", "prepara el envío" o "comprueba los números", aunque no diga la palabra paper.
+description: Escribir, auditar y preparar para envío artículos de investigación con resultados computacionales (LaTeX + experimentos + datos). Usar siempre que se redacte o revise un paper, se integren resultados nuevos en el texto, se preparen tablas o figuras, se compruebe que las cifras del manuscrito cuadran con los datos, se elija revista de destino o se descarguen su plantilla y su guía para autores, se adapte el manuscrito a sus normas, o se prepare el depósito de datos. También cuando el usuario pida "revisa esta sección", "mete estos resultados", "a qué revista lo mandamos", "prepara el envío" o "comprueba los números", aunque no diga la palabra paper.
 ---
 
 # Escribir papers con resultados computacionales
@@ -154,7 +154,81 @@ Si hay un artículo companion, **copiar su arquitectura y no su prosa**: la
 organización no es plagio, el texto sí. Redactar contra el original abierto
 para divergir a conciencia.
 
-## 8. Normas de revista y compilación
+## 8. Elegir revista y conseguir sus normas
+
+### Qué decide la elección
+
+El factor de impacto casi nunca decide: en el caso real las cuatro
+candidatas eran Q1 en la misma categoría. Lo que decidió fue esto, en
+orden:
+
+1. **El ámbito declarado.** *Swarm and Evolutionary Computation* dice
+   ser de "computación evolutiva y de enjambre"; PPO con Deep Sets no
+   es ninguna de las dos, y el editor lo rechazaría por ámbito antes de
+   mandarlo a revisión. Leer la sección *Aims and scope*, no la
+   reputación.
+2. **Si la revista tolera el posicionamiento del artículo.** El paper
+   de la política no gana a las metaheurísticas y no pretende hacerlo:
+   vende velocidad y generalización. En una revista de investigación
+   operativa el primer revisor pregunta por qué pierde contra lo que ya
+   existe, y "es otra clase computacional" no le basta. En una revista
+   de aprendizaje ese marco es el de partida y no hay que defenderlo.
+   **Este criterio pesa más que el cuartil.**
+3. **La categoría JCR que el autor necesita** para su evaluación
+   (aquí, *Computer Science, Artificial Intelligence*). Comprobarlo,
+   no suponerlo.
+4. **Concentración de envíos.** Con dos artículos ya en revisión en la
+   misma revista, repartir reduce el riesgo de que un solo cuello de
+   botella editorial frene tres trabajos.
+5. **El coste de los conflictos.** Excluir coautores recientes y el
+   propio grupo es obligado; en un campo pequeño eso deja el artículo
+   en manos de revisores que no son del subcampo, y conviene anticipar
+   qué secciones tendrán que defenderse solas.
+
+Sobre las métricas: los agregadores discrepan entre sí (7,7 frente a
+7,88 para la misma revista). Sirven para decidir; para un CV o un
+informe, solo vale el JCR.
+
+### Conseguir la guía para autores
+
+- **Springer**: `https://link.springer.com/journal/<id>/submission-guidelines`.
+  Suele dejarse leer. Si el usuario la guarda como HTML, extraer el
+  texto plano y buscar por palabras clave (`Abstract`, `Keywords`,
+  `Statements and Declarations`, `Reference`, `ORCID`, `LLM`).
+- **Elsevier**: `https://www.sciencedirect.com/journal/<slug>/publish/guide-for-authors`
+  devuelve **403** a la descarga automática. Pedir al usuario que la
+  guarde; si la guarda como *Imprimir a PDF*, no tendrá capa de texto y
+  hay que leerla como imágenes por páginas.
+- Extraer siempre lo **verificable y accionable**: límite de palabras
+  del abstract, número de keywords, estilo de citas, secciones
+  obligatorias (sin ellas devuelven el envío), política de preprints,
+  tipo de revisión (anónima simple o doble: decide si un preprint
+  compromete el anonimato) y declaración de IA generativa.
+
+### Descargar la plantilla LaTeX
+
+- **Springer Nature** (`sn-jnl`): la URL de descarga cambia. La estable
+  es la página `https://www.springernature.com/gp/authors/campaigns/latex-author-support`;
+  extraer de ahí el enlace al zip. La antigua `resource-cms...` devuelve
+  400; la vigente es del dominio `cms-resources.apps.public.k8s.springernature.io`.
+- **Elsevier**: `elsarticle` viene con cualquier distribución TeX.
+- Copiar al directorio del paper la clase y los `.bst` que use, para que
+  compile en cualquier máquina sin depender del gestor de paquetes.
+- **Si falta un paquete que la clase exige** y el gestor no lo conoce
+  (`cuted` para `sn-jnl` en MiKTeX), bajarlo de CTAN y generarlo:
+
+```bash
+curl -o sttools.zip https://mirrors.ctan.org/macros/latex/contrib/sttools.zip
+# descomprimir y, en el directorio del .ins:
+pdftex -interaction=nonstopmode sttools.ins    # docstrip genera los .sty
+```
+
+Al convertir a la plantilla, comprobar lo que la clase **no** hace: la
+de Springer no carga `fontenc`, no compone el ORCID en la portada (se
+introduce en el sistema de envío) y trae su propio `natbib` e
+`hyperref`, así que las cargas manuales sobran.
+
+## 9. Normas de revista y compilación
 
 - Leer la guía y extraer lo verificable: límite del abstract, estilo de
   citas, secciones obligatorias, ORCID, política de preprints. El propio
@@ -175,7 +249,7 @@ para divergir a conciencia.
   resolver y palabras del abstract. Script de referencia en el scratchpad de
   la sesión (`chk_compila.py`).
 
-## 9. Higiene de experimentos que alimentan el paper
+## 10. Higiene de experimentos que alimentan el paper
 
 - **Guardar el resultado crudo, no el agregado.** Un barrido que guardó solo
   el mejor de 1024 muestras obligó a repetir 10 horas para poder dibujar la
@@ -193,7 +267,7 @@ para divergir a conciencia.
   en una tubería muerta, y `Select-Object -First N` mata el proceso de
   origen.
 
-## 10. Lo que NO está automatizado
+## 11. Lo que NO está automatizado
 
 Honestidad sobre el estado real:
 
