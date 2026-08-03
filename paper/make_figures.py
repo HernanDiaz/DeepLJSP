@@ -407,15 +407,30 @@ def fig_ladder():
     def media(d):
         return sum(d) / len(d)
 
+    # la politica greedy, para que la clase de una pasada tenga las dos
+    # familias al mismo presupuesto (antes se comparaba su best-of-64
+    # contra la regla a una pasada, y ambas iban en la misma clase)
+    gre = defaultdict(list)
+    for r in csv.DictReader(open("benchmarks/eval_classic12_greedy.csv",
+                                 encoding="utf-8")):
+        gre[r["name"]].append(float(r["re"]))
+
+    def media(d):
+        return sum(d) / len(d)
+
     filas = [
         ("MOR", media([float(c["mor"]) for c in clas.values()]), "constructive"),
         ("EST", media(list(est.values())), "constructive"),
         ("G&T-MWKR", media([float(c["gt"]) for c in clas.values()]),
          "constructive"),
         ("GP rule", media([float(c["gp"]) for c in clas.values()]),
-         "learned"),
-        ("Policy\n(best-of-64)", media([media(v) for v in pol.values()]),
-         "learned"),
+         "learned1"),
+        ("Policy, greedy", media([media(v) for v in gre.values()]),
+         "learned1"),
+        ("GP rule, $\\epsilon$-greedy@64",
+         media([float(c["gp64"]) for c in clas.values()]), "learned64"),
+        ("Policy, best-of-64", media([media(v) for v in pol.values()]),
+         "learned64"),
         ("GA", media([float(c["GA"]) for c in clas.values()]), "search"),
         ("ABC$_{E3}$", media([float(c["ABCE3"]) for c in clas.values()]),
          "search"),
@@ -423,13 +438,14 @@ def fig_ladder():
         ("ESABC", media([float(c["ESABC"]) for c in clas.values()]), "search"),
     ]
     filas.sort(key=lambda r: -r[1])
-    COLOR = {"constructive": "steelblue", "learned": "seagreen",
-             "search": "indianred"}
+    COLOR = {"constructive": "steelblue", "learned1": "seagreen",
+             "learned64": "mediumaquamarine", "search": "indianred"}
     ETIQ = {"constructive": "hand-crafted, one pass",
-            "learned": "learned, one pass",
+            "learned1": "learned, one pass",
+            "learned64": "learned, 64 samples",
             "search": "per-instance search, 30 runs"}
 
-    fig, ax = plt.subplots(figsize=(6.4, 3.4))
+    fig, ax = plt.subplots(figsize=(6.4, 3.9))
     vistos = set()
     for k, (nombre, valor, clase) in enumerate(filas):
         etiqueta = ETIQ[clase] if clase not in vistos else None

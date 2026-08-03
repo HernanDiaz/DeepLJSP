@@ -548,24 +548,38 @@ _pol12 = {}
 for r in __import__("csv").DictReader(
         open("benchmarks/eval_classic12_policy.csv", encoding="utf-8")):
     _pol12.setdefault(r["name"], []).append(float(r["re"]))
+# La tupla anterior comprobaba una columna MOR que la tabla no imprime y
+# se saltaba la de GP, que si imprime: nunca se verifico. Ahora el orden
+# es EXACTAMENTE el de tab:classics, con las dos columnas nuevas.
+_gre12 = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_classic12_greedy.csv", encoding="utf-8")):
+    _gre12.setdefault(r["name"], []).append(float(r["re"]))
+check_exacto("greedy en las 12: 3 checkpoints cada una",
+             len(_gre12) == 12 and all(len(v) == 3
+                                       for v in _gre12.values()),
+             f"{len(_gre12)} instancias")
+
+# EST, G&T, GP, Pol., GP64, Pol.64, Pol.b, GA, ABC, fEABC, ESABC
 TAB_CLASSICS = {
-    "FT10": (32.6, 41.8, 32.2, 8.5, 6.3, 5.2, 4.1, 3.5, 3.0),
-    "FT20": (27.7, 43.5, 40.0, 5.8, 4.4, 4.4, 1.7, 1.8, 1.8),
-    "La21": (40.2, 48.7, 24.1, 12.6, 10.4, 5.0, 5.0, 4.2, 4.0),
-    "La24": (42.2, 34.3, 26.3, 11.9, 10.9, 6.3, 5.1, 4.9, 5.0),
-    "La25": (36.6, 47.4, 16.9, 9.6, 9.2, 5.1, 3.9, 3.4, 2.7),
-    "La27": (47.2, 45.0, 34.8, 11.3, 10.9, 10.2, 4.7, 4.6, 4.1),
-    "La29": (47.9, 46.4, 24.5, 16.6, 14.0, 14.2, 8.6, 7.4, 7.0),
-    "La38": (54.8, 47.7, 27.0, 12.8, 11.7, 9.2, 6.9, 6.1, 5.8),
-    "La40": (20.9, 41.6, 27.9, 9.3, 8.1, 8.7, 4.2, 4.6, 4.1),
-    "ABZ7": (51.6, 36.1, 28.7, 13.4, 12.0, 12.5, 7.3, 6.6, 6.7),
-    "ABZ8": (43.0, 57.7, 36.9, 17.3, 16.9, 18.5, 12.1, 11.1, 10.9),
-    "ABZ9": (42.7, 59.0, 41.8, 19.2, 18.8, 18.0, 13.1, 11.6, 11.2),
+    "FT10": (32.6, 32.2, 20.4, 16.7, 8.4, 8.5, 6.3, 5.2, 4.1, 3.5, 3.0),
+    "FT20": (27.7, 40.0, 13.2, 8.6, 12.1, 5.8, 4.4, 4.4, 1.7, 1.8, 1.8),
+    "La21": (40.2, 24.1, 15.0, 18.3, 14.4, 12.6, 10.4, 5.0, 5.0, 4.2, 4.0),
+    "La24": (42.2, 26.3, 10.1, 19.3, 8.8, 11.9, 10.9, 6.3, 5.1, 4.9, 5.0),
+    "La25": (36.6, 16.9, 11.8, 17.3, 11.6, 9.6, 9.2, 5.1, 3.9, 3.4, 2.7),
+    "La27": (47.2, 34.8, 25.0, 15.0, 13.7, 11.3, 10.9, 10.2, 4.7, 4.6, 4.1),
+    "La29": (47.9, 24.5, 13.4, 21.1, 14.2, 16.6, 14.0, 14.2, 8.6, 7.4, 7.0),
+    "La38": (54.8, 27.0, 15.0, 17.2, 13.3, 12.8, 11.7, 9.2, 6.9, 6.1, 5.8),
+    "La40": (20.9, 27.9, 13.3, 12.0, 12.8, 9.3, 8.1, 8.7, 4.2, 4.6, 4.1),
+    "ABZ7": (51.6, 28.7, 19.7, 16.7, 14.3, 13.4, 12.0, 12.5, 7.3, 6.6, 6.7),
+    "ABZ8": (43.0, 36.9, 24.7, 21.8, 22.1, 17.3, 16.9, 18.5, 12.1, 11.1, 10.9),
+    "ABZ9": (42.7, 41.8, 33.4, 22.6, 25.3, 19.2, 18.8, 18.0, 13.1, 11.6, 11.2),
 }
 fallos_clas = 0
 for inst, fila in TAB_CLASSICS.items():
     c = _clas[inst]
-    reales = (_est12[inst], float(c["mor"]), float(c["gt"]),
+    reales = (_est12[inst], float(c["gt"]), float(c["gp"]),
+              sum(_gre12[inst]) / 3, float(c["gp64"]),
               sum(_pol12[inst]) / len(_pol12[inst]), min(_pol12[inst]),
               float(c["GA"]), float(c["ABCE3"]), float(c["fEABC"]),
               float(c["ESABC"]))
@@ -573,8 +587,34 @@ for inst, fila in TAB_CLASSICS.items():
         if abs(v_tex - v_dat) > 0.051:
             print(f"  FALLO celda {inst}: texto={v_tex} datos={v_dat:.2f}")
             fallos_clas += 1
-check_exacto("las 108 celdas de tab:classics", fallos_clas == 0,
+check_exacto("las 132 celdas de tab:classics", fallos_clas == 0,
              f"{fallos_clas} celdas mal")
+
+# 6.3: el enfrentamiento a presupuesto igualado sobre las 12
+_gp1 = {i: float(_clas[i]["gp"]) for i in _clas}
+_gp64 = {i: float(_clas[i]["gp64"]) for i in _clas}
+_pg = {i: sum(v) / 3 for i, v in _gre12.items()}
+_pb = {i: sum(v) / len(v) for i, v in _pol12.items()}
+check("clasicas: GP una pasada (texto 17.9)", 17.9,
+      sum(_gp1.values()) / 12)
+check("clasicas: politica greedy (texto 17.2)", 17.2,
+      sum(_pg.values()) / 12)
+check("clasicas: GP con 64 (texto 14.2)", 14.2, sum(_gp64.values()) / 12)
+for etiq, riv, pol_d, n_tex in [("una pasada", _gp1, _pg, 7),
+                                ("64 muestras", _gp64, _pb, 9)]:
+    n = sum(pol_d[i] < riv[i] for i in _clas)
+    check_exacto(f"clasicas, {etiq}: la politica gana {n_tex} de 12",
+                 n == n_tex, f"{n}/12")
+try:
+    from scipy import stats as _st2
+    _p1 = _st2.wilcoxon([_pg[i] - _gp1[i] for i in _clas])[1]
+    _p2 = _st2.wilcoxon([_pb[i] - _gp64[i] for i in _clas])[1]
+    check_exacto("clasicas, una pasada: empate (texto p=0.73)",
+                 0.70 <= _p1 <= 0.76, f"p={_p1:.3f}")
+    check_exacto("clasicas, 64 muestras: marginal (texto p=0.077)",
+                 0.070 <= _p2 <= 0.085, f"p={_p2:.4f}")
+except ImportError:
+    pendiente("Wilcoxon de las 12 clasicas", "sin scipy")
 _medias_pol = [sum(v) / len(v) for v in _pol12.values()]
 check("clasicas: politica media (texto 12.4)", 12.4,
       sum(_medias_pol) / 12)
