@@ -387,9 +387,10 @@ into a single network and trained jointly end to end.
 The rest of the section makes each stage precise:
 Section~\ref{sec:mdp} states the construction loop formally (states,
 actions, rewards); Section~\ref{sec:features} defines the $16{+}12$
-input quantities; Section~\ref{sec:arch}, the three network stages;
-and Section~\ref{sec:training}, how the network is trained and used
-afterwards.
+input quantities; and Section~\ref{sec:arch} the three network
+stages. How the network is trained, and how it is used once trained,
+belongs with the experimental setting and is described in
+Section~\ref{sec:training}.
 
 \begin{figure}[t]
 \centering
@@ -603,66 +604,6 @@ batch maximum with a boolean mask applied to attention, pooling and
 logits; unit tests verify that masked-padded forward passes are
 numerically identical to unpadded ones.
 
-\subsection{Training and inference}
-\label{sec:training}
-
-We train with PPO~\citep{Schulman2017}; Table~\ref{tab:hyper} lists all
-hyperparameters. Two choices depart from common JSP-DRL practice and are
-enabled by co-design with the normalized representation: a discount
-factor $\gamma=1$ (undiscounted finite horizon---future rewards count
-in full; with the customary $\gamma=0.99$ the terminal makespan
-signal reaches early decisions attenuated by $0.99^{nm}\!\approx\!0.05$
-for $20{\times}15$ instances) and batched minibatch updates with
-advantage normalization. Training on a set of instances proceeds in
-blocks (one instance at a time) with full weight transfer. A \emph{rollout} is one complete
-construction episode played by the current policy: \emph{sampled} if
-each operation is drawn from $\pi$, as during training, or
-\emph{greedy} if every step takes the most probable one. Sampled
-training episodes are interleaved with periodic greedy evaluations,
-and the best solution and best saved weights (the \emph{checkpoint})
-are tracked across both.
-
-\begin{table}[t]
-\centering\small
-\caption{Hyperparameters (identical across all experiments).}
-\label{tab:hyper}
-\begin{tabular}{llll}
-\toprule
-optimizer & Adam ($3\!\cdot\!10^{-4}$, $\epsilon{=}10^{-5}$) &
-discount $\gamma$ & $1.0$ \\
-PPO clip & $0.2$ & GAE $\lambda$ & $0.95$ \\
-epochs / minibatch & $4$ / $256$ & update period & $4$ episodes \\
-entropy coef. & $0.01$ & gradient clip & $0.5$ \\
-hidden width & $128$ & greedy eval.\ period & $10$ episodes \\
-advantage norm. & per update & initialization & orthogonal \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\paragraph{Best-of-$N$ inference.} At evaluation time we exploit the
-stochastic policy: one greedy rollout plus $N-1$ sampled ones,
-keeping the
-best solution under the ranking of Eq.~\eqref{eq:lex} ($N{=}64$). This
-choice is motivated empirically in Section~\ref{sec:ablations-bon}:
-during training, the best solutions frequently originate from sampled
-episodes, i.e.\ the policy is more valuable as a \emph{distribution}
-than as its argmax---consistent with sampling-based decoding in neural
-combinatorial optimization~\citep{Kool2019}.
-
-\begin{algorithm}[t]
-\caption{Best-of-$N$ inference}
-\begin{algorithmic}[1]
-\State $(\sigma^{*},\Cmax^{*})\gets$ greedy rollout of $\pi$
-\For{$i=1$ \textbf{to} $N-1$}
-  \State $(\sigma,\Cmax)\gets$ sampled rollout of $\pi$
-  \If{$\Cmax \prec_{lex} \Cmax^{*}$}
-     $(\sigma^{*},\Cmax^{*})\gets(\sigma,\Cmax)$
-  \EndIf
-\EndFor
-\State \Return $\sigma^{*}$
-\end{algorithmic}
-\end{algorithm}
-
 \section{Experimental Methodology}
 \label{sec:setup}
 
@@ -689,6 +630,23 @@ Eq.~\eqref{eq:re}, using the published crisp lower bounds.
 
 \subsection{Hyperparameter configuration}
 \label{sec:hyperconfig}
+
+\begin{table}[t]
+\centering\small
+\caption{Hyperparameters (identical across all experiments).}
+\label{tab:hyper}
+\begin{tabular}{llll}
+\toprule
+optimizer & Adam ($3\!\cdot\!10^{-4}$, $\epsilon{=}10^{-5}$) &
+discount $\gamma$ & $1.0$ \\
+PPO clip & $0.2$ & GAE $\lambda$ & $0.95$ \\
+epochs / minibatch & $4$ / $256$ & update period & $4$ episodes \\
+entropy coef. & $0.01$ & gradient clip & $0.5$ \\
+hidden width & $128$ & greedy eval.\ period & $10$ episodes \\
+advantage norm. & per update & initialization & orthogonal \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 All reported results use the literature-standard hyperparameters of
 Table~\ref{tab:hyper} \emph{without problem-specific tuning}. To assess
@@ -733,6 +691,49 @@ recurring gap between racing-optimal and confirmation-optimal
 configurations is itself a cautionary observation for automatic DRL
 configuration, where single-run training cost is too noisy to separate
 near-equivalent configurations.
+
+\subsection{Training and inference}
+\label{sec:training}
+
+We train with PPO~\citep{Schulman2017}; Table~\ref{tab:hyper} lists all
+hyperparameters. Two choices depart from common JSP-DRL practice and are
+enabled by co-design with the normalized representation: a discount
+factor $\gamma=1$ (undiscounted finite horizon---future rewards count
+in full; with the customary $\gamma=0.99$ the terminal makespan
+signal reaches early decisions attenuated by $0.99^{nm}\!\approx\!0.05$
+for $20{\times}15$ instances) and batched minibatch updates with
+advantage normalization. Training on a set of instances proceeds in
+blocks (one instance at a time) with full weight transfer. A \emph{rollout} is one complete
+construction episode played by the current policy: \emph{sampled} if
+each operation is drawn from $\pi$, as during training, or
+\emph{greedy} if every step takes the most probable one. Sampled
+training episodes are interleaved with periodic greedy evaluations,
+and the best solution and best saved weights (the \emph{checkpoint})
+are tracked across both.
+
+\paragraph{Best-of-$N$ inference.} At evaluation time we exploit the
+stochastic policy: one greedy rollout plus $N-1$ sampled ones,
+keeping the
+best solution under the ranking of Eq.~\eqref{eq:lex} ($N{=}64$). This
+choice is motivated empirically in Section~\ref{sec:ablations-bon}:
+during training, the best solutions frequently originate from sampled
+episodes, i.e.\ the policy is more valuable as a \emph{distribution}
+than as its argmax---consistent with sampling-based decoding in neural
+combinatorial optimization~\citep{Kool2019}.
+
+\begin{algorithm}[t]
+\caption{Best-of-$N$ inference}
+\begin{algorithmic}[1]
+\State $(\sigma^{*},\Cmax^{*})\gets$ greedy rollout of $\pi$
+\For{$i=1$ \textbf{to} $N-1$}
+  \State $(\sigma,\Cmax)\gets$ sampled rollout of $\pi$
+  \If{$\Cmax \prec_{lex} \Cmax^{*}$}
+     $(\sigma^{*},\Cmax^{*})\gets(\sigma,\Cmax)$
+  \EndIf
+\EndFor
+\State \Return $\sigma^{*}$
+\end{algorithmic}
+\end{algorithm}
 
 \subsection{Baselines}
 \label{sec:baselines}
