@@ -239,6 +239,7 @@ per-instance metaheuristics, which belong to a different
 computational class.
 
 \subsection{Learning constructive heuristics for scheduling}
+\label{sec:related-learning}
 
 Neural combinatorial optimization began with pointer
 networks~\citep{Vinyals2015} and their RL training~\citep{Bello2016};
@@ -577,7 +578,7 @@ of~\citet{Zaheer2017}, whose central result is that \emph{any}
 function invariant to the order of a set can be written in this
 form---so the simplicity costs no expressiveness in principle. The
 result tables refer to the base model by this name, in contrast to
-its attention variant (Section~\ref{sec:ablations-attn}).
+its attention variant (Section~\ref{sec:attention}).
 
 \emph{Score.} The \emph{policy head} rates each pair (candidate
 embedding, context)---``how good is operation $i$ given the decision
@@ -596,12 +597,52 @@ No parameter dimension depends on $n$ or $m$: the same
 ${\approx}1.2\times10^{5}$-parameter network dispatches any instance.
 The last policy layer is initialized with gain $10^{-2}$, so at the
 start every candidate receives a nearly equal score and the untrained
-policy is close to uniform. Optionally, a stack of $B$ \emph{self-attention} blocks---layers in
-which each candidate's embedding is updated by attending to every
-other candidate's (pre-LN, $4$ heads, no positional encoding,
-padding-masked)---transforms $\{\phi_i\}$ before pooling; $B{=}0$ recovers
-the base model exactly, and Section~\ref{sec:ablations-attn} evaluates
-$B{=}2$.
+policy is close to uniform.
+
+\subsection{The attention variant}
+\label{sec:attention}
+
+Pooling summarizes the candidate set by two statistics, its average and
+its extreme, and every candidate is then scored against that same
+summary. What this cannot express is a comparison between two
+\emph{particular} candidates: whether operation $i$ deserves the
+machine now may depend on which other eligible operation would claim it
+next, and a mean says nothing about which candidate that is.
+\emph{Self-attention} is the standard remedy, and the ingredient the
+neural combinatorial optimization literature reaches for first
+(Section~\ref{sec:related-learning}). In an attention layer every
+candidate emits a \emph{query}, a \emph{key} and a \emph{value}; the
+similarity between one candidate's query and another's key decides how
+much of that other's value is added into the first's embedding. Each
+candidate is thereby rewritten as a content-weighted reading of all the
+others, with the weights computed from the embeddings themselves rather
+than fixed in advance.
+
+We build this as a variant to be tested, not as part of the proposed
+model. A stack of $B$ pre-layer-normalization transformer blocks
+transforms $\{\phi_i\}$ after the shared encoder and before pooling,
+that is, between the embedding and pooling stages of
+Figure~\ref{fig:arch}. Each block normalizes the embeddings, applies multi-head attention over
+them ($4$ heads) and adds the result back, then applies a two-layer
+feed-forward network the same way; both additions are \emph{residual},
+that is, the block adds to its input instead of replacing it, so an
+untrained block behaves almost like the identity and the stack starts
+close to the base model. No positional encoding is used: the candidates
+form a set with no meaningful order, and numbering them would destroy
+the permutation invariance Section~\ref{sec:arch} was built to
+guarantee. Padding slots are masked out of the attention weights, so no
+candidate ever attends to an operation that is not there.
+
+Attention is a flag on the same code path, and $B{=}0$ reproduces the
+base network exactly---which is what makes the comparison of
+Section~\ref{sec:ablations-attn} a controlled one, differing in this
+component and nothing else. Its price is not small. A single block
+carries ${\approx}1.3\times10^{5}$ parameters---the query, key and
+value projections, the output projection, two layer normalizations and
+the feed-forward network---so the $B{=}2$ variant we evaluate grows the
+network from $1.2\times10^{5}$ to $3.9\times10^{5}$ parameters, a
+factor of $3.2$, and makes an episode about $30\%$ more expensive.
+Section~\ref{sec:ablations-attn} reports what that buys.
 
 During batched training, variable-size candidate sets are padded to the
 batch maximum with a boolean mask applied to attention, pooling and
@@ -1124,11 +1165,11 @@ concentrates in its sampling distribution.
 \subsection{Ablation: attention versus pooling}
 \label{sec:ablations-attn}
 
-Two pre-LN self-attention blocks over the candidate embeddings
-(identical code path, one flag) were evaluated at both operating points
-with paired seeds: $+0.9\%$ mean makespan at $300$ episodes (all six
-instances within the noise threshold) and $+1.5\%$ at $1000$ (one
-instance significantly worse), at ${\approx}30\%$ higher per-episode
+The two-block attention variant of Section~\ref{sec:attention} was
+evaluated at both operating points with paired seeds: $+0.9\%$ mean
+makespan at $300$ episodes (all six instances within the noise
+threshold) and $+1.5\%$ at $1000$ (one instance significantly worse),
+for $3.2$ times the parameters and ${\approx}30\%$ higher per-episode
 cost (Table~\ref{tab:insize-attn}). At these budgets the pooled context
 already conveys the interaction information the policy can exploit;
 richer pairwise structure may require larger budgets or instance

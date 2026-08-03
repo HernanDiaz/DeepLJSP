@@ -375,6 +375,28 @@ try:
 except Exception as e:
     pendiente("~1.2e5 parametros", f"no medible aqui ({type(e).__name__})")
 
+# 4.4: lo que cuesta la atencion. Se instancian las dos redes en vez de
+# creer al texto: un bloque ~1.3e5, y B=2 multiplica por 3.2 la red base
+try:
+    import sys as _sys
+
+    _sys.path.insert(0, ".")
+    from jobshop_rl.agents_v2.networks import (AttentionBlock,  # noqa: E402
+                                               PolicyValueNetV2)
+
+    def _np(mod):
+        return sum(p.numel() for p in mod.parameters())
+
+    _base, _b2 = _np(PolicyValueNetV2()), _np(PolicyValueNetV2(
+        num_attention_layers=2))
+    check("4.4: un bloque de atencion, ~1.3e5 (texto)", 1.3e5,
+          _np(AttentionBlock(128, 4)), tol=0.06e5)
+    check("4.4: la variante B=2, ~3.9e5 (texto)", 3.9e5, _b2, tol=0.06e5)
+    check("4.4 y 7.3: el factor 3.2 en parametros", 3.2, _b2 / _base,
+          tol=0.06)
+except Exception as e:
+    pendiente("coste de la atencion", f"no medible aqui ({type(e).__name__})")
+
 # =========================================================================
 print("\n== irace ==")
 datos_e = bench_por_instancia("v2-elite27-1000ep")
