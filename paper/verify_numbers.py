@@ -397,6 +397,29 @@ try:
 except Exception as e:
     pendiente("coste de la atencion", f"no medible aqui ({type(e).__name__})")
 
+# tab:environment: las versiones se leen de lo que hay instalado, no del
+# texto. Si alguien actualiza una libreria y no toca la tabla, salta aqui
+print("\n== tab:environment: la maquina y el software ==")
+try:
+    import importlib
+    import platform as _pl
+
+    _tex_env = {"Python": _pl.python_version(),
+                "PyTorch": importlib.import_module("torch").__version__,
+                "NumPy": importlib.import_module("numpy").__version__,
+                "SciPy": importlib.import_module("scipy").__version__,
+                "Matplotlib": importlib.import_module("matplotlib").__version__}
+    for nombre, v in _tex_env.items():
+        v = v.split("+")[0]                     # 2.9.1+cu130 -> 2.9.1
+        check_exacto(f"tab:environment, {nombre} {v}",
+                     f"${v}$" in TEX, v)
+    # la construccion CUDA de torch, y que la tabla no invente una GPU
+    _cu = importlib.import_module("torch").version.cuda
+    check_exacto(f"tab:environment, CUDA {_cu}", f"CUDA ${_cu}$" in TEX,
+                 str(_cu))
+except Exception as e:
+    pendiente("tab:environment", f"no medible aqui ({type(e).__name__})")
+
 # =========================================================================
 print("\n== irace ==")
 datos_e = bench_por_instancia("v2-elite27-1000ep")

@@ -686,6 +686,52 @@ neither training nor development. Three independent training runs, differing onl
 seed, are reported as mean and best. Performance is measured by RE,
 Eq.~\eqref{eq:re}, using the published crisp lower bounds.
 
+\subsection{Computational environment}
+\label{sec:environment}
+
+Table~\ref{tab:environment} lists the machine and the software stack.
+Two remarks matter for reading the costs reported later. First, every
+number in this paper---training, evaluation, the dispatching-rule
+baselines and the ablations---was produced on the CPU. The network is
+small enough (Section~\ref{sec:arch}) that a forward pass is
+negligible next to the environment step that follows it, so the GPU
+buys nothing for a single rollout; it was used only for the vectorized
+batched rollouts of the operating-fidelity tuning campaign
+(Section~\ref{sec:hyperconfig}), where many episodes advance in
+lockstep and the batched forward pass does pay. The method therefore
+carries no dependence on specialized hardware, which is part of what
+makes the deployment argument of Section~\ref{sec:positioning}
+credible.
+
+Second, the wall-clock figures quoted there are measurements on this
+machine, whose four physical cores were at times shared by concurrent
+experimental arms. They are reported as orders of magnitude---hours to
+train, milliseconds to dispatch---and not as a timing benchmark;
+nothing in the paper's conclusions turns on them.
+
+\begin{table}[t]
+\centering\small
+\caption{Machine and software used for every experiment in this paper.}
+\label{tab:environment}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{ll}
+\toprule
+Component & Specification \\
+\midrule
+CPU & AMD Ryzen 5 3400G, 4 cores / 8 threads, $3.7$ GHz \\
+Memory & $32$ GB \\
+GPU & NVIDIA GeForce RTX 5060 Ti, $16$ GB (tuning only) \\
+Operating system & Windows 10 Pro 22H2 (64-bit) \\
+\addlinespace
+Language & Python $3.12.6$ \\
+Learning & PyTorch $2.9.1$, CUDA $13.0$ build \\
+Numerics & NumPy $2.3.5$, SciPy $1.17.0$ \\
+Figures & Matplotlib $3.10.8$ \\
+Tuning & irace $4.4.3$ on R $4.6.1$ (Section~\ref{sec:hyperconfig}) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{Hyperparameter configuration}
 \label{sec:hyperconfig}
 
@@ -1018,7 +1064,8 @@ Mean & 40.6 & 30.1 & 17.9 & 12.4 & 11.1 & 9.8 & 6.4 & 5.8 & 5.5 \\
 \label{sec:positioning}
 
 Training the final model takes $66$--$123$ minutes per seed across
-the three seeds ($4{\times}1000$ episodes) on a commodity CPU. The
+the three seeds ($4{\times}1000$ episodes) on the commodity CPU of
+Table~\ref{tab:environment}. The
 cost is dominated by environment interaction, not by the small
 network: a seed dispatches $1.2$ million operations, each paying for
 feature extraction over the unscheduled work, and the
