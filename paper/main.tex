@@ -1225,16 +1225,30 @@ report $\bar\varepsilon\times10^{3}$. Every execution falls inside the
 predicted interval, as the monotonicity of Eq.~\eqref{eq:semiactive}
 guarantees.
 
-The policy's schedules are the most dependable of the constructive
-pool (Figure~\ref{fig:eps}): $\bar\varepsilon\times10^{3}=6.1$ for greedy and best-of-64
-alike---optimizing the worst case costs nothing in
-predictability---against $6.3$ for EST, $6.9$ for G\&T-MWKR and $7.0$
-for MOR. The advantage over MOR and G\&T-MWKR is systematic ($15/15$
-and $14/15$ instances, paired Wilcoxon signed-rank test $p{=}10^{-4}$); the edge over
-EST is not significant ($9/15$, $p{=}0.36$). EST's role as the
-robustness benchmark that learned schedulers match but do not beat
-mirrors what the companion study observes for evolved
-rules~\citep{DiazGP2026}.
+The constructive methods separate into two groups, and the policy is
+in the better one without leading it (Figure~\ref{fig:eps}). Its
+schedules deviate by $\bar\varepsilon\times10^{3}=6.2$ under greedy
+inference and $6.2$ under best-of-64---sampling for a lower worst case
+neither helps nor harms predictability---against $6.9$ for G\&T-MWKR
+and $7.1$ for MOR, and those two gaps are systematic (the policy is
+more faithful on $15/15$ and $13/15$ instances respectively, paired
+Wilcoxon signed-rank test, $p<0.001$ and $p=0.003$). Against the other
+two the policy is indistinguishable: EST deviates by $6.3$ ($8/15$,
+$p=0.60$) and the evolved rule of the companion study by $6.1$
+($7/15$, $p=0.98$), a hair ahead of the policy and well inside the
+noise.
+
+Three methods therefore share the top of this ranking---a
+hand-crafted rule, an evolved formula and a neural policy---and they
+have one thing in common: none of them optimizes the width of the
+interval it predicts. A schedule can deviate little without being
+short, so faithfulness has to be pursued deliberately rather than
+inherited from a makespan objective; the companion study reaches the
+same conclusion from its side, where its rule likewise improves on
+G\&T-MWKR but not on EST until an objective that penalizes width is
+introduced~\citep{DiazGP2026}. Section~\ref{sec:ablations-interval}
+returns to this, and Section~\ref{sec:conclusions} states what it
+implies for the reward used here.
 
 \begin{figure}[t]
   \centering
@@ -1242,8 +1256,8 @@ rules~\citep{DiazGP2026}.
   \caption{Executional robustness by method: mean
   $\bar\varepsilon\times10^{3}$ (bars) over the fifteen evaluation
   instances, each shown as a point. Lower is a more faithful a-priori
-  prediction. The policy and EST overlap; MOR and G\&T-MWKR do not
-  reach them.}
+  prediction. EST, the evolved rule and the policy are
+  indistinguishable at the top; MOR and G\&T-MWKR are not.}
   \label{fig:eps}
 \end{figure}
 

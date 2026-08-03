@@ -289,9 +289,9 @@ def fig_eps():
     med = {g: {i: sum(v) / len(v) for i, v in d.items()}
            for g, d in por.items()}
 
-    orden = ["MOR", "GT-MWKR", "EST", "Policy\n(greedy)",
+    orden = ["MOR", "GT-MWKR", "EST", "GP", "Policy\n(greedy)",
              "Policy\n(best-of-64)"]
-    fig, ax = plt.subplots(figsize=(5.6, 3.6))
+    fig, ax = plt.subplots(figsize=(6.4, 3.6))
     rng = __import__("numpy").random.default_rng(7)
     for k, g in enumerate(orden):
         vals = list(med[g].values())

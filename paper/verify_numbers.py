@@ -455,23 +455,33 @@ if _n_eps < 15:
     pendiente("robustez ejecucional",
               f"eval_eps_policy.csv incompleto ({_n_eps}/15 instancias)")
 else:
-    for g, v_tex in [("MOR", 7.0), ("GT-MWKR", 6.9), ("EST", 6.3),
-                     ("policy-greedy", 6.1), ("policy-bo64", 6.1)]:
+    for g, v_tex in [("MOR", 7.1), ("GT-MWKR", 6.9), ("EST", 6.3),
+                     ("GP", 6.1), ("policy-greedy", 6.2),
+                     ("policy-bo64", 6.2)]:
         vals = list(_eps[g].values())
         check(f"eps x1000 {g} (texto {v_tex})", v_tex, sum(vals) / len(vals))
     _ii = sorted(_eps["EST"])
-    for g, gana_tex in [("MOR", 15), ("GT-MWKR", 14), ("EST", 9)]:
+    for g, gana_tex in [("MOR", 15), ("GT-MWKR", 13), ("EST", 8), ("GP", 7)]:
         gana = sum(_eps[g][i] > _eps["policy-bo64"][i] for i in _ii)
-        check_exacto(f"bo64 mas robusto que {g} en {gana_tex}/15",
+        check_exacto(f"la politica es mas fiel que {g} en {gana_tex}/15",
                      gana == gana_tex, f"{gana}/15")
     try:
         from scipy import stats as _st
-        d = [_eps["EST"][i] - _eps["policy-bo64"][i] for i in _ii]
-        p = _st.wilcoxon(d)[1]
-        check_exacto("frente a EST no significativo (p=0.36)",
-                     0.3 <= p <= 0.45, f"p={p:.3f}")
+        for g, lo, hi, etiq in [("MOR", 0, 1e-3, "p<0.001"),
+                                ("GT-MWKR", 2e-3, 4e-3, "p=0.003"),
+                                ("EST", 0.55, 0.65, "p=0.60"),
+                                ("GP", 0.93, 1.01, "p=0.98")]:
+            d = [_eps[g][i] - _eps["policy-bo64"][i] for i in _ii]
+            p = _st.wilcoxon(d)[1]
+            check_exacto(f"eps frente a {g} ({etiq})", lo <= p <= hi,
+                         f"p={p:.3f}")
+        # la afirmacion de fondo: el GP y la politica, indistinguibles
+        check_exacto("GP y politica empatados en cabeza",
+                     abs(sum(_eps["GP"].values()) / 15
+                         - sum(_eps["policy-bo64"].values()) / 15) < 0.15,
+                     "diferencia < 0.15")
     except ImportError:
-        pendiente("Wilcoxon eps vs EST", "sin scipy")
+        pendiente("Wilcoxon de eps", "sin scipy")
 
 print("\n== clasicas (tab:classics) ==")
 _clas = {r["inst"]: r for r in __import__("csv").DictReader(
