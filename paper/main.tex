@@ -1051,40 +1051,41 @@ separation needs a budget to become visible.
 \begin{table}[t]
 \centering\small
 \caption{RE (\%) on the 12 classical interval instances (cross-family
-zero-shot). The two learned methods appear at both inference budgets:
-one pass (GP, the featured evolved rule of the companion
-study~\citep{DiazGP2026}; Pol., one greedy rollout) and $64$ samples
-(GP$^{64}$, the rule randomized by $\epsilon$-greedy dispatching;
-Pol.$^{64}$, best-of-64), each averaged over the three seeds, with
-Pol.$^{b}$ the best seed at $64$. Published metaheuristics are 30-run
-averages. Reference bounds are the best-known expected-makespan
-values, a different scale from Taillard's crisp bounds.}
+zero-shot). Column groups are inference budgets, so that the two
+learned methods---GP, the featured evolved rule of the companion
+study~\citep{DiazGP2026}, and Pol., this policy---are read against
+each other within a group and never across groups. At $64$ samples the
+rule is randomized by $\epsilon$-greedy dispatching. Policy entries are
+the mean over the three training seeds, with the best seed in
+brackets. Published metaheuristics are 30-run averages. Reference
+bounds are the best-known expected-makespan values, a different scale
+from Taillard's crisp bounds.}
 \label{tab:classics}
 \setlength{\tabcolsep}{3pt}
-\begin{tabular}{lccccccccccc}
+\begin{tabular}{lcccccccccc}
 \toprule
 & \multicolumn{2}{c}{hand-crafted} & \multicolumn{2}{c}{learned} &
-\multicolumn{3}{c}{learned} & \multicolumn{4}{c}{search} \\
+\multicolumn{2}{c}{learned} & \multicolumn{3}{c}{search} \\
 & \multicolumn{2}{c}{one pass} & \multicolumn{2}{c}{one pass} &
-\multicolumn{3}{c}{64 samples} & \multicolumn{4}{c}{30 runs} \\
-\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-8}\cmidrule(lr){9-12}
-Inst. & EST & G\&T & GP & Pol. & GP$^{64}$ & Pol.$^{64}$ & Pol.$^{b}$ &
+\multicolumn{2}{c}{64 samples} & \multicolumn{4}{c}{30 runs} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(lr){8-11}
+Inst. & EST & G\&T & GP & Pol. & GP & Pol. &
 GA & ABC$_{E3}$ & fEABC & ESABC \\
 \midrule
-FT10 & 32.6 & 32.2 & 20.4 & 16.7 & 8.4 & 8.5 & 6.3 & 5.2 & 4.1 & 3.5 & 3.0 \\
-FT20 & 27.7 & 40.0 & 13.2 & 8.6 & 12.1 & 5.8 & 4.4 & 4.4 & 1.7 & 1.8 & 1.8 \\
-La21 & 40.2 & 24.1 & 15.0 & 18.3 & 14.4 & 12.6 & 10.4 & 5.0 & 5.0 & 4.2 & 4.0 \\
-La24 & 42.2 & 26.3 & 10.1 & 19.3 & 8.8 & 11.9 & 10.9 & 6.3 & 5.1 & 4.9 & 5.0 \\
-La25 & 36.6 & 16.9 & 11.8 & 17.3 & 11.6 & 9.6 & 9.2 & 5.1 & 3.9 & 3.4 & 2.7 \\
-La27 & 47.2 & 34.8 & 25.0 & 15.0 & 13.7 & 11.3 & 10.9 & 10.2 & 4.7 & 4.6 & 4.1 \\
-La29 & 47.9 & 24.5 & 13.4 & 21.1 & 14.2 & 16.6 & 14.0 & 14.2 & 8.6 & 7.4 & 7.0 \\
-La38 & 54.8 & 27.0 & 15.0 & 17.2 & 13.3 & 12.8 & 11.7 & 9.2 & 6.9 & 6.1 & 5.8 \\
-La40 & 20.9 & 27.9 & 13.3 & 12.0 & 12.8 & 9.3 & 8.1 & 8.7 & 4.2 & 4.6 & 4.1 \\
-ABZ7 & 51.6 & 28.7 & 19.7 & 16.7 & 14.3 & 13.4 & 12.0 & 12.5 & 7.3 & 6.6 & 6.7 \\
-ABZ8 & 43.0 & 36.9 & 24.7 & 21.8 & 22.1 & 17.3 & 16.9 & 18.5 & 12.1 & 11.1 & 10.9 \\
-ABZ9 & 42.7 & 41.8 & 33.4 & 22.6 & 25.3 & 19.2 & 18.8 & 18.0 & 13.1 & 11.6 & 11.2 \\
+FT10 & 32.6 & 32.2 & 20.4 & 16.7 [16.0] & 8.4 & 8.5 [6.3] & 5.2 & 4.1 & 3.5 & 3.0 \\
+FT20 & 27.7 & 40.0 & 13.2 & 8.6 [4.4] & 12.1 & 5.8 [4.4] & 4.4 & 1.7 & 1.8 & 1.8 \\
+La21 & 40.2 & 24.1 & 15.0 & 18.3 [15.5] & 14.4 & 12.6 [10.4] & 5.0 & 5.0 & 4.2 & 4.0 \\
+La24 & 42.2 & 26.3 & 10.1 & 19.3 [17.1] & 8.8 & 11.9 [10.9] & 6.3 & 5.1 & 4.9 & 5.0 \\
+La25 & 36.6 & 16.9 & 11.8 & 17.3 [16.7] & 11.6 & 9.6 [9.2] & 5.1 & 3.9 & 3.4 & 2.7 \\
+La27 & 47.2 & 34.8 & 25.0 & 15.0 [13.8] & 13.7 & 11.3 [10.9] & 10.2 & 4.7 & 4.6 & 4.1 \\
+La29 & 47.9 & 24.5 & 13.4 & 21.1 [16.2] & 14.2 & 16.6 [14.0] & 14.2 & 8.6 & 7.4 & 7.0 \\
+La38 & 54.8 & 27.0 & 15.0 & 17.2 [16.6] & 13.3 & 12.8 [11.7] & 9.2 & 6.9 & 6.1 & 5.8 \\
+La40 & 20.9 & 27.9 & 13.3 & 12.0 [9.3] & 12.8 & 9.3 [8.1] & 8.7 & 4.2 & 4.6 & 4.1 \\
+ABZ7 & 51.6 & 28.7 & 19.7 & 16.7 [15.9] & 14.3 & 13.4 [12.0] & 12.5 & 7.3 & 6.6 & 6.7 \\
+ABZ8 & 43.0 & 36.9 & 24.7 & 21.8 [19.1] & 22.1 & 17.3 [16.9] & 18.5 & 12.1 & 11.1 & 10.9 \\
+ABZ9 & 42.7 & 41.8 & 33.4 & 22.6 [19.7] & 25.3 & 19.2 [18.8] & 18.0 & 13.1 & 11.6 & 11.2 \\
 \midrule
-Mean & 40.6 & 30.1 & 17.9 & 17.2 & 14.2 & 12.4 & 11.1 & 9.8 & 6.4 & 5.8 & 5.5 \\
+Mean & 40.6 & 30.1 & 17.9 & 17.2 [15.0] & 14.2 & 12.4 [11.1] & 9.8 & 6.4 & 5.8 & 5.5 \\
 \bottomrule
 \end{tabular}
 \end{table}
