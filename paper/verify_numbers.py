@@ -130,6 +130,17 @@ check_exacto("EST es la mejor regla suelta sobre las 70",
              ab["EST"] < min(ab["MOR"], ab["MWKR"], ab["SPT"], ab["LPT"]),
              f"EST {ab['EST']:.1f}")
 
+# el resumen tiene un limite duro de la revista: 150-250 palabras
+# ("Please provide an abstract of 150 to 250 words", guia de JIM). Se
+# cuenta sobre el texto renderizado, no sobre las ordenes de LaTeX.
+_ab = TEX[TEX.index("\\abstract{") + len("\\abstract{"):
+           TEX.index("\\keywords")].strip().rstrip("}")
+_ab = _ab.replace("{\\times}", "x").replace("\\%", "%")
+_ab = re.sub(r"\\[a-zA-Z]+|[{}$]", " ", _ab).replace("---", " ")
+_n_ab = len([w for w in _ab.split() if any(ch.isalnum() for ch in w)])
+check_exacto("el resumen cabe en las 150-250 palabras de JIM",
+             150 <= _n_ab <= 250, f"{_n_ab} palabras")
+
 # EST en desarrollo es PEOR que MOR: el ~46 del abstract (MOR) sigue siendo
 # la mejor regla en la clase de entrenamiento
 est_pi = {r.split(",")[0]: float(r.split(",")[3])

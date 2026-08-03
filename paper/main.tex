@@ -45,31 +45,32 @@ Shop Scheduling Problem}
 \orgname{University of Oviedo}, \orgaddress{\city{Gij\'on},
 \country{Spain}}}
 
-\abstract{Task durations on a shop floor are seldom known exactly at
-the moment scheduling decisions must be made. The interval job shop
+\abstract{Task durations on a shop floor are seldom known exactly when
+scheduling decisions must be made. The interval job shop
 scheduling problem (IJSP) models each processing time as a closed
-interval and evaluates schedules by interval arithmetic; its published
-solvers search every instance separately with metaheuristics. This
+interval and evaluates schedules by interval arithmetic; published
+solvers search each instance separately with metaheuristics. This
 paper studies the complementary regime: a constructive policy, trained
 once by deep reinforcement learning, that dispatches operations one at
-a time and delivers a schedule in milliseconds. The policy is
-size-invariant by construction: every feature is dimensionless and a
-permutation-invariant encoder over the eligible operations feeds
-policy and value heads whose parameter count is independent of the
-numbers of jobs and machines. Trained with proximal policy
-optimization on four $20{\times}15$ instances of the interval Taillard
-benchmark, the policy reaches $13.4\%$ mean relative error against
-crisp lower bounds on unseen instances of its training size, against
-${\approx}46\%$ for the best priority dispatching rule, and, evaluated
-zero-shot, beats that rule on every tested instance of all seven size
-classes; the same weights transfer to a second benchmark of classical
-instances. Four negative findings emerge from controlled ablations:
-self-attention does not improve on pooling at practical budgets;
-multi-size training does not overtake a single-size specialist even at
-three times its cost; and, most consequentially for the design itself,
-the interval machinery is inert for expected makespan---removing the
-width features changes nothing, and training on the crisp midpoint
-instances does as well as training on the intervals.}
+a time and returns a schedule in milliseconds. The policy is
+size-invariant by construction: dimensionless features and a
+permutation-invariant encoder give policy and value heads a parameter
+count independent of the numbers of jobs and machines. Trained with
+proximal policy optimization on four $20{\times}15$ instances of the
+interval Taillard benchmark, the policy reaches $13.4\%$ mean relative
+error against crisp lower bounds on unseen instances of that size,
+against ${\approx}46\%$ for the best dispatching rule on that class,
+and, evaluated zero-shot, beats it on every tested instance of all
+seven size classes; the same weights transfer to a
+second benchmark of classical instances. Against an evolved dispatching
+rule the ordering depends on the inference budget: pass for pass the
+rule wins, whereas at $1024$ samples each the policy wins 46 of the 70
+instances. Four ablations return negative results: self-attention does
+not improve on pooling; multi-size training does not overtake a
+single-size specialist even at three times its cost; and, most
+consequential for the design itself, removing the interval-width
+features changes nothing, and the crisp midpoint instances train just
+as good a policy.}
 
 \keywords{job shop scheduling, interval uncertainty, deep reinforcement
 learning, neural combinatorial optimization, size invariance,
