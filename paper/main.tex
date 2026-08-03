@@ -1035,6 +1035,25 @@ tuned for: what separates the network from the formula is not the
 decision it makes but the distribution it samples from, and the
 separation needs a budget to become visible.
 
+One asymmetry deserves stating, because the table cannot show it. The
+GP column is a \emph{single} rule---the one its study publishes---while
+the policy column averages three training runs. The companion study's
+30 evolutionary runs produced 30 rules, and on these twelve instances
+their means span $15.3$ to $23.3\%$ and average $19.0\%$. The
+published rule's $17.9\%$ sits at the fortieth percentile of that
+spread---twelve of the thirty do better---so it is a representative
+draw and not a favourable one, which is what makes it a fair opponent
+here.
+
+The spread itself, however, is the more useful observation. Per
+instance the standard deviation across the 30 evolved rules averages
+$4.3$ points, against $2.2$ across the policy's three seeds. Neither
+figure should be pushed far, since 30 runs and 3 seeds are not the
+same evidence, but the direction matters for anyone choosing between
+the two approaches: evolving one rule and training one network do not
+expose a practitioner to the same risk from the run they happen to
+get.
+
 \begin{figure}[t]
   \centering
   \includegraphics[width=.78\linewidth]{figures/fig_ladder.pdf}
@@ -1057,7 +1076,10 @@ study~\citep{DiazGP2026}, and Pol., this policy---are read against
 each other within a group and never across groups. At $64$ samples the
 rule is randomized by $\epsilon$-greedy dispatching. Policy entries are
 the mean over the three training seeds, with the best seed in
-brackets. Published metaheuristics are 30-run averages. Reference
+brackets; the GP column is the single rule the companion study
+publishes, and Section~\ref{sec:results-classics} gives the spread of
+the 30 rules its evolutionary runs produced. Published metaheuristics
+are 30-run averages. Reference
 bounds are the best-known expected-makespan values, a different scale
 from Taillard's crisp bounds.}
 \label{tab:classics}
@@ -1070,6 +1092,7 @@ from Taillard's crisp bounds.}
 \multicolumn{2}{c}{64 samples} & \multicolumn{2}{c}{30 runs} \\
 \cmidrule(lr){2-2}\cmidrule(lr){3-4}\cmidrule(lr){5-6}\cmidrule(lr){7-8}
 Inst. & G\&T & GP & Pol. & GP & Pol. & GA & ESABC \\
+ & & & {\scriptsize mean [best]} & & {\scriptsize mean [best]} & & \\
 \midrule
 FT10 & 32.2 & 20.4 & 16.7 [16.0] & 8.4 & 8.5 [6.3] & 5.2 & 3.0 \\
 FT20 & 40.0 & 13.2 & 8.6 [4.4] & 12.1 & 5.8 [4.4] & 4.4 & 1.8 \\

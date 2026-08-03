@@ -591,6 +591,36 @@ for inst, fila in TAB_CLASSICS.items():
             fallos_clas += 1
 check_exacto("las 108 celdas de tab:classics", fallos_clas == 0,
              f"{fallos_clas} celdas mal")
+# 6.3: la dispersion de las 30 reglas evolucionadas. OJO: la media POR
+# REGLA sobre las 12, no el minimo instancia a instancia (ese "virtual
+# best" da 11.97 y no corresponde a ninguna regla real)
+_arm12 = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/classic12_arm.csv", encoding="utf-8")):
+    _arm12.setdefault(r["rule"], {})[r["inst"]] = float(r["re"])
+check_exacto("las 30 reglas GP sobre las 12", len(_arm12) == 30
+             and all(len(v) == 12 for v in _arm12.values()),
+             f"{len(_arm12)} reglas")
+_m_regla = {k: sum(v.values()) / 12 for k, v in _arm12.items()}
+check("6.3: mejor regla de las 30 (texto 15.3)", 15.3, min(_m_regla.values()))
+check("6.3: peor regla de las 30 (texto 23.3)", 23.3, max(_m_regla.values()))
+check("6.3: media de las 30 reglas (texto 19.0)", 19.0,
+      sum(_m_regla.values()) / 30)
+_pub = _m_regla["gp_tuned_seed1"]
+check_exacto("6.3: la publicada es la 12 de 30 (percentil 40)",
+             sum(1 for v in _m_regla.values() if v < _pub) == 12,
+             f"{sum(1 for v in _m_regla.values() if v < _pub)}/30 mejores")
+try:
+    import statistics as _stt
+    _insts12 = sorted(_arm12["gp_tuned_seed1"])
+    _sd_gp = sum(_stt.stdev([_arm12[r][i] for r in _arm12])
+                 for i in _insts12) / 12
+    _sd_pol = sum(_stt.stdev(v) for v in _gre12.values()) / 12
+    check("6.3: sd entre reglas GP (texto 4.3)", 4.3, _sd_gp, tol=0.06)
+    check("6.3: sd entre semillas DRL (texto 2.2)", 2.2, _sd_pol, tol=0.06)
+except Exception as e:
+    pendiente("dispersion GP vs DRL", type(e).__name__)
+
 check_exacto("tab:classics ya no imprime EST, ABC_E3 ni fEABC",
              all(x not in TEX[TEX.index("\\label{tab:classics}"):
                               TEX.index("\\end{table}",
