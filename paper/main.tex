@@ -634,35 +634,35 @@ Eq.~\eqref{eq:re}, using the published crisp lower bounds.
 \begin{table}[t]
 \centering\small
 \caption{Hyperparameters, identical across every experiment reported in
-this paper. All are literature-standard values for PPO; none was tuned
-for this problem, a decision Section~\ref{sec:hyperconfig} puts to the
-test.}
+this paper. Most are standard PPO values; the discount factor and the
+batched update scheme depart from common practice for the reasons
+given in Section~\ref{sec:training}. None was tuned for this problem,
+though not for want of trying: two irace campaigns searched for better
+ones and neither transferred to the operating budget
+(Section~\ref{sec:hyperconfig}).}
 \label{tab:hyper}
-\begin{tabular}{lr}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lr@{\hskip 1.3em}|@{\hskip 1.3em}lr}
 \toprule
-Hyperparameter & Value \\
+Hyperparameter & Value & Hyperparameter & Value \\
 \midrule
-\textit{Optimizer} \\
-\quad learning rate (Adam) & $3\cdot10^{-4}$ \\
-\quad Adam $\epsilon$ & $10^{-5}$ \\
-\quad gradient clipping & $0.5$ \\
+\textit{Optimizer} & & \textit{PPO objective} & \\
+\quad learning rate (Adam) & $3\cdot10^{-4}$ &
+  \quad clipping range & $0.2$ \\
+\quad Adam $\epsilon$ & $10^{-5}$ &
+  \quad GAE $\lambda$ & $0.95$ \\
+\quad gradient clipping & $0.5$ &
+  \quad discount factor $\gamma$ & $1.0$ \\
 \addlinespace
-\textit{PPO} \\
-\quad clipping range & $0.2$ \\
-\quad GAE $\lambda$ & $0.95$ \\
-\quad discount factor $\gamma$ & $1.0$ \\
-\quad epochs per update & $4$ \\
-\quad minibatch size & $256$ \\
-\quad entropy coefficient & $0.01$ \\
-\quad advantage normalization & per update \\
-\addlinespace
-\textit{Network} \\
-\quad hidden width $h$ & $128$ \\
-\quad weight initialization & orthogonal \\
-\addlinespace
-\textit{Training schedule} \\
-\quad policy update & every $4$ episodes \\
-\quad greedy evaluation & every $10$ episodes \\
+\textit{Network and schedule} & & \textit{PPO updates} & \\
+\quad hidden width $h$ & $128$ &
+  \quad epochs per update & $4$ \\
+\quad weight initialization & orthogonal &
+  \quad minibatch size & $256$ \\
+\quad policy update & every $4$ ep. &
+  \quad entropy coefficient & $0.01$ \\
+\quad greedy evaluation & every $10$ ep. &
+  \quad advantage normalization & per update \\
 \bottomrule
 \end{tabular}
 \end{table}
