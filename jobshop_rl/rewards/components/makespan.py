@@ -5,6 +5,7 @@ Soporta tanto problemas determinísticos (escalares) como problemas con
 incertidumbre (intervalos) en los tiempos de procesamiento.
 """
 
+import os
 from typing import Dict, Optional, Union
 
 from jobshop_rl.rewards.base import RewardComponent
@@ -42,6 +43,21 @@ class MakespanRewardComponent(RewardComponent):
             if lb_value > 0:
                 self.makespan_scale = max(100, lb_value / 10)
     
+    def _robust_value(self, value: Union[float, Interval]) -> float:
+        """Valor a minimizar: peor caso mas lambda por la anchura.
+
+        DEEPLJSP_V2_LAMBDA=0 (defecto) deja el objetivo tal cual estaba,
+        el peor caso puro. Con lambda>0 se penaliza explicitamente la
+        anchura del intervalo predicho, el analogo del objetivo robusto
+        f_lambda del estudio companion: up + lambda*(up - lo). Es la
+        unica via por la que la anchura entra en lo que se optimiza.
+        """
+        lam = float(os.environ.get("DEEPLJSP_V2_LAMBDA", "0") or 0)
+        if lam and isinstance(value, Interval):
+            up, lo = float(value.upper), float(value.lower)
+            return up + lam * (up - lo)
+        return self._get_scalar_value(value)
+
     def _get_scalar_value(self, value: Union[float, Interval]) -> float:
         """
         Extrae un valor escalar de un valor que puede ser intervalo.
@@ -77,7 +93,7 @@ class MakespanRewardComponent(RewardComponent):
             self.best_seen_makespan = makespan
         
         # Convert to scalar for reward calculation
-        makespan_value = self._get_scalar_value(makespan)
+        makespan_value = self._robust_value(makespan)
         
         # Recompensa base escalada (negativa porque queremos minimizar)
         reward = -makespan_value / self.makespan_scale

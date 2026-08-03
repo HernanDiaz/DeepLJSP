@@ -7,6 +7,7 @@ experimentos (select_action, train, evaluate_policy, save_checkpoint,
 training_makespan_history) sin importar nada de jobshop_rl.agents.
 """
 
+import os
 import time
 from copy import deepcopy
 from typing import Dict, List, Optional, Tuple
@@ -118,11 +119,20 @@ class AgentV2:
         return int(action.item()), dist.log_prob(action), (op_f, glob_f, value)
 
     def _episode_makespan(self) -> float:
-        """Makespan (peor caso) del estado final del entorno."""
+        """Valor a minimizar del estado final.
+
+        Por defecto el peor caso. Con DEEPLJSP_V2_LAMBDA>0 se anade la
+        penalizacion de anchura del objetivo robusto, para que la
+        seleccion del mejor modelo y el best-of-N ordenen por lo mismo
+        que premia la recompensa: optimizar una cosa y elegir por otra
+        seria un experimento incoherente.
+        """
         max_time = max(self.env.job_completion_time)
-        if isinstance(max_time, Interval):
-            return float(max_time.upper)
-        return float(max_time)
+        if not isinstance(max_time, Interval):
+            return float(max_time)
+        up, lo = float(max_time.upper), float(max_time.lower)
+        lam = float(os.environ.get("DEEPLJSP_V2_LAMBDA", "0") or 0)
+        return up + lam * (up - lo) if lam else up
 
     def _run_episode(self, sample: bool, store: bool) -> Tuple[float, float]:
         """Ejecuta un episodio; devuelve (makespan, recompensa acumulada)."""
