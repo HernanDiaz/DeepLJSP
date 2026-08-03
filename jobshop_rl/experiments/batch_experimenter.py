@@ -170,7 +170,14 @@ class BatchExperimenter:
                 logger.info(f"Checkpoint guardado en ruta alternativa: {backup_path}")
             
             # Generar visualizaciones
-            self._generate_problem_visualizations(current_agent, problem_name, env)
+            # Una figura no puede tumbar una campaña de horas: se registra
+            # y se sigue (el 2026-08-03 un Interval en el historial aborto
+            # la extension de semillas tras entrenar la primera).
+            try:
+                self._generate_problem_visualizations(current_agent, problem_name, env)
+            except Exception as e:
+                logger.error(f"Visualizaciones de {problem_name} fallaron "
+                             f"({type(e).__name__}: {e}); se continua.")
             
             # Guardar resultados para este problema
             problem_results.append({

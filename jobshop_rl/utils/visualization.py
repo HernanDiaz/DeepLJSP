@@ -159,8 +159,13 @@ def plot_makespan_history(makespan_history: List, title: str = "Evolución del M
                     label=f'Media móvil superior ({window_size} eps)')
     else:
         # Formato escalar tradicional
-        # Convertir a float por si acaso hay algún tipo numérico extraño
-        scalar_values = [float(m) for m in makespan_history]
+        # Convertir a float por si acaso hay algún tipo numérico extraño.
+        # Un Interval suelto en la historia (el v2 los mezcla con escalares)
+        # hacía estallar float() y abortaba la campaña entera por una figura.
+        def _escalar(m):
+            return float(m.upper) if hasattr(m, "upper") else float(m)
+
+        scalar_values = [_escalar(m) for m in makespan_history]
         plt.plot(scalar_values, color='blue', label='Makespan')
         
         # Calcular y añadir media móvil

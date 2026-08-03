@@ -598,5 +598,53 @@ for ta, celdas in _filas.items():
 check_exacto(f"las {len(_filas) * 5} celdas del apendice", _mal == 0,
              f"{_mal} mal")
 
+
+print("\n== delimitacion de la conciencia intervalar ==")
+
+
+def _por_par(tag):
+    """{(TA, semilla): RE} de una campaña, componentwise."""
+    out = {}
+    for d in sorted(glob.glob(f"outputs/bench_{tag}__*_seed*")):
+        s = d.split("_seed")[-1]
+        for p in glob.glob(f"{d}/plots/test/*_schedule.json"):
+            ta = ta_de(os.path.basename(p))
+            out[(ta, s)] = re_pct(makespans(p)[0], ta)
+    return out
+
+
+_full = _por_par("v2-full-1000ep")
+_nw = _por_par("v2-nowidth-1000ep-b")
+_mp = _por_par("v2-midpoint-1000ep-b")
+for nombre, arm, v_tex in [("no-width", _nw, 13.62),
+                           ("punto medio", _mp, 14.18)]:
+    if not arm:
+        pendiente(f"brazo {nombre}", "sin directorios en outputs/")
+        continue
+    check_exacto(f"{nombre}: 3 semillas x 6 instancias", len(arm) == 18,
+                 f"{len(arm)} pares")
+    check(f"{nombre}: media (texto {v_tex})", v_tex,
+          sum(arm.values()) / len(arm))
+    comunes = sorted(set(_full) & set(arm))
+    d = [arm[k] - _full[k] for k in comunes]
+    peor = sum(x > 0 for x in d)
+    try:
+        from scipy import stats as _st
+        p = _st.wilcoxon(d)[1]
+        if nombre == "no-width":
+            check("no-width: delta medio (texto +0.18)", 0.18,
+                  sum(d) / len(d), tol=0.02)
+            check_exacto("no-width: peor en 12 de 18", peor == 12,
+                         f"{peor}/18")
+            check_exacto("no-width: no significativo (texto p=0.47)",
+                         0.44 <= p <= 0.50, f"p={p:.3f}")
+        else:
+            check_exacto("punto medio: no significativo (texto p=0.28)",
+                         0.25 <= p <= 0.31, f"p={p:.3f}")
+    except ImportError:
+        pendiente(f"Wilcoxon {nombre}", "sin scipy")
+check("brazo principal de referencia (texto 13.44)", 13.44,
+      sum(_full.values()) / len(_full))
+
 print(f"\n{ok_n} comprobaciones correctas, {fallo_n} fallos, "
       f"{pend_n} pendientes de fuente")
