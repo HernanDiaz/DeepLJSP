@@ -621,6 +621,25 @@ try:
 except Exception as e:
     pendiente("dispersion GP vs DRL", type(e).__name__)
 
+# 6.3 y 6.4 afirman COMO se eligio la regla destacada. Es una afirmacion
+# sobre el otro paper, asi que se contrasta contra su fuente, no de
+# memoria: la destacada es la mejor de 30 sobre las 70, y la media de las
+# 30 es 18.99. Si el companero cambia el protocolo, esto salta.
+_GP_TEX = "paper_gp/main.tex"
+if not os.path.exists(_GP_TEX):
+    pendiente("protocolo de la regla destacada", "sin paper_gp/main.tex")
+else:
+    _g = open(_GP_TEX, encoding="utf-8").read()
+    check_exacto("6.3: la destacada es la de menor RE sobre las 70",
+                 "the one with\nthe lowest mean $\\RE$ is the \\emph{featured "
+                 "rule}" in _g)
+    check_exacto("6.3: las 12 clasicas no intervienen en la eleccion",
+                 "the 12 classical instances play no part in any choice" in _g)
+    check_exacto("6.4: media de las 30 sobre las 70 es 18.99",
+                 "$18.99\\%$ ($\\pm1.33$)" in _g and "$18.99\\%$" in TEX)
+    check_exacto("6.4: la destacada sobre las 70 es 17.71",
+                 "best rule attains\n$17.71\\%$" in _g)
+
 check_exacto("tab:classics ya no imprime EST, ABC_E3 ni fEABC",
              all(x not in TEX[TEX.index("\\label{tab:classics}"):
                               TEX.index("\\end{table}",

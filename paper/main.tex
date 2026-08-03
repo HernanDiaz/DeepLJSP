@@ -1036,23 +1036,25 @@ decision it makes but the distribution it samples from, and the
 separation needs a budget to become visible.
 
 One asymmetry deserves stating, because the table cannot show it. The
-GP column is a \emph{single} rule---the one its study publishes---while
-the policy column averages three training runs. The companion study's
-30 evolutionary runs produced 30 rules, and on these twelve instances
-their means span $15.3$ to $23.3\%$ and average $19.0\%$. The
-published rule's $17.9\%$ sits at the fortieth percentile of that
-spread---twelve of the thirty do better---so it is a representative
-draw and not a favourable one, which is what makes it a fair opponent
-here.
+GP column is a \emph{single} rule where the policy column averages
+three training runs---and not an arbitrary one: the companion study
+runs 30 independent evolutions and features the rule with the lowest
+mean RE \emph{on the 70 Taillard instances}. It is a best-of-30, and
+the study says so, reporting the 30-run mean beside it for that
+reason. The twelve classical instances, however, played no part in
+that choice, so on this family the featured rule is being read outside
+the data that selected it---and it shows: its $17.9\%$ falls at the
+fortieth percentile of the 30, whose means span $15.3$ to $23.3\%$ and
+average $19.0\%$. Selecting a rule on one family does not carry the
+selection to another.
 
-The spread itself, however, is the more useful observation. Per
-instance the standard deviation across the 30 evolved rules averages
-$4.3$ points, against $2.2$ across the policy's three seeds. Neither
-figure should be pushed far, since 30 runs and 3 seeds are not the
-same evidence, but the direction matters for anyone choosing between
-the two approaches: evolving one rule and training one network do not
-expose a practitioner to the same risk from the run they happen to
-get.
+The spread itself is the more useful observation. Per instance the
+standard deviation across the 30 evolved rules averages $4.3$ points,
+against $2.2$ across the policy's three seeds. Neither figure should
+be pushed far, since 30 runs and 3 seeds are not the same evidence,
+but the direction matters for anyone choosing between the two
+approaches: evolving one rule and training one network do not expose a
+practitioner to the same risk from the run they happen to get.
 
 \begin{figure}[t]
   \centering
@@ -1142,7 +1144,15 @@ given (Figure~\ref{fig:headtohead}). Pass for pass, the rule wins: one
 greedy pass of the policy improves on it in only 21 of the 70
 instances, a median deficit of $2.0$ points
 ($p=4.6\times10^{-4}$), and averages $19.4\%$ against the rule's
-$17.7\%$. Given $1024$ samples each---the companion randomizes its
+$17.7\%$. Which side of that pair is a maximum matters: the $17.7\%$
+is the best of the companion's 30 evolutions, selected on these same
+70 instances, whereas the $19.4\%$ is a mean over three seeds.
+Measured instead against what a single evolution should be expected to
+yield---$18.99\%$, the 30-run mean that study reports---the deficit at
+one pass is $0.4$ points rather than $1.7$. We keep the featured rule
+as the opponent, since it is the artefact the study publishes and the
+stronger test, but the reader should know it is a selected one. Given
+$1024$ samples each---the companion randomizes its
 rule with $\epsilon$-greedy dispatching for exactly this
 purpose---the ordering reverses, though by less than the two headline
 averages alone would suggest: the policy wins 46 of 70 with a median
