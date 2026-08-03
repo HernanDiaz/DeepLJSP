@@ -682,7 +682,17 @@ class BatchExperimenter:
             'training_problems_count': len(self.training_problems),
             'test_problems_count': len(self.test_problems),
             'output_dir': self.output_dir,
-            'adaptive_modifications_applied': self.reward_strategy.lower() == "adaptive"
+            'adaptive_modifications_applied': self.reward_strategy.lower() == "adaptive",
+            # Las variables de entorno que CAMBIAN el objetivo o la red no
+            # dejaban rastro en el volcado: un brazo entrenado con otro
+            # objetivo era indistinguible de uno normal salvo comparando
+            # magnitudes a ojo. Se registran aunque esten vacias, para que
+            # su ausencia signifique "no estaba puesta" y no "no se miro".
+            'env_overrides': {
+                v: os.environ.get(v, '')
+                for v in ('DEEPLJSP_AGENT', 'DEEPLJSP_V2_LAMBDA',
+                          'DEEPLJSP_V2_WORSTCASE_ONLY')
+            }
         })
         
         # Añadir lista de problemas de entrenamiento
