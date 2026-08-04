@@ -1029,11 +1029,18 @@ rule, better on 7 of the 12 instances (Wilcoxon signed-rank,
 $p=0.73$). Given $64$ samples each---the rule randomized by the
 $\epsilon$-greedy dispatching its own study provides---the policy
 leads, $12.4\%$ against $14.2\%$ and better on 9 of 12, though on
-twelve instances even that is only marginal ($p=0.077$). The picture
-matches Section~\ref{sec:positioning} on a family neither method was
-tuned for: what separates the network from the formula is not the
-decision it makes but the distribution it samples from, and the
-separation needs a budget to become visible.
+twelve instances even that is only marginal ($p=0.077$). At $1024$ the
+ordering holds and the margin does not grow, $10.1\%$ against
+$11.3\%$, better on 7 of 12 ($p=0.27$). The policy is therefore ahead
+at every budget on this family and at none of them decisively---twelve
+instances cannot separate a gap of one or two points---which is a
+weaker and more accurate statement than the one the earlier draft of
+this section made by comparing $12.4\%$ against a single pass. What
+separates the network from the formula is not the decision it makes
+but the distribution it samples from, exactly as in
+Section~\ref{sec:positioning}, and here both learners buy roughly the
+same amount from extra sampling: the rule improves by $6.6$ points
+from one pass to $1024$, the policy by $7.1$.
 
 One asymmetry deserves stating, because the table cannot show it. The
 GP column is a \emph{single} rule where the policy column averages

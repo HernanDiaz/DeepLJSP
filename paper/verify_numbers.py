@@ -672,8 +672,28 @@ check("clasicas: GP una pasada (texto 17.9)", 17.9,
 check("clasicas: politica greedy (texto 17.2)", 17.2,
       sum(_pg.values()) / 12)
 check("clasicas: GP con 64 (texto 14.2)", 14.2, sum(_gp64.values()) / 12)
+_gp1024c = {i: float(_clas[i]["gp1024"]) for i in _clas}
+_p1024 = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_classic12_bo1024.csv", encoding="utf-8")):
+    _p1024.setdefault(r["name"], []).append(float(r["re"]))
+check_exacto("clasicas a 1024: 12 instancias x 3 checkpoints",
+             len(_p1024) == 12 and all(len(v) == 3 for v in _p1024.values()),
+             f"{len(_p1024)} instancias")
+_p1024 = {i: min(v) for i, v in _p1024.items()}   # agrega los tres, como
+# el bo1024 de las Taillard: 342 por checkpoint, mejor global al juntar
+check("clasicas: GP con 1024 (texto 11.3)", 11.3,
+      sum(_gp1024c.values()) / 12)
+check("clasicas: politica con 1024 (texto 10.1)", 10.1,
+      sum(_p1024.values()) / 12)
+check("clasicas: lo que gana la regla de 1 a 1024 (texto 6.6)", 6.6,
+      sum(_gp1.values()) / 12 - sum(_gp1024c.values()) / 12)
+check("clasicas: lo que gana la politica de 1 a 1024 (texto 7.1)", 7.1,
+      sum(_pg.values()) / 12 - sum(_p1024.values()) / 12)
+
 for etiq, riv, pol_d, n_tex in [("una pasada", _gp1, _pg, 7),
-                                ("64 muestras", _gp64, _pb, 9)]:
+                                ("64 muestras", _gp64, _pb, 9),
+                                ("1024 muestras", _gp1024c, _p1024, 7)]:
     n = sum(pol_d[i] < riv[i] for i in _clas)
     check_exacto(f"clasicas, {etiq}: la politica gana {n_tex} de 12",
                  n == n_tex, f"{n}/12")
@@ -685,6 +705,9 @@ try:
                  0.70 <= _p1 <= 0.76, f"p={_p1:.3f}")
     check_exacto("clasicas, 64 muestras: marginal (texto p=0.077)",
                  0.070 <= _p2 <= 0.085, f"p={_p2:.4f}")
+    _p3 = _st2.wilcoxon([_p1024[i] - _gp1024c[i] for i in _clas])[1]
+    check_exacto("clasicas, 1024: no significativo (texto p=0.27)",
+                 0.24 <= _p3 <= 0.30, f"p={_p3:.3f}")
 except ImportError:
     pendiente("Wilcoxon de las 12 clasicas", "sin scipy")
 _medias_pol = [sum(v) / len(v) for v in _pol12.values()]

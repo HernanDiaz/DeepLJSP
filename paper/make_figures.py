@@ -414,6 +414,12 @@ def fig_ladder():
     for r in csv.DictReader(open("benchmarks/eval_classic12_greedy.csv",
                                  encoding="utf-8")):
         gre[r["name"]].append(float(r["re"]))
+    # el 1024 de la politica agrega los tres checkpoints (342 cada uno),
+    # como el bo1024 de las Taillard; por eso min y no media
+    bo1024 = defaultdict(list)
+    for r in csv.DictReader(open("benchmarks/eval_classic12_bo1024.csv",
+                                 encoding="utf-8")):
+        bo1024[r["name"]].append(float(r["re"]))
 
     def media(d):
         return sum(d) / len(d)
@@ -431,6 +437,10 @@ def fig_ladder():
          media([float(c["gp64"]) for c in clas.values()]), "learned64"),
         ("Policy, best-of-64", media([media(v) for v in pol.values()]),
          "learned64"),
+        ("GP rule, $\\epsilon$-greedy@1024",
+         media([float(c["gp1024"]) for c in clas.values()]), "learned1024"),
+        ("Policy, best-of-1024",
+         media([min(v) for v in bo1024.values()]), "learned1024"),
         ("GA", media([float(c["GA"]) for c in clas.values()]), "search"),
         ("ABC$_{E3}$", media([float(c["ABCE3"]) for c in clas.values()]),
          "search"),
@@ -439,13 +449,15 @@ def fig_ladder():
     ]
     filas.sort(key=lambda r: -r[1])
     COLOR = {"constructive": "steelblue", "learned1": "seagreen",
-             "learned64": "mediumaquamarine", "search": "indianred"}
+             "learned64": "mediumaquamarine", "learned1024": "#bfe6d4",
+             "search": "indianred"}
     ETIQ = {"constructive": "hand-crafted, one pass",
             "learned1": "learned, one pass",
             "learned64": "learned, 64 samples",
+            "learned1024": "learned, 1024 samples",
             "search": "per-instance search, 30 runs"}
 
-    fig, ax = plt.subplots(figsize=(6.4, 3.9))
+    fig, ax = plt.subplots(figsize=(6.4, 4.5))
     vistos = set()
     for k, (nombre, valor, clase) in enumerate(filas):
         etiqueta = ETIQ[clase] if clase not in vistos else None
