@@ -1124,7 +1124,8 @@ for GA against \emph{three} training seeds for the policy, so the two
 outer brackets are much the stronger selections. Being a
 best-per-instance, no single run attains a bracketed mean: the best
 individual rule of the 30 averages $15.3\%$, $12.8\%$ and $11.0\%$,
-against the $12.0\%$, $10.4\%$ and $8.4\%$ of the bracket. GA's pair
+against the $12.0\%$, $10.4\%$ and $8.4\%$ of the bracket. G\&T is the hand-crafted baseline, the strongest of
+Section~\ref{sec:baselines}. GA's pair
 is quoted from Table~2 of~\citet{DiazFEABC2023}; the rule the
 companion study features averages $17.9\%$, $14.2\%$ and $11.3\%$ and
 is the value used in Figure~\ref{fig:headtohead},
@@ -1133,12 +1134,12 @@ available. Reference bounds are the best-known expected-makespan
 values, a different scale from Taillard's crisp bounds.}
 \label{tab:classics}
 \footnotesize
-\setlength{\tabcolsep}{3pt}
+\setlength{\tabcolsep}{3.5pt}
 \begin{tabular}{lcccccccc}
 \toprule
-& hand-crafted & \multicolumn{2}{c}{learned} &
+& rule & \multicolumn{2}{c}{learned} &
 \multicolumn{2}{c}{learned} & \multicolumn{2}{c}{learned} & search \\
-& one pass & \multicolumn{2}{c}{one pass} &
+& 1 pass & \multicolumn{2}{c}{one pass} &
 \multicolumn{2}{c}{64 samples} & \multicolumn{2}{c}{1024 samples} &
 30 runs \\
 \cmidrule(lr){2-2}\cmidrule(lr){3-4}\cmidrule(lr){5-6}
