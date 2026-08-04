@@ -168,36 +168,70 @@ check("MOR medio en desarrollo (abstract ~46)", 46.0, mor_dev, tol=0.55)
 
 # =========================================================================
 print("\n== tab:insize: recomputo desde schedules (componentwise) ==")
+# Cada presupuesto agrega su brazo original (semillas 2-4) y su
+# extension (5-11): diez tiradas identicas salvo la semilla.
 TAB_INSIZE = {
-    "v2-full":        {"TA15": (34.1, 31.9), "TA16": (26.8, 22.8),
-                       "TA17": (28.2, 24.9), "TA18": (26.2, 24.9),
-                       "TA19": (29.2, 24.1), "TA20": (24.3, 22.4)},
-    "v2-full-300ep":  {"TA15": (18.7, 17.1), "TA16": (16.1, 15.4),
-                       "TA17": (14.6, 13.3), "TA18": (16.9, 16.4),
-                       "TA19": (16.3, 15.5), "TA20": (16.8, 16.1)},
-    "v2-full-1000ep": {"TA15": (13.7, 12.1), "TA16": (12.6, 11.8),
-                       "TA17": (13.0, 11.8), "TA18": (15.9, 14.6),
-                       "TA19": (12.1, 11.6), "TA20": (13.4, 12.2)},
+    ("v2-full", "v2-full-100ep-ext"):
+        {"TA15": (30.2, 21.9), "TA16": (26.3, 19.7), "TA17": (26.8, 18.1),
+         "TA18": (26.7, 18.4), "TA19": (28.7, 21.5), "TA20": (25.8, 18.5)},
+    ("v2-full-300ep", "v2-full-300ep-ext"):
+        {"TA15": (19.0, 16.3), "TA16": (16.3, 14.3), "TA17": (16.6, 13.3),
+         "TA18": (18.5, 16.2), "TA19": (17.2, 13.3), "TA20": (16.6, 14.9)},
+    ("v2-full-1000ep", "v2-full-1000ep-ext-c"):
+        {"TA15": (14.9, 12.1), "TA16": (13.2, 11.8), "TA17": (12.9, 10.4),
+         "TA18": (16.3, 14.6), "TA19": (12.8, 11.1), "TA20": (12.8, 10.5)},
 }
-MEDIAS = {"v2-full": 28.1, "v2-full-300ep": 16.6, "v2-full-1000ep": 13.4}
+MEDIAS = {"v2-full": (27.4, 4.69), "v2-full-300ep": (17.4, 1.30),
+          "v2-full-1000ep": (13.8, 0.47)}
+DEV6 = [f"TA{k}" for k in range(15, 21)]
 delta_max = 0.0
-for tag, celdas in TAB_INSIZE.items():
-    datos = bench_por_instancia(tag)
-    if datos is None:
-        pendiente(f"benchmark {tag}", "sin directorios en outputs/")
+for tags, celdas in TAB_INSIZE.items():
+    por_semilla = {}
+    for tag in tags:
+        for d in sorted(glob.glob(f"outputs/bench_{tag}__*_seed*")):
+            s = d.split("_seed")[-1]
+            for p in glob.glob(f"{d}/plots/test/*_schedule.json"):
+                ta = ta_de(os.path.basename(p))
+                por_semilla.setdefault(ta, {})[s] = makespans(p)
+    if not por_semilla:
+        pendiente(f"benchmark {tags[0]}", "sin directorios en outputs/")
         continue
+    semillas = sorted(por_semilla["TA15"])
+    check_exacto(f"{tags[0]}: diez semillas", len(semillas) == 10,
+                 f"{len(semillas)} semillas")
     res_mean, res_best = {}, {}
-    for ta, d in datos.items():
-        res_mean[ta] = re_pct(sum(d["mids"]) / len(d["mids"]), ta)
-        res_best[ta] = re_pct(min(d["mids"]), ta)
-        lex_mean = re_pct(sum(d["lex"]) / len(d["lex"]), ta)
-        delta_max = max(delta_max, abs(res_mean[ta] - lex_mean))
+    for ta in DEV6:
+        mids = [por_semilla[ta][s][0] for s in semillas]
+        lex = [por_semilla[ta][s][1] for s in semillas]
+        res_mean[ta] = re_pct(sum(mids) / len(mids), ta)
+        res_best[ta] = re_pct(min(mids), ta)
+        delta_max = max(delta_max,
+                        abs(res_mean[ta] - re_pct(sum(lex) / len(lex), ta)))
     for ta, (m_tex, b_tex) in celdas.items():
-        check(f"{tag} {ta} media", m_tex, res_mean[ta])
-        check(f"{tag} {ta} mejor", b_tex, res_best[ta])
-    media = sum(res_mean.values()) / len(res_mean)
-    check(f"{tag}: media de la fila (texto {MEDIAS[tag]})",
-          MEDIAS[tag], media)
+        check(f"{tags[0]} {ta} media", m_tex, res_mean[ta])
+        check(f"{tags[0]} {ta} mejor", b_tex, res_best[ta])
+    m_tex, sd_tex = MEDIAS[tags[0]]
+    check(f"{tags[0]}: media de la fila (texto {m_tex})", m_tex,
+          sum(res_mean.values()) / 6)
+    import statistics as _si
+    por_sem = [_si.mean(re_pct(por_semilla[ta][s][0], ta) for ta in DEV6)
+               for s in semillas]
+    check(f"{tags[0]}: sd entre las diez semillas (texto {sd_tex})",
+          sd_tex, _si.stdev(por_sem), tol=0.006)
+    if tags[0] == "v2-full-1000ep":
+        check("6.1: peor semilla de las diez (texto 14.62)", 14.62,
+              max(por_sem), tol=0.006)
+        check("6.1: mejor semilla de las diez (texto 13.12)", 13.12,
+              min(por_sem), tol=0.006)
+        tres = [_si.mean(re_pct(por_semilla[ta][s][0], ta) for ta in DEV6)
+                for s in ("2", "3", "4")]
+        check("6.1: las tres de las ablaciones (texto 13.44)", 13.44,
+              _si.mean(tres))
+    if tags[0] == "v2-full":
+        check("6.1: rango a 100 eps, minimo (texto 21.3)", 21.3,
+              min(por_sem), tol=0.051)
+        check("6.1: rango a 100 eps, maximo (texto 36.2)", 36.2,
+              max(por_sem), tol=0.051)
 print(f"  nota: delta maximo lex vs componentwise = {delta_max:.3f} puntos")
 
 # fila MOR de la tabla (viene de constructive_per_instance)
@@ -211,9 +245,10 @@ if datos1000:
     mejor_media = sum(re_pct(min(d["mids"]), ta)
                       for ta, d in datos1000.items()) / len(datos1000)
     check("mejor semilla a 1000 eps (abstract 12.3)", 12.3, mejor_media)
-    factor = mor_dev / (sum(re_pct(sum(d["mids"]) / len(d["mids"]), ta)
-                            for ta, d in datos1000.items()) / len(datos1000))
-    check_exacto("factor ~3.5 frente a MOR", 3.3 <= factor <= 3.7,
+    # el factor de 6.1 va contra la media de las DIEZ semillas (13.82),
+    # no contra la de las tres con que van pareadas las ablaciones
+    factor = mor_dev / 13.82
+    check_exacto("factor ~3.4 frente a MOR", 3.3 <= factor <= 3.45,
                  f"{factor:.2f}")
     stds = []
     for ta, d in datos1000.items():

@@ -71,7 +71,7 @@ size-invariant by construction: dimensionless features and a
 permutation-invariant encoder give policy and value heads a parameter
 count independent of the numbers of jobs and machines. Trained with
 proximal policy optimization on four $20{\times}15$ instances of the
-interval Taillard benchmark, the policy reaches $13.4\%$ mean relative
+interval Taillard benchmark, the policy reaches $13.8\%$ mean relative
 error against crisp lower bounds on unseen instances of that size,
 against ${\approx}46\%$ for the best dispatching rule on that class,
 and, evaluated zero-shot, beats it on every tested instance of all
@@ -922,44 +922,51 @@ different computational class rather than as direct competitors.
 \label{sec:results-insize}
 
 Table~\ref{tab:insize} reports per-instance RE on the development set
-for increasing training budgets, and Figure~\ref{fig:scaling} the
-aggregate picture. Three observations: (i) the policy scales
-monotonically with budget ($28.1\%\to16.6\%\to13.4\%$ mean RE at
-$100/300/1000$ episodes per instance) with clearly diminishing returns
-at the last step, locating the pure-budget ceiling near $11$--$12\%$;
-(ii) seed variance collapses with budget (per-instance makespan std of
-$6$--$22$ units at $1000$ episodes), indicating consistent learning
-rather than lucky sampling; (iii) the gap to the best dispatching rule
-is a factor ${\approx}3.5$.
+for increasing training budgets over ten independent training runs,
+and Figure~\ref{fig:scaling} the aggregate picture. Three observations:
+(i) the policy scales monotonically with budget
+($27.4\%\to17.4\%\to13.8\%$ mean RE at $100/300/1000$ episodes per
+instance) with clearly diminishing returns at the last step, locating
+the pure-budget ceiling near $11$--$12\%$; (ii) the spread between
+training runs collapses as the budget grows, the standard deviation
+across the ten seed means falling from $4.69$ points at $100$ episodes
+to $1.30$ at $300$ and $0.47$ at $1000$---a factor of ten---so what
+the extra budget buys is not only a better mean but a reproducible
+one; (iii) the gap to the best dispatching rule is a factor
+${\approx}3.4$.
 
-How much of the $13.4\%$ is the particular three seeds? Seven further
-runs, identical but for the seed, place the ten-seed mean at
-$13.82\%$, with a standard deviation across seed means of $0.47$ and a
-range of $13.12$--$14.62\%$. The three seeds this paper trains and
-ablates with therefore sit at the favourable end of a narrow
-distribution, within one standard deviation of its centre; the
-ablations of Section~\ref{sec:analysis}, being paired on those same
-seeds, compare like with like regardless.
+The third observation is the one that needed the extra runs. Reported
+over three seeds, a collapse in variance is difficult to distinguish
+from three runs that happened to agree. Over ten, the worst seed at
+$1000$ episodes reaches $14.62\%$ and the best $13.12\%$, a range
+narrower than the gap between any two budgets, whereas at $100$
+episodes the same ten span $21.3$ to $36.2\%$. Ablations elsewhere in
+this paper are paired on the first three of these seeds, whose mean is
+$13.44\%$; that figure is the baseline those comparisons subtract, not
+a second estimate of the policy's performance.
 
 \begin{table}[t]
 \centering\small
-\caption{RE (\%) per development instance, mean [best] over 3 seeds,
-Deep Sets model, best-of-64 inference.}
+\caption{RE (\%) per development instance, mean [best] over ten
+training runs differing only in their random seed, Deep Sets model,
+best-of-64 inference. The rightmost column is the standard deviation
+across the ten per-seed means over the six instances.}
 \label{tab:insize}
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{lcccccc}
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lcccccccc}
 \toprule
-Budget & TA15 & TA16 & TA17 & TA18 & TA19 & TA20 \\
+Budget & TA15 & TA16 & TA17 & TA18 & TA19 & TA20 & Mean & SD \\
 \midrule
-100 eps & 34.1 [31.9] & 26.8 [22.8] & 28.2 [24.9] & 26.2 [24.9] &
-29.2 [24.1] & 24.3 [22.4] \\
-300 eps & 18.7 [17.1] & 16.1 [15.4] & 14.6 [13.3] & 16.9 [16.4] &
-16.3 [15.5] & 16.8 [16.1] \\
-1000 eps & \textbf{13.7} [12.1] & \textbf{12.6} [11.8] &
-\textbf{13.0} [11.8] & \textbf{15.9} [14.6] & \textbf{12.1} [11.6] &
-\textbf{13.4} [12.2] \\
+100 eps & 30.2 [21.9] & 26.3 [19.7] & 26.8 [18.1] & 26.7 [18.4] &
+28.7 [21.5] & 25.8 [18.5] & 27.4 & 4.69 \\
+300 eps & 19.0 [16.3] & 16.3 [14.3] & 16.6 [13.3] & 18.5 [16.2] &
+17.2 [13.3] & 16.6 [14.9] & 17.4 & 1.30 \\
+1000 eps & \textbf{14.9} [12.1] & \textbf{13.2} [11.8] &
+\textbf{12.9} [10.4] & \textbf{16.3} [14.6] & \textbf{12.8} [11.1] &
+\textbf{12.8} [10.5] & \textbf{13.8} & \textbf{0.47} \\
 \midrule
-MOR & 51.3 & 35.8 & 50.1 & 54.2 & 43.2 & 43.7 \\
+MOR & 51.3 & 35.8 & 50.1 & 54.2 & 43.2 & 43.7 & 46.4 & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -968,8 +975,12 @@ MOR & 51.3 & 35.8 & 50.1 & 54.2 & 43.2 & 43.7 \\
   \centering
   \includegraphics[width=.7\linewidth]{figures/fig_scaling.pdf}
   \caption{Mean RE on the development set versus training episodes per
-  instance. Dotted lines: best dispatching rule and published
-  metaheuristics (different computational class) as yardsticks.}
+  instance, over ten training runs; the band spans the best and worst
+  of them, and its collapse is observation (ii). Dotted lines: best
+  dispatching rule and published metaheuristics (different
+  computational class) as yardsticks. The attention variant is not
+  drawn here---it has three seeds against these ten, so the paired
+  comparison belongs in Table~\ref{tab:insize-attn}.}
   \label{fig:scaling}
 \end{figure}
 
@@ -1224,7 +1235,7 @@ from within. Both learners saw the same four training instances, but
 under different regimes and costs, so this compares published
 artefacts rather than a controlled study; the latter, with training as
 well as inference budgets matched, is the subject of dedicated ongoing
-work. The policy's standalone RE ($13.4\%$
+work. The policy's standalone RE ($13.8\%$
 in-size; $10$--$26\%$ zero-shot) thus sits between dispatching rules
 ($42.3\%$ for the best of them, EST) and per-instance metaheuristics
 ($9.4\%$ mean RE for fEABC over 30 runs)---establishing, for the IJSP, the computational-class
@@ -1672,7 +1683,7 @@ dedicated ongoing work.
 The three questions posed in the introduction now have answers. A
 constructive policy trained by PPO on four interval instances beats the
 best hand-crafted constructive baselines by a wide margin on its
-training class (Q1: $13.4\%$ versus $29.5\%$ for G\&T-MWKR and
+training class (Q1: $13.8\%$ versus $29.5\%$ for G\&T-MWKR and
 ${\approx}46\%$ for the best plain rule). Because the representation is
 dimensionless and the encoder permutation-invariant, one network serves
 the entire benchmark: evaluated zero-shot, it outperforms the best

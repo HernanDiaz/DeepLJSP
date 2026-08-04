@@ -35,14 +35,21 @@ plt.rcParams.update({"font.size": 11, "figure.dpi": 150,
 # ----------------------------------------------------------------------
 def fig_scaling():
     episodes = [100, 300, 1000]
-    ds_mean = [28.1, 16.6, 13.4]
-    ds_best = [25.2, 15.6, 12.3]
-    attn_mean = [17.6, 15.2]
+    # diez semillas por punto; la banda es el rango entre la mejor y la
+    # peor tirada, que es lo que colapsa con el presupuesto
+    ds_mean = [27.4, 17.4, 13.8]
+    ds_best = [21.3, 14.8, 13.1]
+    ds_worst = [36.2, 19.0, 14.6]
+    # la variante de atencion NO se dibuja aqui: tiene tres semillas y
+    # esta curva ya tiene diez, asi que ponerlas juntas invitaria a una
+    # comparacion no pareada. Su contraste vive en tab:insize-attn.
 
     fig, ax = plt.subplots(figsize=(6, 4))
-    ax.plot(episodes, ds_mean, "o-", color="seagreen", label="Deep Sets (mean of 3 seeds)")
+    ax.fill_between(episodes, ds_best, ds_worst, color="seagreen",
+                    alpha=0.15, linewidth=0,
+                    label="best-to-worst seed range")
+    ax.plot(episodes, ds_mean, "o-", color="seagreen", label="Deep Sets (mean of 10 seeds)")
     ax.plot(episodes, ds_best, "o--", color="seagreen", alpha=0.6, label="Deep Sets (best seed)")
-    ax.plot([300, 1000], attn_mean, "s-", color="steelblue", label="+ attention (mean)")
 
     ax.axhline(46.4, color="gray", linestyle=":", linewidth=1.2)
     ax.text(1000, 46.4, " MOR", va="center", fontsize=9, color="gray")
