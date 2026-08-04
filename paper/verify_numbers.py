@@ -507,17 +507,33 @@ check_exacto("mas presupuesto -> mejor transferencia en ambas",
              and _c300["TA51"] > sum(_cs["TA51"]) / 3)
 
 # =========================================================================
-print("\n== robustez ejecucional (eval_eps_policy.csv, x1000) ==")
-_eps = {}
+print("\n== robustez ejecucional (eval_eps_all.csv, x1000) ==")
+# El fichero es el nuevo, no eval_eps_policy.csv: aquel sembraba las
+# realizaciones con hash() de la cadena, que Python aleatoriza por
+# proceso, y su barrido se relanzo a mitad. Este se calculo entero en un
+# proceso con semilla crc32 y trae el brazo robusto.
+_eps, _anch = {}, {}
 for r in __import__("csv").DictReader(
-        open("benchmarks/eval_eps_policy.csv", encoding="utf-8")):
+        open("benchmarks/eval_eps_all.csv", encoding="utf-8")):
     m = r["method"]
-    g = ("policy-greedy" if m.startswith("policy-greedy") else
-         "policy-bo64" if m.startswith("policy-bo64") else m)
+    if m.startswith("lam1-") and m.endswith("-bo64"):
+        g = "lam1-bo64"
+    elif m.startswith("lam1-"):
+        g = "lam1-greedy"
+    elif m.startswith("policy-greedy"):
+        g = "policy-greedy"
+    elif m.startswith("policy-bo64"):
+        g = "policy-bo64"
+    else:
+        g = m
     _eps.setdefault(g, {}).setdefault(r["instance"], []).append(
         float(r["eps"]) * 1000)
+    _anch.setdefault(g, {}).setdefault(r["instance"], []).append(
+        float(r["width_rel"]))
 _eps = {g: {i: sum(v) / len(v) for i, v in d.items()}
         for g, d in _eps.items()}
+_anch = {g: {i: sum(v) / len(v) for i, v in d.items()}
+         for g, d in _anch.items()}
 # El CSV se regenera por instancias: comprobar contra una tirada a medias
 # daria fallos que no son del paper sino del reloj.
 _n_eps = len(_eps.get("EST", {}))
@@ -525,22 +541,29 @@ if _n_eps < 15:
     pendiente("robustez ejecucional",
               f"eval_eps_policy.csv incompleto ({_n_eps}/15 instancias)")
 else:
-    for g, v_tex in [("MOR", 7.1), ("GT-MWKR", 6.9), ("EST", 6.3),
-                     ("GP", 6.1), ("policy-greedy", 6.2),
-                     ("policy-bo64", 6.2)]:
+    for g, v_tex in [("MOR", 7.14), ("GT-MWKR", 6.86), ("EST", 6.35),
+                     ("GP", 6.12), ("policy-greedy", 6.18),
+                     ("policy-bo64", 6.12), ("lam1-bo64", 5.83)]:
         vals = list(_eps[g].values())
-        check(f"eps x1000 {g} (texto {v_tex})", v_tex, sum(vals) / len(vals))
+        check(f"eps x1000 {g} (texto {v_tex})", v_tex,
+              sum(vals) / len(vals), tol=0.006)
+    # los anchos que 7.6 contrasta: el brazo robusto predice mas estrecho
+    for g, v_tex in [("policy-bo64", 12.3), ("lam1-bo64", 11.5)]:
+        check(f"ancho relativo {g} (texto {v_tex})", v_tex,
+              sum(_anch[g].values()) / 15, tol=0.051)
     _ii = sorted(_eps["EST"])
-    for g, gana_tex in [("MOR", 15), ("GT-MWKR", 13), ("EST", 8), ("GP", 7)]:
+    for g, gana_tex in [("MOR", 14), ("GT-MWKR", 13), ("EST", 9),
+                        ("GP", 9), ("lam1-bo64", 6)]:
         gana = sum(_eps[g][i] > _eps["policy-bo64"][i] for i in _ii)
         check_exacto(f"la politica es mas fiel que {g} en {gana_tex}/15",
                      gana == gana_tex, f"{gana}/15")
     try:
         from scipy import stats as _st
         for g, lo, hi, etiq in [("MOR", 0, 1e-3, "p<0.001"),
-                                ("GT-MWKR", 2e-3, 4e-3, "p=0.003"),
-                                ("EST", 0.55, 0.65, "p=0.60"),
-                                ("GP", 0.93, 1.01, "p=0.98")]:
+                                ("GT-MWKR", 0, 1e-3, "p<0.001"),
+                                ("EST", 0.27, 0.34, "p=0.30"),
+                                ("GP", 0.68, 0.77, "p=0.72"),
+                                ("lam1-bo64", 0.20, 0.26, "p=0.23")]:
             d = [_eps[g][i] - _eps["policy-bo64"][i] for i in _ii]
             p = _st.wilcoxon(d)[1]
             check_exacto(f"eps frente a {g} ({etiq})", lo <= p <= hi,
@@ -550,6 +573,11 @@ else:
                      abs(sum(_eps["GP"].values()) / 15
                          - sum(_eps["policy-bo64"].values()) / 15) < 0.15,
                      "diferencia < 0.15")
+        # y la nueva: el brazo robusto encabeza, pero sin significacion
+        check_exacto("el brazo robusto es el mas fiel de los siete",
+                     sum(_eps["lam1-bo64"].values()) / 15
+                     == min(sum(v.values()) / 15 for v in _eps.values()),
+                     f"{sum(_eps['lam1-bo64'].values()) / 15:.2f}")
     except ImportError:
         pendiente("Wilcoxon de eps", "sin scipy")
 

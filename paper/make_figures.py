@@ -279,19 +279,30 @@ def fig_eps():
     import csv
     from collections import defaultdict
 
+    # eval_eps_all.csv, no el fichero antiguo: aquel sembraba con
+    # hash() de la cadena, aleatorizado por proceso, y su barrido se
+    # relanzo a mitad. Este trae ademas el brazo robusto lambda=1.
     por = defaultdict(dict)
-    for r in csv.DictReader(open("benchmarks/eval_eps_policy.csv",
+    for r in csv.DictReader(open("benchmarks/eval_eps_all.csv",
                                  encoding="utf-8")):
         m = r["method"]
-        g = ("Policy\n(best-of-64)" if m.startswith("policy-bo64") else
-             "Policy\n(greedy)" if m.startswith("policy-greedy") else m)
+        if m.startswith("lam1-") and m.endswith("-bo64"):
+            g = "Policy $f_\\lambda$\n(best-of-64)"
+        elif m.startswith("lam1-"):
+            continue                      # el greedy robusto no aporta
+        elif m.startswith("policy-bo64"):
+            g = "Policy\n(best-of-64)"
+        elif m.startswith("policy-greedy"):
+            g = "Policy\n(greedy)"
+        else:
+            g = m
         por[g].setdefault(r["instance"], []).append(float(r["eps"]) * 1000)
     med = {g: {i: sum(v) / len(v) for i, v in d.items()}
            for g, d in por.items()}
 
     orden = ["MOR", "GT-MWKR", "EST", "GP", "Policy\n(greedy)",
-             "Policy\n(best-of-64)"]
-    fig, ax = plt.subplots(figsize=(6.4, 3.6))
+             "Policy\n(best-of-64)", "Policy $f_\\lambda$\n(best-of-64)"]
+    fig, ax = plt.subplots(figsize=(7.0, 3.6))
     rng = __import__("numpy").random.default_rng(7)
     for k, g in enumerate(orden):
         vals = list(med[g].values())

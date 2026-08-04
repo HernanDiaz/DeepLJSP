@@ -1454,37 +1454,50 @@ a fixed processing order with predicted makespan $\Cmax$,
 where $C^{\mathrm{ex},k}_{\max}$ is the crisp makespan of executing
 the order under the $k$-th realization, durations drawn independently
 and uniformly within their intervals. We use $K{=}1000$ common random
-numbers per instance---identical realizations for every method---on
-the fifteen instances of
-Sections~\ref{sec:results-insize}--\ref{sec:results-crosssize}, and
-report $\bar\varepsilon\times10^{3}$. Every execution falls inside the
+numbers per instance---identical realizations for every method, drawn
+from a generator seeded by the instance identifier so that the draws
+reproduce across runs and machines---on the six development instances
+and the nine of Table~\ref{tab:crosssize}, and report
+$\bar\varepsilon\times10^{3}$. Every execution falls inside the
 predicted interval, as the monotonicity of Eq.~\eqref{eq:semiactive}
 guarantees.
 
 The constructive methods separate into two groups, and the policy is
 in the better one without leading it (Figure~\ref{fig:eps}). Its
-schedules deviate by $\bar\varepsilon\times10^{3}=6.2$ under greedy
-inference and $6.2$ under best-of-64---sampling for a lower worst case
-neither helps nor harms predictability---against $6.9$ for G\&T-MWKR
-and $7.1$ for MOR, and those two gaps are systematic (the policy is
-more faithful on $15/15$ and $13/15$ instances respectively, paired
-Wilcoxon signed-rank test, $p<0.001$ and $p=0.003$). Against the other
-two the policy is indistinguishable: EST deviates by $6.3$ ($8/15$,
-$p=0.60$) and the evolved rule of the companion study by $6.1$
-($7/15$, $p=0.98$), a hair ahead of the policy and well inside the
+schedules deviate by $\bar\varepsilon\times10^{3}=6.18$ under greedy
+inference and $6.12$ under best-of-64---sampling for a lower worst
+case neither helps nor harms predictability---against $6.86$ for
+G\&T-MWKR and $7.14$ for MOR, and those two gaps are systematic (the
+policy is more faithful on $13/15$ and $14/15$ instances respectively,
+paired Wilcoxon signed-rank test, $p<0.001$ in both cases). Against
+the other two the policy is indistinguishable: EST deviates by $6.35$
+($9/15$, $p=0.30$) and the evolved rule of the companion study by
+$6.12$ ($9/15$, $p=0.72$), level with the policy and well inside the
 noise.
 
-Three methods therefore share the top of this ranking---a
-hand-crafted rule, an evolved formula and a neural policy---and they
-have one thing in common: none of them optimizes the width of the
-interval it predicts. A schedule can deviate little without being
-short, so faithfulness has to be pursued deliberately rather than
-inherited from a makespan objective; the companion study reaches the
-same conclusion from its side, where its rule likewise improves on
-G\&T-MWKR but not on EST until an objective that penalizes width is
-introduced~\citep{DiazGP2026}. Section~\ref{sec:ablations-interval}
-returns to this, and Section~\ref{sec:conclusions} states what it
-implies for the reward used here.
+Four methods therefore share the top of this ranking---a hand-crafted
+rule, an evolved formula and the policy under two inference
+budgets---and they have one thing in common: none of them optimizes
+the width of the interval it predicts. A schedule can deviate little
+without being short, so faithfulness has to be pursued deliberately
+rather than inherited from a makespan objective; the companion study
+reaches the same conclusion from its side, where its rule likewise
+improves on G\&T-MWKR but not on EST until an objective that penalizes
+width is introduced~\citep{DiazGP2026}.
+
+The robust arm of Section~\ref{sec:ablations-interval} is the direct
+test of that reading, since it is the one method here that does charge
+for the width, and it comes out on top: $\bar\varepsilon\times10^{3} =
+5.83$ with the narrowest predictions of the pool ($11.5\%$ of the
+expected makespan against $12.3\%$ for the default arm). The
+improvement over the default policy is not significant on fifteen
+instances ($-0.29$, more faithful on $9/15$, $p=0.23$), so this is a
+direction and not a demonstration. But it is the direction the
+argument predicts, and it comes at the price
+Section~\ref{sec:ablations-interval} measured: about two points of
+expected makespan. Whether that trade is worth making is a question
+about the shop, not about the model---and it is available, which the
+rest of this section shows it otherwise would not be.
 
 \begin{figure}[t]
   \centering
@@ -1493,7 +1506,9 @@ implies for the reward used here.
   $\bar\varepsilon\times10^{3}$ (bars) over the fifteen evaluation
   instances, each shown as a point. Lower is a more faithful a-priori
   prediction. EST, the evolved rule and the policy are
-  indistinguishable at the top; MOR and G\&T-MWKR are not.}
+  indistinguishable at the top and MOR and G\&T-MWKR are not; the
+  robust arm $f_\lambda$, the only method here that pays for the
+  interval width, is ahead of all of them but not significantly so.}
   \label{fig:eps}
 \end{figure}
 
