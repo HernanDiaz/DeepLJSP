@@ -62,29 +62,29 @@ Shop Scheduling Problem}
 \abstract{Task durations on a shop floor are seldom known exactly when
 scheduling decisions must be made. The interval job shop
 scheduling problem (IJSP) models each processing time as a closed
-interval and evaluates schedules by interval arithmetic; published
-solvers search each instance separately with metaheuristics. This
-paper studies the complementary regime: a constructive policy, trained
-once by deep reinforcement learning, that dispatches operations one at
-a time and returns a schedule in milliseconds. The policy is
-size-invariant by construction: dimensionless features and a
-permutation-invariant encoder give policy and value heads a parameter
-count independent of the numbers of jobs and machines. Trained with
-proximal policy optimization on four $20{\times}15$ instances of the
-interval Taillard benchmark, the policy reaches $13.8\%$ mean relative
-error against crisp lower bounds on unseen instances of that size,
-against ${\approx}46\%$ for the best dispatching rule on that class,
-and, evaluated zero-shot, beats it on every tested instance of all
-seven size classes; the same weights transfer to a
-second benchmark of classical instances. Against an evolved dispatching
+interval; published solvers search each instance separately with
+metaheuristics. This paper studies the complementary regime: a
+constructive policy, trained once by deep reinforcement learning, that
+dispatches operations one at a time and returns a schedule in
+milliseconds. It is size-invariant by
+construction: dimensionless features and a permutation-invariant
+encoder give policy and value heads a parameter count independent of
+the numbers of jobs and machines. Trained with proximal policy
+optimization on four $20{\times}15$ instances of the interval Taillard
+benchmark, it reaches $13.8\%$ mean relative error against crisp lower
+bounds on unseen instances of that size, against ${\approx}46\%$ for
+the best dispatching rule there, and beats that rule zero-shot on every
+tested instance of all seven size classes; the same weights transfer to
+a second benchmark of classical instances. Against an evolved dispatching
 rule the ordering depends on the inference budget: pass for pass the
-rule wins, whereas at $1024$ samples each the policy wins 46 of the 70
-instances. Four ablations return negative results: self-attention does
-not improve on pooling; multi-size training does not overtake a
-single-size specialist even at three times its cost; and, most
-consequential for the design itself, removing the interval-width
-features changes nothing, and the crisp midpoint instances train just
-as good a policy.}
+rule wins, and at $1024$ samples each the policy wins 46 of the 70.
+Three ablations are negative: self-attention does not
+improve on pooling; multi-size training does not overtake a
+single-size specialist at three times its cost; and the interval-width
+features can be removed at no cost, as the closed form of the
+worst-case makespan predicts. Training on crisp midpoints does cost
+$0.63$ points: what the interval model buys lies in the data rather
+than the features.}
 
 \keywords{job shop scheduling, interval uncertainty, deep reinforcement
 learning, neural combinatorial optimization, size invariance,
@@ -1485,8 +1485,9 @@ appear as bounds rather than as point estimates. The permutation audit
 of Section~\ref{sec:results-importance} already found the two width
 features unused at inference. Three training-time ablations ask the
 stronger questions: whether the policy would be any worse had it never
-been able to see the uncertainty at all, and whether it would use the
-widths if the reward paid for them.
+been able to see the uncertainty at all, whether it needs the true
+bounds during training, and whether it would use the widths if the
+reward paid for them.
 
 The first removes the information. The encoder collapses every
 interval to its worst case before the features are computed, so the
@@ -1514,24 +1515,34 @@ The second removes the uncertainty from training altogether. Because
 the benchmark perturbs each crisp duration symmetrically, the original
 crisp instances \emph{are} the midpoint scenario of their interval
 counterparts, which makes them available as a control: we train on
-them and evaluate, unchanged, on the interval instances. The resulting
-policies reach $14.18\%$, again indistinguishable from the interval-%
-trained ones ($p=0.28$). Training under interval arithmetic buys
-nothing that training on the midpoints does not already provide.
+them and evaluate, unchanged, on the interval instances. This one is
+not covered by Eq.~\eqref{eq:upperclosed}---training on midpoints
+replaces the upper endpoints themselves, so the policy is fitted to a
+different problem---and it is the ablation where the extra runs
+changed the answer. Over three seeds the gap was $0.74$ points and not
+significant; over ten it is $0.63$ points, from $13.82\%$ to
+$14.45\%$, worse on 36 of the 60 instance--seed pairs and positive for
+eight of the ten seeds ($p=0.045$). Training on the true upper bounds
+is therefore slightly better than training on their midpoints. The
+margin is small---under five per cent of the RE it improves, at a
+power of about $0.7$, so it should be read as a detected effect and
+not a measured one---but it is there, and the earlier three-seed
+version of this paragraph claimed its absence.
 
-Taken together with the permutation audit, the delimitation is
-consistent at three levels: the widths are unused at inference,
-removing them costs nothing, and the uncertainty need not be present
-during training either. For expected makespan the interval machinery
-of this paper is inert---and Eq.~\eqref{eq:upperclosed} says why, which
-is the part that generalizes beyond this network. Any method that
-minimizes the worst-case makespan of a semiactive schedule is
-optimizing a function of the upper endpoints alone, so interval-aware
-\emph{inputs} cannot pay for themselves under that objective, whatever
-the model class. The boundary of the claim is therefore the reward and
-not the architecture. Under an objective that does contain the
-width---which has no counterpart in the crisp problem---the companion
-study finds its width terminals do earn their
+Taken together with the permutation audit, the delimitation is sharper
+than a blanket statement about interval awareness. As \emph{input
+features} the widths are inert: unused at inference, free to remove,
+and Eq.~\eqref{eq:upperclosed} says why in a way that generalizes past
+this network---any method minimizing the worst-case makespan of a
+semiactive schedule optimizes a function of the upper endpoints alone,
+so interval-aware inputs cannot pay for themselves under that
+objective, whatever the model class. What is \emph{not} inert is the
+training distribution: the policy fitted to the real upper bounds
+beats the one fitted to midpoints, which is exactly the case the
+recursion leaves open. The boundary of the claim is therefore the
+reward and the data, not the architecture. Under an objective that
+does contain the width---which has no counterpart in the crisp
+problem---the companion study finds its width terminals do earn their
 place~\citep{DiazGP2026}.
 
 The third ablation therefore moves the boundary itself. We retrain the
@@ -1702,12 +1713,15 @@ at three times its cost, and two independent automatic-configuration
 campaigns failed to beat the untuned defaults at the operating
 budget (Q3)---negative results we document with the same care as
 the positive ones. Three more delimit the interval representation that
-motivated the design: for expected makespan it turns out to be inert,
-since the policy neither uses the width features at inference
-($-0.1$ points when they are shuffled), nor suffers when they are
-removed from training ($13.62$ against $13.44\%$, $p=0.47$), nor
-needs the uncertainty present during training at all ($14.18\%$ when
-trained on the crisp midpoint instances, $p=0.28$). Retraining under an
+motivated the design, and they separate two things the design had
+conflated. As inputs the widths are inert: the policy neither uses
+them at inference ($-0.1$ points when they are shuffled) nor suffers
+when they are removed from training ($13.62$ against $13.44\%$,
+$p=0.47$), which the closed recursion for the worst-case makespan
+predicts, since that quantity does not contain a lower bound. As
+training data the intervals are not inert: fitting the policy to the
+crisp midpoints instead costs $0.63$ points over ten seeds
+($14.45$ against $13.82\%$, $p=0.045$). Retraining under an
 objective that charges for the width closes the case rather than
 opening it: the predicted interval does narrow ($11.90$ against
 $12.85\%$, $p=0.010$) at a cost of $1.94$ points of RE, but with the

@@ -1014,20 +1014,54 @@ check_exacto("y ese unico .lower esta dentro de la rama de lambda",
              f"{_j - _i} caracteres tras el env var")
 
 
-def _por_par(tag):
-    """{(TA, semilla): RE} de una campaña, componentwise."""
+def _por_par(*tags):
+    """{(TA, semilla): RE} de una o varias campanas, componentwise.
+
+    Acepta varias porque los brazos extendidos viven en un tag propio:
+    v2-full-1000ep y v2-full-1000ep-ext-c son las mismas diez tiradas.
+    """
     out = {}
-    for d in sorted(glob.glob(f"outputs/bench_{tag}__*_seed*")):
-        s = d.split("_seed")[-1]
-        for p in glob.glob(f"{d}/plots/test/*_schedule.json"):
-            ta = ta_de(os.path.basename(p))
-            out[(ta, s)] = re_pct(makespans(p)[0], ta)
+    for tag in tags:
+        for d in sorted(glob.glob(f"outputs/bench_{tag}__*_seed*")):
+            s = d.split("_seed")[-1]
+            for p in glob.glob(f"{d}/plots/test/*_schedule.json"):
+                ta = ta_de(os.path.basename(p))
+                out[(ta, s)] = re_pct(makespans(p)[0], ta)
     return out
 
 
 _full = _por_par("v2-full-1000ep")
 _nw = _por_par("v2-nowidth-1000ep-b")
 _mp = _por_par("v2-midpoint-1000ep-b")
+
+# 7.5: el punto medio a DIEZ semillas, que es donde el efecto se
+# detecta. El brazo de no-width sigue en tres: su d=0.12 necesitaria
+# unas noventa, y el texto lo dice en vez de pedirlas.
+_full10 = _por_par("v2-full-1000ep", "v2-full-1000ep-ext-c")
+_mp10 = _por_par("v2-midpoint-1000ep-b", "v2-midpoint-1000ep-ext")
+_c10 = sorted(set(_full10) & set(_mp10))
+check_exacto("punto medio: diez semillas x seis instancias",
+             len(_c10) == 60, f"{len(_c10)} pares")
+check("punto medio a diez semillas (texto 14.45)", 14.45,
+      sum(_mp10[k] for k in _c10) / 60, tol=0.006)
+_d10 = [_mp10[k] - _full10[k] for k in _c10]
+check("punto medio: diferencia (texto +0.63)", 0.63,
+      sum(_d10) / 60, tol=0.006)
+check_exacto("punto medio: peor en 36 de 60",
+             sum(x > 0 for x in _d10) == 36,
+             f"{sum(x > 0 for x in _d10)}/60")
+_sem10 = sorted({k[1] for k in _c10}, key=int)
+_pos = sum(1 for s in _sem10
+           if sum(_mp10[k] - _full10[k] for k in _c10 if k[1] == s) > 0)
+check_exacto("punto medio: positivo en 8 de las 10 semillas",
+             _pos == 8, f"{_pos}/10")
+try:
+    from scipy import stats as _stmp
+    _pmp = _stmp.wilcoxon(_d10)[1]
+    check_exacto("punto medio a diez semillas: significativo (texto 0.045)",
+                 0.040 <= _pmp <= 0.050, f"p={_pmp:.4f}")
+except ImportError:
+    pendiente("Wilcoxon del punto medio a diez", "sin scipy")
 for nombre, arm, v_tex in [("no-width", _nw, 13.62),
                            ("punto medio", _mp, 14.18)]:
     if not arm:
@@ -1062,8 +1096,8 @@ for nombre, arm, v_tex in [("no-width", _nw, 13.62),
             check_exacto("no-width: no significativo (texto p=0.47)",
                          0.44 <= p <= 0.50, f"p={p:.3f}")
         else:
-            check_exacto("punto medio: no significativo (texto p=0.28)",
-                         0.25 <= p <= 0.31, f"p={p:.3f}")
+            print(f"  info  punto medio a tres semillas: p={p:.3f} "
+                  f"(el texto usa las diez)")
     except ImportError:
         pendiente(f"Wilcoxon {nombre}", "sin scipy")
 check("brazo principal de referencia (texto 13.44)", 13.44,
