@@ -1420,6 +1420,33 @@ optimization rather than bolted onto it.
 \subsection{What interval awareness contributes}
 \label{sec:ablations-interval}
 
+Before reporting these ablations we should be clear about which of
+them could have come out otherwise, because one of them could not.
+Componentwise, the upper bound of a completion obeys
+\begin{equation}
+c^{U}_{o}=\max\!\big(c^{U}_{JP(o)},\,c^{U}_{MP(o)}\big)+p^{U}_{o},
+\label{eq:upperclosed}
+\end{equation}
+a recursion in upper bounds alone: $C^U_{\max}$ is a deterministic
+function of the processing order and the upper endpoints, and the
+lower endpoints do not appear in it. The reward of
+Section~\ref{sec:mdp} minimizes exactly that quantity---across its six
+components not one reads a lower bound---so there is no channel
+through which knowing an interval's width could reduce what the policy
+is being trained to reduce. A width feature can at best be an
+auxiliary signal for learning; it cannot be information about the
+objective, because the objective does not contain it.
+
+That is worth stating plainly, since it turns the first ablation below
+from a discovery into a confirmation, and locates the informative
+experiment elsewhere. The remaining questions are whether the widths
+help \emph{learning} even though they cannot help the objective
+(first), whether the upper bounds seen during training must be the
+true ones (second, which Eq.~\eqref{eq:upperclosed} does not settle,
+since training on midpoints changes the upper bounds themselves), and
+what happens when the objective is changed so that width does enter it
+(third).
+
 The representation of Section~\ref{sec:features} was designed to make
 uncertainty visible: interval widths enter as relative magnitudes, and
 the durations, earliest starts and remaining work of a candidate
@@ -1439,15 +1466,18 @@ Three seeds retrained from scratch reach $13.62\%$ mean RE on the
 development set against the $13.44\%$ of the full representation---a
 difference of $0.18$ points, worse on twelve of the eighteen
 instance--seed pairs and better on six, and not significant (Wilcoxon
-signed-rank, $p=0.47$). Here the effect size says more than the test.
-The paired differences have a standard deviation of $1.54$ points, so
-the observed effect is $0.12$ of a standard deviation; detecting an
-effect that small at conventional power would take on the order of
-ninety seeds. That is not a call for ninety seeds. It is the
-observation that whatever the width features contribute to expected
-makespan is an order of magnitude below the run-to-run noise of the
-training procedure itself, which for a practitioner is the same as
-nothing.
+signed-rank, $p=0.47$). By Eq.~\eqref{eq:upperclosed} this is the
+expected outcome, and the experiment is worth running only because the
+prediction concerns the objective while the measurement concerns
+learning: the widths could in principle have acted as a useful
+auxiliary signal, shaping the value function or the exploration even
+while contributing nothing to the quantity minimized. They do not. The
+effect size makes the bound precise: the paired differences have a
+standard deviation of $1.54$ points, so $0.18$ is $0.12$ of one, and
+detecting an effect that small at conventional power would take on the
+order of ninety seeds. Not a call for ninety seeds---an observation
+that whatever the widths contribute is an order of magnitude below the
+run-to-run noise of training itself.
 
 The second removes the uncertainty from training altogether. Because
 the benchmark perturbs each crisp duration symmetrically, the original
@@ -1462,12 +1492,15 @@ Taken together with the permutation audit, the delimitation is
 consistent at three levels: the widths are unused at inference,
 removing them costs nothing, and the uncertainty need not be present
 during training either. For expected makespan the interval machinery
-of this paper is inert. That is a bounded claim, and its boundary is
-the objective: the reward of Section~\ref{sec:mdp} collapses every
-interval to its upper bound, so the policy is never asked to prefer a
-\emph{narrow} makespan interval over a low one. Under such an
-objective---which has no counterpart in the crisp problem---the
-companion study finds the width terminals do earn their
+of this paper is inert---and Eq.~\eqref{eq:upperclosed} says why, which
+is the part that generalizes beyond this network. Any method that
+minimizes the worst-case makespan of a semiactive schedule is
+optimizing a function of the upper endpoints alone, so interval-aware
+\emph{inputs} cannot pay for themselves under that objective, whatever
+the model class. The boundary of the claim is therefore the reward and
+not the architecture. Under an objective that does contain the
+width---which has no counterpart in the crisp problem---the companion
+study finds its width terminals do earn their
 place~\citep{DiazGP2026}.
 
 The third ablation therefore moves the boundary itself. We retrain the

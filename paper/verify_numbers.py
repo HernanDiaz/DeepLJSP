@@ -902,6 +902,37 @@ check_exacto(f"las {len(_filas) * 5} celdas del apendice", _mal == 0,
 
 print("\n== delimitacion de la conciencia intervalar ==")
 
+# 7.5 afirma que NINGUN componente de recompensa lee la cota inferior
+# salvo en la rama de lambda. Es la premisa de todo el argumento, asi
+# que se comprueba contra el codigo y no contra la memoria: si alguien
+# anade un componente que use .lower, la afirmacion deja de ser cierta
+# y hay que enterarse aqui, no en la revision.
+_comp = glob.glob("jobshop_rl/rewards/components/*.py")
+check_exacto("hay 6 componentes de recompensa mas __init__",
+             len(_comp) == 8, f"{len(_comp)} ficheros")
+_con_lower = {}
+for _p in _comp:
+    _src = open(_p, encoding="utf-8").read()
+    # se ignoran comentarios y docstrings: lo que importa es el codigo
+    _codigo = re.sub(r'""".*?"""', "", _src, flags=re.S)
+    _codigo = "\n".join(l for l in _codigo.splitlines()
+                        if not l.strip().startswith("#"))
+    _n = _codigo.count(".lower")
+    if _n:
+        _con_lower[os.path.basename(_p)] = _n
+check_exacto("solo makespan.py lee la cota inferior",
+             list(_con_lower) == ["makespan.py"], str(_con_lower))
+# y ese unico .lower vive dentro del if de lambda: se comprueba sobre el
+# codigo sin docstrings, donde el env var aparece una sola vez
+_ms = open("jobshop_rl/rewards/components/makespan.py",
+           encoding="utf-8").read()
+_ms_cod = re.sub(r'""".*?"""', "", _ms, flags=re.S)
+_i = _ms_cod.index("DEEPLJSP_V2_LAMBDA")
+_j = _ms_cod.index(".lower", _i)
+check_exacto("y ese unico .lower esta dentro de la rama de lambda",
+             0 < _j - _i < 200 and "if lam" in _ms_cod[_i:_j],
+             f"{_j - _i} caracteres tras el env var")
+
 
 def _por_par(tag):
     """{(TA, semilla): RE} de una campaña, componentwise."""
