@@ -637,38 +637,67 @@ else:
 # G&T, GP mn[bst], Pol.gre mn[bst], GP64 mn[bst], Pol.64 mn[bst], GA, ES.
 # Los corchetes de la politica son la mejor semilla de tres; los del GP,
 # la mejor regla de treinta. El pie de la tabla lo advierte.
+# el 1024 por semilla, que la tabla usa en su tercer grupo (el fichero
+# agregado se lee mas abajo, para el numero que cita 6.4)
+_ps = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_classic12_bo1024_porsemilla.csv",
+             encoding="utf-8")):
+    _ps.setdefault(r["name"], []).append(float(r["re"]))
+
 TAB_CLASSICS = {
-    "FT10": (32.2, 17.0, 8.7, 16.7, 16.0, 11.8, 7.3, 8.5, 6.3, 5.2, 3.0),
-    "FT20": (40.0, 18.5, 14.4, 8.6, 4.4, 13.3, 7.4, 5.8, 4.4, 4.4, 1.8),
-    "La21": (24.1, 15.9, 20.4, 18.3, 15.5, 12.6, 12.3, 12.6, 10.4, 5.0, 4.0),
-    "La24": (26.3, 16.1, 13.1, 19.3, 17.1, 11.5, 11.0, 11.9, 10.9, 6.3, 5.0),
-    "La25": (16.9, 17.6, 15.1, 17.3, 16.7, 12.3, 12.7, 9.6, 9.2, 5.1, 2.7),
-    "La27": (34.8, 18.3, 14.6, 15.0, 13.8, 12.5, 13.7, 11.3, 10.9, 10.2, 4.1),
-    "La29": (24.5, 19.9, 12.9, 21.1, 16.2, 15.0, 12.9, 16.6, 14.0, 14.2, 7.0),
-    "La38": (27.0, 17.4, 14.9, 17.2, 16.6, 14.3, 13.7, 12.8, 11.7, 9.2, 5.8),
-    "La40": (27.9, 16.7, 15.9, 12.0, 9.3, 12.3, 11.8, 9.3, 8.1, 8.7, 4.1),
-    "ABZ7": (28.7, 17.6, 15.1, 16.7, 15.9, 14.3, 14.4, 13.4, 12.0, 12.5, 6.7),
-    "ABZ8": (36.9, 24.6, 19.5, 21.8, 19.1, 20.9, 17.0, 17.3, 16.9, 18.5, 10.9),
-    "ABZ9": (41.8, 29.0, 19.5, 22.6, 19.7, 24.0, 19.5, 19.2, 18.8, 18.0, 11.2),
+    "FT10": (32.2, 17.0, 8.7, 16.7, 16.0, 11.8, 7.3, 8.5, 6.3,
+             8.5, 5.9, 6.1, 5.4, 5.2),
+    "FT20": (40.0, 18.5, 14.4, 8.6, 4.4, 13.3, 7.4, 5.8, 4.4,
+             10.3, 7.1, 4.4, 3.6, 4.4),
+    "La21": (24.1, 15.9, 20.4, 18.3, 15.5, 12.6, 12.3, 12.6, 10.4,
+             10.7, 9.7, 10.8, 10.7, 5.0),
+    "La24": (26.3, 16.1, 13.1, 19.3, 17.1, 11.5, 11.0, 11.9, 10.9,
+             9.2, 7.7, 9.1, 8.1, 6.3),
+    "La25": (16.9, 17.6, 15.1, 17.3, 16.7, 12.3, 12.7, 9.6, 9.2,
+             9.3, 6.2, 8.9, 8.2, 5.1),
+    "La27": (34.8, 18.3, 14.6, 15.0, 13.8, 12.5, 13.7, 11.3, 10.9,
+             11.3, 10.8, 9.0, 8.1, 10.2),
+    "La29": (24.5, 19.9, 12.9, 21.1, 16.2, 15.0, 12.9, 16.6, 14.0,
+             12.6, 10.9, 13.3, 12.9, 14.2),
+    "La38": (27.0, 17.4, 14.9, 17.2, 16.6, 14.3, 13.7, 12.8, 11.7,
+             12.0, 10.8, 9.6, 8.3, 9.2),
+    "La40": (27.9, 16.7, 15.9, 12.0, 9.3, 12.3, 11.8, 9.3, 8.1,
+             10.0, 8.7, 7.2, 6.5, 8.7),
+    "ABZ7": (28.7, 17.6, 15.1, 16.7, 15.9, 14.3, 14.4, 13.4, 12.0,
+             12.2, 13.5, 11.9, 11.1, 12.5),
+    "ABZ8": (36.9, 24.6, 19.5, 21.8, 19.1, 20.9, 17.0, 17.3, 16.9,
+             18.6, 18.0, 15.8, 15.6, 18.5),
+    "ABZ9": (41.8, 29.0, 19.5, 22.6, 19.7, 24.0, 19.5, 19.2, 18.8,
+             21.5, 22.5, 17.1, 16.6, 18.0),
 }
 fallos_clas = 0
 for inst, fila in TAB_CLASSICS.items():
     c = _clas[inst]
-    _g = _bon and _mejor_regla
+    _g = bool(_bon and _mejor_regla)
+
+    def _gp(k, i=inst):
+        if not _g:
+            return -1, -1
+        return (sum(_bon[r][i][k] for r in _bon) / len(_bon),
+                _bon[_mejor_regla[k]][i][k])
+
     reales = (float(c["gt"]),
-              sum(_bon[r][inst][0] for r in _bon) / len(_bon),
-              _bon[_mejor_regla[0]][inst][0] if _g else -1,
-              sum(_gre12[inst]) / 3, min(_gre12[inst]),
-              sum(_bon[r][inst][1] for r in _bon) / len(_bon),
-              _bon[_mejor_regla[1]][inst][1] if _g else -1,
-              sum(_pol12[inst]) / len(_pol12[inst]), min(_pol12[inst]),
-              float(c["GA"]), float(c["ESABC"]))
+              *_gp(0), sum(_gre12[inst]) / 3, min(_gre12[inst]),
+              *_gp(1), sum(_pol12[inst]) / len(_pol12[inst]),
+              min(_pol12[inst]),
+              *_gp(2), sum(_ps[inst]) / 3, min(_ps[inst]),
+              float(c["GA"]))
     for v_tex, v_dat in zip(fila, reales):
         if abs(v_tex - v_dat) > 0.051:
             print(f"  FALLO celda {inst}: texto={v_tex} datos={v_dat:.2f}")
             fallos_clas += 1
-check_exacto("las 132 celdas de tab:classics", fallos_clas == 0,
+check_exacto("las 168 celdas de tab:classics", fallos_clas == 0,
              f"{fallos_clas} celdas mal")
+check_exacto("tab:classics ya no imprime ESABC",
+             "ESABC" not in TEX[TEX.index("\\label{tab:classics}"):
+                                TEX.index("\\end{table}",
+                                          TEX.index("\\label{tab:classics}"))])
 # 6.3: la dispersion de las 30 reglas evolucionadas. OJO: la media POR
 # REGLA sobre las 12, no el minimo instancia a instancia (ese "virtual
 # best" da 11.97 y no corresponde a ninguna regla real)
@@ -717,14 +746,6 @@ else:
                  "$18.99\\%$ ($\\pm1.33$)" in _g and "$18.99\\%$" in TEX)
     check_exacto("6.4: la destacada sobre las 70 es 17.71",
                  "best rule attains\n$17.71\\%$" in _g)
-
-check_exacto("tab:classics ya no imprime EST, ABC_E3 ni fEABC",
-             all(x not in TEX[TEX.index("\\label{tab:classics}"):
-                              TEX.index("\\end{table}",
-                                        TEX.index("\\label{tab:classics}"))]
-                 for x in ("EST", "ABC$_{E3}$", "fEABC")))
-check("clasicas: greedy mejor semilla, media (texto 15.0)", 15.0,
-      sum(min(v) for v in _gre12.values()) / 12)
 
 # 6.3: el enfrentamiento a presupuesto igualado sobre las 12
 _gp1 = {i: float(_clas[i]["gp"]) for i in _clas}

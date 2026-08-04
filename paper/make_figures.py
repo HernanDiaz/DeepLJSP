@@ -490,6 +490,11 @@ def fig_ladder():
         ax.text(valor + 0.7, k, "%.1f" % valor, va="center", fontsize=8.5)
     ax.set_yticks(range(len(filas)))
     ax.set_yticklabels([f[0] for f in filas], fontsize=8.5)
+    # las tres filas de la politica en negrita: es el metodo del paper y
+    # conviene que se distinga de un vistazo entre trece barras
+    for etiqueta, (nombre, _, _) in zip(ax.get_yticklabels(), filas):
+        if nombre.startswith("Policy"):
+            etiqueta.set_fontweight("bold")
     ax.invert_yaxis()
     ax.set_xlabel("Mean RE (%) over the 12 classical instances")
     ax.set_xlim(0, max(f[1] for f in filas) * 1.14)
