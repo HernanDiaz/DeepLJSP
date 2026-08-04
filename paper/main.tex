@@ -1333,11 +1333,19 @@ $50{\times}20$) but not the rest: the specialist stays ahead on
 $20{\times}20$ ($15.0$ vs.\ $19.4$), a class the multi-size agent
 itself trained on, and on both $30{\times}15$ and $30{\times}20$. At
 matched cost, per-instance training depth dominates size diversity;
-even at triple cost, diversity buys back a minority of instances. Earlier development iterations provide the
-complementary caution: appending features that are linear combinations
-of existing ones, or retrofitting input normalization onto a system
-co-adapted to raw scales, degraded performance by $9$--$113\%$;
-representation changes must be co-designed with optimization.
+even at triple cost, diversity buys back a minority of instances.
+
+Earlier development iterations provide the complementary caution, and
+two are worth naming. Appending four uncertainty features that are
+linear combinations of ones already present---the widths and midpoints
+of quantities the encoder already receives as bounds---cost $9.1\%$ in
+mean makespan. Normalizing the temporal features by the instance lower
+bound, an input scaling retrofitted onto an optimizer co-adapted to the
+raw magnitudes, cost $112.7\%$: learning collapsed outright. Both
+figures are against the configuration in force when each was tried, at
+a reduced screening budget, and both modifications were rejected on
+that evidence. Representation changes have to be co-designed with the
+optimization rather than bolted onto it.
 
 \subsection{What interval awareness contributes}
 \label{sec:ablations-interval}

@@ -357,6 +357,20 @@ rechazadas = quick - full
 check_exacto("trece modificaciones rechazadas (idea-* sin full)",
              len(rechazadas) == 13, f"{len(rechazadas)} rechazadas")
 
+# 7.4 nombra dos de esas modificaciones con su cifra. La fuente es el
+# registro de la epoca, no la memoria: si alguien lo corrige, salta aqui
+if not os.path.exists("RESEARCH_IDEAS.md"):
+    pendiente("las dos ideas de 7.4", "sin RESEARCH_IDEAS.md")
+else:
+    _log = open("RESEARCH_IDEAS.md", encoding="utf-8").read()
+    for _id, _v_tex, _que in [("idea-11", 9.11, "features anexadas"),
+                              ("idea-12", 112.65, "normalizacion")]:
+        _m = re.search(re.escape(_id) + r".*?\*\*\+([\d.]+)%\*\*", _log)
+        check(f"7.4: {_id} ({_que}) en el registro", _v_tex,
+              float(_m.group(1)) if _m else -1, tol=0.006)
+    check_exacto("7.4: el texto cita 9.1 y 112.7",
+                 "$9.1\\%$" in TEX and "$112.7\\%$" in TEX)
+
 try:
     import torch
 
