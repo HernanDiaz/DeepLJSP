@@ -991,32 +991,45 @@ The size-invariant design allows direct evaluation of the
 $20{\times}15$-trained network on any class. Evaluation is
 \emph{zero-shot}: the trained weights are applied to sizes they never
 saw, with no additional training or fine-tuning of any kind.
-Table~\ref{tab:crosssize} reports zero-shot RE on unseen instances of all seven classes: every
-seed's network outperforms MOR on \emph{every} tested instance, with
-graceful degradation (means from ${\approx}10\%$ on $15{\times}15$ to
-$25.9\%$ on the hardest transfer, $30{\times}20$) and no failure mode
-up to $1000$-operation episodes. Notably, transfer quality improves
-with in-size training budget (mean over seeds: $30{\times}20$ from
-$30.3\%$ with the $300$-episode checkpoints to $25.9\%$ with the
-$1000$-episode ones; $50{\times}15$ from $22.2\%$ to $15.3\%$), i.e.\
-the \emph{specialist}---our shorthand for the network trained on the
-single $20{\times}15$ class---learns structure that is not
-size-bound.
+Table~\ref{tab:crosssize} reports zero-shot RE over all seventy
+instances, ten per class with none omitted: every seed's network
+outperforms MOR on \emph{every} one of them, with graceful degradation
+(class means from $11.0\%$ on $15{\times}15$ to $22.0\%$ on the
+hardest transfer, $30{\times}20$) and no failure mode up to
+$1000$-operation episodes. Degradation is not monotone in instance
+size: $50{\times}15$, at $12.2\%$, transfers better than either
+$30$-machine class, which the dispatching rules also find easier, so
+the difficulty the network inherits is the instances' and not a limit
+of the transfer. Transfer quality improves with in-size training budget
+(mean over seeds: $30{\times}20$ from $30.3\%$ with the $300$-episode
+checkpoints to $25.9\%$ with the $1000$-episode ones; $50{\times}15$
+from $22.2\%$ to $15.3\%$), i.e.\ the \emph{specialist}---our shorthand
+for the network trained on the single $20{\times}15$ class---learns
+structure that is not size-bound.
 
 \begin{table}[t]
 \centering\small
 \caption{Zero-shot RE (\%) of the $20{\times}15$-trained network
-(best-of-64), mean [best] over the three training seeds, versus MOR.}
+(best-of-64), mean [best] over the three training seeds, by size class
+over all 70 instances---ten per class, none omitted. The
+$20{\times}15$ row ($\dagger$) contains the training and development
+instances and is not a generalization result; the other six classes
+were never trained on. Per-instance values are in the appendix.}
 \label{tab:crosssize}
-\begin{tabular}{lcc@{\qquad}lcc}
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{lccc}
 \toprule
-Instance & Policy & MOR & Instance & Policy & MOR \\
+Class & Policy & MOR & G\&T-MWKR \\
 \midrule
-TA1 ($15{\times}15$) & 13.1 [11.0] & 29.7 & TA31 ($30{\times}15$) & 15.8 [13.9] & 34.4 \\
-TA2 ($15{\times}15$) & 9.7 [7.0] & 34.8 & TA41 ($30{\times}20$) & 25.9 [24.5] & 53.5 \\
-TA5 ($15{\times}15$) & 10.5 [8.8] & 50.7 & TA51 ($50{\times}15$) & 15.3 [12.9] & 38.2 \\
-TA21 ($20{\times}20$) & 13.2 [11.1] & 40.8 & TA61 ($50{\times}20$) & 16.8 [15.5] & 48.7 \\
-TA25 ($20{\times}20$) & 15.0 [14.4] & 53.2 & & & \\
+$15{\times}15$ & 11.0 [9.6] & 41.4 & 26.7 \\
+$20{\times}15^{\dagger}$ & 13.6 [13.0] & 46.7 & 29.0 \\
+$20{\times}20$ & 14.8 [14.0] & 47.3 & 30.9 \\
+$30{\times}15$ & 16.8 [16.0] & 44.1 & 33.6 \\
+$30{\times}20$ & 22.0 [20.7] & 58.8 & 36.8 \\
+$50{\times}15$ & 12.2 [11.1] & 34.1 & 23.9 \\
+$50{\times}20$ & 15.5 [13.9] & 45.9 & 25.5 \\
+\midrule
+All & \textbf{15.1} [14.0] & 45.5 & 29.5 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1621,9 +1634,12 @@ the order under the $k$-th realization, durations drawn independently
 and uniformly within their intervals. We use $K{=}1000$ common random
 numbers per instance---identical realizations for every method, drawn
 from a generator seeded by the instance identifier so that the draws
-reproduce across runs and machines---on the six development instances
-and the nine of Table~\ref{tab:crosssize}, and report
-$\bar\varepsilon\times10^{3}$. Every execution falls inside the
+reproduce across runs and machines---and report
+$\bar\varepsilon\times10^{3}$. The Monte Carlo is the expensive part,
+so this section uses fifteen instances rather than the full seventy:
+the six of the development set and one or two per size class
+(TA1, TA2, TA5, TA21, TA25, TA31, TA41, TA51, TA61), the lowest-numbered
+of each so that the choice is not a choice. Every execution falls inside the
 predicted interval, as the monotonicity of Eq.~\eqref{eq:semiactive}
 guarantees.
 

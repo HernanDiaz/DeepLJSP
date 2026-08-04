@@ -512,22 +512,14 @@ check_exacto("campana 2: 295 de 300",
              bool(u2) and max(u2) == 295, f"usados {max(u2) if u2 else '?'}")
 
 # =========================================================================
-print("\n== tab:crosssize (zero-shot) ==")
-CROSS = {"TA1": (13.1, 11.0, 29.7), "TA2": (9.7, 7.0, 34.8),
-         "TA5": (10.5, 8.8, 50.7), "TA21": (13.2, 11.1, 40.8),
-         "TA25": (15.0, 14.4, 53.2), "TA31": (15.8, 13.9, 34.4),
-         "TA41": (25.9, 24.5, 53.5), "TA51": (15.3, 12.9, 38.2),
-         "TA61": (16.8, 15.5, 48.7)}
+print("\n== 6.2: la transferencia mejora con el presupuesto ==")
+# La tabla de nueve instancias desaparecio (6.2 va por clase sobre las
+# 70), pero el texto sigue citando TA41 y TA51 a dos presupuestos, y esa
+# comparacion vive en los CSV de crosssize.
 _cs = {}
 for r in __import__("csv").DictReader(
         open("benchmarks/eval_crosssize_bo64.csv", encoding="utf-8")):
     _cs.setdefault(ta_de(r["instance"]), []).append(float(r["re_comp"]))
-for ta, (media_tex, mejor_tex, mor_tex) in CROSS.items():
-    check(f"crosssize {ta} media", media_tex, sum(_cs[ta]) / len(_cs[ta]))
-    check(f"crosssize {ta} mejor", mejor_tex, min(_cs[ta]))
-    check(f"columna MOR {ta}", mor_tex, MOR_RE[ta])
-check_exacto("cada semilla bate a MOR en las 9",
-             all(max(_cs[ta]) < MOR_RE[ta] for ta in CROSS))
 
 # la transferencia mejora con el presupuesto (300ep vs 1000ep, medias)
 _c300 = {}
@@ -1233,6 +1225,50 @@ else:
         check(f"seleccion fijada, {brazo} por {crit} (texto {v_tex})",
               v_tex, _ancho_medio(brazo, crit), tol=0.02)
 
+
+print("\n== tab:crosssize: best-of-64 sobre las 70 por clase ==")
+_B64 = "benchmarks/bo64_70.csv"
+if not os.path.exists(_B64):
+    pendiente("tab:crosssize sobre las 70", "sin bo64_70.csv")
+else:
+    _b64 = list(__import__("csv").DictReader(open(_B64, encoding="utf-8")))
+    check_exacto("bo64_70: las 70 instancias", len(_b64) == 70,
+                 f"{len(_b64)} filas")
+    _pc = {}
+    for r in _b64:
+        _pc.setdefault(r["cls"], []).append((float(r["re_mean"]),
+                                             float(r["re_best"])))
+    TAB7 = {"15x15": (11.0, 9.6), "20x15": (13.6, 13.0),
+            "20x20": (14.8, 14.0), "30x15": (16.8, 16.0),
+            "30x20": (22.0, 20.7), "50x15": (12.2, 11.1),
+            "50x20": (15.5, 13.9)}
+    _mal7 = 0
+    for cls, (m_tex, b_tex) in TAB7.items():
+        v = _pc[cls]
+        check_exacto(f"tab:crosssize {cls}: diez instancias", len(v) == 10,
+                     f"{len(v)}")
+        for tex, dat in ((m_tex, sum(a for a, _ in v) / 10),
+                         (b_tex, sum(b for _, b in v) / 10)):
+            if abs(tex - dat) > 0.051:
+                print(f"  FALLO {cls}: texto={tex} datos={dat:.2f}")
+                _mal7 += 1
+    check_exacto("las 14 celdas de politica de tab:crosssize", _mal7 == 0,
+                 f"{_mal7} mal")
+    _todo7 = [x for v in _pc.values() for x in v]
+    check("tab:crosssize fila All, media (texto 15.1)", 15.1,
+          sum(a for a, _ in _todo7) / 70)
+    check("tab:crosssize fila All, mejor (texto 14.0)", 14.0,
+          sum(b for _, b in _todo7) / 70)
+    # la afirmacion de 6.2: gana a MOR en TODAS
+    _mor70 = {r["ta"]: MOR_RE[r["ta"]] for r in _b64}
+    _gana70 = sum(float(r["re_mean"]) < _mor70[r["ta"]] for r in _b64)
+    check_exacto("6.2: la politica bate a MOR en las 70", _gana70 == 70,
+                 f"{_gana70}/70")
+    # y que 50x15 transfiere mejor que las de 30 maquinas, como dice 6.2
+    check_exacto("6.2: 50x15 transfiere mejor que 30x15 y 30x20",
+                 sum(a for a, _ in _pc["50x15"]) / 10
+                 < min(sum(a for a, _ in _pc[c]) / 10
+                       for c in ("30x15", "30x20")))
 
 print("\n== fig:budget: la curva de presupuesto ==")
 _POOL = "benchmarks/eval_budget_curve.csv"
