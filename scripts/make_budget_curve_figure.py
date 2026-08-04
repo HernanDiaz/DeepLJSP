@@ -38,7 +38,7 @@ plt.rcParams.update({
 })
 
 CURVA = "benchmarks/eval_budget_curve.csv"
-CONSTRUCTIVAS = "benchmarks/constructive_per_instance.csv"
+GP_DESTACADA = "benchmarks/reevo_fixedfit/summary.csv"
 EST = "benchmarks/est_per_instance.csv"
 SALIDA = "paper/figures/fig_budget.pdf"
 N_POR_CKPT = 341          # muestras por checkpoint sin contar el greedy
@@ -93,17 +93,26 @@ def curva(dep, rng):
 
 
 def referencias(instancias):
-    """RE media de GP y EST sobre EXACTAMENTE estas instancias."""
+    """RE media de la regla DESTACADA y de EST sobre estas instancias.
+
+    OJO con la fuente del GP. constructive_per_instance.csv tiene una
+    columna GP_re que NO es la regla destacada: es gp_seed1, de otra
+    campana, y da 18.59 sobre las 70 en vez de 17.71. Todo el paper lee
+    la destacada de reevo_fixedfit/summary.csv filtrando gp_tuned_seed1,
+    y esta figura tiene que leer lo mismo o su linea de referencia
+    contradiria a la Tabla 9 sin que nadie lo note.
+    """
     ta = {}
     with open(EST, encoding="utf-8") as f:
         for r in csv.DictReader(f):
             ta[r["instance"]] = (r["ta"], float(r["est_re"]))
     gp = {}
-    with open(CONSTRUCTIVAS, encoding="utf-8") as f:
+    with open(GP_DESTACADA, encoding="utf-8") as f:
         for r in csv.DictReader(f):
-            gp[r["ta"]] = float(r["GP_re"])
+            if r["method"] == "gp_tuned_seed1":
+                gp[r["instance"]] = float(r["re"])
     est_v = [ta[i][1] for i in instancias if i in ta]
-    gp_v = [gp[ta[i][0]] for i in instancias if i in ta and ta[i][0] in gp]
+    gp_v = [gp[i] for i in instancias if i in gp]
     return (float(np.mean(gp_v)) if gp_v else None,
             float(np.mean(est_v)) if est_v else None,
             len(gp_v), len(est_v))
@@ -153,8 +162,11 @@ def main():
     # asi que el pie la nombra y el eje se reserva para la zona util.
     ax.axhline(gp, color="#d62728", linestyle="--", linewidth=1.1,
                label=f"GP rule ({gp:.1f}%)")
+    # el greedy se agrega como la curva, quedandose con el mejor de los
+    # tres checkpoints; el 19.4 de 6.4 es la MEDIA de las tres semillas,
+    # otra cosa, y la etiqueta lo dice para que no se confundan
     ax.axhline(greedy, color="#2ca02c", linestyle=":", linewidth=1.1,
-               label=f"greedy pass ({greedy:.1f}%)")
+               label=f"greedy, best of 3 seeds ({greedy:.1f}%)")
     ax.set_xscale("log", base=2)
     ax.set_xlabel("inference budget $B$ (rollouts)")
     ax.set_ylabel("mean RE (%)")

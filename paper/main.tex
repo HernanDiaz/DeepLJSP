@@ -1307,6 +1307,39 @@ solutions frequently arose in early, exploratory episodes and were
 never surpassed by the greedy policy---evidence that the policy's value
 concentrates in its sampling distribution.
 
+The paper reports the policy at two budgets, one greedy pass and
+$1024$ samples, which leaves the shape between them unstated. To
+recover it we stored every individual rollout of $342$ per checkpoint
+on each of the 70 instances---$71{,}820$ schedules---so that
+best-of-$B$ can be reconstructed for any $B$ without evaluating
+anything again. Figure~\ref{fig:budget} plots the result. Three
+readings are worth naming. A single \emph{sampled} rollout is much
+worse than a greedy one, $21.4\%$ against $17.0\%$: the argmax is a
+good decision sequence and the distribution around it is wide. The
+curve overtakes the evolved rule at $B{=}6$ and the greedy pass itself
+at $B{=}12$, so the budget at which sampling starts paying is small,
+far below the $64$ used throughout this paper. And the returns are
+close to logarithmic over three orders of magnitude, $14.9\%$ at $64$
+and $12.9\%$ at $1023$, with no knee: within the range tested there is
+no budget beyond which further sampling stops helping, which is what
+makes the policy a natural front end for a search procedure that can
+afford more.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=.62\linewidth]{figures/fig_budget.pdf}
+  \caption{Mean RE over the 70 instances as a function of the inference
+  budget $B$, reconstructed from stored rollouts. The band is the
+  10--90 percentile over resamplings, that is, the spread a
+  practitioner would see across repetitions at that budget, not a
+  confidence interval on the mean. The budget is split across the three
+  checkpoints as the deployed protocol splits it, and the greedy
+  reference is aggregated the same way; the $19.4\%$ of
+  Section~\ref{sec:positioning} is the mean over seeds instead. EST, at
+  $42.3\%$, is off the top of the frame.}
+  \label{fig:budget}
+\end{figure}
+
 \subsection{Ablation: attention versus pooling}
 \label{sec:ablations-attn}
 

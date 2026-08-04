@@ -1059,6 +1059,40 @@ else:
               v_tex, _ancho_medio(brazo, crit), tol=0.02)
 
 
+print("\n== fig:budget: la curva de presupuesto ==")
+_POOL = "benchmarks/eval_budget_curve.csv"
+if not os.path.exists(_POOL):
+    pendiente("curva de presupuesto", "sin eval_budget_curve.csv")
+else:
+    _cur = {}
+    _lbc = {}
+    for r in __import__("csv").DictReader(open(_POOL, encoding="utf-8")):
+        _cur.setdefault((r["instance"], r["checkpoint"]), []).append(
+            (int(r["sample_idx"]), float(r["mid_comp"])))
+        _lbc[r["instance"]] = float(r["lb"])
+    _inst_c = {i for i, _ in _cur}
+    check_exacto("la curva cubre las 70 con 3 checkpoints",
+                 len(_inst_c) == 70 and len(_cur) == 210
+                 and all(len(v) == 342 for v in _cur.values()),
+                 f"{len(_inst_c)} instancias, {len(_cur)} pares")
+    # el greedy del deposito (indice 0), agregado como la curva: el mejor
+    # de los tres checkpoints, no la media, que es el 19.4 de 6.4
+    _gre_pool = {}
+    for (i, ck), v in _cur.items():
+        _gre_pool.setdefault(i, []).append(dict(v)[0])
+    check("fig:budget: greedy mejor de 3 semillas (texto 17.0)", 17.0,
+          sum((min(v) - _lbc[i]) / _lbc[i] * 100
+              for i, v in _gre_pool.items()) / 70, tol=0.051)
+    # y que la referencia del GP de la figura sea la DESTACADA, no la
+    # columna GP_re de constructive_per_instance (que es otra regla)
+    _gp_cpi = {r["ta"]: float(r["GP_re"]) for r in
+               __import__("csv").DictReader(
+                   open("benchmarks/constructive_per_instance.csv",
+                        encoding="utf-8"))}
+    check_exacto("aviso: GP_re de constructive_per_instance NO es la "
+                 "destacada", abs(sum(_gp_cpi.values()) / 70 - 17.71) > 0.5,
+                 f"{sum(_gp_cpi.values()) / 70:.2f} vs 17.71")
+
 print("\n== tab:irace: el espacio de busqueda ==")
 
 
