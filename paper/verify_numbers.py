@@ -786,6 +786,25 @@ else:
                  "$18.99\\%$ ($\\pm1.33$)" in _g and "$18.99\\%$" in TEX)
     check_exacto("6.4: la destacada sobre las 70 es 17.71",
                  "best rule attains\n$17.71\\%$" in _g)
+    # 7.5 compara nuestro brazo robusto con el barrido de lambda del
+    # companero. Son afirmaciones sobre SU paper: se leen de su fuente.
+    check_exacto("7.5: el companero usa el mismo f_lambda con lambda=1",
+                 "$\\lambda$ setting the balance between the two; we take "
+                 "$\\lambda = 1$" in _g)
+    check_exacto("7.5: su barrido mueve 1.64 puntos de anchura",
+                 "$1.64$\nthe full arm covers" in _g)
+    check_exacto("7.5: y 0.13 sin los terminales de anchura",
+                 "a range of $0.13$ points against the" in _g)
+    check_exacto("7.5: su conclusion es que el objetivo actua por la "
+                 "representacion",
+                 "the first works through the second" in _g)
+    # el precio del intercambio en su barrido: 0.5 -> 4 en lambda
+    _w_gp = (12.18 - 10.54)
+    _re_gp = (23.27 - 19.20)
+    check("7.5: el companero paga ~2.5 RE por punto de anchura", 2.5,
+          _re_gp / _w_gp, tol=0.06)
+    check("7.5: nuestro brazo paga ~2.0 RE por punto de anchura", 2.0,
+          (15.38 - 13.44) / (12.85 - 11.90), tol=0.06)
 
 # 6.3: el enfrentamiento a presupuesto igualado sobre las 12
 _gp1 = {i: float(_clas[i]["gp"]) for i in _clas}
