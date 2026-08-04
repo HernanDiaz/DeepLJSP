@@ -425,11 +425,14 @@ def fig_ladder():
     for r in csv.DictReader(open("benchmarks/eval_classic12_greedy.csv",
                                  encoding="utf-8")):
         gre[r["name"]].append(float(r["re"]))
-    # el 1024 de la politica agrega los tres checkpoints (342 cada uno),
-    # como el bo1024 de las Taillard; por eso min y no media
+    # A 1024 la figura usa el fichero POR SEMILLA: cada checkpoint con sus
+    # propias 1024 muestras, promediado sobre los tres. El otro fichero
+    # reparte 342 entre los tres y agrega, que empareja el presupuesto en
+    # muestras pero no en modelos -- una tirada de GP es UNA regla.
     bo1024 = defaultdict(list)
-    for r in csv.DictReader(open("benchmarks/eval_classic12_bo1024.csv",
-                                 encoding="utf-8")):
+    for r in csv.DictReader(
+            open("benchmarks/eval_classic12_bo1024_porsemilla.csv",
+                 encoding="utf-8")):
         bo1024[r["name"]].append(float(r["re"]))
 
     def media(d):
@@ -460,7 +463,7 @@ def fig_ladder():
          "learned64"),
         ("GP rules, $\\epsilon$-greedy@1024", gp_media(2), "learned1024"),
         ("Policy, best-of-1024",
-         media([min(v) for v in bo1024.values()]), "learned1024"),
+         media([media(v) for v in bo1024.values()]), "learned1024"),
         ("GA", media([float(c["GA"]) for c in clas.values()]), "search"),
         ("ABC$_{E3}$", media([float(c["ABCE3"]) for c in clas.values()]),
          "search"),

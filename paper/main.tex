@@ -1046,18 +1046,26 @@ the $\epsilon$-greedy dispatching their own study provides---the
 policy leads on both readings, $12.4\%$ against $14.6\%$ for the mean
 of 30 and $14.2\%$ for the featured rule, better than the latter on 9
 of 12, though on twelve instances even that is only marginal
-($p=0.077$). At $1024$ the ordering holds and the margin does not
-grow, $10.1\%$ against $12.2\%$ and $11.3\%$, better than the featured
-rule on 7 of 12 ($p=0.27$). The policy is therefore ahead at every
-budget on this family and decisively at none---twelve instances cannot
-separate a gap of one or two points---which is a weaker and more
-accurate statement than the one an earlier draft of this section made
-by comparing $12.4\%$ against a single pass. What separates the
+($p=0.077$). At $1024$ samples per run the gap is both the widest and
+the only one that separates: $10.3\%$ against $12.2\%$, better on 10
+of the 12 instances ($p=0.009$). Reading these three rows in order,
+the policy is level with the rules at one pass and pulls away as both
+are allowed to sample---which is what
+Section~\ref{sec:positioning} finds on the Taillard set, arrived at
+here on a family neither method was tuned for. What separates the
 network from the formula is not the decision it makes but the
-distribution it samples from, exactly as in
-Section~\ref{sec:positioning}, and here both learners buy roughly the
-same amount from extra sampling: the featured rule improves by $6.6$
-points from one pass to $1024$, the policy by $7.1$.
+distribution it samples from.
+
+The $1024$ figures deserve one note about protocol. Elsewhere this
+paper spends that budget as $342$ samples on each of the three
+checkpoints, keeping the best across them, which is what the deployed
+system does and what Section~\ref{sec:positioning} compares. Here each
+checkpoint receives its own $1024$ and the three are averaged, because
+a single GP run is a single rule and pooling three networks against
+one rule would match the sample budget while unmatching the model
+count. The two protocols land in the same place, $10.13\%$ pooled
+against $10.27\%$ per run, so nothing turns on the choice; it is made
+explicit because the reader cannot check it otherwise.
 
 Table~\ref{tab:classics} reports both learners as a mean over
 independent runs, which changes the comparison in the policy's favour

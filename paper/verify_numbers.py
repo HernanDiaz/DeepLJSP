@@ -748,16 +748,38 @@ _p1024 = {i: min(v) for i, v in _p1024.items()}   # agrega los tres, como
 # el bo1024 de las Taillard: 342 por checkpoint, mejor global al juntar
 check("clasicas: GP con 1024 (texto 11.3)", 11.3,
       sum(_gp1024c.values()) / 12)
-check("clasicas: politica con 1024 (texto 10.1)", 10.1,
-      sum(_p1024.values()) / 12)
-check("clasicas: lo que gana la regla de 1 a 1024 (texto 6.6)", 6.6,
-      sum(_gp1.values()) / 12 - sum(_gp1024c.values()) / 12)
-check("clasicas: lo que gana la politica de 1 a 1024 (texto 7.1)", 7.1,
-      sum(_pg.values()) / 12 - sum(_p1024.values()) / 12)
+check("clasicas: politica con 1024 agregada (texto 10.13)", 10.13,
+      sum(_p1024.values()) / 12, tol=0.006)
 
+# el 1024 POR SEMILLA: cada checkpoint con sus propias 1024 muestras,
+# que es lo comparable con "una regla con 1024" del lado GP
+_ps = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_classic12_bo1024_porsemilla.csv",
+             encoding="utf-8")):
+    _ps.setdefault(r["name"], []).append(float(r["re"]))
+check_exacto("1024 por semilla: 12 instancias x 3 checkpoints",
+             len(_ps) == 12 and all(len(v) == 3 for v in _ps.values()),
+             f"{len(_ps)} instancias")
+_ps_m = {i: sum(v) / 3 for i, v in _ps.items()}
+check("clasicas: politica con 1024 por semilla (texto 10.27)", 10.27,
+      sum(_ps_m.values()) / 12, tol=0.006)
+if _mejor_regla:
+    _gp1024m = {i: sum(_bon[r][i][2] for r in _bon) / len(_bon)
+                for i in _INST12}
+    _n1024 = sum(_ps_m[i] < _gp1024m[i] for i in _INST12)
+    check_exacto("clasicas a 1024 por semilla: gana 10 de 12",
+                 _n1024 == 10, f"{_n1024}/12")
+    try:
+        from scipy import stats as _st3
+        _p1024w = _st3.wilcoxon([_ps_m[i] - _gp1024m[i]
+                                 for i in _INST12])[1]
+        check_exacto("clasicas a 1024: significativo (texto p=0.009)",
+                     0.008 <= _p1024w <= 0.011, f"p={_p1024w:.4f}")
+    except ImportError:
+        pendiente("Wilcoxon de las clasicas a 1024", "sin scipy")
 for etiq, riv, pol_d, n_tex in [("una pasada", _gp1, _pg, 7),
-                                ("64 muestras", _gp64, _pb, 9),
-                                ("1024 muestras", _gp1024c, _p1024, 7)]:
+                                ("64 muestras", _gp64, _pb, 9)]:
     n = sum(pol_d[i] < riv[i] for i in _clas)
     check_exacto(f"clasicas, {etiq}: la politica gana {n_tex} de 12",
                  n == n_tex, f"{n}/12")
@@ -769,9 +791,6 @@ try:
                  0.70 <= _p1 <= 0.76, f"p={_p1:.3f}")
     check_exacto("clasicas, 64 muestras: marginal (texto p=0.077)",
                  0.070 <= _p2 <= 0.085, f"p={_p2:.4f}")
-    _p3 = _st2.wilcoxon([_p1024[i] - _gp1024c[i] for i in _clas])[1]
-    check_exacto("clasicas, 1024: no significativo (texto p=0.27)",
-                 0.24 <= _p3 <= 0.30, f"p={_p3:.3f}")
 except ImportError:
     pendiente("Wilcoxon de las 12 clasicas", "sin scipy")
 _medias_pol = [sum(v) / len(v) for v in _pol12.values()]
