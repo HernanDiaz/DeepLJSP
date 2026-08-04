@@ -435,21 +435,30 @@ def fig_ladder():
     def media(d):
         return sum(d) / len(d)
 
+    # las 30 reglas del brazo, para poder enfrentar media contra media en
+    # vez de una regla seleccionada contra la media de tres semillas
+    import glob
+    arm = {}
+    for f in glob.glob("benchmarks/classic12_arm_bon/*.csv"):
+        arm[os.path.basename(f)] = {
+            r["inst"]: (float(r["gp"]), float(r["gp64"]), float(r["gp1024"]))
+            for r in csv.DictReader(open(f, encoding="utf-8"))}
+
+    def gp_media(k):
+        return media([media([arm[r][i][k] for r in arm]) for i in clas])
+
     filas = [
         ("MOR", media([float(c["mor"]) for c in clas.values()]), "constructive"),
         ("EST", media(list(est.values())), "constructive"),
         ("G&T-MWKR", media([float(c["gt"]) for c in clas.values()]),
          "constructive"),
-        ("GP rule", media([float(c["gp"]) for c in clas.values()]),
-         "learned1"),
+        ("GP rules (mean of 30)", gp_media(0), "learned1"),
         ("Policy, greedy", media([media(v) for v in gre.values()]),
          "learned1"),
-        ("GP rule, $\\epsilon$-greedy@64",
-         media([float(c["gp64"]) for c in clas.values()]), "learned64"),
+        ("GP rules, $\\epsilon$-greedy@64", gp_media(1), "learned64"),
         ("Policy, best-of-64", media([media(v) for v in pol.values()]),
          "learned64"),
-        ("GP rule, $\\epsilon$-greedy@1024",
-         media([float(c["gp1024"]) for c in clas.values()]), "learned1024"),
+        ("GP rules, $\\epsilon$-greedy@1024", gp_media(2), "learned1024"),
         ("Policy, best-of-1024",
          media([min(v) for v in bo1024.values()]), "learned1024"),
         ("GA", media([float(c["GA"]) for c in clas.values()]), "search"),
