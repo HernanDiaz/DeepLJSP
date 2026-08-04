@@ -8,6 +8,20 @@
 \usepackage{lmodern}
 \usepackage[T1]{fontenc}
 \usepackage{graphicx}
+% Sin barreras, la cola de flotantes de la seccion de resultados se
+% desbordaba sobre la de analisis y cada figura aparecia dos o tres
+% paginas despues del parrafo que la cita, junto a texto de otra
+% subseccion. FloatBarrier obliga a resolverlos antes de seguir.
+\usepackage{placeins}
+% Con los valores por defecto LaTeX se rinde enseguida y encola; estos
+% le dejan poner hasta tres flotantes arriba y llenar mas pagina antes
+% de mandarlos a una pagina propia.
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.6}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.75}
+\setcounter{topnumber}{3}
+\setcounter{totalnumber}{4}
 \usepackage{amsmath,amssymb}
 \usepackage{amsthm}
 \usepackage{booktabs}
@@ -1256,6 +1270,7 @@ fEABC (30 runs) & 5.9 & 8.7 & 10.3 & 9.8 & 16.4 & 5.7 & 9.0 & 9.4 \\
 \end{tabular}
 \end{table}
 
+\FloatBarrier
 \section{Analysis}
 \label{sec:analysis}
 
@@ -1340,6 +1355,7 @@ afford more.
   \label{fig:budget}
 \end{figure}
 
+\FloatBarrier
 \subsection{Ablation: attention versus pooling}
 \label{sec:ablations-attn}
 
@@ -1485,6 +1501,7 @@ would otherwise inherit: whether any training signal reaches these
 features, or whether the constructive setting itself decides the width
 before the policy has a say.
 
+\FloatBarrier
 \subsection{Executional robustness}
 \label{sec:results-eps}
 
@@ -1587,6 +1604,7 @@ paradigms trained under one protocol; that study, which is what
 distribution to seed population-based search, are the subject of
 dedicated ongoing work.
 
+\FloatBarrier
 \section{Conclusions and Future Work}
 \label{sec:conclusions}
 
