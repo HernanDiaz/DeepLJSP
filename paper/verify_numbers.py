@@ -935,6 +935,17 @@ for nombre, arm, v_tex in [("no-width", _nw, 13.62),
         if nombre == "no-width":
             check("no-width: delta medio (texto +0.18)", 0.18,
                   sum(d) / len(d), tol=0.02)
+            # 7.5 razona con el tamano del efecto, no solo con el p
+            import statistics as _s7
+            _sd = _s7.stdev(d)
+            check("no-width: sd de las diferencias (texto 1.54)", 1.54,
+                  _sd, tol=0.006)
+            check("no-width: d de Cohen (texto 0.12)", 0.12,
+                  abs(sum(d) / len(d)) / _sd, tol=0.006)
+            check_exacto("no-width: harian falta ~90 semillas",
+                         80 <= (2.8 / (abs(sum(d) / len(d)) / _sd)) ** 2 / 6
+                         <= 100,
+                         f"{(2.8 / (abs(sum(d) / len(d)) / _sd)) ** 2 / 6:.0f}")
             check_exacto("no-width: peor en 12 de 18", peor == 12,
                          f"{peor}/18")
             check_exacto("no-width: no significativo (texto p=0.47)",

@@ -1437,9 +1437,17 @@ architecture, the hyperparameters and the schedule builder are
 untouched, and the environment still executes interval semantics.
 Three seeds retrained from scratch reach $13.62\%$ mean RE on the
 development set against the $13.44\%$ of the full representation---a
-difference of $0.18$ points, in the paired comparison over the
-eighteen instance-seed pairs worse on twelve and better on six, and
-not significant (Wilcoxon signed-rank, $p=0.47$).
+difference of $0.18$ points, worse on twelve of the eighteen
+instance--seed pairs and better on six, and not significant (Wilcoxon
+signed-rank, $p=0.47$). Here the effect size says more than the test.
+The paired differences have a standard deviation of $1.54$ points, so
+the observed effect is $0.12$ of a standard deviation; detecting an
+effect that small at conventional power would take on the order of
+ninety seeds. That is not a call for ninety seeds. It is the
+observation that whatever the width features contribute to expected
+makespan is an order of magnitude below the run-to-run noise of the
+training procedure itself, which for a practitioner is the same as
+nothing.
 
 The second removes the uncertainty from training altogether. Because
 the benchmark perturbs each crisp duration symmetrically, the original
