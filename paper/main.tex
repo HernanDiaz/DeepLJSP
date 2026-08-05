@@ -461,7 +461,8 @@ process}: the state carries everything relevant to deciding onward,
 and the horizon is exactly $nm$ steps, one per operation. The state
 after $t$ steps is the partial schedule---each job's next-operation
 pointer, the job and machine completion intervals---and the eligible
-set $\mathcal{E}_t$, with $1\le|\mathcal{E}_t|\le n$; the action
+set $\mathcal{E}_t$, written $\mathcal{E}$ when the step is
+immaterial, with $1\le|\mathcal{E}_t|\le n$; the action
 selects one element of $\mathcal{E}_t$, and the transition applies
 Eq.~\eqref{eq:semiactive} deterministically.
 
@@ -516,32 +517,15 @@ by the RE of Eq.~\eqref{eq:re}.
 \subsection{Dimensionless, uncertainty-aware features}
 \label{sec:features}
 
-Raw times do not travel between instances: a duration of $80$ is
-long when the whole schedule spans $1{,}200$ time units and short when
-it spans $3{,}000$, so a network fed raw values would be tied to the
-scale it was trained on. The representation therefore expresses every
-temporal quantity as a fraction of the instance's lower bound
-$\mathrm{LB}$ (worst case if the bound is itself an interval), and
-every uncertainty as a ratio of interval width to magnitude. What the
-policy sees is thereby comparable across instances---and across
-sizes, which is half of the size invariance. Each
-eligible operation $o=o_{jk}$ on machine $\mu=\nu_{jk}$ is described by
-the 16 dimensionless quantities of Table~\ref{tab:opfeatures}; the
-global state is the 12-dimensional aggregate of
-Table~\ref{tab:globalfeatures}. Two design rules follow from ablation
-evidence (Section~\ref{sec:ablations-neg}): (i) features must add
-information that is \emph{not} a linear combination of others (interval
-widths enter as relative, hence non-linear, magnitudes); and (ii)
-normalization must be co-designed with initialization and learning
-rates rather than retrofitted.
-
-\begin{table}[t]
+\begin{table}[!htb]
 \centering\small
 \caption{Per-operation features (all dimensionless). $d=\mathbf{p}_{jk}$,
 $\mathbf{est}$ = earliest start interval, $\mathbf{rem}$ = remaining work
 interval of the job after $o$; $\mathrm{mid}(\cdot)$ is the interval
 midpoint; $L(\mu)$ the remaining worst-case load of machine $\mu$;
-$\bar L$ its average over machines.}
+$\bar L$ its average over machines; $\mathbf{c}_{J}$ and
+$\mathbf{c}_{\mu}$ the completion intervals of the operation's job
+and machine over what is scheduled so far.}
 \label{tab:opfeatures}
 \begin{tabular}{lll}
 \toprule
@@ -562,11 +546,12 @@ $\bar L$ its average over machines.}
 \end{tabular}
 \end{table}
 
-\begin{table}[t]
+\begin{table}[!htb]
 \centering\small
-\caption{Global state features (all dimensionless aggregates; no
-dimension depends on $n$ or $m$). Rows that list several statistics
-contribute one feature each, for $12$ in total.}
+\caption{Global state features (all dimensionless aggregates,
+notation as in Table~\ref{tab:opfeatures}; no dimension depends on
+$n$ or $m$). Rows that list several statistics contribute one feature
+each, for $12$ in total.}
 \label{tab:globalfeatures}
 \begin{tabular}{lll}
 \toprule
@@ -585,6 +570,27 @@ unscheduled ops \\
 \end{tabular}
 \end{table}
 
+
+Raw times do not travel between instances: a duration of $80$ is
+long when the whole schedule spans $1{,}200$ time units and short when
+it spans $3{,}000$, so a network fed raw values would be tied to the
+scale it was trained on. The representation therefore expresses every
+temporal quantity as a fraction of the instance's lower bound
+$\mathrm{LB}$ (worst case if the bound is itself an interval), and
+every uncertainty as a ratio of interval width to magnitude. What the
+policy sees is thereby comparable across instances---and across
+sizes, which is half of the size invariance. Each
+eligible operation $o=o_{jk}$ on machine $\mu=\nu_{jk}$ is described by
+the 16 dimensionless quantities of Table~\ref{tab:opfeatures}; the
+global state is the 12-dimensional aggregate of
+Table~\ref{tab:globalfeatures}. Two design rules follow from ablation
+evidence (Section~\ref{sec:ablations-neg}): (i) features must add
+information that is \emph{not} a linear combination of others (interval
+widths enter as relative, hence non-linear, magnitudes); and (ii)
+normalization must be co-designed with initialization and learning
+rates rather than retrofitted.
+
+\FloatBarrier
 \subsection{Size-invariant architecture}
 \label{sec:arch}
 
