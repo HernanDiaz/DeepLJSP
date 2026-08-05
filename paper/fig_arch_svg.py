@@ -54,9 +54,8 @@ STEP    = BW + HGAP                     # 86 pt per slot
 IN_TOP  = 6                              # eligible-ops box, above the encoder
 ENC_TOP = 44                             # encoder row, lowered
 MID1    = ENC_TOP + BH / 2               # row-1 arrow level (= 62.5)
-Y_BASE  = 94                             # elbow lane of the base path
-Y_SKIP  = 100                            # elbow lane of the phi_i path
 R2      = 116                            # policy-head / pooling band top
+Y_SIDE  = R2 + 10                        # lateral entry height (= 126)
 VAL_TOP = R2 + BH + 8                    # value head below policy (= 161)
 
 FONT  = "Times New Roman"
@@ -216,11 +215,11 @@ def build_svg() -> str:
                    "not in base (B=0)", C_ATT, C_ATTT, dashed=True)
     parts += ps
 
-    # ── base path (SOLID): embeddings drop straight into the pooling ──────
+    # ── base path (SOLID): embeddings drop, then enter pooling from the
+    #    side (above the exit toward the context, which leaves at y_pc) ────
     parts.append(_poly([(emb_c + 12, emb_top + IO_H),
-                        (emb_c + 12, Y_BASE),
-                        (x[2] + BW * 0.33, Y_BASE),
-                        (x[2] + BW * 0.33, R2)]))
+                        (emb_c + 12, Y_SIDE),
+                        (x[2], Y_SIDE)]))
 
     # ── variant detour (DASHED): embeddings -> attention -> pooling ────────
     parts.append(_ah(x[1] + BW, MID1, x[2], color=C_ATTA, dash="3,2"))
@@ -262,15 +261,16 @@ def build_svg() -> str:
     parts += _io(x[2], G_TOP, "global state", "12 aggregates")
     parts.append(_ah(x[2], g_cy, x[1] + BW))
 
-    # ── per-candidate path: each phi_i carried past the pooling ────────────
+    # ── per-candidate path: each phi_i carried past the pooling, entering
+    #    the policy head from the side (one elbow, above the context feed) ──
     parts.append(_poly([(emb_c - 12, emb_top + IO_H),
-                        (emb_c - 12, Y_SKIP),
-                        (pol_c, Y_SKIP),
-                        (pol_c, R2)],
+                        (emb_c - 12, Y_SIDE - 1),
+                        (x[0] + BW, Y_SIDE - 1)],
                        color=C_SKIP, dash="3.5,2",
                        ln=AH_LEN_S, hw=AH_HW_S))
-    parts.append(_t((pol_c + emb_c - 12) / 2, Y_SKIP + 6,
-                    "each φi, past the pooling", size=FS_N, fill=C_DIM))
+    parts.append(_t(emb_c - 16, Y_SIDE - 20,
+                    "each φi, past the pooling", size=FS_N, fill=C_DIM,
+                    anchor="end"))
 
     # ── separator + legend ─────────────────────────────────────────────────
     parts.append(f'<line x1="{MX}" y1="{sep_y:.1f}" x2="{CW - MX:.1f}" '

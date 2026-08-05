@@ -24,8 +24,8 @@
 <text x="251.0" y="63.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">pre-LN, 4 heads</text>
 <rect x="216.0" y="69.0" width="70.0" height="12.0" fill="#FDF3E3" stroke="#2C3E50" stroke-width="0.6" stroke-dasharray="3,2"/>
 <text x="251.0" y="75.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">not in base (B=0)</text>
-<polyline points="177.0,72.5 177.0,94.0 239.1,94.0 239.1,111.2" fill="none" stroke="#2C3E50" stroke-width="0.8"/>
-<polygon points="237.1,111.2 239.1,116.0 241.1,111.2" fill="#2C3E50"/>
+<polyline points="177.0,72.5 177.0,126.0 211.2,126.0" fill="none" stroke="#2C3E50" stroke-width="0.8"/>
+<polygon points="211.2,124.0 216.0,126.0 211.2,128.0" fill="#2C3E50"/>
 <line x1="200.0" y1="62.5" x2="211.2" y2="62.5" stroke="#8B6F3D" stroke-width="0.8" stroke-dasharray="3,2"/>
 <polygon points="211.2,60.5 216.0,62.5 211.2,64.5" fill="#8B6F3D"/>
 <line x1="262.9" y1="81.0" x2="262.9" y2="111.2" stroke="#8B6F3D" stroke-width="0.8" stroke-dasharray="3,2"/>
@@ -71,9 +71,9 @@
 <text x="251.0" y="175.6" text-anchor="middle" dominant-baseline="middle" font-size="6.4" font-weight="normal" fill="#111111" font-family="Times New Roman">12 aggregates</text>
 <line x1="216.0" y1="171.0" x2="204.8" y2="171.0" stroke="#2C3E50" stroke-width="0.8"/>
 <polygon points="204.8,169.0 200.0,171.0 204.8,173.0" fill="#2C3E50"/>
-<polyline points="153.0,72.5 153.0,100.0 79.0,100.0 79.0,112.5" fill="none" stroke="#7F8C8D" stroke-width="0.8" stroke-dasharray="3.5,2"/>
-<polygon points="77.5,112.5 79.0,116.0 80.5,112.5" fill="#7F8C8D"/>
-<text x="116.0" y="106.0" text-anchor="middle" dominant-baseline="middle" font-size="5.4" font-weight="normal" fill="#555555" font-family="Times New Roman">each φi, past the pooling</text>
+<polyline points="153.0,72.5 153.0,125.0 117.5,125.0" fill="none" stroke="#7F8C8D" stroke-width="0.8" stroke-dasharray="3.5,2"/>
+<polygon points="117.5,123.5 114.0,125.0 117.5,126.5" fill="#7F8C8D"/>
+<text x="149.0" y="106.0" text-anchor="end" dominant-baseline="middle" font-size="5.4" font-weight="normal" fill="#555555" font-family="Times New Roman">each φi, past the pooling</text>
 <line x1="2" y1="206.0" x2="286.0" y2="206.0" stroke="#BBBBBB" stroke-width="0.5"/>
 <rect x="4.3" y="213.0" width="8.0" height="8.0" fill="#D6EAF8" stroke="#888888" stroke-width="0.4"/>
 <text x="15.3" y="217.0" text-anchor="start" dominant-baseline="middle" font-size="5.4" font-weight="normal" fill="#333333" font-family="Times New Roman">learned MLP</text>
