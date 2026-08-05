@@ -69,12 +69,12 @@ FS_L  = 5.4    # legend labels
 # ── Colour palette ───────────────────────────────────────────────────────────
 C_MLP  = "#D6EAF8"; C_MLPT = "#C5D9E8"    # learned blocks + their title bar
 C_HEAD = "#FADBD8"; C_HEADT = "#E8C5C5"   # heads
-C_POOL = "#EAECEE"; C_POOLT = "#D5D8DC"   # parameter-free pooling
+C_POOL = "#D5F5E3"; C_POOLT = "#C1E6D1"   # parameter-free pooling (verde,
+                                          # para no confundirlo con los
+                                          # tensores grises)
 C_ATT  = "#FDF3E3"; C_ATTT = "#F0DDBE"    # attention variant (dashed)
 C_ATTA = "#8B6F3D"                        # its detour arrows
-C_IO   = "#FFFFFF"                        # tensors / inputs: blancas, para
-                                          # que el gris quede solo para el
-                                          # pooling (parameter-free)
+C_IO   = "#F2F3F4"                        # tensors / inputs
 C_EDGE = "#2C3E50"; C_ARR = "#2C3E50"
 C_SKIP = "#7F8C8D"; C_DIM = "#555555"
 
