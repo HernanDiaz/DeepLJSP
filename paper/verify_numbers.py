@@ -362,6 +362,15 @@ TAB70_GREEDY = [16.9, 18.3, 18.5, 21.2, 26.1, 15.8, 18.8]
 for c, (v_tex, v_dat) in enumerate(zip(TAB70_GREEDY, _gre_clases)):
     check(f"tab:seventy greedy clase {c + 1} (texto {v_tex})", v_tex,
           v_dat)
+# filas MOR y G&T de tab:seventy, por clase, desde el mismo CSV
+TAB70_MOR = [41.4, 46.7, 47.3, 44.1, 58.8, 34.1, 45.9]
+TAB70_GT = [26.7, 29.0, 30.9, 33.6, 36.8, 23.9, 25.5]
+for nombre, tab, d in (("MOR", TAB70_MOR, MOR_RE),
+                       ("G&T", TAB70_GT, GT_RE)):
+    for c, v_tex in enumerate(tab):
+        v_dat = sum(d[f"TA{c * 10 + j + 1}"] for j in range(10)) / 10
+        check(f"tab:seventy {nombre} clase {c + 1} (texto {v_tex})",
+              v_tex, v_dat)
 # distancias al fEABC: tras definirse feabc_clases, mas abajo
 
 # los publicados por instancia del suplemento (compare_pools_published)
@@ -379,9 +388,12 @@ check_exacto("intro: fEABC ~6-16% por clase (solo publicado)",
              f"fEABC {min(feabc_clases):.1f} .. {max(feabc_clases):.1f}")
 check("posicionamiento: fEABC medio (texto 9.4)", 9.4,
       sum(_pub["FEABC_AVG"]) / 70)
-_dist = [b - f for b, f in zip(_bo_clases, feabc_clases)]
+# el lector solo puede computar las distancias desde las celdas
+# impresas, asi que el texto cita ese redondeo
+_dist = [round(b, 1) - round(f, 1)
+         for b, f in zip(_bo_clases, feabc_clases)]
 check("distancia minima al fEABC (texto 2.5)", 2.5, min(_dist))
-check("distancia maxima al fEABC (texto 5.1)", 5.1, max(_dist))
+check("distancia maxima al fEABC (texto 5.2)", 5.2, max(_dist))
 
 # =========================================================================
 print("\n== coste computacional ==")
@@ -524,6 +536,24 @@ check_exacto("campana 1: presupuesto 330, 309 usados",
              f"usados {max(u1) if u1 else '?'}")
 check_exacto("campana 2: 295 de 300",
              bool(u2) and max(u2) == 295, f"usados {max(u2) if u2 else '?'}")
+
+# las elites finales de la campana 1, leidas del propio log: el texto
+# dice tres, con clip 0.3, 8 epochs, GAE 0.90, minibatch y update-every
+# en sus defaults, e insensibles al ancho de la red
+_cola1 = t1[t1.rfind("Elite configurations"):]
+_el1 = re.findall(r"\n\s*\d+\s+([0-9.e-]+)\s+[0-9.]+\s+([0-9.]+)\s+"
+                  r"(\d+)\s+(\d+)\s+(\d+)\s+([0-9.]+)\s+(\d+)",
+                  _cola1[:_cola1.find("# Total")])
+check_exacto("campana 1: tres elites finales (texto)", len(_el1) == 3,
+             f"{len(_el1)} elites")
+check_exacto("elites: clip 0.3, 8 epochs, GAE 0.90 (texto)",
+             all(c == "0.3" and k == "8" and g == "0.90"
+                 for _, c, k, _mb, _u, g, _h in _el1))
+check_exacto("elites: minibatch 256 y update-every 4, los defaults",
+             all(mb == "256" and u == "4"
+                 for _, _c, _k, mb, u, _g, _h in _el1))
+check_exacto("elites: anchos 128 y 256 presentes (insensibles)",
+             {h for *_, h in _el1} == {"128", "256"})
 
 # =========================================================================
 print("\n== 6.2: la transferencia mejora con el presupuesto ==")
@@ -848,6 +878,11 @@ check_exacto("1024 por semilla: 12 instancias x 3 checkpoints",
              len(_ps) == 12 and all(len(v) == 3 for v in _ps.values()),
              f"{len(_ps)} instancias")
 _ps_m = {i: sum(v) / 3 for i, v in _ps.items()}
+# 6.3: en que instancias la mejor semilla (bo64) bate a la media del GA
+_gana_ga = {i for i, t in TAB_CLASSICS.items() if t[8] < t[13]}
+check_exacto("6.3: mejor semilla > media GA en La29, La40, ABZ7, ABZ8",
+             _gana_ga == {"La29", "La40", "ABZ7", "ABZ8"},
+             str(sorted(_gana_ga)))
 check("clasicas: politica con 1024 por semilla (texto 10.27)", 10.27,
       sum(_ps_m.values()) / 12, tol=0.006)
 if _mejor_regla:

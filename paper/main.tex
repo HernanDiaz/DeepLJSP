@@ -69,10 +69,10 @@ that returns a schedule in milliseconds. Dimensionless features and a permutatio
 encoder make its parameter count independent of the numbers of jobs
 and machines. Trained by proximal policy optimization on four
 interval Taillard $20{\times}15$ instances, it reaches $13.8\%$ mean
-relative error against crisp lower bounds on unseen instances of that
-size, against ${\approx}46\%$ for the best dispatching rule, and
-beats that rule zero-shot on every instance of all seven size
-classes; the same weights transfer to a second benchmark of classical
+relative error against crisp lower bounds on the development
+instances of that size, against ${\approx}46\%$ for the best
+dispatching rule, and beats it zero-shot on every instance of all
+seven size classes; the same weights transfer to a second benchmark of classical
 instances. Against an evolved dispatching rule the ordering depends
 on the inference budget: pass for pass the rule wins, and at $1024$
 samples each the policy wins 46 of the 70. Three ablations are
@@ -138,7 +138,7 @@ size, so a policy trained on one size class cannot even be
 that justifies learning in the first place.
 
 One question we do not reopen. Intervals admit no natural total
-order, so any comparison of interval makespans embeds a modelling
+order, so any comparison of interval makespans embeds a modeling
 choice; we adopt the lexicographic ranking that a systematic study of
 the alternatives found most robust for this
 problem~\citep{DiazGA2020}, and keep it fixed throughout so that
@@ -207,12 +207,12 @@ and Section~\ref{sec:conclusions} concludes.
 
 \subsection{Job shop scheduling under interval uncertainty}
 
-Uncertain processing times have been modelled with probability
+Uncertain processing times have been modeled with probability
 distributions, fuzzy numbers and intervals. The fuzzy JSP line is
 mature~\citep{GonzalezRodriguez2010,Palacios2015}; the interval model can
 be read as its minimal-commitment limit, retaining only support bounds.
 \citet{Lei2011} opened the interval line with population-based
-neighbourhood search; genetic algorithms with interval
+neighborhood search; genetic algorithms with interval
 rankings~\citep{DiazGA2020}, robustness-oriented tardiness
 models~\citep{DiazTardiness2022}, and analytical treatments of special
 cases~\citep{Sotskov2020} followed, and interval durations now appear in
@@ -286,7 +286,7 @@ The survey by \citet{Xu2025} compares the GP and RL families
 for job shop scheduling and notes the scarcity of comparisons under a
 common protocol. A companion study~\citep{DiazGP2026} develops the GP
 side for the interval benchmark used here, which lets
-Section~\ref{sec:positioning} put the two artefacts on the same
+Section~\ref{sec:positioning} put the two artifacts on the same
 instances at matched \emph{inference} budgets. A controlled comparison
 of the two paradigms with \emph{training} budgets matched as well is
 beyond the scope of either paper and is the subject of dedicated
@@ -365,7 +365,7 @@ Reinforcement learning is learning to decide from experience. An
 \emph{agent} interacts with an environment in steps: it observes the
 current \emph{state} $s$, chooses an \emph{action} $a$ among those
 available, and receives a numeric \emph{reward} signalling how good
-the consequences were. The agent's behaviour is its \emph{policy}
+the consequences were. The agent's behavior is its \emph{policy}
 $\pi(a\,|\,s)$: a function that, given the state $s$, assigns a
 probability to each available action $a$. The policy is the object of
 learning: training increases the probability of actions followed by a
@@ -438,7 +438,8 @@ that unused padding slots are excluded). The
 value head estimates the situation rather than any one candidate, so
 it reads $g$ alone and outputs $V(s)$. In total, four two-layer
 MLPs---the candidate encoder $\phi$, the context combiner, and the two
-heads---composed into a single network and trained jointly end to end.
+heads---are composed into a single network and trained jointly end to
+end.
 One element of the figure remains to be named: the dashed detour
 between the embeddings and the pooling is an \emph{optional}
 self-attention stage, evaluated later as a variant---it is not part of
@@ -688,8 +689,10 @@ gradients: the final model trains on \textbf{TA11--TA14}
 gradients, but every design and configuration decision was judged on
 their performance, so they are reported separately and excluded from
 claims about unseen data. The remaining 60 instances were touched by
-neither training nor development. Three independent training runs, differing only in their random
-seed, are reported as mean and best. Performance is measured by RE,
+neither training nor development. Independent training runs,
+differing only in their random seed, are reported as mean and best:
+ten for the main in-size result, and the first three of them for the
+deployed checkpoints and the paired ablations. Performance is measured by RE,
 Eq.~\eqref{eq:re}, using the published crisp lower bounds.
 
 \subsection{Computational environment}
@@ -816,10 +819,11 @@ the survivors, called the \emph{elite} configurations. The race
 covered the 8-parameter space of Table~\ref{tab:irace} over a budget
 of $330$ tuning experiments ($309$ raced) at reduced fidelity
 ($1$ training instance, $300$ episodes, ${\sim}8$ minutes per
-evaluation), with training seeds as racing instances. The five elite configurations agreed on a coherent
-faster-learning regime (learning rate $7$--$9{\cdot}10^{-4}$, clip
-$0.3$, minibatch $128$, updates every $2$ episodes, $\lambda{=}0.90$)
-and were insensitive to network width. However, at the full
+evaluation), with training seeds as racing instances. The three elite
+configurations agreed on a coherent, more aggressive update regime
+(clip $0.3$, $8$ epochs per update, GAE $\lambda{=}0.90$), kept
+minibatch size and update period at their default values, and were
+insensitive to network width. However, at the full
 $1000$-episode operating budget the best elite scored $14.5\%$ mean RE
 versus $13.4\%$ for the defaults ($+1.66\%$ mean makespan; five of six
 development instances within noise, one significantly worse) at
@@ -837,8 +841,12 @@ from the defaults (clip $0.1$, $8$ epochs, $\lambda{=}0.90$, width
 $256$, learning rate $5$--$9{\cdot}10^{-4}$) and eliminated the seeded
 default during racing. Yet when its winning configuration was retrained on the full
 four-instance set over three seeds and evaluated against the default
-checkpoints under an identical protocol, it again failed to improve: $14.73\%$ versus $13.52\%$ mean RE over the six development
-instances ($+1.21$ points; better on two instances, worse on four). Two
+checkpoints under an identical protocol, it again failed to improve:
+$14.73\%$ versus $13.52\%$ mean RE over the six development instances
+($+1.21$ points; better on two instances, worse on four; the defaults
+read $13.52$ rather than the $13.44$ of Section~\ref{sec:analysis}
+because the best-of-64 draw was fresh---sampling noise, not a
+protocol change). Two
 conclusions follow: automatic configuration does not beat the defaults
 of Table~\ref{tab:hyper} for this problem \emph{even when performed at
 the operating budget}, so the reported results do not depend on fine tuning; and the
@@ -991,12 +999,14 @@ outperforms MOR on \emph{every} one of them, with graceful degradation
 hardest transfer, $30{\times}20$) and no failure mode up to
 $1000$-operation episodes. Degradation is not monotone in instance
 size: $50{\times}15$, at $12.2\%$, transfers better than either
-$30$-machine class, which the dispatching rules also find easier, so
+$30$-job class, which the dispatching rules also find easier, so
 the difficulty the network inherits is the instances' and not a limit
-of the transfer. Transfer quality improves with in-size training budget
-(mean over seeds: $30{\times}20$ from $30.3\%$ with the $300$-episode
-checkpoints to $25.9\%$ with the $1000$-episode ones; $50{\times}15$
-from $22.2\%$ to $15.3\%$), i.e.\ the \emph{specialist}---our shorthand
+of the transfer. Transfer quality improves with in-size training
+budget (mean over seeds on the one instance per class evaluated at
+both budgets: TA41, of $30{\times}20$, from $30.3\%$ with the
+$300$-episode checkpoints to $25.9\%$ with the $1000$-episode ones;
+TA51, of $50{\times}15$, from $22.2\%$ to
+$15.3\%$), i.e.\ the \emph{specialist}---our shorthand
 for the network trained on the single $20{\times}15$ class---learns
 structure that is not size-bound.
 
@@ -1048,7 +1058,7 @@ published 30-run averages of the per-instance metaheuristics. The
 policy improves on EST and G\&T-MWKR on all twelve instances and lands
 at $12.4\%$ mean RE---between the hand-crafted constructive baselines
 ($30.1\%$ for G\&T-MWKR) and the per-instance searchers (GA at
-$9.8\%$, ESABC at $5.5\%$). On La40, ABZ7 and ABZ8
+$9.8\%$, ESABC at $5.5\%$). On La29, La40, ABZ7 and ABZ8
 its best seed edges past the GA average itself, with no retraining of
 any kind.
 
@@ -1075,7 +1085,8 @@ distribution it samples from.
 
 The $1024$ figures deserve one note about protocol. Elsewhere this
 paper spends that budget as $342$ samples on each of the three
-checkpoints, keeping the best across them, which is what the deployed
+checkpoints ($1026$ in all; the round $1024$ is nominal), keeping the
+best across them, which is what the deployed
 system does and what Section~\ref{sec:positioning} compares. Here each
 checkpoint receives its own $1024$ and the three are averaged, because
 a single GP run is a single rule and pooling three networks against
@@ -1085,10 +1096,10 @@ against $10.27\%$ per run, so nothing turns on the choice; it is made
 explicit because the reader cannot check it otherwise.
 
 Table~\ref{tab:classics} reports both learners as a mean over
-independent runs, which changes the comparison in the policy's favour
+independent runs, which changes the comparison in the policy's favor
 and is the fairer statement. Against what a single evolution should be
 expected to yield---$19.0\%$, $14.6\%$ and $12.2\%$ at the three
-budgets---the policy's $17.2\%$, $12.4\%$ and $10.1\%$ lead at every
+budgets---the policy's $17.2\%$, $12.4\%$ and $10.3\%$ lead at every
 one. Against the best of the 30 rules, which averages $15.3\%$,
 $12.8\%$ and $11.0\%$, it trails at one pass and leads at the other
 two. Both readings are in the table because the choice between them is
@@ -1119,7 +1130,7 @@ practitioner to the same risk from the run they happen to get.
   learner against the other across budgets would confound the method
   with what it is allowed to spend. Both learned entries are means over
   independent runs---30 evolutions for the rules, three training seeds
-  for the policy---rather than a selected artefact against a mean.}
+  for the policy---rather than a selected artifact against a mean.}
   \label{fig:ladder}
 \end{figure}
 
@@ -1145,7 +1156,7 @@ against the $12.0\%$, $10.4\%$ and $8.4\%$ of the bracket. G\&T is the hand-craf
 Section~\ref{sec:baselines}. GA's pair
 is quoted from Table~2 of~\citet{DiazFEABC2023}; the rule the
 companion study features averages $17.9\%$, $14.2\%$ and $11.3\%$ and
-is the value used in Figure~\ref{fig:headtohead},
+is the rule used in Figure~\ref{fig:headtohead},
 Table~\ref{tab:seventy} and the appendix, where the 30 rules were not
 available. Reference bounds are the best-known expected-makespan
 values, a different scale from Taillard's crisp bounds.}
@@ -1207,7 +1218,7 @@ exactly $1$). Raising the inference budget to best-of-$1024$ brings the
 full-benchmark mean RE to $13.0\%$ over the 70 instances
 (Table~\ref{tab:seventy} and Figure~\ref{fig:byclass})---ahead of
 every deterministic constructive baseline on every instance, again with
-rank-biserial correlation $1$, and within $2.5$--$5.1$ points of the
+rank-biserial correlation $1$, and within $2.5$--$5.2$ points of the
 fEABC 30-run class averages.
 
 Against the evolved rule of the companion study the comparison is not
@@ -1222,7 +1233,7 @@ is the best of the companion's 30 evolutions, selected on these same
 Measured instead against what a single evolution should be expected to
 yield---$18.99\%$, the 30-run mean that study reports---the deficit at
 one pass is $0.4$ points rather than $1.7$. We keep the featured rule
-as the opponent, since it is the artefact the study publishes and the
+as the opponent, since it is the artifact the study publishes and the
 stronger test, but the reader should know it is a selected one. Given
 $1024$ samples each---the companion randomizes its
 rule with $\epsilon$-greedy dispatching for exactly this
@@ -1239,10 +1250,10 @@ a distribution whose samples improve faster with budget---the reading
 the best-of-$N$ ablation of Section~\ref{sec:ablations-bon} reaches
 from within. Both learners saw the same four training instances, but
 under different regimes and costs, so this compares published
-artefacts rather than a controlled study; the latter, with training as
+artifacts rather than a controlled study; the latter, with training as
 well as inference budgets matched, is the subject of dedicated ongoing
 work. The policy's standalone RE ($13.8\%$
-in-size; $10$--$26\%$ zero-shot) thus sits between dispatching rules
+in-size; $11$--$22\%$ zero-shot class means) thus sits between dispatching rules
 ($42.3\%$ for the best of them, EST) and per-instance metaheuristics
 ($9.4\%$ mean RE for fEABC over 30 runs)---establishing, for the IJSP, the computational-class
 trade-off documented for the deterministic JSP~\citep{Zhang2020L2D}.
@@ -1293,8 +1304,8 @@ $30{\times}15$ & $30{\times}20$ & $50{\times}15$ & $50{\times}20$ &
 All \\
 \midrule
 EST & 32.3 & 49.2 & 41.5 & 42.4 & 56.6 & 33.2 & 41.0 & 42.3 \\
-MOR & 41.4 & 46.6 & 47.2 & 44.1 & 58.8 & 34.1 & 45.9 & 45.5 \\
-G\&T-MWKR & 26.8 & 28.9 & 30.9 & 33.6 & 36.8 & 23.9 & 25.5 & 29.5 \\
+MOR & 41.4 & 46.7 & 47.3 & 44.1 & 58.8 & 34.1 & 45.9 & 45.5 \\
+G\&T-MWKR & 26.7 & 29.0 & 30.9 & 33.6 & 36.8 & 23.9 & 25.5 & 29.5 \\
 \midrule
 GP rule & 15.7 & 16.6 & 18.1 & 21.1 & 24.1 & 13.8 & 14.6 & 17.7 \\
 Policy (greedy) & 16.9 & 18.3 & 18.5 & 21.2 & 26.1 & 15.8 & 18.8 & 19.4 \\
@@ -1352,7 +1363,7 @@ magnitudes rather than on interval widths per se.
 \label{sec:ablations-bon}
 
 Introducing best-of-64 inference (over one greedy rollout) improved the
-full-benchmark mean makespan by $3.6\%$, strictly better on 3 of 6
+development-set mean makespan by $3.6\%$, strictly better on 3 of 6
 development instances and worse on none, while sharply reducing seed
 variance. Diagnostically, before this change the best training
 solutions frequently arose in early, exploratory episodes and were
@@ -1372,7 +1383,9 @@ curve overtakes the evolved rule at $B{=}6$ and the greedy pass itself
 at $B{=}12$, so the budget at which sampling starts paying is small,
 far below the $64$ used throughout this paper. And the returns are
 close to logarithmic over three orders of magnitude, $14.9\%$ at $64$
-and $12.9\%$ at $1023$, with no knee: within the range tested there is
+and $12.9\%$ at $1023$ ($341$ per checkpoint, the reconstruction's
+nearest point to the nominal $1024$), with no knee: within the range
+tested there is
 no budget beyond which further sampling stops helping, which is what
 makes the policy a natural front end for a search procedure that can
 afford more.
@@ -1427,11 +1440,12 @@ Deep Sets & \textbf{16.6} [15.6] & \textbf{13.4} [12.3] \\
 Size invariance enables training on mixed size classes, a natural
 hypothesis for improving transfer. We trained agents on twelve
 instances spanning $15{\times}15$, $20{\times}15$ and $20{\times}20$,
-at matched total budget ($3000$ episodes) and at equalized
+at a comparable total budget ($3000$ episodes, to the specialist's
+$4000$) and at equalized
 \emph{per-instance} budget ($12{,}000$ episodes---three times the
 specialist's total cost), against the $20{\times}15$ specialist, all
 sides with best-of-64 inference and averaged over their three seeds. At
-matched total budget the specialist wins on all five common evaluation
+comparable total budget the specialist wins on all five common evaluation
 instances ($10.5$ vs.\ $15.9$ on $15{\times}15$; $15.0$ vs.\ $20.0$
 on $20{\times}20$; $25.9$ vs.\ $30.6$ on the unseen $30{\times}20$).
 Tripling the multi-size budget recovers two of the five ($9.6$ vs.\
@@ -1532,8 +1546,8 @@ eight of the ten seeds ($p=0.045$). Training on the true upper bounds
 is therefore slightly better than training on their midpoints. The
 margin is small---under five per cent of the RE it improves, at a
 power of about $0.7$, so it should be read as a detected effect and
-not a measured one---but it is there, and the earlier three-seed
-version of this paragraph claimed its absence.
+not a measured one---but it is there, and three seeds had not been
+enough to see it.
 
 Taken together with the permutation audit, the delimitation is sharper
 than a blanket statement about interval awareness. As \emph{input
@@ -1573,7 +1587,7 @@ objective is available, and it costs about two points of RE.
 The interesting part is where the narrowing comes from. Training and
 selection changed together above, so we separate them: from a fresh
 pool of $64$ rollouts per instance and seed we reconstruct the
-best-of-$64$ of \emph{both} arms under one common criterion, so that
+best-of-64 of \emph{both} arms under one common criterion, so that
 only the weights differ. Under that control the two policies become
 indistinguishable---ranking by the upper bound, the widths are
 $12.80\%$ for the default arm and $12.69\%$ for the robust one
@@ -1587,7 +1601,10 @@ does not become sensitive to them when the reward asks it to.
 
 Three further arms, retrained from scratch at $\lambda=0.5$, $2$
 and~$4$ (three seeds each), show that this is not a quirk of
-$\lambda=1$. Deployed as packages, the five arms trace exactly the
+$\lambda=1$. Deployed as packages---both selections now measured on
+the fresh rollout pools of the control above, which is why the
+$\lambda{=}1$ figures differ slightly from the training-run schedules
+quoted earlier---the five arms trace exactly the
 frontier a practitioner would hope for: the relative width falls
 monotonically in $\lambda$---$12.80\%$, $12.38\%$, $12.20\%$,
 $11.88\%$, $10.99\%$---while the expected makespan climbs to
@@ -1650,9 +1667,11 @@ from a generator seeded by the instance identifier so that the draws
 reproduce across runs and machines---and report
 $\bar\varepsilon\times10^{3}$. The Monte Carlo is the expensive part,
 so this section uses fifteen instances rather than the full seventy:
-the six of the development set and one or two per size class
-(TA1, TA2, TA5, TA21, TA25, TA31, TA41, TA51, TA61), the lowest-numbered
-of each so that the choice is not a choice. Every execution falls inside the
+the six of the development set and the nine spotlight instances of
+the per-instance cross-size evaluations of
+Section~\ref{sec:results-crosssize} (TA1, TA2, TA5, TA21, TA25, TA31,
+TA41, TA51, TA61), reused here unchanged so that no instance is
+selected with this comparison in view. Every execution falls inside the
 predicted interval, as the monotonicity of Eq.~\eqref{eq:semiactive}
 guarantees.
 
@@ -1691,7 +1710,7 @@ argument predicts, and it comes at the price
 Section~\ref{sec:ablations-interval} measured: about two points of
 expected makespan. Whether that trade is worth making is a question
 about the shop, not about the model---and it is available, which the
-rest of this section shows it otherwise would not be.
+earlier part of this section showed it otherwise would not be.
 
 \begin{figure}[t]
   \centering
@@ -1728,7 +1747,7 @@ were not extended, so their differences are stated as paired effects
 over eighteen instance--seed pairs rather than as claims about the
 population of seeds. Finally, the comparison against the evolved rule of
 Section~\ref{sec:positioning} matches inference budgets but not
-training ones, and it compares two published artefacts rather than two
+training ones, and it compares two published artifacts rather than two
 paradigms trained under one protocol; that study, which is what
 \citet{Xu2025} call for, and the use of the policy's sampling
 distribution to seed population-based search, are the subject of
@@ -1741,7 +1760,7 @@ dedicated ongoing work.
 The three questions posed in the introduction now have answers. A
 constructive policy trained by PPO on four interval instances beats the
 best hand-crafted constructive baselines by a wide margin on its
-training class (Q1: $13.8\%$ versus $29.5\%$ for G\&T-MWKR and
+training class (Q1: $13.8\%$ versus $27.9\%$ for G\&T-MWKR and
 ${\approx}46\%$ for the best plain rule). Because the representation is
 dimensionless and the encoder permutation-invariant, one network serves
 the entire benchmark: evaluated zero-shot, it outperforms the best
