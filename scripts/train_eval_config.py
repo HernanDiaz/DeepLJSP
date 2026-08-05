@@ -63,7 +63,21 @@ def main():
                              "por defecto, caminos secuenciales originales")
     parser.add_argument("--device", type=str, default=None,
                         help="cpu|cuda para las rutas batcheadas (None = auto)")
+    # Campana de pesos del reward: si se dan, se exporta
+    # DEEPLJSP_REWARD_WEIGHTS y la factoria usa estos seis valores fijos
+    # en lugar del generador (y sin el reajuste por instancia)
+    for _rw in ("rw-makespan", "rw-idle", "rw-critical", "rw-balance",
+                "rw-progress", "rw-local"):
+        parser.add_argument(f"--{_rw}", type=float, default=None)
     args = parser.parse_args()
+
+    _rws = {k: getattr(args, f"rw_{k}") for k in
+            ("makespan", "idle", "critical", "balance", "progress", "local")}
+    if any(v is not None for v in _rws.values()):
+        if any(v is None for v in _rws.values()):
+            parser.error("los seis --rw-* van juntos o ninguno")
+        os.environ["DEEPLJSP_REWARD_WEIGHTS"] = ",".join(
+            f"{k}={v}" for k, v in _rws.items())
 
     train_ids = [p.strip() for p in args.train_ids.split(",") if p.strip()]
 

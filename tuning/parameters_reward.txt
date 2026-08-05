@@ -1,0 +1,11 @@
+# Campana de PESOS DEL REWARD a fidelidad de operacion. Los seis pesos
+# en [0,1] (decision del autor: sin anclar el terminal y sin techos
+# asimetricos). Optimizador congelado en los defaults de tab:hyper; el
+# 0 esta incluido para que la carrera pueda apagar componentes.
+# nombre      switch              tipo  rango
+rwmakespan    "--rw-makespan "    r     (0.0, 1.0)
+rwidle        "--rw-idle "        r     (0.0, 1.0)
+rwcritical    "--rw-critical "    r     (0.0, 1.0)
+rwbalance     "--rw-balance "     r     (0.0, 1.0)
+rwprogress    "--rw-progress "    r     (0.0, 1.0)
+rwlocal       "--rw-local "       r     (0.0, 1.0)

@@ -119,7 +119,19 @@ class EnvironmentFactory:
         problem_analysis = ProblemAnalyzer.analyze_problem(sequences, durations)
         
         # Adaptar parámetros de recompensa según el análisis del problema si se usa la estrategia adaptativa
-        if reward_strategy.lower() == "adaptive" and not reward_params:
+        _rw_env = os.environ.get("DEEPLJSP_REWARD_WEIGHTS")
+        if reward_strategy.lower() == "adaptive" and _rw_env:
+            # Pesos explicitos (campana de tuning): fijan los seis valores
+            # y anulan tanto el generador como el reajuste por instancia
+            _mapa = {"makespan": "makespan_weight", "idle": "idle_weight",
+                     "critical": "critical_weight",
+                     "balance": "balance_weight",
+                     "progress": "progress_weight",
+                     "local": "local_improvement_weight"}
+            reward_params = {_mapa[k.strip()]: float(v) for k, v in
+                             (p.split("=") for p in _rw_env.split(","))}
+            logger.info("Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS")
+        elif reward_strategy.lower() == "adaptive" and not reward_params:
             reward_params = AdaptiveConfigGenerator.generate_reward_config(problem_analysis)
             logger.info("Usando configuración de recompensa adaptativa generada automáticamente")
         

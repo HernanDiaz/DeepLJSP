@@ -1,0 +1,18 @@
+# Campana de PESOS DEL REWARD: los seis pesos de shaping en [0,1], con
+# el optimizador congelado en los defaults (la unica pieza nunca cubierta
+# por las dos campanas previas). Fidelidad de operacion, como la campana
+# seria: 2 instancias x 1000 episodios por evaluacion, eval best-of-64.
+# Sembrada con (1) los pesos efectivos actuales congelados -- que ademas
+# testea si el ajuste por instancia es prescindible --, (2) solo-terminal
+# (el shaping entero apagado) y (3) uniforme. Los pesos explicitos entran
+# por DEEPLJSP_REWARD_WEIGHTS, que anula generador y reajuste (bypass).
+parameterFile = "parameters_reward.txt"
+trainInstancesDir = ""
+trainInstancesFile = "instances.txt"
+configurationsFile = "configurations_reward.txt"
+targetRunner = "./target_runner_reward.bat"
+maxExperiments = 300
+firstTest = 6
+parallel = 3
+seed = 20260805
+logFile = "irace_reward.Rdata"

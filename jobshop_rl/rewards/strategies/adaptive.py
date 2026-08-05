@@ -3,6 +3,8 @@
 Implementación de la estrategia de recompensa adaptativa.
 """
 
+import os
+
 from typing import Dict, Optional, Any
 
 from jobshop_rl.rewards.base import RewardStrategy
@@ -34,8 +36,11 @@ class AdaptiveRewardStrategy(RewardStrategy):
             if key in self.weights:
                 self.weights[key] = value
         
-        # Adaptar pesos si hay análisis del problema
-        if problem_analysis:
+        # Adaptar pesos si hay análisis del problema. Con pesos explicitos
+        # (DEEPLJSP_REWARD_WEIGHTS, campana de tuning) NO se readapta: esta
+        # capa pisaria en silencio el balance_weight tuneado (lo fuerza a
+        # 0.1 con la varianza de carga de cualquier Taillard realista)
+        if problem_analysis and not os.environ.get("DEEPLJSP_REWARD_WEIGHTS"):
             self._adapt_weights()
         
         # Inicializar componentes con pesos adaptados
