@@ -527,7 +527,7 @@ $\bar L$ its average over machines; $\mathbf{c}_{J}$ and
 $\mathbf{c}_{\mu}$ the completion intervals of the operation's job
 and machine over what is scheduled so far.}
 \label{tab:opfeatures}
-\begin{tabular}{lll}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lll}
 \toprule
 \# & Feature & Definition \\
 \midrule
@@ -543,7 +543,7 @@ and machine over what is scheduled so far.}
 14 & slack & $(est^U-\min_{o'\in\mathcal{E}}est^U_{o'})/\mathrm{LB}$ \\
 15--16 & completions & $c^U_{\mu}/\mathrm{LB}$, $c^U_{J}/\mathrm{LB}$ \\
 \bottomrule
-\end{tabular}
+\end{tabular*}
 \end{table}
 
 \begin{table}[!htb]
@@ -553,7 +553,7 @@ notation as in Table~\ref{tab:opfeatures}; no dimension depends on
 $n$ or $m$). Rows that list several statistics contribute one feature
 each, for $12$ in total.}
 \label{tab:globalfeatures}
-\begin{tabular}{lll}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lll}
 \toprule
 \# & Feature & Definition \\
 \midrule
@@ -567,7 +567,7 @@ each, for $12$ in total.}
 unscheduled ops \\
 12 & total load & $\sum_\mu L(\mu)/(\mathrm{LB}\cdot m)$ \\
 \bottomrule
-\end{tabular}
+\end{tabular*}
 \end{table}
 
 
