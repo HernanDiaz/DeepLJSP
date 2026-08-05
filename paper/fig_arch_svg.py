@@ -46,7 +46,9 @@ TITLE_H = 13     # title bar height inside block
 LINE_H  = 12     # one content-line height
 IO_H    = 20     # I/O box height (two text lines)
 HGAP    = 16     # horizontal gap between slots
-LM      = 44     # left margin: room for the pi(i|s) / V(s) labels
+LM      = 28     # left margin: the entry/exit arrows live here, with
+                 # their labels ABOVE the arrow (not beside), so the
+                 # margin only needs the arrow length plus a hair
 MX      = 2      # right canvas margin
 BH      = TITLE_H + 2 * LINE_H          # block height (= 37 pt)
 STEP    = BW + HGAP                     # 86 pt per slot
@@ -205,9 +207,9 @@ def build_svg() -> str:
     #    entrada llega en horizontal desde el margen, espejo de las de
     #    salida pi(i|s) / V(s) ──────────────────────────────────────────────
     parts += _io(x[0], IN_TOP, "eligible ops", "|E| × 16")
-    parts.append(_ah(x[0] - 16, IN_TOP + IO_H / 2, x[0]))
-    parts.append(_t(x[0] - 19, IN_TOP + IO_H / 2, "state s", size=FS_IO,
-                    anchor="end"))
+    parts.append(_ah(x[0] - 20, IN_TOP + IO_H / 2, x[0]))
+    parts.append(_t(x[0] - 10, IN_TOP + IO_H / 2 - 3.5, "state s",
+                    size=FS_IO))
     parts.append(_av(enc_c, IN_TOP + IO_H, ENC_TOP))
 
     ps, _ = _block(x[0], ENC_TOP, "encoder φ", "shared 2-layer MLP",
@@ -261,10 +263,10 @@ def build_svg() -> str:
     parts.append(_poly([(x[1], ctx_cy), (xm, ctx_cy), (xm, val_cy),
                         (x[0] + BW, val_cy)]))
 
-    parts.append(_ah(x[0], pol_cy, x[0] - 16))
-    parts.append(_t(x[0] - 19, pol_cy, "π(i | s)", size=FS_IO, anchor="end"))
-    parts.append(_ah(x[0], val_cy, x[0] - 16))
-    parts.append(_t(x[0] - 19, val_cy, "V(s)", size=FS_IO, anchor="end"))
+    parts.append(_ah(x[0], pol_cy, x[0] - 20))
+    parts.append(_t(x[0] - 10, pol_cy - 3.5, "π(i | s)", size=FS_IO))
+    parts.append(_ah(x[0], val_cy, x[0] - 20))
+    parts.append(_t(x[0] - 10, val_cy - 3.5, "V(s)", size=FS_IO))
 
     # ── global state joining the context straight from the right ───────────
     parts += _io(x[2], G_TOP, "global state", "12 features")

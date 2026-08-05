@@ -411,13 +411,16 @@ could start (Section~\ref{sec:features}). A multilayer
 perceptron (MLP)---the \emph{same} one for every candidate---turns
 each row into an \emph{embedding}: a vector of $h$ learned quantities
 that re-describes the candidate in terms the network finds useful.
+
 The number of candidates varies from step to step, so the embeddings
 are \emph{pooled}: their mean and their componentwise maximum are two
 fixed-size summaries of the whole set (the typical candidate and the
 extreme one). Joined with $12$ numbers describing the shop as a whole
 (the \emph{global state}), these summaries are condensed by another
 MLP into a single \emph{context} vector $g$---the network's picture
-of the current situation. The two heads introduced above read
+of the current situation.
+
+The two heads introduced above read
 from here---but pooling, by design, discards which candidate is which,
 so the context alone cannot rank them. The policy head therefore
 receives two inputs, the shared context $g$ and each candidate's own
@@ -432,6 +435,7 @@ it reads $g$ alone and outputs $V(s)$. In total, four two-layer
 MLPs---the candidate encoder $\phi$, the context combiner, and the two
 heads---are composed into a single network and trained jointly end to
 end.
+
 One element of the figure remains to be named: the dashed detour
 between the embeddings and the pooling is an \emph{optional}
 self-attention stage, evaluated later as a variant---it is not part of
