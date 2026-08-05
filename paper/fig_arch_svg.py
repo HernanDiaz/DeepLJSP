@@ -7,10 +7,15 @@ size when the figure is placed at its physical width; compact blocks (title
 bar + two content lines); inline <polygon> arrowheads (svglib does not
 support SVG <marker>, so marker-end would vanish in the PDF conversion).
 
-Two rows of at most four slots, serpentine flow:
-  row 1 (L->R):  eligible ops -> encoder phi -> embeddings   [self-attn]
-  row 2 (R->L):  pooling -> context MLP -> policy/value heads -> outputs
-with the global state joining the context from below.
+Three columns, serpentine flow, with the input entering from above:
+
+    eligible ops
+        |
+    encoder phi  ->  embeddings   [self-attn, dashed detour]
+                          |            :
+    policy/value  <-  context MLP  <-  pooling
+       heads                              ^
+                                     global state
 
 Topology carries the semantics. SOLID edges are the base model's data
 path: embeddings drop straight into pooling. The self-attention variant is
@@ -39,23 +44,25 @@ TITLE_H = 13     # title bar height inside block
 LINE_H  = 12     # one content-line height
 IO_H    = 20     # I/O box height (two text lines)
 HGAP    = 16     # horizontal gap between slots
-MX      = 2      # left/right canvas margin
+LM      = 44     # left margin: room for the pi(i|s) / V(s) labels
+MX      = 2      # right canvas margin
 BH      = TITLE_H + 2 * LINE_H          # block height (= 37 pt)
 STEP    = BW + HGAP                     # 86 pt per slot
 
-R1      = 8                              # row-1 top
-MID1    = R1 + BH / 2                    # row-1 arrow level (= 26.5)
-R2      = 88                             # row-2 top
-MID2    = R2 + BH / 2                    # row-2 arrow level (= 106.5)
-Y_BASE  = 66                             # elbow lane of the base path
-Y_SKIP  = 74                             # elbow lane of the phi_i path
+IN_TOP  = 6                              # eligible-ops box, above the encoder
+ENC_TOP = 34                             # encoder, a little lower
+MID1    = ENC_TOP + BH / 2               # row-1 arrow level (= 52.5)
+Y_BASE  = 82                             # elbow lane of the base path
+Y_SKIP  = 88                             # elbow lane of the phi_i path
+R2      = 104                            # row-2 top
+MID2    = R2 + BH / 2                    # row-2 arrow level (= 122.5)
 
 FONT  = "Times New Roman"
 FS_T  = 6.8    # title bar font size
 FS_B  = 6.2    # body (ops / out lines)
 FS_IO = 6.4    # I/O box text
 FS_N  = 5.4    # dim annotations
-FS_L  = 5.8    # legend labels
+FS_L  = 5.4    # legend labels
 
 # ── Colour palette ───────────────────────────────────────────────────────────
 C_MLP  = "#D6EAF8"; C_MLPT = "#C5D9E8"    # learned blocks + their title bar
@@ -164,17 +171,18 @@ def _io(x, y, l1, l2):
 
 def build_svg() -> str:
     parts = []
-    x = [MX + i * STEP for i in range(4)]         # 4 slots per row
-    io1_top = MID1 - IO_H / 2
+    x = [LM + i * STEP for i in range(3)]          # 3 slots per row
+    emb_top = MID1 - IO_H / 2
 
-    emb_c = x[2] + BW / 2                          # embeddings centre x
-    pol_c = x[1] + BW / 2                          # policy-head centre x
+    enc_c = x[0] + BW / 2                          # encoder / input centre x
+    emb_c = x[1] + BW / 2                          # embeddings centre x
+    pol_c = x[0] + BW / 2                          # policy-head centre x
     VAL_TOP = R2 + BH + 8                          # value head below policy
     val_cy = VAL_TOP + BH / 2
-    G_TOP = VAL_TOP + 12                           # global state under pooling
+    G_TOP = VAL_TOP + 12                           # global state, under pooling
     g_cy = G_TOP + IO_H / 2
 
-    CW = x[3] + BW + MX
+    CW = x[2] + BW + MX
     sep_y = max(VAL_TOP + BH, G_TOP + IO_H) + 8
     leg_y = sep_y + 11
     CH = leg_y + 9
@@ -186,73 +194,73 @@ def build_svg() -> str:
         f'viewBox="0 0 {CW:.1f} {CH:.1f}">\n'
         f'<rect width="{CW:.1f}" height="{CH:.1f}" fill="white"/>')
 
-    # ── row 1: input -> encoder -> embeddings, attention parked at slot 3 ──
-    parts += _io(x[0], io1_top, "eligible ops", "|E| × 16")
-    parts.append(_ah(x[0] + BW, MID1, x[1]))
+    # ── input above the encoder, entering from the top ─────────────────────
+    parts += _io(x[0], IN_TOP, "eligible ops", "|E| × 16")
+    parts.append(_av(enc_c, IN_TOP + IO_H, ENC_TOP))
 
-    ps, _ = _block(x[1], R1, "encoder φ", "shared 2-layer MLP",
+    ps, _ = _block(x[0], ENC_TOP, "encoder φ", "shared 2-layer MLP",
                    "→ |E| × h", C_MLP, C_MLPT)
     parts += ps
-    parts.append(_t(x[1] + BW / 2, R1 + BH + 5.5,
+    parts.append(_t(x[0] + BW / 2, ENC_TOP + BH + 5.5,
                     "(weights indep. of n, m)", size=FS_N, fill=C_DIM))
-    parts.append(_ah(x[1] + BW, MID1, x[2]))
+    parts.append(_ah(x[0] + BW, MID1, x[1]))
 
-    parts += _io(x[2], io1_top, "embeddings", "|E| × h")
+    parts += _io(x[1], emb_top, "embeddings", "|E| × h")
 
-    ps, _ = _block(x[3], R1, "self-attn × B", "pre-LN, 4 heads",
+    ps, _ = _block(x[2], ENC_TOP, "self-attn × B", "pre-LN, 4 heads",
                    "not in base (B=0)", C_ATT, C_ATTT, dashed=True)
     parts += ps
 
     # ── base path (SOLID): embeddings drop straight into the pooling ──────
-    parts.append(_poly([(emb_c + 12, io1_top + IO_H),
+    parts.append(_poly([(emb_c + 12, emb_top + IO_H),
                         (emb_c + 12, Y_BASE),
-                        (x[3] + BW * 0.33, Y_BASE),
-                        (x[3] + BW * 0.33, R2)]))
+                        (x[2] + BW * 0.33, Y_BASE),
+                        (x[2] + BW * 0.33, R2)]))
 
     # ── variant detour (DASHED): embeddings -> attention -> pooling ────────
-    parts.append(_ah(x[2] + BW, MID1, x[3], color=C_ATTA, dash="3,2"))
-    parts.append(_av(x[3] + BW * 0.67, R1 + BH, R2, color=C_ATTA,
+    parts.append(_ah(x[1] + BW, MID1, x[2], color=C_ATTA, dash="3,2"))
+    parts.append(_av(x[2] + BW * 0.67, ENC_TOP + BH, R2, color=C_ATTA,
                      dash="3,2"))
 
     # ── row 2 (right to left): pooling -> context -> heads ─────────────────
-    ps, _ = _block(x[3], R2, "pooling", "mean + max", "→ 2h summary",
+    ps, _ = _block(x[2], R2, "pooling", "mean + max", "→ 2h summary",
                    C_POOL, C_POOLT)
     parts += ps
-    parts.append(_ah(x[3], MID2, x[2] + BW))
+    parts.append(_ah(x[2], MID2, x[1] + BW))
 
-    ps, _ = _block(x[2], R2, "context MLP", "2-layer MLP", "→ context g",
+    ps, _ = _block(x[1], R2, "context MLP", "2-layer MLP", "→ context g",
                    C_MLP, C_MLPT)
     parts += ps
-    parts.append(_ah(x[2], MID2, x[1] + BW))                      # g → policy
-    parts.append(_poly([(x[2], MID2), (x[2] - HGAP / 2, MID2),    # g → value
-                        (x[2] - HGAP / 2, val_cy),
-                        (x[1] + BW, val_cy)]))
+    parts.append(_ah(x[1], MID2, x[0] + BW))                      # g → policy
+    parts.append(_poly([(x[1], MID2), (x[1] - HGAP / 2, MID2),    # g → value
+                        (x[1] - HGAP / 2, val_cy),
+                        (x[0] + BW, val_cy)]))
 
-    ps, _ = _block(x[1], R2, "policy head", "scores [φi ; g]",
+    ps, _ = _block(x[0], R2, "policy head", "scores [φi ; g]",
                    "masked softmax", C_HEAD, C_HEADT)
     parts += ps
-    ps, _ = _block(x[1], VAL_TOP, "value head", "reads g alone",
+    ps, _ = _block(x[0], VAL_TOP, "value head", "reads g alone",
                    "return estimate", C_HEAD, C_HEADT)
     parts += ps
 
-    parts.append(_ah(x[1], MID2, x[1] - 16))
-    parts.append(_t(x[1] - 19, MID2, "π(i | s)", size=FS_IO, anchor="end"))
-    parts.append(_ah(x[1], val_cy, x[1] - 16))
-    parts.append(_t(x[1] - 19, val_cy, "V(s)", size=FS_IO, anchor="end"))
+    parts.append(_ah(x[0], MID2, x[0] - 16))
+    parts.append(_t(x[0] - 19, MID2, "π(i | s)", size=FS_IO, anchor="end"))
+    parts.append(_ah(x[0], val_cy, x[0] - 16))
+    parts.append(_t(x[0] - 19, val_cy, "V(s)", size=FS_IO, anchor="end"))
 
     # ── global state joining the context from below ────────────────────────
-    parts += _io(x[3], G_TOP, "global state", "12 aggregates")
-    parts.append(_poly([(x[3], g_cy), (x[2] + BW / 2, g_cy),
-                        (x[2] + BW / 2, R2 + BH)]))
+    parts += _io(x[2], G_TOP, "global state", "12 aggregates")
+    parts.append(_poly([(x[2], g_cy), (x[1] + BW / 2, g_cy),
+                        (x[1] + BW / 2, R2 + BH)]))
 
     # ── per-candidate path: each phi_i carried past the pooling ────────────
-    parts.append(_poly([(emb_c - 12, io1_top + IO_H),
+    parts.append(_poly([(emb_c - 12, emb_top + IO_H),
                         (emb_c - 12, Y_SKIP),
                         (pol_c, Y_SKIP),
                         (pol_c, R2)],
                        color=C_SKIP, dash="3.5,2",
                        ln=AH_LEN_S, hw=AH_HW_S))
-    parts.append(_t((pol_c + emb_c) / 2 - 6, Y_SKIP + 6,
+    parts.append(_t((pol_c + emb_c - 12) / 2, Y_SKIP - 5.5,
                     "each φi, past the pooling", size=FS_N, fill=C_DIM))
 
     # ── separator + legend ─────────────────────────────────────────────────
@@ -262,12 +270,12 @@ def build_svg() -> str:
     legend = [(C_MLP, "learned MLP"),
               (C_POOL, "parameter-free"),
               (C_IO, "tensor / input"),
-              ("dash", "attention variant"),
+              ("dash", "attn. variant"),
               ("skip", "per-candidate φi")]
     slot_w = (CW - 2 * MX) / len(legend)
     sw_sz = 8
     for k, (c, lbl) in enumerate(legend):
-        sx = MX + k * slot_w + slot_w * 0.06
+        sx = MX + k * slot_w + slot_w * 0.04
         if c == "skip":
             parts.append(f'<line x1="{sx:.1f}" y1="{leg_y:.1f}" '
                          f'x2="{sx + sw_sz:.1f}" y2="{leg_y:.1f}" '
