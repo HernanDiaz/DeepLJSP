@@ -365,9 +365,9 @@ current \emph{state} $s$, chooses an \emph{action} $a$ among those
 available, and receives a numeric \emph{reward} signalling how good
 the consequences were. The agent's behaviour is its \emph{policy}
 $\pi(a\,|\,s)$: a function that, given the state $s$, assigns a
-probability to each available action $a$. The policy is the object being
-learned---training nudges it so that actions followed by a high
-cumulative reward (the \emph{return}) become more likely.
+probability to each available action $a$. The policy is the object of
+learning: training increases the probability of actions followed by a
+high cumulative reward (the \emph{return}).
 
 Policy-gradient methods such as PPO~\citep{Schulman2017} judge an
 action not by its return alone but by comparing that return with what
@@ -380,18 +380,14 @@ that scores the available actions and a \emph{value head} that
 estimates $V(s)$, trained jointly. This is why the network in this
 paper has two heads.
 
-What makes the learning \emph{deep} is how these two functions are
-represented. A tabular method would store one entry per state, but no
-state ever repeats here: even a single $20{\times}15$ instance admits
-more construction paths than could be enumerated, and the policy must
-moreover act on instances it has never seen. Both functions are
-therefore \emph{neural networks}---compositions of learned linear maps
-and fixed nonlinearities---whose weights are what the gradient steps
-above adjust. The network cannot memorize states; it can only learn
-which combinations of state descriptors predict return, and that
-forced generalization is precisely what lets a single set of weights
-serve every instance and, with the representation of
-Section~\ref{sec:features}, every size.
+What makes the learning \emph{deep} is the representation of these
+two functions. The states are far too numerous to tabulate and none is
+ever visited twice---indeed the policy must act on instances it has
+never seen---so $\pi$ and $V$ are approximated by neural networks,
+whose weights are what training adjusts. Unable to memorize states,
+the network must generalize over their descriptors, and that is what
+allows a single set of weights to serve every instance and, with the
+representation of Section~\ref{sec:features}, every size.
 
 Instantiated on scheduling, the agent is a dispatcher. The state is
 the partial schedule; the available actions are the \emph{eligible}
