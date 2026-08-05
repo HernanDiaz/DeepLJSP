@@ -399,7 +399,8 @@ data path. Every eligible operation is embedded by the same MLP
 $\phi$; mean and max pooling collapse the variable-size candidate set
 into fixed-size summaries that, joined with the global features, form
 the context $g$. Because pooling discards candidate identity, each
-embedding $\phi_i$ is also carried past it (grey dashed path) so the
+embedding $\phi_i$ is also carried past it (grey dashed skip
+connection) so the
 policy head can score $[\phi_i;g]$ pairs; the value head reads $g$
 alone. The dashed detour is the self-attention variant of
 Section~\ref{sec:attention}: it is \emph{not} part of the base model
@@ -426,8 +427,9 @@ of the current situation. The two heads of the previous paragraph read
 from here---but pooling, by design, discards which candidate is which,
 so the context alone cannot rank them. The policy head therefore
 receives two inputs, the shared context $g$ and each candidate's own
-embedding, carried past the pooling stage by the direct edge visible
-in Figure~\ref{fig:arch}; it scores every such pair, and a
+embedding, carried past the pooling stage by the \emph{skip
+connection} visible in Figure~\ref{fig:arch}; it scores every such
+pair, and a
 \emph{softmax} turns the scores into the probabilities $\pi(i\,|\,s)$
 (\emph{masked} means that unused padding slots are excluded). The
 value head estimates the situation rather than any one candidate, so

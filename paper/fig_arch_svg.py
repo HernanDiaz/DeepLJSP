@@ -272,7 +272,7 @@ def build_svg() -> str:
                        color=C_SKIP, dash="3.5,2",
                        ln=AH_LEN_S, hw=AH_HW_S))
     parts.append(_t(emb_c - 16, Y_SIDE - 13,
-                    "each φi, past the pooling", size=FS_N, fill=C_DIM,
+                    "skip connection: each φi", size=FS_N, fill=C_DIM,
                     anchor="end"))
 
     # ── separator + legend ─────────────────────────────────────────────────
@@ -282,7 +282,7 @@ def build_svg() -> str:
     # la linea de phi_i no necesita entrada: lleva su rotulo encima
     legend = [(C_MLP, "learned MLP"),
               (C_HEAD, "output heads"),
-              (C_POOL, "parameter-free"),
+              (C_POOL, "non-trainable"),
               (C_IO, "tensor / input"),
               ("dash", "attn. variant")]
     slot_w = (CW - 2 * MX) / len(legend)
