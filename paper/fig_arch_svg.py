@@ -1,4 +1,4 @@
-"""
+﻿"""
 fig_arch_svg.py — Deep Sets policy/value network, publication-ready.
 
 Same conventions as the compact-architecture template: all layout constants
@@ -7,28 +7,26 @@ size when the figure is placed at its physical width; compact blocks (title
 bar + two content lines); inline <polygon> arrowheads (svglib does not
 support SVG <marker>, so marker-end would vanish in the PDF conversion).
 
-Bottom-up flow, the classic network reading: the input enters at the very
-bottom and the outputs leave at the top left. Three columns:
+Three columns, serpentine flow, input entering from above; the context MLP
+sits vertically BETWEEN the two heads, so its two feeds are symmetric
+elbows and the global state joins it with a straight arrow:
 
-    value head                          global state
-              <-  context MLP  <----.
-    policy head                      pooling
-        ^                               ^
-        '------ (phi_i, lateral) ------ | (lateral)
-                                        |
-    encoder phi  ->  embeddings      [self-attn, dashed detour]
-        ^
     eligible ops
+        |
+    encoder phi  ->  embeddings      [self-attn, dashed detour]
+                          |               :
+    policy head                        pooling
+              <-  context MLP  <----'
+    value head                       global state
 
 Topology carries the semantics. SOLID edges are the base model's data
-path: embeddings rise straight into pooling, entering from the side. The
-self-attention variant is a DASHED DETOUR off that path (not a stage of
-it): its box and both its arrows are dashed, because B = 0 removes it
-entirely and that is the model every headline number uses. The grey dashed
-lane is the per-candidate path that carries each phi_i past the pooling
-into the policy head, also entering from the side: pooling by design
-discards candidate identity, so the head must receive the embedding itself
-alongside the context.
+path: embeddings drop straight into pooling. The self-attention variant is
+a DASHED DETOUR off that path (not a stage of it): its box and both its
+arrows are dashed, because B = 0 removes it entirely and that is the model
+every headline number uses. The grey dashed lane is the per-candidate path
+that carries each phi_i past the pooling into the policy head: pooling by
+design discards candidate identity, so the head must receive the embedding
+itself alongside the context.
 
 Run standalone:
     python paper/fig_arch_svg.py
@@ -53,16 +51,13 @@ MX      = 2      # right canvas margin
 BH      = TITLE_H + 2 * LINE_H          # block height (= 37 pt)
 STEP    = BW + HGAP                     # 86 pt per slot
 
-# vertical bands, top to bottom (the data flows bottom-up)
-VAL_TOP = 6                              # value head, top left
-G_TOP   = 23                             # global state, top right
-POL_TOP = 51                             # policy head / pooling band
-Y_BASE  = 78                             # lateral entry into the pooling
-Y_SKIP  = 79                             # lateral entry into the policy head
-NOTE_Y  = 117.5                          # encoder annotation, above the block
-ENC_TOP = 123                            # encoder / attention band
-MID1    = ENC_TOP + BH / 2               # its arrow level (= 141.5)
-IN_TOP  = 178                            # eligible-ops box, the very bottom
+IN_TOP  = 6                              # eligible-ops box, above the encoder
+ENC_TOP = 34                             # encoder row, right under the input
+MID1    = ENC_TOP + BH / 2               # row-1 arrow level (= 52.5)
+R2      = 88                             # heads/pooling band, just below the
+                                         # encoder row (17 pt of clearance)
+Y_SIDE  = R2 + 10                        # lateral entry height (= 98)
+VAL_TOP = R2 + BH + 8                    # value head below policy (= 133)
 
 FONT  = "Times New Roman"
 FS_T  = 6.8    # title bar font size
@@ -183,15 +178,17 @@ def build_svg() -> str:
 
     enc_c = x[0] + BW / 2                          # encoder / input centre x
     emb_c = x[1] + BW / 2                          # embeddings centre x
-    val_cy = VAL_TOP + BH / 2                      # value centre y (24.5)
-    pol_cy = POL_TOP + BH / 2                      # policy centre y (69.5)
-    ctx_cy = (val_cy + pol_cy) / 2                 # context centred between
+    pol_c = x[0] + BW / 2                          # policy-head centre x
+    pol_cy = R2 + BH / 2                           # policy centre y (134.5)
+    val_cy = VAL_TOP + BH / 2                      # value centre y (179.5)
+    ctx_cy = (pol_cy + val_cy) / 2                 # context centred between
     CTX_TOP = ctx_cy - BH / 2                      # the two heads
     xm = x[0] + BW + HGAP / 2                      # elbow lane, heads column
+    G_TOP = VAL_TOP                                # global state, under pooling
     g_cy = G_TOP + IO_H / 2
 
     CW = x[2] + BW + MX
-    sep_y = IN_TOP + IO_H + 8
+    sep_y = max(VAL_TOP + BH, G_TOP + IO_H) + 8
     leg_y = sep_y + 11
     CH = leg_y + 9
 
@@ -202,14 +199,14 @@ def build_svg() -> str:
         f'viewBox="0 0 {CW:.1f} {CH:.1f}">\n'
         f'<rect width="{CW:.1f}" height="{CH:.1f}" fill="white"/>')
 
-    # ── bottom: input rising into the encoder ──────────────────────────────
+    # ── input above the encoder, entering from the top ─────────────────────
     parts += _io(x[0], IN_TOP, "eligible ops", "|E| × 16")
-    parts.append(_av(enc_c, IN_TOP, ENC_TOP + BH))
+    parts.append(_av(enc_c, IN_TOP + IO_H, ENC_TOP))
 
     ps, _ = _block(x[0], ENC_TOP, "encoder φ", "shared 2-layer MLP",
                    "→ |E| × h", C_MLP, C_MLPT)
     parts += ps
-    parts.append(_t(x[0] + BW / 2, NOTE_Y,
+    parts.append(_t(x[0] + BW / 2, ENC_TOP + BH + 5.5,
                     "(weights indep. of n, m)", size=FS_N, fill=C_DIM))
     parts.append(_ah(x[0] + BW, MID1, x[1]))
 
@@ -219,19 +216,19 @@ def build_svg() -> str:
                    "not in base (B=0)", C_ATT, C_ATTT, dashed=True)
     parts += ps
 
-    # ── base path (SOLID): embeddings rise, entering the pooling from the
-    #    side (below the exit toward the context, which leaves at y_pc) ────
-    parts.append(_poly([(emb_c + 12, emb_top),
-                        (emb_c + 12, Y_BASE),
-                        (x[2], Y_BASE)]))
+    # ── base path (SOLID): embeddings drop, then enter pooling from the
+    #    side (above the exit toward the context, which leaves at y_pc) ────
+    parts.append(_poly([(emb_c + 12, emb_top + IO_H),
+                        (emb_c + 12, Y_SIDE),
+                        (x[2], Y_SIDE)]))
 
     # ── variant detour (DASHED): embeddings -> attention -> pooling ────────
     parts.append(_ah(x[1] + BW, MID1, x[2], color=C_ATTA, dash="3,2"))
-    parts.append(_av(x[2] + BW * 0.67, ENC_TOP, POL_TOP + BH, color=C_ATTA,
+    parts.append(_av(x[2] + BW * 0.67, ENC_TOP + BH, R2, color=C_ATTA,
                      dash="3,2"))
 
     # ── pooling (right), context between the heads (middle) ────────────────
-    ps, _ = _block(x[2], POL_TOP, "pooling", "mean + max", "→ 2h summary",
+    ps, _ = _block(x[2], R2, "pooling", "mean + max", "→ 2h summary",
                    C_POOL, C_POOLT)
     parts += ps
 
@@ -240,39 +237,39 @@ def build_svg() -> str:
     parts += ps
 
     # pooling → context: straight where the two bands overlap
-    y_pc = (POL_TOP + CTX_TOP + BH) / 2
+    y_pc = (R2 + BH + CTX_TOP) / 2
     parts.append(_ah(x[2], y_pc, x[1] + BW))
 
     # ── heads, fed by symmetric elbows from the context ────────────────────
+    ps, _ = _block(x[0], R2, "policy head", "scores [φi ; g]",
+                   "masked softmax", C_HEAD, C_HEADT)
+    parts += ps
     ps, _ = _block(x[0], VAL_TOP, "value head", "reads g alone",
                    "return estimate", C_HEAD, C_HEADT)
     parts += ps
-    ps, _ = _block(x[0], POL_TOP, "policy head", "scores [φi ; g]",
-                   "masked softmax", C_HEAD, C_HEADT)
-    parts += ps
 
-    parts.append(_poly([(x[1], ctx_cy), (xm, ctx_cy), (xm, val_cy),
-                        (x[0] + BW, val_cy)]))
     parts.append(_poly([(x[1], ctx_cy), (xm, ctx_cy), (xm, pol_cy),
                         (x[0] + BW, pol_cy)]))
+    parts.append(_poly([(x[1], ctx_cy), (xm, ctx_cy), (xm, val_cy),
+                        (x[0] + BW, val_cy)]))
 
-    parts.append(_ah(x[0], val_cy, x[0] - 16))
-    parts.append(_t(x[0] - 19, val_cy, "V(s)", size=FS_IO, anchor="end"))
     parts.append(_ah(x[0], pol_cy, x[0] - 16))
     parts.append(_t(x[0] - 19, pol_cy, "π(i | s)", size=FS_IO, anchor="end"))
+    parts.append(_ah(x[0], val_cy, x[0] - 16))
+    parts.append(_t(x[0] - 19, val_cy, "V(s)", size=FS_IO, anchor="end"))
 
     # ── global state joining the context straight from the right ───────────
     parts += _io(x[2], G_TOP, "global state", "12 aggregates")
     parts.append(_ah(x[2], g_cy, x[1] + BW))
 
     # ── per-candidate path: each phi_i carried past the pooling, entering
-    #    the policy head from the side (below the context feed) ─────────────
-    parts.append(_poly([(emb_c - 12, emb_top),
-                        (emb_c - 12, Y_SKIP),
-                        (x[0] + BW, Y_SKIP)],
+    #    the policy head from the side (one elbow, above the context feed) ──
+    parts.append(_poly([(emb_c - 12, emb_top + IO_H),
+                        (emb_c - 12, Y_SIDE - 1),
+                        (x[0] + BW, Y_SIDE - 1)],
                        color=C_SKIP, dash="3.5,2",
                        ln=AH_LEN_S, hw=AH_HW_S))
-    parts.append(_t(emb_c - 16, Y_SKIP + 14,
+    parts.append(_t(emb_c - 16, Y_SIDE - 13,
                     "each φi, past the pooling", size=FS_N, fill=C_DIM,
                     anchor="end"))
 
