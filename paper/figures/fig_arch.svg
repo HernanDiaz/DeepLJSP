@@ -1,86 +1,88 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="6.694in" height="1.833in" viewBox="0 0 482.0 132.0">
-<rect width="482.0" height="132.0" fill="white"/>
-<rect x="2.0" y="30.5" width="52.0" height="20.0" fill="#F2F3F4" stroke="#2C3E50" stroke-width="0.6"/>
-<text x="28.0" y="36.1" text-anchor="middle" dominant-baseline="middle" font-size="6.4" font-weight="normal" fill="#111111" font-family="Times New Roman">eligible ops</text>
-<text x="28.0" y="45.1" text-anchor="middle" dominant-baseline="middle" font-size="6.4" font-weight="normal" fill="#111111" font-family="Times New Roman">|E| × 16</text>
-<line x1="54.0" y1="40.5" x2="62.2" y2="40.5" stroke="#2C3E50" stroke-width="0.8"/>
-<polygon points="62.2,38.5 67.0,40.5 62.2,42.5" fill="#2C3E50"/>
-<rect x="67.0" y="22.0" width="52.0" height="13.0" fill="#C5D9E8" stroke="#2C3E50" stroke-width="0.6"/>
-<text x="93.0" y="28.5" text-anchor="middle" dominant-baseline="middle" font-size="6.8" font-weight="bold" fill="#111111" font-family="Times New Roman">encoder φ</text>
-<rect x="67.0" y="35.0" width="52.0" height="12.0" fill="#D6EAF8" stroke="#2C3E50" stroke-width="0.6"/>
-<text x="93.0" y="41.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">shared 2-layer MLP</text>
-<rect x="67.0" y="47.0" width="52.0" height="12.0" fill="#D6EAF8" stroke="#2C3E50" stroke-width="0.6"/>
-<text x="93.0" y="53.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">→ |E| × h</text>
-<text x="93.0" y="64.5" text-anchor="middle" dominant-baseline="middle" font-size="5.4" font-weight="normal" fill="#555555" font-family="Times New Roman">(weights indep. of n, m)</text>
-<line x1="119.0" y1="40.5" x2="127.2" y2="40.5" stroke="#2C3E50" stroke-width="0.8"/>
-<polygon points="127.2,38.5 132.0,40.5 127.2,42.5" fill="#2C3E50"/>
-<rect x="132.0" y="30.5" width="52.0" height="20.0" fill="#F2F3F4" stroke="#2C3E50" stroke-width="0.6"/>
-<text x="158.0" y="36.1" text-anchor="middle" dominant-baseline="middle" font-size="6.4" font-weight="normal" fill="#111111" font-family="Times New Roman">embeddings</text>
-<text x="158.0" y="45.1" text-anchor="middle" dominant-baseline="middle" font-size="6.4" font-weight="normal" fill="#111111" font-family="Times New Roman">|E| × h</text>
-<line x1="184.0" y1="40.5" x2="192.2" y2="40.5" stroke="#2C3E50" stroke-width="0.8"/>
-<polygon points="192.2,38.5 197.0,40.5 192.2,42.5" fill="#2C3E50"/>
-<rect x="197.0" y="22.0" width="52.0" height="13.0" fill="#F0DDBE" stroke="#2C3E50" stroke-width="0.6" stroke-dasharray="3,2"/>
-<text x="223.0" y="28.5" text-anchor="middle" dominant-baseline="middle" font-size="6.8" font-weight="bold" fill="#111111" font-family="Times New Roman">self-attn × B</text>
-<rect x="197.0" y="35.0" width="52.0" height="12.0" fill="#FDF3E3" stroke="#2C3E50" stroke-width="0.6" stroke-dasharray="3,2"/>
-<text x="223.0" y="41.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">pre-LN, 4 heads</text>
-<rect x="197.0" y="47.0" width="52.0" height="12.0" fill="#FDF3E3" stroke="#2C3E50" stroke-width="0.6" stroke-dasharray="3,2"/>
-<text x="223.0" y="53.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">B = 0 in base</text>
-<line x1="249.0" y1="40.5" x2="257.2" y2="40.5" stroke="#2C3E50" stroke-width="0.8"/>
-<polygon points="257.2,38.5 262.0,40.5 257.2,42.5" fill="#2C3E50"/>
-<rect x="262.0" y="22.0" width="52.0" height="13.0" fill="#D5D8DC" stroke="#2C3E50" stroke-width="0.6"/>
-<text x="288.0" y="28.5" text-anchor="middle" dominant-baseline="middle" font-size="6.8" font-weight="bold" fill="#111111" font-family="Times New Roman">pooling</text>
-<rect x="262.0" y="35.0" width="52.0" height="12.0" fill="#EAECEE" stroke="#2C3E50" stroke-width="0.6"/>
-<text x="288.0" y="41.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">mean + max</text>
-<rect x="262.0" y="47.0" width="52.0" height="12.0" fill="#EAECEE" stroke="#2C3E50" stroke-width="0.6"/>
-<text x="288.0" y="53.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">→ 2h summary</text>
-<line x1="314.0" y1="40.5" x2="322.2" y2="40.5" stroke="#2C3E50" stroke-width="0.8"/>
-<polygon points="322.2,38.5 327.0,40.5 322.2,42.5" fill="#2C3E50"/>
-<rect x="327.0" y="22.0" width="52.0" height="13.0" fill="#C5D9E8" stroke="#2C3E50" stroke-width="0.6"/>
-<text x="353.0" y="28.5" text-anchor="middle" dominant-baseline="middle" font-size="6.8" font-weight="bold" fill="#111111" font-family="Times New Roman">context MLP</text>
-<rect x="327.0" y="35.0" width="52.0" height="12.0" fill="#D6EAF8" stroke="#2C3E50" stroke-width="0.6"/>
-<text x="353.0" y="41.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">2-layer MLP</text>
-<rect x="327.0" y="47.0" width="52.0" height="12.0" fill="#D6EAF8" stroke="#2C3E50" stroke-width="0.6"/>
-<text x="353.0" y="53.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">→ context g</text>
-<rect x="262.0" y="72.0" width="52.0" height="20.0" fill="#F2F3F4" stroke="#2C3E50" stroke-width="0.6"/>
-<text x="288.0" y="77.6" text-anchor="middle" dominant-baseline="middle" font-size="6.4" font-weight="normal" fill="#111111" font-family="Times New Roman">global state</text>
-<text x="288.0" y="86.6" text-anchor="middle" dominant-baseline="middle" font-size="6.4" font-weight="normal" fill="#111111" font-family="Times New Roman">12 aggregates</text>
-<polyline points="314.0,82.0 353.0,82.0 353.0,63.8" fill="none" stroke="#2C3E50" stroke-width="0.8"/>
-<polygon points="351.0,63.8 353.0,59.0 355.0,63.8" fill="#2C3E50"/>
-<rect x="392.0" y="22.0" width="52.0" height="13.0" fill="#E8C5C5" stroke="#2C3E50" stroke-width="0.6"/>
-<text x="418.0" y="28.5" text-anchor="middle" dominant-baseline="middle" font-size="6.8" font-weight="bold" fill="#111111" font-family="Times New Roman">policy head</text>
-<rect x="392.0" y="35.0" width="52.0" height="12.0" fill="#FADBD8" stroke="#2C3E50" stroke-width="0.6"/>
-<text x="418.0" y="41.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">scores [φi ; g]</text>
-<rect x="392.0" y="47.0" width="52.0" height="12.0" fill="#FADBD8" stroke="#2C3E50" stroke-width="0.6"/>
-<text x="418.0" y="53.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">masked softmax</text>
-<rect x="392.0" y="69.0" width="52.0" height="13.0" fill="#E8C5C5" stroke="#2C3E50" stroke-width="0.6"/>
-<text x="418.0" y="75.5" text-anchor="middle" dominant-baseline="middle" font-size="6.8" font-weight="bold" fill="#111111" font-family="Times New Roman">value head</text>
-<rect x="392.0" y="82.0" width="52.0" height="12.0" fill="#FADBD8" stroke="#2C3E50" stroke-width="0.6"/>
-<text x="418.0" y="88.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">reads g alone</text>
-<rect x="392.0" y="94.0" width="52.0" height="12.0" fill="#FADBD8" stroke="#2C3E50" stroke-width="0.6"/>
-<text x="418.0" y="100.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">return estimate</text>
-<line x1="379.0" y1="40.5" x2="387.2" y2="40.5" stroke="#2C3E50" stroke-width="0.8"/>
-<polygon points="387.2,38.5 392.0,40.5 387.2,42.5" fill="#2C3E50"/>
-<polyline points="379.0,40.5 385.0,40.5 385.0,87.5 387.2,87.5" fill="none" stroke="#2C3E50" stroke-width="0.8"/>
-<polygon points="387.2,85.5 392.0,87.5 387.2,89.5" fill="#2C3E50"/>
-<line x1="444.0" y1="40.5" x2="449.2" y2="40.5" stroke="#2C3E50" stroke-width="0.8"/>
-<polygon points="449.2,38.5 454.0,40.5 449.2,42.5" fill="#2C3E50"/>
-<text x="456.0" y="40.5" text-anchor="start" dominant-baseline="middle" font-size="6.4" font-weight="normal" fill="#111111" font-family="Times New Roman">π(i | s)</text>
-<line x1="444.0" y1="87.5" x2="449.2" y2="87.5" stroke="#2C3E50" stroke-width="0.8"/>
-<polygon points="449.2,85.5 454.0,87.5 449.2,89.5" fill="#2C3E50"/>
-<text x="456.0" y="87.5" text-anchor="start" dominant-baseline="middle" font-size="6.4" font-weight="normal" fill="#111111" font-family="Times New Roman">V(s)</text>
-<polyline points="158.0,30.5 158.0,9.0 418.0,9.0 418.0,18.5" fill="none" stroke="#7F8C8D" stroke-width="0.8" stroke-dasharray="3.5,2"/>
-<polygon points="416.5,18.5 418.0,22.0 419.5,18.5" fill="#7F8C8D"/>
-<text x="288.0" y="14.5" text-anchor="middle" dominant-baseline="middle" font-size="5.4" font-weight="normal" fill="#555555" font-family="Times New Roman">each φi, carried past the pooling</text>
-<line x1="2" y1="112.0" x2="480.0" y2="112.0" stroke="#BBBBBB" stroke-width="0.5"/>
-<rect x="11.6" y="119.0" width="8.0" height="8.0" fill="#D6EAF8" stroke="#888888" stroke-width="0.4"/>
-<text x="22.6" y="123.0" text-anchor="start" dominant-baseline="middle" font-size="5.8" font-weight="normal" fill="#333333" font-family="Times New Roman">Learned block (MLP)</text>
-<rect x="107.2" y="119.0" width="8.0" height="8.0" fill="#EAECEE" stroke="#888888" stroke-width="0.4"/>
-<text x="118.2" y="123.0" text-anchor="start" dominant-baseline="middle" font-size="5.8" font-weight="normal" fill="#333333" font-family="Times New Roman">Parameter-free</text>
-<rect x="202.8" y="119.0" width="8.0" height="8.0" fill="#F2F3F4" stroke="#888888" stroke-width="0.4"/>
-<text x="213.8" y="123.0" text-anchor="start" dominant-baseline="middle" font-size="5.8" font-weight="normal" fill="#333333" font-family="Times New Roman">Tensor / input</text>
-<rect x="298.4" y="119.0" width="8.0" height="8.0" fill="#FDF3E3" stroke="#888888" stroke-width="0.5" stroke-dasharray="2,1.5"/>
-<text x="309.4" y="123.0" text-anchor="start" dominant-baseline="middle" font-size="5.8" font-weight="normal" fill="#333333" font-family="Times New Roman">Attention variant (Sect. 4.4)</text>
-<line x1="394.0" y1="123.0" x2="402.0" y2="123.0" stroke="#7F8C8D" stroke-width="0.9" stroke-dasharray="3,2"/>
-<text x="405.0" y="123.0" text-anchor="start" dominant-baseline="middle" font-size="5.8" font-weight="normal" fill="#333333" font-family="Times New Roman">Per-candidate path</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="4.611in" height="2.750in" viewBox="0 0 332.0 198.0">
+<rect width="332.0" height="198.0" fill="white"/>
+<rect x="2.0" y="16.5" width="70.0" height="20.0" fill="#F2F3F4" stroke="#2C3E50" stroke-width="0.6"/>
+<text x="37.0" y="22.1" text-anchor="middle" dominant-baseline="middle" font-size="6.4" font-weight="normal" fill="#111111" font-family="Times New Roman">eligible ops</text>
+<text x="37.0" y="31.1" text-anchor="middle" dominant-baseline="middle" font-size="6.4" font-weight="normal" fill="#111111" font-family="Times New Roman">|E| × 16</text>
+<line x1="72.0" y1="26.5" x2="83.2" y2="26.5" stroke="#2C3E50" stroke-width="0.8"/>
+<polygon points="83.2,24.5 88.0,26.5 83.2,28.5" fill="#2C3E50"/>
+<rect x="88.0" y="8.0" width="70.0" height="13.0" fill="#C5D9E8" stroke="#2C3E50" stroke-width="0.6"/>
+<text x="123.0" y="14.5" text-anchor="middle" dominant-baseline="middle" font-size="6.8" font-weight="bold" fill="#111111" font-family="Times New Roman">encoder φ</text>
+<rect x="88.0" y="21.0" width="70.0" height="12.0" fill="#D6EAF8" stroke="#2C3E50" stroke-width="0.6"/>
+<text x="123.0" y="27.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">shared 2-layer MLP</text>
+<rect x="88.0" y="33.0" width="70.0" height="12.0" fill="#D6EAF8" stroke="#2C3E50" stroke-width="0.6"/>
+<text x="123.0" y="39.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">→ |E| × h</text>
+<text x="123.0" y="50.5" text-anchor="middle" dominant-baseline="middle" font-size="5.4" font-weight="normal" fill="#555555" font-family="Times New Roman">(weights indep. of n, m)</text>
+<line x1="158.0" y1="26.5" x2="169.2" y2="26.5" stroke="#2C3E50" stroke-width="0.8"/>
+<polygon points="169.2,24.5 174.0,26.5 169.2,28.5" fill="#2C3E50"/>
+<rect x="174.0" y="16.5" width="70.0" height="20.0" fill="#F2F3F4" stroke="#2C3E50" stroke-width="0.6"/>
+<text x="209.0" y="22.1" text-anchor="middle" dominant-baseline="middle" font-size="6.4" font-weight="normal" fill="#111111" font-family="Times New Roman">embeddings</text>
+<text x="209.0" y="31.1" text-anchor="middle" dominant-baseline="middle" font-size="6.4" font-weight="normal" fill="#111111" font-family="Times New Roman">|E| × h</text>
+<rect x="260.0" y="8.0" width="70.0" height="13.0" fill="#F0DDBE" stroke="#2C3E50" stroke-width="0.6" stroke-dasharray="3,2"/>
+<text x="295.0" y="14.5" text-anchor="middle" dominant-baseline="middle" font-size="6.8" font-weight="bold" fill="#111111" font-family="Times New Roman">self-attn × B</text>
+<rect x="260.0" y="21.0" width="70.0" height="12.0" fill="#FDF3E3" stroke="#2C3E50" stroke-width="0.6" stroke-dasharray="3,2"/>
+<text x="295.0" y="27.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">pre-LN, 4 heads</text>
+<rect x="260.0" y="33.0" width="70.0" height="12.0" fill="#FDF3E3" stroke="#2C3E50" stroke-width="0.6" stroke-dasharray="3,2"/>
+<text x="295.0" y="39.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">not in base (B=0)</text>
+<polyline points="221.0,36.5 221.0,66.0 283.1,66.0 283.1,83.2" fill="none" stroke="#2C3E50" stroke-width="0.8"/>
+<polygon points="281.1,83.2 283.1,88.0 285.1,83.2" fill="#2C3E50"/>
+<line x1="244.0" y1="26.5" x2="255.2" y2="26.5" stroke="#8B6F3D" stroke-width="0.8" stroke-dasharray="3,2"/>
+<polygon points="255.2,24.5 260.0,26.5 255.2,28.5" fill="#8B6F3D"/>
+<line x1="306.9" y1="45.0" x2="306.9" y2="83.2" stroke="#8B6F3D" stroke-width="0.8" stroke-dasharray="3,2"/>
+<polygon points="304.9,83.2 306.9,88.0 308.9,83.2" fill="#8B6F3D"/>
+<rect x="260.0" y="88.0" width="70.0" height="13.0" fill="#D5D8DC" stroke="#2C3E50" stroke-width="0.6"/>
+<text x="295.0" y="94.5" text-anchor="middle" dominant-baseline="middle" font-size="6.8" font-weight="bold" fill="#111111" font-family="Times New Roman">pooling</text>
+<rect x="260.0" y="101.0" width="70.0" height="12.0" fill="#EAECEE" stroke="#2C3E50" stroke-width="0.6"/>
+<text x="295.0" y="107.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">mean + max</text>
+<rect x="260.0" y="113.0" width="70.0" height="12.0" fill="#EAECEE" stroke="#2C3E50" stroke-width="0.6"/>
+<text x="295.0" y="119.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">→ 2h summary</text>
+<line x1="260.0" y1="106.5" x2="248.8" y2="106.5" stroke="#2C3E50" stroke-width="0.8"/>
+<polygon points="248.8,104.5 244.0,106.5 248.8,108.5" fill="#2C3E50"/>
+<rect x="174.0" y="88.0" width="70.0" height="13.0" fill="#C5D9E8" stroke="#2C3E50" stroke-width="0.6"/>
+<text x="209.0" y="94.5" text-anchor="middle" dominant-baseline="middle" font-size="6.8" font-weight="bold" fill="#111111" font-family="Times New Roman">context MLP</text>
+<rect x="174.0" y="101.0" width="70.0" height="12.0" fill="#D6EAF8" stroke="#2C3E50" stroke-width="0.6"/>
+<text x="209.0" y="107.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">2-layer MLP</text>
+<rect x="174.0" y="113.0" width="70.0" height="12.0" fill="#D6EAF8" stroke="#2C3E50" stroke-width="0.6"/>
+<text x="209.0" y="119.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">→ context g</text>
+<line x1="174.0" y1="106.5" x2="162.8" y2="106.5" stroke="#2C3E50" stroke-width="0.8"/>
+<polygon points="162.8,104.5 158.0,106.5 162.8,108.5" fill="#2C3E50"/>
+<polyline points="174.0,106.5 166.0,106.5 166.0,151.5 162.8,151.5" fill="none" stroke="#2C3E50" stroke-width="0.8"/>
+<polygon points="162.8,149.5 158.0,151.5 162.8,153.5" fill="#2C3E50"/>
+<rect x="88.0" y="88.0" width="70.0" height="13.0" fill="#E8C5C5" stroke="#2C3E50" stroke-width="0.6"/>
+<text x="123.0" y="94.5" text-anchor="middle" dominant-baseline="middle" font-size="6.8" font-weight="bold" fill="#111111" font-family="Times New Roman">policy head</text>
+<rect x="88.0" y="101.0" width="70.0" height="12.0" fill="#FADBD8" stroke="#2C3E50" stroke-width="0.6"/>
+<text x="123.0" y="107.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">scores [φi ; g]</text>
+<rect x="88.0" y="113.0" width="70.0" height="12.0" fill="#FADBD8" stroke="#2C3E50" stroke-width="0.6"/>
+<text x="123.0" y="119.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">masked softmax</text>
+<rect x="88.0" y="133.0" width="70.0" height="13.0" fill="#E8C5C5" stroke="#2C3E50" stroke-width="0.6"/>
+<text x="123.0" y="139.5" text-anchor="middle" dominant-baseline="middle" font-size="6.8" font-weight="bold" fill="#111111" font-family="Times New Roman">value head</text>
+<rect x="88.0" y="146.0" width="70.0" height="12.0" fill="#FADBD8" stroke="#2C3E50" stroke-width="0.6"/>
+<text x="123.0" y="152.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">reads g alone</text>
+<rect x="88.0" y="158.0" width="70.0" height="12.0" fill="#FADBD8" stroke="#2C3E50" stroke-width="0.6"/>
+<text x="123.0" y="164.0" text-anchor="middle" dominant-baseline="middle" font-size="6.2" font-weight="normal" fill="#111111" font-family="Times New Roman">return estimate</text>
+<line x1="88.0" y1="106.5" x2="76.8" y2="106.5" stroke="#2C3E50" stroke-width="0.8"/>
+<polygon points="76.8,104.5 72.0,106.5 76.8,108.5" fill="#2C3E50"/>
+<text x="69.0" y="106.5" text-anchor="end" dominant-baseline="middle" font-size="6.4" font-weight="normal" fill="#111111" font-family="Times New Roman">π(i | s)</text>
+<line x1="88.0" y1="151.5" x2="76.8" y2="151.5" stroke="#2C3E50" stroke-width="0.8"/>
+<polygon points="76.8,149.5 72.0,151.5 76.8,153.5" fill="#2C3E50"/>
+<text x="69.0" y="151.5" text-anchor="end" dominant-baseline="middle" font-size="6.4" font-weight="normal" fill="#111111" font-family="Times New Roman">V(s)</text>
+<rect x="260.0" y="145.0" width="70.0" height="20.0" fill="#F2F3F4" stroke="#2C3E50" stroke-width="0.6"/>
+<text x="295.0" y="150.6" text-anchor="middle" dominant-baseline="middle" font-size="6.4" font-weight="normal" fill="#111111" font-family="Times New Roman">global state</text>
+<text x="295.0" y="159.6" text-anchor="middle" dominant-baseline="middle" font-size="6.4" font-weight="normal" fill="#111111" font-family="Times New Roman">12 aggregates</text>
+<polyline points="260.0,155.0 209.0,155.0 209.0,129.8" fill="none" stroke="#2C3E50" stroke-width="0.8"/>
+<polygon points="207.0,129.8 209.0,125.0 211.0,129.8" fill="#2C3E50"/>
+<polyline points="197.0,36.5 197.0,74.0 123.0,74.0 123.0,84.5" fill="none" stroke="#7F8C8D" stroke-width="0.8" stroke-dasharray="3.5,2"/>
+<polygon points="121.5,84.5 123.0,88.0 124.5,84.5" fill="#7F8C8D"/>
+<text x="160.0" y="80.0" text-anchor="middle" dominant-baseline="middle" font-size="5.4" font-weight="normal" fill="#555555" font-family="Times New Roman">each φi, past the pooling</text>
+<line x1="2" y1="178.0" x2="330.0" y2="178.0" stroke="#BBBBBB" stroke-width="0.5"/>
+<rect x="5.9" y="185.0" width="8.0" height="8.0" fill="#D6EAF8" stroke="#888888" stroke-width="0.4"/>
+<text x="16.9" y="189.0" text-anchor="start" dominant-baseline="middle" font-size="5.8" font-weight="normal" fill="#333333" font-family="Times New Roman">learned MLP</text>
+<rect x="71.5" y="185.0" width="8.0" height="8.0" fill="#EAECEE" stroke="#888888" stroke-width="0.4"/>
+<text x="82.5" y="189.0" text-anchor="start" dominant-baseline="middle" font-size="5.8" font-weight="normal" fill="#333333" font-family="Times New Roman">parameter-free</text>
+<rect x="137.1" y="185.0" width="8.0" height="8.0" fill="#F2F3F4" stroke="#888888" stroke-width="0.4"/>
+<text x="148.1" y="189.0" text-anchor="start" dominant-baseline="middle" font-size="5.8" font-weight="normal" fill="#333333" font-family="Times New Roman">tensor / input</text>
+<rect x="202.7" y="185.0" width="8.0" height="8.0" fill="#FDF3E3" stroke="#8B6F3D" stroke-width="0.5" stroke-dasharray="2,1.5"/>
+<text x="213.7" y="189.0" text-anchor="start" dominant-baseline="middle" font-size="5.8" font-weight="normal" fill="#333333" font-family="Times New Roman">attention variant</text>
+<line x1="268.3" y1="189.0" x2="276.3" y2="189.0" stroke="#7F8C8D" stroke-width="0.9" stroke-dasharray="3,2"/>
+<text x="279.3" y="189.0" text-anchor="start" dominant-baseline="middle" font-size="5.8" font-weight="normal" fill="#333333" font-family="Times New Roman">per-candidate φi</text>
 </svg>
