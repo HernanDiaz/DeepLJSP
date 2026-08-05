@@ -380,6 +380,19 @@ that scores the available actions and a \emph{value head} that
 estimates $V(s)$, trained jointly. This is why the network in this
 paper has two heads.
 
+What makes the learning \emph{deep} is how these two functions are
+represented. A tabular method would store one entry per state, but no
+state ever repeats here: even a single $20{\times}15$ instance admits
+more construction paths than could be enumerated, and the policy must
+moreover act on instances it has never seen. Both functions are
+therefore \emph{neural networks}---compositions of learned linear maps
+and fixed nonlinearities---whose weights are what the gradient steps
+above adjust. The network cannot memorize states; it can only learn
+which combinations of state descriptors predict return, and that
+forced generalization is precisely what lets a single set of weights
+serve every instance and, with the representation of
+Section~\ref{sec:features}, every size.
+
 Instantiated on scheduling, the agent is a dispatcher. The state is
 the partial schedule; the available actions are the \emph{eligible}
 operations---the next unscheduled operation of each job, so choosing
@@ -416,13 +429,17 @@ outputs $V(s)$. In total, four small two-layer MLPs---the candidate
 encoder $\phi$, the context combiner, and the two heads---composed
 into a single network and trained jointly end to end.
 
-The rest of the section makes each stage precise:
-Section~\ref{sec:mdp} states the construction loop formally (states,
-actions, rewards); Section~\ref{sec:features} defines the $16{+}12$
-input quantities; and Section~\ref{sec:arch} the three network
-stages. How the network is trained, and how it is used once trained,
-belongs with the experimental setting and is described in
-Section~\ref{sec:training}.
+The rest of the section climbs the same ladder in full detail, from
+the decision problem to the network. Section~\ref{sec:mdp} casts
+schedule construction as the decision process the agent faces (states,
+actions, rewards); Section~\ref{sec:features} defines what the network
+sees---the $16{+}12$ input quantities, which is where the interval
+uncertainty and the size invariance enter; Section~\ref{sec:arch}
+specifies the three network stages just toured; and
+Section~\ref{sec:attention} presents the self-attention variant
+evaluated against this base design. How the network is trained, and
+how it is used once trained, belongs with the experimental setting and
+is described in Section~\ref{sec:training}.
 
 \begin{figure}[t]
 \centering
