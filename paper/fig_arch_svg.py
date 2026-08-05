@@ -72,7 +72,9 @@ C_HEAD = "#FADBD8"; C_HEADT = "#E8C5C5"   # heads
 C_POOL = "#EAECEE"; C_POOLT = "#D5D8DC"   # parameter-free pooling
 C_ATT  = "#FDF3E3"; C_ATTT = "#F0DDBE"    # attention variant (dashed)
 C_ATTA = "#8B6F3D"                        # its detour arrows
-C_IO   = "#F2F3F4"                        # tensors / inputs
+C_IO   = "#FFFFFF"                        # tensors / inputs: blancas, para
+                                          # que el gris quede solo para el
+                                          # pooling (parameter-free)
 C_EDGE = "#2C3E50"; C_ARR = "#2C3E50"
 C_SKIP = "#7F8C8D"; C_DIM = "#555555"
 
@@ -277,11 +279,12 @@ def build_svg() -> str:
     parts.append(f'<line x1="{MX}" y1="{sep_y:.1f}" x2="{CW - MX:.1f}" '
                  f'y2="{sep_y:.1f}" stroke="#BBBBBB" stroke-width="0.5"/>')
 
+    # la linea de phi_i no necesita entrada: lleva su rotulo encima
     legend = [(C_MLP, "learned MLP"),
+              (C_HEAD, "output heads"),
               (C_POOL, "parameter-free"),
               (C_IO, "tensor / input"),
-              ("dash", "attn. variant"),
-              ("skip", "per-candidate φi")]
+              ("dash", "attn. variant")]
     slot_w = (CW - 2 * MX) / len(legend)
     sw_sz = 8
     for k, (c, lbl) in enumerate(legend):
