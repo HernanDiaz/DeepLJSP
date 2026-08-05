@@ -583,7 +583,23 @@ sizes, which is half of the size invariance. Each
 eligible operation $o=o_{jk}$ on machine $\mu=\nu_{jk}$ is described by
 the 16 dimensionless quantities of Table~\ref{tab:opfeatures}; the
 global state is the 12-dimensional aggregate of
-Table~\ref{tab:globalfeatures}. Two design rules follow from ablation
+Table~\ref{tab:globalfeatures}.
+
+The selection follows one principle: cover what the baselines already
+know, then add what only a learned model can use. Every quantity the
+dispatching rules of Section~\ref{sec:related-rules} consult---durations,
+remaining work, earliest starts, slack, machine load---appears among
+the per-operation features, so any advantage over those rules must
+come from how the information is combined, not from seeing more of
+it; the companion study builds its terminal set on the same
+principle~\citep{DiazGP2026}. Two extensions go beyond that
+vocabulary: the interval dimension (bounds and relative widths of
+every temporal quantity---the uncertainty made visible) and the
+global state (aggregates of the whole shop that no per-operation
+priority rule consults). No automatic feature selection was run; the
+audit of Section~\ref{sec:results-importance} reports, a posteriori,
+which of these inputs the trained network actually uses. Two further
+design rules follow from ablation
 evidence (Section~\ref{sec:ablations-neg}): (i) features must add
 information that is \emph{not} a linear combination of others (interval
 widths enter as relative, hence non-linear, magnitudes); and (ii)
