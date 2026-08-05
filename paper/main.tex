@@ -394,7 +394,7 @@ by a fixed, hand-written formula.
 Figure~\ref{fig:arch} shows the network, read left to right. Each
 eligible operation enters as a row of $16$ numbers that describe it:
 how long it may take, how much work its job still carries, how soon it
-could start (Section~\ref{sec:features}). A small multilayer
+could start (Section~\ref{sec:features}). A multilayer
 perceptron (MLP)---the \emph{same} one for every candidate---turns
 each row into an \emph{embedding}: a vector of $h$ learned quantities
 that re-describes the candidate in terms the network finds useful.
@@ -405,16 +405,20 @@ extreme one). Joined with $12$ numbers describing the shop as a whole
 (the \emph{global state}), these summaries are condensed by another
 MLP into a single \emph{context} vector $g$---the network's picture
 of the current situation. The two heads of the previous paragraph read
-from here. The policy head looks at each candidate's embedding next to
-$g$ and scores it; a \emph{softmax} turns the scores into the
-probabilities $\pi(i\,|\,s)$ (\emph{masked} means that unused
-padding slots are excluded). The value head reads $g$ alone and
-outputs $V(s)$. In total, four small two-layer MLPs---the candidate
-encoder $\phi$, the context combiner, and the two heads---composed
-into a single network and trained jointly end to end.
+from here---but pooling, by design, discards which candidate is which,
+so the context alone cannot rank them. The policy head therefore
+receives two inputs, the shared context $g$ and each candidate's own
+embedding, carried past the pooling stage by the direct edge visible
+in Figure~\ref{fig:arch}; it scores every such pair, and a
+\emph{softmax} turns the scores into the probabilities $\pi(i\,|\,s)$
+(\emph{masked} means that unused padding slots are excluded). The
+value head estimates the situation rather than any one candidate, so
+it reads $g$ alone and outputs $V(s)$. In total, four two-layer
+MLPs---the candidate encoder $\phi$, the context combiner, and the two
+heads---composed into a single network and trained jointly end to end.
 
-The rest of the section climbs the same ladder in full detail, from
-the decision problem to the network. Section~\ref{sec:mdp} casts
+The remainder of this section formalizes each of these elements in
+turn. Section~\ref{sec:mdp} casts
 schedule construction as the decision process the agent faces (states,
 actions, rewards); Section~\ref{sec:features} defines what the network
 sees---the $16{+}12$ input quantities, which is where the interval
