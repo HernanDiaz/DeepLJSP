@@ -508,11 +508,11 @@ instances:
   improvements---a dense signal so early decisions are not credited
   only $nm$ steps later;
 \item \emph{operation criticality} ($r^{\mathrm{cr}}_t$,
-  $w_{\mathrm{cr}}{=}0.1$) and \emph{load balance}
-  ($r^{\mathrm{ba}}_t$, $w_{\mathrm{ba}}{=}0.1$, its cap, reached
-  whenever machine loads vary as much as here): nudges towards
-  operations on the emerging critical path and away from lopsided
-  loads, the classic proxies for a compact schedule.
+  $w_{\mathrm{cr}}{=}0.1$): a nudge towards operations on the
+  emerging critical path, a classic proxy for a compact schedule;
+\item \emph{load balance} ($r^{\mathrm{ba}}_t$,
+  $w_{\mathrm{ba}}{=}0.1$, its cap, reached whenever machine loads
+  vary as much as here): discourages lopsided machine loads.
 \end{itemize}
 The reward shapes training only; every reported result is measured
 by the RE of Eq.~\eqref{eq:re}.
