@@ -59,32 +59,32 @@ Shop Scheduling Problem}
 \orgname{University of Oviedo}, \orgaddress{\city{Gij\'on},
 \country{Spain}}}
 
-\abstract{Task durations on a shop floor are seldom known exactly when
-scheduling decisions must be made. The interval job shop
+\abstract{Task durations on a shop floor are seldom known exactly
+when schedules must be committed. The interval job shop
 scheduling problem (IJSP) models each processing time as a closed
 interval; published solvers search each instance separately with
 metaheuristics. This paper studies the complementary regime: a
-constructive policy, trained once by deep reinforcement learning, that
-dispatches operations one at a time and returns a schedule in
-milliseconds. It is size-invariant by
-construction: dimensionless features and a permutation-invariant
-encoder give policy and value heads a parameter count independent of
-the numbers of jobs and machines. Trained with proximal policy
-optimization on four $20{\times}15$ instances of the interval Taillard
-benchmark, it reaches $13.8\%$ mean relative error against crisp lower
-bounds on unseen instances of that size, against ${\approx}46\%$ for
-the best dispatching rule there, and beats that rule zero-shot on every
-tested instance of all seven size classes; the same weights transfer to
-a second benchmark of classical instances. Against an evolved dispatching
-rule the ordering depends on the inference budget: pass for pass the
-rule wins, and at $1024$ samples each the policy wins 46 of the 70.
-Three ablations are negative: self-attention does not
-improve on pooling; multi-size training does not overtake a
-single-size specialist at three times its cost; and the interval-width
-features can be removed at no cost, as the closed form of the
-worst-case makespan predicts. Training on crisp midpoints does cost
-$0.63$ points: what the interval model buys lies in the data rather
-than the features.}
+constructive policy, trained once by deep reinforcement learning,
+that returns a schedule in milliseconds. Dimensionless features and a permutation-invariant
+encoder make its parameter count independent of the numbers of jobs
+and machines. Trained by proximal policy optimization on four
+interval Taillard $20{\times}15$ instances, it reaches $13.8\%$ mean
+relative error against crisp lower bounds on unseen instances of that
+size, against ${\approx}46\%$ for the best dispatching rule, and
+beats that rule zero-shot on every instance of all seven size
+classes; the same weights transfer to a second benchmark of classical
+instances. Against an evolved dispatching rule the ordering depends
+on the inference budget: pass for pass the rule wins, and at $1024$
+samples each the policy wins 46 of the 70. Three ablations are
+negative: self-attention does not improve on pooling, multi-size
+training does not overtake a single-size specialist, and the
+interval-width features can be removed at no cost, as the closed form
+of the worst-case makespan predicts. Training on crisp midpoints does
+cost $0.63$ points: what the interval model buys lies in the data
+rather than the features. A width-penalizing reward traces a tunable
+width--makespan frontier---yet all of it turns out to be manufactured
+at sample selection, available from the default policy without
+retraining.}
 
 \keywords{job shop scheduling, interval uncertainty, deep reinforcement
 learning, neural combinatorial optimization, size invariance,
@@ -186,7 +186,9 @@ pay off at practical training budgets?
   the network consults, six controlled ablations (inference budget,
   attention versus pooling, specialist versus multi-size training, and
   three that delimit what interval awareness contributes) of which
-  four are negative results, a Monte Carlo comparison of how
+  four are negative results, a $\lambda$-sweep that traces a
+  width--makespan frontier and locates all of it in sample selection
+  rather than in the learned weights, a Monte Carlo comparison of how
   faithfully the schedules execute, and a two-campaign
   automatic-configuration study whose racing optima repeatedly failed
   to transfer to the operating budget.
@@ -1769,11 +1771,15 @@ training data the intervals are not inert: fitting the policy to the
 crisp midpoints instead costs $0.63$ points over ten seeds
 ($14.45$ against $13.82\%$, $p=0.045$). Retraining under an
 objective that charges for the width closes the case rather than
-opening it: the predicted interval does narrow ($11.90$ against
-$12.85\%$, $p=0.010$) at a cost of $1.94$ points of RE, but with the
-selection criterion held fixed the robust weights and the default ones
-are indistinguishable---what narrows the interval is which sample is
-kept, not which network produced it. At execution time the policy's schedules are the
+opening it: swept from $\lambda=0$ to $4$, the deployed arms trace a
+monotone width--makespan frontier (the predicted interval narrows
+from $12.80\%$ to $10.99\%$ of the expected makespan, at about $1.9$
+points of RE per point of width), but with the selection criterion
+held fixed the robust weights and the default ones are
+indistinguishable, and ranking the default policy's own samples by
+$f_\lambda$ retraces the frontier without any retraining---what
+narrows the interval is which sample is kept, not which network
+produced it. At execution time the policy's schedules are the
 most dependable of the constructive pool, matching EST, the
 robustness benchmark that evolved rules also fail to beat; and a
 permutation audit shows the network leaning on slack, remaining
