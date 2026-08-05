@@ -384,9 +384,9 @@ paper has two heads.
 
 Instantiated on scheduling, the agent is a dispatcher. The state is
 the partial schedule; the available actions are the \emph{eligible}
-operations---the next unscheduled operation of each job, so choosing
-an action $a$ means choosing which eligible operation $i$ to schedule
-next, and we write the policy over candidates as $\pi(i\,|\,s)$; an
+operations---the next unscheduled operation of each job---so the
+generic $\pi(a\,|\,s)$ specializes to $\pi(i\,|\,s)$, a distribution
+over which eligible operation $i$ to schedule next; an
 \emph{episode} is the construction of one complete schedule, and the
 reward rests on the makespan achieved. The trained policy is then a
 dispatching criterion in its own right: at each step it orders the
@@ -417,7 +417,7 @@ fixed-size summaries of the whole set (the typical candidate and the
 extreme one). Joined with $12$ numbers describing the shop as a whole
 (the \emph{global state}), these summaries are condensed by another
 MLP into a single \emph{context} vector $g$---the network's picture
-of the current situation. The two heads of the previous paragraph read
+of the current situation. The two heads introduced above read
 from here---but pooling, by design, discards which candidate is which,
 so the context alone cannot rank them. The policy head therefore
 receives two inputs, the shared context $g$ and each candidate's own
@@ -523,7 +523,7 @@ policy sees is thereby comparable across instances---and across
 sizes, which is half of the size invariance. Each
 eligible operation $o=o_{jk}$ on machine $\mu=\nu_{jk}$ is described by
 the 16 dimensionless quantities of Table~\ref{tab:opfeatures}; the
-global context is the 12-dimensional aggregate of
+global state is the 12-dimensional aggregate of
 Table~\ref{tab:globalfeatures}. Two design rules follow from ablation
 evidence (Section~\ref{sec:ablations-neg}): (i) features must add
 information that is \emph{not} a linear combination of others (interval
@@ -560,7 +560,7 @@ $\bar L$ its average over machines.}
 
 \begin{table}[t]
 \centering\small
-\caption{Global context features (all dimensionless aggregates; no
+\caption{Global state features (all dimensionless aggregates; no
 dimension depends on $n$ or $m$).}
 \label{tab:globalfeatures}
 \begin{tabular}{ll}
@@ -591,7 +591,7 @@ number of them can be processed; and the resulting embeddings are
 \emph{pooled} into fixed-size summaries, so the scoring stage can see
 the whole decision at once. Formally, let
 $x_i\in\mathbb{R}^{16}$ be the features of eligible operation $i$ and
-$g_0\in\mathbb{R}^{12}$ the global features; the construction has
+$g_0\in\mathbb{R}^{12}$ the global state; the construction has
 three stages (Figure~\ref{fig:arch}).
 
 \emph{Embed.} The shared two-layer MLP $\phi$ (width $h{=}128$,
@@ -604,9 +604,8 @@ invariance over jobs comes from.
 $\{\phi_1,\dots,\phi_{|\mathcal{E}|}\}$ must be summarized into a
 fixed-size vector before anything global can be computed. Mean and max
 pooling provide two complementary permutation-invariant
-summaries~\citep{Zaheer2017}---the average candidate and the extreme
-one---which, concatenated with the global features $g_0$, are mixed
-into the context:
+summaries~\citep{Zaheer2017} which, concatenated with the global
+state $g_0$, are mixed into the context:
 \begin{equation}
 g=\mathrm{MLP}_{ctx}\big(\big[\textstyle\frac1{|\mathcal{E}|}\sum_i\phi_i;\;
 \max_i\phi_i;\;g_0\big]\big)\in\mathbb{R}^{h}.
@@ -620,12 +619,9 @@ its attention variant (Section~\ref{sec:attention}).
 
 \emph{Score.} The \emph{policy head} rates each pair (candidate
 embedding, context)---``how good is operation $i$ given the decision
-as a whole''---and a softmax over the true candidates (padding masked
-out) turns the scores into probabilities. The \emph{value head}
-estimates the return attainable from the current state---the $V(s)$
-of the advantage computation introduced above---and reads the context
-alone, since expectations concern the situation, not any one
-candidate:
+as a whole''; the \emph{value head} computes the $V(s)$ of the
+advantage estimation, reading the context alone, since expectations
+concern the situation, not any one candidate:
 \begin{equation}
 \pi(i\,|\,s)=\mathrm{softmax}_i\,\mathrm{MLP}_{\pi}([\phi_i;g]),
 \qquad
@@ -640,9 +636,8 @@ policy is close to uniform.
 \subsection{The attention variant}
 \label{sec:attention}
 
-Pooling summarizes the candidate set by two statistics, its average and
-its extreme, and every candidate is then scored against that same
-summary. What this cannot express is a comparison between two
+Pooling summarizes the candidate set by two statistics, and every
+candidate is then scored against that same summary. What this cannot express is a comparison between two
 \emph{particular} candidates: whether operation $i$ deserves the
 machine now may depend on which other eligible operation would claim it
 next, and a mean says nothing about which candidate that is.
