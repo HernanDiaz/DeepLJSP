@@ -201,8 +201,13 @@ def build_svg() -> str:
         f'viewBox="0 0 {CW:.1f} {CH:.1f}">\n'
         f'<rect width="{CW:.1f}" height="{CH:.1f}" fill="white"/>')
 
-    # ── input above the encoder, entering from the top ─────────────────────
+    # ── input above the encoder, entering from the top; la flecha de
+    #    entrada llega en horizontal desde el margen, espejo de las de
+    #    salida pi(i|s) / V(s) ──────────────────────────────────────────────
     parts += _io(x[0], IN_TOP, "eligible ops", "|E| × 16")
+    parts.append(_ah(x[0] - 16, IN_TOP + IO_H / 2, x[0]))
+    parts.append(_t(x[0] - 19, IN_TOP + IO_H / 2, "state s", size=FS_IO,
+                    anchor="end"))
     parts.append(_av(enc_c, IN_TOP + IO_H, ENC_TOP))
 
     ps, _ = _block(x[0], ENC_TOP, "encoder φ", "shared 2-layer MLP",

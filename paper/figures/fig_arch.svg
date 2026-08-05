@@ -4,6 +4,9 @@
 <rect x="44.0" y="6.0" width="70.0" height="20.0" fill="#F2F3F4" stroke="#2C3E50" stroke-width="0.6"/>
 <text x="79.0" y="11.6" text-anchor="middle" dominant-baseline="middle" font-size="6.4" font-weight="normal" fill="#111111" font-family="Times New Roman">eligible ops</text>
 <text x="79.0" y="20.6" text-anchor="middle" dominant-baseline="middle" font-size="6.4" font-weight="normal" fill="#111111" font-family="Times New Roman">|E| × 16</text>
+<line x1="28.0" y1="16.0" x2="39.2" y2="16.0" stroke="#2C3E50" stroke-width="0.8"/>
+<polygon points="39.2,14.0 44.0,16.0 39.2,18.0" fill="#2C3E50"/>
+<text x="25.0" y="16.0" text-anchor="end" dominant-baseline="middle" font-size="6.4" font-weight="normal" fill="#111111" font-family="Times New Roman">state s</text>
 <line x1="79.0" y1="26.0" x2="79.0" y2="29.2" stroke="#2C3E50" stroke-width="0.8"/>
 <polygon points="77.0,29.2 79.0,34.0 81.0,29.2" fill="#2C3E50"/>
 <rect x="44.0" y="34.0" width="70.0" height="13.0" fill="#C5D9E8" stroke="#2C3E50" stroke-width="0.6"/>

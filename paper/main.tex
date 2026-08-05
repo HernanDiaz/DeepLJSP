@@ -396,18 +396,10 @@ by a fixed, hand-written formula.
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_arch.pdf}
-\caption{The size-invariant network; solid edges are the base model's
-data path. Every eligible operation is embedded by the same MLP
-$\phi$; mean and max pooling collapse the variable-size candidate set
-into fixed-size summaries that, joined with the global features, form
-the context $g$. Because pooling discards candidate identity, each
-embedding $\phi_i$ is also carried past it (grey dashed skip
-connection) so the
-policy head can score $[\phi_i;g]$ pairs; the value head reads $g$
-alone. The dashed detour is the self-attention variant of
-Section~\ref{sec:attention}: it is \emph{not} part of the base model
-($B{=}0$), and Section~\ref{sec:ablations-attn} finds it does not pay
-for itself. No dimension depends on the numbers of jobs or machines.}
+\caption{The size-invariant policy/value network. Solid edges are the
+base model's data path; the grey dashed edge is the per-candidate
+skip connection; the dashed detour is the self-attention variant of
+Section~\ref{sec:attention}, not part of the base model ($B{=}0$).}
 \label{fig:arch}
 \end{figure}
 
