@@ -240,6 +240,19 @@ FILA_MOR = {"TA15": 51.3, "TA16": 35.8, "TA17": 50.1,
 for ta, v in FILA_MOR.items():
     check(f"fila MOR {ta}", v, MOR_RE[ta])
 
+# fig:scaling: sus dos lineas de referencia van sobre TA15-TA20, no
+# sobre las 70. G&T da 29.5 en las setenta y 27.9 aqui; usar el de las
+# setenta pondria la linea en el sitio equivocado de este eje.
+DEV6 = [f"TA{k}" for k in range(15, 21)]
+check("fig:scaling: G&T en TA15-TA20 (texto 27.9)", 27.9,
+      sum(GT_RE[t] for t in DEV6) / 6)
+_pub2 = {}
+_t2 = open("scripts/compare_pools_published.py", encoding="utf-8").read()
+exec(re.search(r"(FEABC_BEST.*?)(?=\n# |\ndef |\Z)", _t2, re.S).group(1),
+     {}, _pub2)
+check("fig:scaling: fEABC en TA15-TA20 (texto 9.6)", 9.6,
+      sum(_pub2["FEABC_AVG"][14:20]) / 6)
+
 datos1000 = bench_por_instancia("v2-full-1000ep")
 if datos1000:
     mejor_media = sum(re_pct(min(d["mids"]), ta)

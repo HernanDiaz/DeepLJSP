@@ -51,10 +51,17 @@ def fig_scaling():
     ax.plot(episodes, ds_mean, "o-", color="seagreen", label="Deep Sets (mean of 10 seeds)")
     ax.plot(episodes, ds_best, "o--", color="seagreen", alpha=0.6, label="Deep Sets (best seed)")
 
-    ax.axhline(46.4, color="gray", linestyle=":", linewidth=1.2)
-    ax.text(1000, 46.4, " MOR", va="center", fontsize=9, color="gray")
+    # G&T-MWKR y no MOR: el limite superior debe ser la MEJOR referencia
+    # constructiva, no la mas comoda. 27.9 es su media en TA15-TA20;
+    # sobre las 70 da 29.5. La inferior sigue siendo fEABC porque GA solo
+    # esta publicado sobre las 12 clasicas, no sobre Taillard.
+    ax.axhline(27.9, color="gray", linestyle=":", linewidth=1.2)
+    # sin escapar el &: matplotlib no pasa por LaTeX y lo imprimiria literal
+    ax.text(1000, 28.4, "G&T-MWKR", va="bottom", ha="right", fontsize=9,
+            color="gray")
     ax.axhline(9.6, color="indianred", linestyle=":", linewidth=1.2)
-    ax.text(1000, 9.6, " fEABC", va="center", fontsize=9, color="indianred")
+    ax.text(1000, 10.1, "fEABC", va="bottom", ha="right", fontsize=9,
+            color="indianred")
 
     ax.set_xscale("log")
     ax.set_xticks(episodes)
