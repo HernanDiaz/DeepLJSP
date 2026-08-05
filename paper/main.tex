@@ -472,10 +472,13 @@ Eq.~\eqref{eq:semiactive} deterministically.
 The \emph{reward} is a weighted sum of six shaping components, each
 collapsing intervals by their worst case (upper bound), with scales
 normalized by the instance's lower bound so that no weight depends on
-the instance's magnitude. The base weights were fixed during
-development, and three of them are then adjusted per instance by
-fixed formulas of the instance's own statistics; the values below are
-the effective ones on the $20{\times}15$ training instances:
+the instance's magnitude. The base weights were fixed by hand during
+development---they were not part of the automatic-configuration study
+of Section~\ref{sec:hyperconfig}, which races optimizer
+hyperparameters only---and three of them are then adjusted per
+instance by fixed formulas of the instance's own statistics; the
+values below are the effective ones on the $20{\times}15$ training
+instances:
 \begin{itemize}
 \item \emph{terminal makespan} (weight $1.0$): the negative scaled
   makespan at episode end, plus a bonus when the schedule lands within
