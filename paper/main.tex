@@ -571,15 +571,16 @@ unscheduled ops \\
 \end{table}
 
 
-Raw times do not travel between instances: a duration of $80$ is
-long when the whole schedule spans $1{,}200$ time units and short when
-it spans $3{,}000$, so a network fed raw values would be tied to the
-scale it was trained on. The representation therefore expresses every
-temporal quantity as a fraction of the instance's lower bound
-$\mathrm{LB}$ (worst case if the bound is itself an interval), and
-every uncertainty as a ratio of interval width to magnitude. What the
-policy sees is thereby comparable across instances---and across
-sizes, which is half of the size invariance. Each
+The representation expresses every temporal quantity as a fraction of
+the instance's lower bound $\mathrm{LB}$ (its worst case if the bound
+is itself an interval), and every uncertainty as a ratio of interval
+width to magnitude. Absolute times are not comparable across
+instances, since their magnitude reflects the time scale of the
+instance at hand; a policy trained on them would be tied to the scale
+of its training set. Under the dimensionless representation, what the
+policy observes is comparable across instances and across sizes,
+which is one of the two components of size invariance---the other
+being the architecture of Section~\ref{sec:arch}. Each
 eligible operation $o=o_{jk}$ on machine $\mu=\nu_{jk}$ is described by
 the 16 dimensionless quantities of Table~\ref{tab:opfeatures}; the
 global state is the 12-dimensional aggregate of
