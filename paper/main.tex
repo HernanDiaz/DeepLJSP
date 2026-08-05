@@ -430,8 +430,9 @@ receives two inputs, the shared context $g$ and each candidate's own
 embedding, carried past the pooling stage by the \emph{skip
 connection} visible in Figure~\ref{fig:arch}; it scores every such
 pair, and a
-\emph{softmax} turns the scores into the probabilities $\pi(i\,|\,s)$
-(\emph{masked} means that unused padding slots are excluded). The
+\emph{softmax} turns the scores---the \emph{logits}, in network
+terms---into the probabilities $\pi(i\,|\,s)$ (\emph{masked} means
+that unused padding slots are excluded). The
 value head estimates the situation rather than any one candidate, so
 it reads $g$ alone and outputs $V(s)$. In total, four two-layer
 MLPs---the candidate encoder $\phi$, the context combiner, and the two
@@ -1582,6 +1583,26 @@ most of the reduction, at a comparable cost in RE. The network, in
 other words, is not merely indifferent to the widths in its input; it
 does not become sensitive to them when the reward asks it to.
 
+Three further arms, retrained from scratch at $\lambda=0.5$, $2$
+and~$4$ (three seeds each), show that this is not a quirk of
+$\lambda=1$. Deployed as packages, the five arms trace exactly the
+frontier a practitioner would hope for: the relative width falls
+monotonically in $\lambda$---$12.80\%$, $12.38\%$, $12.20\%$,
+$11.88\%$, $10.99\%$---while the expected makespan climbs to
+$17.75\%$ at the far end ($+3.49$ points over the default arm,
+$p=0.0002$). Under the fixed selection the frontier evaporates: no
+retrained arm proposes narrower rollouts than the default one---three
+of the four are in fact marginally wider---and no paired width
+difference comes near significance (smallest $p=0.37$). The frontier
+can even be had without the retraining: ranking the default policy's
+own pool by each $f_\lambda$ in turn retraces it almost point for
+point, ending at $11.09\%$ width and $17.05\%$ RE under $f_4$, where
+the arm actually trained on that objective lands at $10.99\%$ and
+$17.75\%$. The predictability--performance trade is therefore real,
+tunable and monotone---and every part of it is manufactured at
+selection time, available from the default policy at test time
+without retraining anything.
+
 The companion study runs the same objective at the same $\lambda$ and
 reaches the opposite finding, which makes the pair worth reading
 together. There, penalizing width narrows the schedules only when the
@@ -1590,14 +1611,15 @@ to $4$ moves the relative width by $1.64$ points for rules that have
 them and by $0.13$---nothing---for rules that do not, from which that
 study concludes that the objective works \emph{through} the
 representation~\citep{DiazGP2026}. Our network has both the terminals'
-equivalent and the objective, and still its weights do not move; what
-moves is the ranking among its samples. The same reward therefore
-reaches the decision function of an evolved rule and does not reach
-the decision function of a trained policy, at least at this training
-The trade itself is priced comparably in the two---the companion pays
-about $2.5$ points of RE per point of width across its sweep and this
-arm pays $2.0$---so the paradigms differ less in what predictability
-costs than in which part of the system pays it.
+equivalent and the objective, and still its weights do not move at any
+$\lambda$; what moves is the ranking among its samples. The same
+reward therefore reaches the decision function of an evolved rule and
+does not reach the decision function of a trained policy, at least at
+this training scale. The trade itself is priced comparably in the
+two---the companion pays about $2.5$ points of RE per point of width
+across its sweep, ours about $1.9$ across the same range of
+$\lambda$---so the paradigms differ less in what predictability costs
+than in which part of the system pays it.
 
 That completes the delimitation at a fourth level, and it leaves
 Section~\ref{sec:conclusions} a sharper question than the one it

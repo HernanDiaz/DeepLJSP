@@ -1239,6 +1239,93 @@ else:
         check(f"seleccion fijada, {brazo} por {crit} (texto {v_tex})",
               v_tex, _ancho_medio(brazo, crit), tol=0.02)
 
+    # el barrido: frontera desplegada monotona, nulo con seleccion
+    # fijada, y la misma frontera gratis desde el deposito del base
+    _ROLL2 = "benchmarks/robust_lambda/rollouts_sweep.csv"
+    if not os.path.exists(_ROLL2):
+        pendiente("barrido de lambda", "sin rollouts_sweep.csv")
+    else:
+        _lbs2 = {}
+        for _ruta in (_ROLL, _ROLL2):
+            for r in _csv.DictReader(open(_ruta, encoding="utf-8")):
+                _pool.setdefault((r["arm"], r["seed"], r["instance"]),
+                                 []).append((float(r["lower"]),
+                                             float(r["upper"])))
+                _lbs2[r["instance"]] = float(r["lb"])
+        # rollouts.csv se relee: dedup por longitud
+        for k in list(_pool):
+            _pool[k] = _pool[k][:64]
+        check_exacto("barrido: 90 combinaciones de 64 rollouts",
+                     len(_pool) == 90 and all(len(v) == 64
+                                              for v in _pool.values()),
+                     f"{len(_pool)} combinaciones")
+
+        def _sel64(v, lam):
+            if lam == 0.0:
+                return min(v, key=lambda t: (t[1], t[0]))
+            return min(v, key=lambda t: t[1] + lam * (t[1] - t[0]))
+
+        def _re_anc(brazo, lam):
+            re, anc = [], []
+            for k, v in sorted(_pool.items()):
+                if k[0] != brazo:
+                    continue
+                lo, up = _sel64(v, lam)
+                mid = (lo + up) / 2
+                re.append((mid - _lbs2[k[2]]) / _lbs2[k[2]] * 100)
+                anc.append((up - lo) / mid * 100)
+            return (sum(re) / len(re), sum(anc) / len(anc),
+                    re, anc)
+
+        _BRAZOS = [("base", 0.0, 12.80), ("lam0p5", 0.5, 12.38),
+                   ("lam1", 1.0, 12.20), ("lam2", 2.0, 11.88),
+                   ("lam4", 4.0, 10.99)]
+        _prop = {}
+        for brazo, lam, v_tex in _BRAZOS:
+            _prop[brazo] = _re_anc(brazo, lam)
+            check(f"barrido desplegado, ancho {brazo} (texto {v_tex})",
+                  v_tex, _prop[brazo][1], tol=0.02)
+        check_exacto("barrido: el ancho desplegado cae monotonamente",
+                     all(_prop[a][1] > _prop[b][1] for (a, _, _), (b, _, _)
+                         in zip(_BRAZOS, _BRAZOS[1:])))
+        check("barrido: RE de lam4 desplegado (texto 17.75)", 17.75,
+              _prop["lam4"][0])
+        check("barrido: lam4 sube 3.49 puntos sobre base (texto)", 3.49,
+              _prop["lam4"][0] - _prop["base"][0], tol=0.02)
+
+        # seleccion fijada por cota superior para los cuatro brazos
+        _fija = {b: _re_anc(b, 0.0) for b, _, _ in _BRAZOS}
+        _mas_anchos = sum(_fija[b][1] > _fija["base"][1]
+                          for b in ("lam0p5", "lam1", "lam2", "lam4"))
+        check_exacto("barrido fijado: 3 de 4 mas anchos que base (texto)",
+                     _mas_anchos == 3, f"{_mas_anchos}/4")
+        try:
+            from scipy import stats as _st2
+            _p4 = _st2.wilcoxon([a - b for a, b in
+                                 zip(_prop["lam4"][2],
+                                     _prop["base"][2])])[1]
+            check_exacto("barrido: RE lam4 significativa (texto p=0.0002)",
+                         0.0001 <= _p4 <= 0.0003, f"p={_p4:.5f}")
+            _pmin = min(_st2.wilcoxon([a - b for a, b in
+                                       zip(_fija[br][3],
+                                           _fija["base"][3])])[1]
+                        for br in ("lam0p5", "lam1", "lam2", "lam4"))
+            check_exacto("barrido fijado: ancho nunca significativo "
+                         "(texto: smallest p=0.37)",
+                         0.365 <= _pmin <= 0.375, f"p_min={_pmin:.3f}")
+        except ImportError:
+            pendiente("Wilcoxon del barrido", "sin scipy")
+
+        # la frontera gratis: el deposito del base bajo f_4
+        _re_g, _anc_g, _, _ = _re_anc("base", 4.0)
+        check("frontera gratis: base bajo f_4, ancho (texto 11.09)",
+              11.09, _anc_g, tol=0.02)
+        check("frontera gratis: base bajo f_4, RE (texto 17.05)",
+              17.05, _re_g, tol=0.02)
+        check("precio del barrido: 1.9 RE por punto de ancho (texto)",
+              1.9, (_prop["lam4"][0] - _prop["base"][0])
+              / (_prop["base"][1] - _prop["lam4"][1]), tol=0.06)
+
 
 print("\n== tab:crosssize: best-of-64 sobre las 70 por clase ==")
 _B64 = "benchmarks/bo64_70.csv"
