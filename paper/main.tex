@@ -447,9 +447,8 @@ the model just described, which every headline result of this paper
 uses.
 
 The remainder of this section formalizes each of these elements in
-turn. Section~\ref{sec:mdp} casts
-schedule construction as the decision process the agent faces (states,
-actions, rewards); Section~\ref{sec:features} defines what the network
+turn. Section~\ref{sec:mdp} pins down the decision process the agent
+faces and specifies its reward; Section~\ref{sec:features} defines what the network
 sees---the $16{+}12$ input quantities, which is where the interval
 uncertainty and the size invariance enter; Section~\ref{sec:arch}
 specifies the three network stages just toured; and
@@ -461,18 +460,20 @@ is described in Section~\ref{sec:training}.
 \subsection{Dispatching as a Markov decision process}
 \label{sec:mdp}
 
-Cast in the terms above, schedule construction is a \emph{Markov
-decision process}: a sequential decision problem whose state carries
-everything relevant to deciding onward, so the policy needs no memory
-beyond it. Its horizon is finite and known---exactly $nm$ steps, one
-per operation. The \emph{state} after $t$ steps comprises the partial
-schedule (each job's next-operation pointer, job and machine
-completion intervals) and the set $\mathcal{E}_t$ of eligible
-operations---the next unscheduled operation of each unfinished job,
-so $1\le|\mathcal{E}_t|\le n$. The \emph{action} selects one element
-of $\mathcal{E}_t$; the transition applies Eq.~\eqref{eq:semiactive}
-and is deterministic---the uncertainty lives inside the durations,
-which enter as fixed intervals, not as random draws.
+The opening of this section introduced the dispatcher's states,
+actions and episodes informally; what this subsection adds are the
+details later arguments lean on, and the one element the problem does
+not dictate: the reward. Formally, schedule construction is a
+finite-horizon \emph{Markov decision process}---a sequential decision
+problem whose state carries everything relevant to deciding onward,
+so the policy needs no memory beyond it---of exactly $nm$ steps, one
+per operation. The state after $t$ steps is the partial schedule in
+full detail: each job's next-operation pointer, the job and machine
+completion intervals, and the eligible set $\mathcal{E}_t$, with
+$1\le|\mathcal{E}_t|\le n$. The action selects one element of
+$\mathcal{E}_t$; the transition applies Eq.~\eqref{eq:semiactive} and
+is deterministic---the uncertainty lives inside the durations, which
+enter as fixed intervals, not as random draws.
 
 The \emph{reward} is a weighted sum of six shaping components, each
 collapsing intervals by their worst case (upper bound), with scales
