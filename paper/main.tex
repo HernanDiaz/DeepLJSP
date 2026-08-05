@@ -28,8 +28,8 @@
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 \usepackage{xcolor}
-\usepackage{tikz}
-\usetikzlibrary{positioning}
+% (tikz ya no se usa: la figura de arquitectura viene como PDF vectorial
+% generado por fig_arch_svg.py, con la fuente Times registrada)
 
 % la clase carga hyperref; DOIs como enlaces completos, como pide la guia
 \providecommand{\doi}[1]{\href{https://doi.org/#1}{\nolinkurl{https://doi.org/#1}}}
@@ -431,42 +431,17 @@ is described in Section~\ref{sec:training}.
 
 \begin{figure}[t]
 \centering
-\resizebox{\linewidth}{!}{%
-\begin{tikzpicture}[
-  font=\small,
-  caja/.style={draw, rounded corners=2pt, align=center,
-               minimum height=7mm, inner sep=3pt},
-  flecha/.style={->, >=stealth}]
-\node[caja] (ops) {eligible ops\\ $|\mathcal{E}|\times 16$};
-\node[caja, right=9mm of ops] (phi) {shared MLP $\phi$\\ (weights
-  independent\\ of $n$, $m$)};
-\node[caja, right=9mm of phi] (emb) {embeddings\\ $|\mathcal{E}|\times h$};
-\node[caja, right=9mm of emb, yshift=7mm] (pool) {mean $+$ max\\ pooling};
-\node[caja, below=4mm of pool] (glob) {global state\\ $12$};
-\node[caja, right=9mm of pool, yshift=-5.5mm] (ctx) {$\mathrm{MLP}_{ctx}$\\
-  context $g$};
-\node[caja, right=10mm of ctx, yshift=7mm] (pol) {$\mathrm{MLP}_{\pi}([\phi_i;g])$\\
-  masked softmax};
-\node[caja, below=4mm of pol] (val) {$\mathrm{MLP}_{V}(g)$};
-\node[right=6mm of pol] (pi) {$\pi(i\,|\,s)$};
-\node[right=6mm of val] (v) {$V(s)$};
-\draw[flecha] (ops) -- (phi);
-\draw[flecha] (phi) -- (emb);
-\draw[flecha] (emb) -- (pool);
-\draw[flecha] (pool.east) -- (ctx.west |- pool.east) -- (ctx);
-\draw[flecha] (glob.east) -- (ctx.west |- glob.east) -- (ctx);
-\draw[flecha] (ctx) -- (pol);
-\draw[flecha] (ctx) -- (val);
-\draw[flecha] (emb.north) to[out=35, in=160] (pol.north west);
-\draw[flecha] (pol) -- (pi);
-\draw[flecha] (val) -- (v);
-\end{tikzpicture}}
+\includegraphics[width=\linewidth]{figures/fig_arch.pdf}
 \caption{The size-invariant network. Every eligible operation is
 embedded by the same MLP $\phi$; mean and max pooling collapse the
 variable-size candidate set into fixed-size summaries that, joined
-with the global features, form the context $g$. The policy head
-scores each candidate embedding against $g$; the value head reads $g$
-alone. No dimension depends on the numbers of jobs or machines.}
+with the global features, form the context $g$. Because pooling
+discards candidate identity, each embedding $\phi_i$ is also carried
+past it (dashed grey path) so the policy head can score
+$[\phi_i;g]$ pairs; the value head reads $g$ alone. The dashed block
+marks where the self-attention variant of Section~\ref{sec:attention}
+inserts, with $B{=}0$ recovering the base model. No dimension depends
+on the numbers of jobs or machines.}
 \label{fig:arch}
 \end{figure}
 
@@ -745,7 +720,7 @@ Operating system & Windows 10 Pro 22H2 (64-bit) \\
 Language & Python $3.12.6$ \\
 Learning & PyTorch $2.9.1$, CUDA $13.0$ build \\
 Numerics & NumPy $2.3.5$, SciPy $1.17.0$ \\
-Figures & Matplotlib $3.10.8$ \\
+Figures & Matplotlib $3.10.8$; svglib $2.1.0$ (diagram) \\
 Tuning & irace $4.4.3$ on R $4.6.1$ (Section~\ref{sec:hyperconfig}) \\
 \bottomrule
 \end{tabular}

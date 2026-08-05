@@ -470,7 +470,8 @@ try:
                 "PyTorch": importlib.import_module("torch").__version__,
                 "NumPy": importlib.import_module("numpy").__version__,
                 "SciPy": importlib.import_module("scipy").__version__,
-                "Matplotlib": importlib.import_module("matplotlib").__version__}
+                "Matplotlib": importlib.import_module("matplotlib").__version__,
+                "svglib": importlib.import_module("svglib").__version__}
     for nombre, v in _tex_env.items():
         v = v.split("+")[0]                     # 2.9.1+cu130 -> 2.9.1
         check_exacto(f"tab:environment, {nombre} {v}",
