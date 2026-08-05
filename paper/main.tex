@@ -469,10 +469,20 @@ set $\mathcal{E}_t$, with $1\le|\mathcal{E}_t|\le n$; the action
 selects one element of $\mathcal{E}_t$, and the transition applies
 Eq.~\eqref{eq:semiactive} deterministically.
 
-The \emph{reward} is a weighted sum of six shaping components, each
-collapsing intervals by their worst case (upper bound), with scales
-normalized by the instance's lower bound so that no weight depends on
-the instance's magnitude. The base weights were fixed by hand during
+The \emph{reward} at step $t$ is a weighted sum of six shaping
+components,
+\begin{equation}
+\label{eq:reward}
+r_t \;=\; w_{\mathrm{mk}}\,r^{\mathrm{mk}}_t
+      + w_{\mathrm{pr}}\,r^{\mathrm{pr}}_t
+      + w_{\mathrm{id}}\,r^{\mathrm{id}}_t
+      + w_{\mathrm{li}}\,r^{\mathrm{li}}_t
+      + w_{\mathrm{cr}}\,r^{\mathrm{cr}}_t
+      + w_{\mathrm{ba}}\,r^{\mathrm{ba}}_t,
+\end{equation}
+each component collapsing intervals by their worst case (upper bound)
+and scaled by the instance's lower bound, so that no weight depends
+on the instance's magnitude. The weights were fixed by hand during
 development---they were not part of the automatic-configuration study
 of Section~\ref{sec:hyperconfig}, which races optimizer
 hyperparameters only---and three of them are then adjusted per
@@ -480,24 +490,29 @@ instance by fixed formulas of the instance's own statistics; the
 values below are the effective ones on the $20{\times}15$ training
 instances:
 \begin{itemize}
-\item \emph{terminal makespan} (weight $1.0$): the negative scaled
-  makespan at episode end, plus a bonus when the schedule lands within
-  $5\%$ of the instance bound---the quantity actually being minimized;
-\item \emph{job progress} ($0.26$): a nudge towards finishing what is
+\item \emph{terminal makespan} ($r^{\mathrm{mk}}_t$,
+  $w_{\mathrm{mk}}{=}1.0$): the negative scaled makespan at episode
+  end, plus a bonus when the schedule lands within $5\%$ of the
+  instance bound---the quantity actually being minimized;
+\item \emph{job progress} ($r^{\mathrm{pr}}_t$,
+  $w_{\mathrm{pr}}{=}0.26$): a nudge towards finishing what is
   started; its base weight $0.2$ is raised by a fixed factor $1.3$
   whenever durations are intervals;
-\item \emph{machine idleness} (${\approx}0.24$): discourages gaps on
-  machines; grows with the prominence of the instance's bottleneck
-  machine, from a base of $0.2$;
-\item \emph{local improvement} ($0.15$): the step change of the
-  projected makespan, penalizing deteriorations twice as much as it
-  rewards improvements---a dense signal so early decisions are not
-  credited only $nm$ steps later;
-\item \emph{operation criticality} ($0.1$) and \emph{load balance}
-  ($0.1$, its cap, reached whenever machine loads vary as much as
-  here): nudges towards operations on the emerging critical path and
-  away from lopsided loads, the classic proxies for a compact
-  schedule.
+\item \emph{machine idleness} ($r^{\mathrm{id}}_t$,
+  $w_{\mathrm{id}}{\approx}0.24$): discourages gaps on machines;
+  grows with the prominence of the instance's bottleneck machine,
+  from a base of $0.2$;
+\item \emph{local improvement} ($r^{\mathrm{li}}_t$,
+  $w_{\mathrm{li}}{=}0.15$): the step change of the projected
+  makespan, penalizing deteriorations twice as much as it rewards
+  improvements---a dense signal so early decisions are not credited
+  only $nm$ steps later;
+\item \emph{operation criticality} ($r^{\mathrm{cr}}_t$,
+  $w_{\mathrm{cr}}{=}0.1$) and \emph{load balance}
+  ($r^{\mathrm{ba}}_t$, $w_{\mathrm{ba}}{=}0.1$, its cap, reached
+  whenever machine loads vary as much as here): nudges towards
+  operations on the emerging critical path and away from lopsided
+  loads, the classic proxies for a compact schedule.
 \end{itemize}
 The reward shapes training only; every reported result is measured
 by the RE of Eq.~\eqref{eq:re}.
