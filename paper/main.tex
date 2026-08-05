@@ -380,15 +380,6 @@ that scores the available actions and a \emph{value head} that
 estimates $V(s)$, trained jointly. This is why the network in this
 paper has two heads.
 
-What makes the learning \emph{deep} is the representation of these
-two functions. The states are far too numerous to tabulate and none is
-ever visited twice---indeed the policy must act on instances it has
-never seen---so $\pi$ and $V$ are approximated by neural networks,
-whose weights are what training adjusts. Unable to memorize states,
-the network must generalize over their descriptors, and that is what
-allows a single set of weights to serve every instance and, with the
-representation of Section~\ref{sec:features}, every size.
-
 Instantiated on scheduling, the agent is a dispatcher. The state is
 the partial schedule; the available actions are the \emph{eligible}
 operations---the next unscheduled operation of each job, so choosing
