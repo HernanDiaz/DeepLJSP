@@ -460,20 +460,14 @@ is described in Section~\ref{sec:training}.
 \subsection{Dispatching as a Markov decision process}
 \label{sec:mdp}
 
-The opening of this section introduced the dispatcher's states,
-actions and episodes informally; what this subsection adds are the
-details later arguments lean on, and the one element the problem does
-not dictate: the reward. Formally, schedule construction is a
-finite-horizon \emph{Markov decision process}---a sequential decision
-problem whose state carries everything relevant to deciding onward,
-so the policy needs no memory beyond it---of exactly $nm$ steps, one
-per operation. The state after $t$ steps is the partial schedule in
-full detail: each job's next-operation pointer, the job and machine
-completion intervals, and the eligible set $\mathcal{E}_t$, with
-$1\le|\mathcal{E}_t|\le n$. The action selects one element of
-$\mathcal{E}_t$; the transition applies Eq.~\eqref{eq:semiactive} and
-is deterministic---the uncertainty lives inside the durations, which
-enter as fixed intervals, not as random draws.
+Schedule construction is a finite-horizon \emph{Markov decision
+process}: the state carries everything relevant to deciding onward,
+and the horizon is exactly $nm$ steps, one per operation. The state
+after $t$ steps is the partial schedule---each job's next-operation
+pointer, the job and machine completion intervals---and the eligible
+set $\mathcal{E}_t$, with $1\le|\mathcal{E}_t|\le n$; the action
+selects one element of $\mathcal{E}_t$, and the transition applies
+Eq.~\eqref{eq:semiactive} deterministically.
 
 The \emph{reward} is a weighted sum of six shaping components, each
 collapsing intervals by their worst case (upper bound), with scales
@@ -502,9 +496,8 @@ the effective ones on the $20{\times}15$ training instances:
   away from lopsided loads, the classic proxies for a compact
   schedule.
 \end{itemize}
-The reward shapes training only; nothing reported in this paper is
-measured by it. Every evaluation uses the makespan-based RE of
-Eq.~\eqref{eq:re}.
+The reward shapes training only; every reported result is measured
+by the RE of Eq.~\eqref{eq:re}.
 
 \subsection{Dimensionless, uncertainty-aware features}
 \label{sec:features}
