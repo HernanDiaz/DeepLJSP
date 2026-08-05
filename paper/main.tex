@@ -389,10 +389,7 @@ next, and we write the policy over candidates as $\pi(i\,|\,s)$; an
 reward rests on the makespan achieved. The trained policy is then a
 dispatching criterion in its own right: at each step it orders the
 eligible operations by preferences learned from experience rather than
-by a fixed, hand-written formula. Everything around that choice (the
-schedule builder of Eq.~\eqref{eq:semiactive}, the interval
-arithmetic, the evaluation) is the same machinery every baseline in
-this paper uses.
+by a fixed, hand-written formula.
 
 Figure~\ref{fig:arch} shows the network, read left to right. Each
 eligible operation enters as a row of $16$ numbers that describe it:
