@@ -565,21 +565,22 @@ $\bar L$ its average over machines.}
 \begin{table}[t]
 \centering\small
 \caption{Global state features (all dimensionless aggregates; no
-dimension depends on $n$ or $m$).}
+dimension depends on $n$ or $m$). Rows that list several statistics
+contribute one feature each, for $12$ in total.}
 \label{tab:globalfeatures}
-\begin{tabular}{ll}
+\begin{tabular}{lll}
 \toprule
-Feature & Definition \\
+\# & Feature & Definition \\
 \midrule
-progress & scheduled operations $/\,nm$ \\
-partial makespan & $\max_\mu c^U_\mu / \mathrm{LB}$ \\
-machine completions & mean and std of $c^U_\mu/\mathrm{LB}$ \\
-remaining loads & mean, max and std of $L(\mu)/\mathrm{LB}$ \\
-remaining job work & mean and max of job remaining $/\mathrm{LB}$ \\
-eligibility & $|\mathcal{E}|/n$ \\
-pending uncertainty & $\sum(\text{widths})/\sum(\text{midpoints})$ of
+1 & progress & scheduled operations $/\,nm$ \\
+2 & partial makespan & $\max_\mu c^U_\mu / \mathrm{LB}$ \\
+3--4 & machine completions & mean and std of $c^U_\mu/\mathrm{LB}$ \\
+5--7 & remaining loads & mean, max and std of $L(\mu)/\mathrm{LB}$ \\
+8--9 & remaining job work & mean and max of job remaining $/\mathrm{LB}$ \\
+10 & eligibility & $|\mathcal{E}|/n$ \\
+11 & pending uncertainty & $\sum(\text{widths})/\sum(\text{midpoints})$ of
 unscheduled ops \\
-total load & $\sum_\mu L(\mu)/(\mathrm{LB}\cdot m)$ \\
+12 & total load & $\sum_\mu L(\mu)/(\mathrm{LB}\cdot m)$ \\
 \bottomrule
 \end{tabular}
 \end{table}
