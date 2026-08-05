@@ -230,7 +230,8 @@ def build_svg() -> str:
                      dash="3,2"))
 
     # ── pooling (right), context between the heads (middle) ────────────────
-    ps, _ = _block(x[2], R2, "pooling", "mean + max", "→ 2h summary",
+    ps, _ = _block(x[2], R2, "pooling", "[mean ; max]",
+                   "perm.-invariant, 2h",
                    C_POOL, C_POOLT)
     parts += ps
 
@@ -243,10 +244,10 @@ def build_svg() -> str:
     parts.append(_ah(x[2], y_pc, x[1] + BW))
 
     # ── heads, fed by symmetric elbows from the context ────────────────────
-    ps, _ = _block(x[0], R2, "policy head", "scores [φi ; g]",
+    ps, _ = _block(x[0], R2, "policy head", "logits [φi ; g]",
                    "masked softmax", C_HEAD, C_HEADT)
     parts += ps
-    ps, _ = _block(x[0], VAL_TOP, "value head", "reads g alone",
+    ps, _ = _block(x[0], VAL_TOP, "value head", "2-layer MLP on g",
                    "return estimate", C_HEAD, C_HEADT)
     parts += ps
 
@@ -261,7 +262,7 @@ def build_svg() -> str:
     parts.append(_t(x[0] - 19, val_cy, "V(s)", size=FS_IO, anchor="end"))
 
     # ── global state joining the context straight from the right ───────────
-    parts += _io(x[2], G_TOP, "global state", "12 aggregates")
+    parts += _io(x[2], G_TOP, "global state", "12 features")
     parts.append(_ah(x[2], g_cy, x[1] + BW))
 
     # ── per-candidate path: each phi_i carried past the pooling, entering
