@@ -88,9 +88,11 @@ class AdaptiveRewardStrategy(RewardStrategy):
     def set_problem_analysis(self, problem_analysis: Dict) -> None:
         """Actualiza el análisis del problema y readapta los pesos"""
         super().set_problem_analysis(problem_analysis)
-        
-        # Readaptar pesos
-        self._adapt_weights()
+
+        # Readaptar pesos (nunca con pesos explicitos de la campana:
+        # esta capa pisaria los valores tuneados, igual que en __init__)
+        if not os.environ.get("DEEPLJSP_REWARD_WEIGHTS"):
+            self._adapt_weights()
         
         # Actualizar componentes
         self.components[0].weight = self.weights["makespan_weight"]
