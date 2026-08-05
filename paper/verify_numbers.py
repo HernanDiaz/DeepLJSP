@@ -1073,6 +1073,47 @@ check_exacto("y ese unico .lower esta dentro de la rama de lambda",
              0 < _j - _i < 200 and "if lam" in _ms_cod[_i:_j],
              f"{_j - _i} caracteres tras el env var")
 
+# 4.1 imprime los pesos EFECTIVOS del reward en las instancias de
+# entrenamiento. Se recomputan con el propio generador de la factoria
+# (la clase AdaptiveRewardStrategy tiene otros defaults que NO rigen:
+# el generador los sobreescribe, y eso es lo que confundio al borrador)
+try:
+    sys.path.insert(0, ".")
+    from jobshop_rl.data import PROBLEM_REGISTRY as _REG
+    from jobshop_rl.utils.problem_analyzer import (ProblemAnalyzer as _PA,
+                                                   AdaptiveConfigGenerator
+                                                   as _ACG)
+    _ws = []
+    for _k in range(1, 5):
+        _pd = _REG[f"int__tai20_15_{_k:02d}"]()
+        _an = _PA.analyze_problem(_pd["sequences"], _pd["durations"])
+        _ws.append(_ACG.generate_reward_config(_an))
+    for _clave, _v_tex in [("makespan_weight", 1.0),
+                           ("progress_weight", 0.26),
+                           ("local_improvement_weight", 0.15),
+                           ("critical_weight", 0.1),
+                           ("balance_weight", 0.1)]:
+        _vals = [w[_clave] for w in _ws]
+        check_exacto(f"4.1: {_clave} efectivo (texto {_v_tex})",
+                     all(abs(v - _v_tex) < 0.005 for v in _vals),
+                     f"{min(_vals):.3f}..{max(_vals):.3f}")
+    _idle = [w["idle_weight"] for w in _ws]
+    check_exacto("4.1: idle_weight efectivo ~0.24 (texto)",
+                 all(0.23 <= v <= 0.25 for v in _idle),
+                 f"{min(_idle):.3f}..{max(_idle):.3f}")
+    check_exacto("4.1: progreso = 0.2 x 1.3 por intervalos (texto)",
+                 '"progress_weight"] *= 1.3' in
+                 open("jobshop_rl/utils/problem_analyzer.py",
+                      encoding="utf-8").read())
+except Exception as _e:
+    pendiente("pesos efectivos del reward", f"{type(_e).__name__}: {_e}")
+check_exacto("4.1: bonus dentro del 5% del limite (codigo)",
+             "gap <= 0.05" in _ms_cod)
+_li = open("jobshop_rl/rewards/components/local_improvement.py",
+           encoding="utf-8").read()
+check_exacto("4.1: deterioros penalizados x2 (codigo)",
+             "* 2.0" in _li)
+
 
 def _por_par(*tags):
     """{(TA, semilla): RE} de una o varias campanas, componentwise.
