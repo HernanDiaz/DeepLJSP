@@ -971,14 +971,18 @@ combinatorial optimization~\citep{Kool2019}.
 \label{sec:baselines}
 
 Constructive baselines are the dispatching rules of
-Section~\ref{sec:related-rules}---SPT, LPT, MOR and MWKR, of which
-MOR is uniformly the strongest, plus EST---and the two
-Giffler--Thompson combinations. G\&T-MWKR is the strongest
-deterministic constructive baseline on this benchmark: $29.5\%$ mean RE
-across the 70 instances, versus $42.3\%$ for EST---the strongest plain
-rule overall, though weaker than MOR on the $20{\times}15$ training
-class---and $45.5\%$ for MOR (the SPT tie-break variant performs
-poorly, $70.6\%$). Published IJSP
+Section~\ref{sec:related-rules}---SPT, LPT, MOR, MWKR and EST---and
+the two Giffler--Thompson combinations. Their ranking on this
+benchmark is stable across size classes. The strongest deterministic
+constructive baseline is G\&T-MWKR, at $29.5\%$ mean RE over the 70
+instances; its SPT tie-break variant is by contrast the weakest of
+the seven, at $70.6\%$. Among the plain rules, EST is strongest
+overall at $42.3\%$, ahead of MOR on six of the seven size classes
+and behind it only on the $20{\times}15$ training class ($49.2\%$
+against $46.7\%$); MOR, at $45.5\%$ overall, in turn improves on
+MWKR, SPT and LPT in every class, which is why it is the rule
+against which per-instance results are reported in
+Section~\ref{sec:results-crosssize}. Published IJSP
 metaheuristics (fEABC~\citep{DiazFEABC2023} and
 ESABC~\citep{DiazICAE2023}; 30 runs and minutes of per-instance search
 on dedicated hardware) are included as reference yardsticks from a

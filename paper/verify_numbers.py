@@ -130,6 +130,32 @@ check_exacto("EST es la mejor regla suelta sobre las 70",
              ab["EST"] < min(ab["MOR"], ab["MWKR"], ab["SPT"], ab["LPT"]),
              f"EST {ab['EST']:.1f}")
 
+# 5.5 afirma el orden clase a clase, no solo en la media: EST gana a MOR
+# en seis de las siete y pierde justo en la de entrenamiento; MOR gana a
+# MWKR/SPT/LPT en las siete; y G&T-SPT es la peor de las siete lineas
+_clases = {}
+for _linea in open("benchmarks/all_baselines.csv",
+                   encoding="utf-8").read().splitlines()[1:]:
+    _c = _linea.split(",")
+    if _c[0]:
+        _clases[_c[0]] = [float(x) for x in _c[1:8]]
+_est_gana = sum(e < m for e, m in zip(_clases["EST"], _clases["MOR"]))
+check_exacto("5.5: EST mejor que MOR en 6 de 7 clases", _est_gana == 6,
+             f"{_est_gana}/7")
+check_exacto("5.5: MOR gana a EST solo en 20x15 (46.7 vs 49.2)",
+             _clases["MOR"][1] < _clases["EST"][1]
+             and abs(_clases["MOR"][1] - 46.7) < 0.06
+             and abs(_clases["EST"][1] - 49.2) < 0.06,
+             f"MOR {_clases['MOR'][1]:.2f} vs EST {_clases['EST'][1]:.2f}")
+check_exacto("5.5: MOR mejor que MWKR, SPT y LPT en las siete clases",
+             all(m < min(w, s, l) for m, w, s, l in
+                 zip(_clases["MOR"], _clases["MWKR"], _clases["SPT"],
+                     _clases["LPT"])))
+_siete = ["SPT", "LPT", "EST", "MWKR", "MOR", "G&T-SPT", "G&T-MWKR"]
+check_exacto("5.5: G&T-SPT no es la peor de las siete (SPT y LPT lo son)",
+             ab["G&T-SPT"] < max(ab[r] for r in _siete),
+             f"G&T-SPT {ab['G&T-SPT']:.1f} vs SPT {ab['SPT']:.0f}")
+
 # el resumen tiene un limite duro de la revista: 150-250 palabras
 # ("Please provide an abstract of 150 to 250 words", guia de JIM). Se
 # cuenta sobre el texto renderizado, no sobre las ordenes de LaTeX.
