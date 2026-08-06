@@ -656,24 +656,22 @@ concern the situation, not any one candidate:
 \qquad
 V(s)=\mathrm{MLP}_{V}(g).
 \end{equation}
-Table~\ref{tab:layers} specifies the four blocks. Each is a two-layer
-perceptron with LayerNorm and ReLU between its layers and a linear
-output; all hidden layers are initialized orthogonally with gain
-$\sqrt2$ and zero biases. The output layer of the policy head uses
-gain $10^{-2}$, so at the start every candidate receives a nearly
-equal score and the untrained policy is close to uniform; the output
-layer of the value head uses gain $1$. No parameter dimension depends
-on $n$ or $m$: the same $120{,}322$-parameter network dispatches any
-instance.
+Table~\ref{tab:layers} specifies the four trainable blocks. Each is a
+two-layer perceptron with LayerNorm and ReLU between its layers and a
+linear output; all hidden layers are initialized orthogonally with
+gain $\sqrt2$ and zero biases. The output layer of the policy head
+uses gain $10^{-2}$, so at the start every candidate receives a
+nearly equal score and the untrained policy is close to uniform; the
+output layer of the value head uses gain $1$. Pooling and the masked
+softmax carry no parameters, so those four blocks account for the
+whole network: $120{,}322$ parameters, no dimension of which depends
+on $n$ or $m$.
 
 \begin{table}[!htb]
 \centering\small
-\caption{Layer specification of the policy/value network, at the
-hidden width $h{=}128$ used throughout. Shapes are input,
-hidden and output dimensions; every trainable block has LayerNorm and
-ReLU between its two layers and a linear output. Pooling and the
-masked softmax carry no parameters, and the four trainable blocks
-account for the whole network.}
+\caption{Layer specification of the policy/value network at the
+hidden width $h{=}128$. Shapes are input, hidden and output
+dimensions.}
 \label{tab:layers}
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llr}
 \toprule
