@@ -928,20 +928,24 @@ on the best makespan found so far, its solution and a copy of the
 weights that produced it are stored; the stored weights are the
 \emph{checkpoint} used at evaluation time.
 
-Two choices depart from common JSP-DRL practice, and both are enabled
-by the normalized representation. First, the discount factor is
-$\gamma=1$: the horizon is finite, and discounting at the customary
-$\gamma=0.99$ would attenuate the terminal makespan signal by
-$0.99^{nm}\approx0.05$ before it reaches the earliest decisions of a
-$20{\times}15$ instance. Second, updates are applied in minibatches
-over transitions accumulated across episodes, with advantages
-normalized at every update.
+Two of the values in Table~\ref{tab:hyper} call for justification.
+The discount factor is $\gamma=1$ rather than the $0.99$ customary in
+deep RL~\citep{Schulman2017}: the horizon is finite, and at
+$\gamma=0.99$ the terminal makespan signal would reach the earliest
+decisions of a $20{\times}15$ instance attenuated to
+$0.99^{nm}\approx0.05$ of itself. And updates are applied in
+minibatches over transitions accumulated across episodes, with
+advantages normalized at every update; both choices are co-designed
+with the normalized representation of Section~\ref{sec:features}.
 
 \paragraph{Best-of-$N$ inference.} At evaluation time we exploit the
 stochastic policy: one greedy rollout plus $N-1$ sampled ones,
 keeping the
 best solution under the ranking of Eq.~\eqref{eq:lex}
-(Algorithm~\ref{alg:bon}, with $N{=}64$). This
+(Algorithm~\ref{alg:bon}). The deployed budget is $N{=}64$; results
+are additionally reported for a single greedy pass and, in the
+budget-matched comparisons of Sections~\ref{sec:results-insize}
+and~\ref{sec:positioning}, for $N{=}1024$. This
 choice is motivated empirically in Section~\ref{sec:ablations-bon}:
 during training, the best solutions frequently originate from sampled
 episodes, i.e.\ the policy is more valuable as a \emph{distribution}
