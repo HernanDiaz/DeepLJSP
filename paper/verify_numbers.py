@@ -278,10 +278,18 @@ if datos1000:
                       for ta, d in datos1000.items()) / len(datos1000)
     check("mejor semilla a 1000 eps (abstract 12.3)", 12.3, mejor_media)
     # el factor de 6.1 va contra la media de las DIEZ semillas (13.82),
-    # no contra la de las tres con que van pareadas las ablaciones
-    factor = mor_dev / 13.82
-    check_exacto("factor ~3.4 frente a MOR", 3.3 <= factor <= 3.45,
+    # no contra la de las tres con que van pareadas las ablaciones. Y la
+    # referencia es G&T-MWKR, la mejor constructiva, no MOR
+    _gt_dev = sum(GT_RE[t] for t in DEV6) / 6
+    factor = _gt_dev / 13.82
+    check_exacto("factor ~2.0 frente a G&T-MWKR", 1.95 <= factor <= 2.05,
                  f"{factor:.2f}")
+    # la fila de tab:insize: G&T-MWKR instancia a instancia
+    TAB_INSIZE_GT = [30.6, 34.0, 17.7, 31.8, 29.3, 24.1]
+    for _ta, _v_tex in zip(DEV6, TAB_INSIZE_GT):
+        check(f"tab:insize fila G&T-MWKR {_ta} (texto {_v_tex})", _v_tex,
+              GT_RE[_ta])
+    check("tab:insize fila G&T-MWKR, media (texto 27.9)", 27.9, _gt_dev)
     stds = []
     for ta, d in datos1000.items():
         m = sum(d["mids"]) / len(d["mids"])

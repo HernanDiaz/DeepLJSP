@@ -1008,8 +1008,13 @@ training runs collapses as the budget grows, the standard deviation
 across the ten seed means falling from $4.69$ points at $100$ episodes
 to $1.30$ at $300$ and $0.47$ at $1000$---a factor of ten---so what
 the extra budget buys is not only a better mean but a reproducible
-one; (iii) the gap to the best dispatching rule is a factor
-${\approx}3.4$.
+one; (iii) the gap to the strongest constructive baseline is a factor
+${\approx}2.0$. Figure~\ref{fig:scaling} places the curve between two
+dotted references measured on the same six instances: G\&T-MWKR
+above, at $27.9\%$, and fEABC below, at $9.6\%$, the latter a
+yardstick from a different computational class. The attention variant
+is not drawn there---it has three seeds against these ten, so its
+paired comparison belongs in Table~\ref{tab:insize-attn}.
 
 The second observation is the one that needed the extra runs. Reported
 over three seeds, a collapse in variance is difficult to distinguish
@@ -1026,7 +1031,8 @@ a second estimate of the policy's performance.
 \caption{RE (\%) per development instance, mean [best] over ten
 training runs differing only in their random seed, Deep Sets model,
 best-of-64 inference. The rightmost column is the standard deviation
-across the ten per-seed means over the six instances.}
+across the ten per-seed means over the six instances; the last row is
+the strongest constructive baseline, a single deterministic pass.}
 \label{tab:insize}
 \footnotesize
 \setlength{\tabcolsep}{3.5pt}
@@ -1042,7 +1048,7 @@ Budget & TA15 & TA16 & TA17 & TA18 & TA19 & TA20 & Mean & SD \\
 \textbf{12.9} [10.4] & \textbf{16.3} [14.6] & \textbf{12.8} [11.1] &
 \textbf{12.8} [10.5] & \textbf{13.8} & \textbf{0.47} \\
 \midrule
-MOR & 51.3 & 35.8 & 50.1 & 54.2 & 43.2 & 43.7 & 46.4 & --- \\
+G\&T-MWKR & 30.6 & 34.0 & 17.7 & 31.8 & 29.3 & 24.1 & 27.9 & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1051,13 +1057,9 @@ MOR & 51.3 & 35.8 & 50.1 & 54.2 & 43.2 & 43.7 & 46.4 & --- \\
   \centering
   \includegraphics[width=.7\linewidth]{figures/fig_scaling.pdf}
   \caption{Mean RE on the development set versus training episodes per
-  instance, over ten training runs; the band spans the best and worst
-  of them, and its collapse is observation (ii). Dotted lines: the
-  strongest constructive baseline, G\&T-MWKR, and fEABC as a
-  yardstick from a different computational class, both on these same
-  six instances. The attention variant is not drawn here---it has
-  three seeds against these ten, so the paired comparison belongs in
-  Table~\ref{tab:insize-attn}.}
+  instance, over ten training runs. The band spans the best and worst
+  of them; the dotted lines are G\&T-MWKR and fEABC on the same six
+  instances.}
   \label{fig:scaling}
 \end{figure}
 
