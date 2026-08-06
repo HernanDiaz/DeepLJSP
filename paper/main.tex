@@ -921,9 +921,12 @@ instance at a time, with the weights carried over from each block to
 the next. A \emph{rollout} is one complete construction episode
 played by the current policy: \emph{sampled} when each operation is
 drawn from $\pi$, as during training, and \emph{greedy} when every
-step takes the most probable operation. Sampled training episodes are
-interleaved with periodic greedy evaluations, and the best solution
-and the best weights (the \emph{checkpoint}) are tracked across both.
+step takes the most probable operation. Every tenth episode
+(Table~\ref{tab:hyper}), the current policy is additionally evaluated
+with one greedy rollout. Whenever an episode of either kind improves
+on the best makespan found so far, its solution and a copy of the
+weights that produced it are stored; the stored weights are the
+\emph{checkpoint} used at evaluation time.
 
 Two choices depart from common JSP-DRL practice, and both are enabled
 by the normalized representation. First, the discount factor is
@@ -937,7 +940,8 @@ normalized at every update.
 \paragraph{Best-of-$N$ inference.} At evaluation time we exploit the
 stochastic policy: one greedy rollout plus $N-1$ sampled ones,
 keeping the
-best solution under the ranking of Eq.~\eqref{eq:lex} ($N{=}64$). This
+best solution under the ranking of Eq.~\eqref{eq:lex}
+(Algorithm~\ref{alg:bon}, with $N{=}64$). This
 choice is motivated empirically in Section~\ref{sec:ablations-bon}:
 during training, the best solutions frequently originate from sampled
 episodes, i.e.\ the policy is more valuable as a \emph{distribution}
@@ -946,6 +950,7 @@ combinatorial optimization~\citep{Kool2019}.
 
 \begin{algorithm}[t]
 \caption{Best-of-$N$ inference}
+\label{alg:bon}
 \begin{algorithmic}[1]
 \State $(\sigma^{*},\Cmax^{*})\gets$ greedy rollout of $\pi$
 \For{$i=1$ \textbf{to} $N-1$}
