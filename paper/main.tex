@@ -833,13 +833,8 @@ Tuning & irace $4.4.3$ on R $4.6.1$ (Section~\ref{sec:hyperconfig}) \\
 
 \begin{table}[t]
 \centering\small
-\caption{Hyperparameters, identical across every experiment reported in
-this paper. Most are standard PPO values; the discount factor and the
-batched update scheme depart from common practice for the reasons
-given in Section~\ref{sec:training}. None was tuned for this problem:
-two irace campaigns searched the space of
-Table~\ref{tab:irace} for better values and neither transferred to the
-operating budget.}
+\caption{Hyperparameters, identical across every experiment reported
+in this paper.}
 \label{tab:hyper}
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{lr@{\hskip 1.3em}|@{\hskip 1.3em}lr}
@@ -871,11 +866,7 @@ Hyperparameter & Value & Hyperparameter & Value \\
 \begin{table}[t]
 \centering\small
 \caption{Search space of the two irace campaigns. Real parameters were
-sampled on a logarithmic scale, the rest from the listed values. Every
-default of Table~\ref{tab:hyper} lies inside the space, so the race
-could have returned it. The second campaign fixed minibatch size and
-update period at their defaults, on which the elites of the first had
-agreed unanimously.}
+sampled on a logarithmic scale, the rest from the listed values.}
 \label{tab:irace}
 \setlength{\tabcolsep}{5pt}
 \begin{tabular}{llll}
@@ -896,14 +887,17 @@ update period & $4$ ep. & $2,\ 4,\ 8$ ep. & fixed \\
 \end{table}
 
 All reported results use the hyperparameters of Table~\ref{tab:hyper}
-\emph{without problem-specific tuning}. To assess
+\emph{without problem-specific tuning}, and none of its values was
+tuned for this problem. To assess
 whether tuning would improve on them, we ran an automatic
 configuration study with irace~\citep{LopezIbanez2016}. irace
 \emph{races} candidate configurations: they are evaluated side by
 side on a growing set of instances (here, training seeds),
 statistical losers are dropped early, and the budget concentrates on
 the survivors, called the \emph{elite} configurations. The race
-covered the 8-parameter space of Table~\ref{tab:irace} over a budget
+covered the 8-parameter space of Table~\ref{tab:irace}---which
+contains every default of Table~\ref{tab:hyper}, so the race could
+have returned the untuned configuration---over a budget
 of $330$ tuning experiments ($309$ raced) at reduced fidelity
 ($1$ training instance, $300$ episodes, ${\sim}8$ minutes per
 evaluation), with training seeds as racing instances. The three elite
@@ -922,7 +916,9 @@ fidelity, a second, \emph{operating-fidelity} campaign raced $295$
 experiments of a $300$ budget, each training at the full $1000$
 episodes on two instances
 (enabled by a ${\sim}3\times$ GPU-vectorized rollout implementation),
-over the reduced $6$-parameter space of Table~\ref{tab:irace},
+over the reduced $6$-parameter space of Table~\ref{tab:irace}---
+minibatch size and update period fixed at the defaults on which the
+first campaign's elites had agreed---and
 seeded with the defaults and the low-fidelity elites. This campaign converged to a coherent region \emph{distinct}
 from the defaults (clip $0.1$, $8$ epochs, $\lambda{=}0.90$, width
 $256$, learning rate $5$--$9{\cdot}10^{-4}$) and eliminated the seeded
@@ -946,7 +942,8 @@ near-equivalent configurations.
 \label{sec:training}
 
 We train with PPO~\citep{Schulman2017}; Table~\ref{tab:hyper} lists all
-hyperparameters. Two choices depart from common JSP-DRL practice and are
+hyperparameters. Most are standard PPO values; two choices depart
+from common JSP-DRL practice and are
 enabled by co-design with the normalized representation: a discount
 factor $\gamma=1$ (undiscounted finite horizon---future rewards count
 in full; with the customary $\gamma=0.99$ the terminal makespan
