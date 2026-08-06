@@ -925,15 +925,18 @@ on the best makespan found so far, its solution and a copy of the
 weights that produced it are stored; the stored weights are the
 \emph{checkpoint} used at evaluation time.
 
-Two of the values in Table~\ref{tab:hyper} call for justification.
 The discount factor is $\gamma=1$ rather than the $0.99$ customary in
-deep RL~\citep{Schulman2017}: the horizon is finite, and at
-$\gamma=0.99$ the terminal makespan signal would reach the earliest
-decisions of a $20{\times}15$ instance attenuated to
-$0.99^{nm}\approx0.05$ of itself. And updates are applied in
-minibatches over transitions accumulated across episodes, with
-advantages normalized at every update; both choices are co-designed
-with the normalized representation of Section~\ref{sec:features}.
+deep RL~\citep{Schulman2017}. The horizon here is finite and known,
+so future rewards can be credited in full; at $\gamma=0.99$ the
+terminal makespan---the quantity being minimized---would reach the
+earliest decisions of a $20{\times}15$ instance attenuated to
+$0.99^{nm}\approx0.05$ of itself. Updates are likewise applied over
+transitions pooled from four consecutive episodes rather than from
+one, in minibatches of $256$ and with advantages normalized within
+each update, because the $nm$ steps of a single episode are few and
+strongly correlated: pooling widens the sample the advantage estimate
+is computed from, and normalizing keeps the gradient scale
+comparable across instances of different size.
 
 \paragraph{Best-of-$N$ inference.} At evaluation time we exploit the
 stochastic policy: one greedy rollout plus $N-1$ sampled ones,
