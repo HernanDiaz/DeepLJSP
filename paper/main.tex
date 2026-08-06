@@ -884,32 +884,25 @@ All reported results use the hyperparameters of Table~\ref{tab:hyper}
 \emph{without problem-specific tuning}, and none of its values was
 tuned for this problem. To assess
 whether tuning would improve on them, we ran two automatic
-configuration studies with irace~\citep{LopezIbanez2016}, which
-\emph{races} candidate configurations against each other, discarding
-statistical losers early so that the budget concentrates on the
-survivors. The first raced $330$ experiments ($309$ used) over the 8-parameter
-space of Table~\ref{tab:irace}---which contains every default of
-Table~\ref{tab:hyper}, so the race could have returned the untuned
-configuration---at reduced fidelity: one training instance, $300$
-episodes, ${\sim}8$ minutes per evaluation. Its elites agreed on a
+configuration studies with irace~\citep{LopezIbanez2016}. The first
+raced $330$ experiments ($309$ used) over the 8-parameter
+space of Table~\ref{tab:irace} at reduced fidelity: one training
+instance, $300$ episodes, ${\sim}8$ minutes per evaluation. Its elites agreed on a
 more aggressive update regime and kept minibatch size and update
 period at their defaults, but at the full $1000$-episode operating
 budget the best of them scored $14.5\%$ mean RE against $13.4\%$ for
 the defaults, at ${\sim}60\%$ higher training cost: the low-fidelity
 optimum did not transfer.
 
-The second campaign removes that explanation. It raced $295$
+The second campaign raced $295$
 experiments at operating fidelity---$1000$ episodes on two instances
-per evaluation, enabled by a ${\sim}3\times$ GPU-vectorized rollout
-implementation---over the reduced $6$-parameter space of
+per evaluation---over the reduced $6$-parameter space of
 Table~\ref{tab:irace}, seeded with the defaults and the first
 campaign's elites. It converged to a region distinct from the
 defaults and eliminated the seeded default during racing; yet its
 winner, retrained on the four training instances over three seeds,
 again failed to improve: $14.73\%$ against $13.52\%$ over the
-development set ($+1.21$ points, better on two instances, worse on
-four; the defaults read $13.52$ here and $13.44$ in
-Section~\ref{sec:analysis} because the best-of-64 draw was fresh).
+development set.
 Automatic configuration therefore does not beat the defaults of
 Table~\ref{tab:hyper} for this problem \emph{even when performed at
 the operating budget}, so the reported results do not depend on fine
@@ -1270,8 +1263,8 @@ Table~\ref{tab:environment}. The
 cost is dominated by environment interaction, not by the small
 network: a seed dispatches $1.2$ million operations, each paying for
 feature extraction over the unscheduled work, and the
-GPU-vectorization of rollouts in Section~\ref{sec:hyperconfig} bought
-its ${\sim}3\times$ precisely there. The same cost governs inference:
+GPU-vectorization of rollouts described in
+Section~\ref{sec:environment} bought its ${\sim}3\times$ precisely there. The same cost governs inference:
 a greedy schedule takes $0.6$ seconds on a $15{\times}15$ instance
 and $4.0$ on a $50{\times}20$ one, roughly $2$--$4$ times what a
 hand-crafted dispatching rule costs on the same code path, and
