@@ -774,7 +774,11 @@ gradients: the final model trains on \textbf{TA11--TA14}
 gradients, but every design and configuration decision was judged on
 their performance, so they are reported separately and excluded from
 claims about unseen data. The remaining 60 instances were touched by
-neither training nor development. Independent training runs,
+neither training nor development. A second benchmark---twelve
+interval versions of classical FT, La and ABZ instances, generated
+with the same symmetric scheme~\citep{DiazGA2020}---is reserved for
+the cross-family evaluation of Section~\ref{sec:results-classics},
+and plays no part in training or development either. Independent training runs,
 differing only in their random seed, are reported as mean and best:
 ten for the main in-size result, and the first three of them for the
 deployed checkpoints and the paired ablations. Performance is measured by RE,
