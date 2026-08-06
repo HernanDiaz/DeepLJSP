@@ -468,6 +468,45 @@ try:
     check("4.4: la variante B=2, ~3.9e5 (texto)", 3.9e5, _b2, tol=0.06e5)
     check("4.4 y 7.3: el factor 3.2 en parametros", 3.2, _b2 / _base,
           tol=0.06)
+
+    # tab:layers: cada celda se recomputa del modulo real, no del texto
+    _red = PolicyValueNetV2()
+    TAB_LAYERS = [("op_encoder", "16\\to128\\to128", 18944),
+                  ("context", "268\\to128\\to128", 51200),
+                  ("policy_head", "256\\to128\\to1", 33281),
+                  ("value_head", "128\\to128\\to1", 16897)]
+    _suma = 0
+    for _attr, _forma, _n_tex in TAB_LAYERS:
+        _n = _np(getattr(_red, _attr))
+        _suma += _n
+        check_exacto(f"tab:layers {_attr}: {_n_tex} parametros",
+                     _n == _n_tex, f"{_n:,}")
+        check_exacto(f"tab:layers {_attr}: forma {_forma}",
+                     f"${_forma}$" in TEX)
+    check_exacto("tab:layers: la base suma 120.322", _suma == _base == 120322,
+                 f"{_suma:,} / {_base:,}")
+    check_exacto("tab:layers: el bloque de atencion, 132.480",
+                 _np(AttentionBlock(128, 4)) == 132480,
+                 f"{_np(AttentionBlock(128, 4)):,}")
+    # y la forma interna que 4.4 afirma: 4 cabezas de 32, FF 128->256->128
+    _blk = AttentionBlock(128, 4)
+    check_exacto("4.4: 4 cabezas de dimension 32",
+                 _blk.attn.num_heads == 4 and _blk.attn.head_dim == 32,
+                 f"{_blk.attn.num_heads}x{_blk.attn.head_dim}")
+    check_exacto("4.4: feed-forward 128->256->128",
+                 [_l.out_features for _l in _blk.ff
+                  if hasattr(_l, "out_features")] == [256, 128])
+    check_exacto("4.4: sin dropout en la atencion",
+                 float(getattr(_blk.attn, "dropout", 0.0)) == 0.0)
+    # 4.3: LayerNorm y ReLU entre las dos capas, salida lineal
+    import torch.nn as _nn
+    _tipos = [type(m).__name__ for m in _red.op_encoder]
+    check_exacto("4.3: encoder = Linear, LayerNorm, ReLU, Linear",
+                 _tipos == ["Linear", "LayerNorm", "ReLU", "Linear"],
+                 str(_tipos))
+    check_exacto("4.3: sesgos inicializados a cero",
+                 all(float(m.bias.abs().sum()) == 0.0
+                     for m in _red.modules() if isinstance(m, _nn.Linear)))
 except Exception as e:
     pendiente("coste de la atencion", f"no medible aqui ({type(e).__name__})")
 
