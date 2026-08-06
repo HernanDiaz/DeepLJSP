@@ -972,21 +972,24 @@ combinatorial optimization~\citep{Kool2019}.
 
 Constructive baselines are the dispatching rules of
 Section~\ref{sec:related-rules}---SPT, LPT, MOR, MWKR and EST---and
-the two Giffler--Thompson combinations. Their ranking on this
-benchmark is stable across size classes. The strongest deterministic
-constructive baseline is G\&T-MWKR, at $29.5\%$ mean RE over the 70
-instances; its SPT tie-break variant is by contrast the weakest of
-the seven, at $70.6\%$. Among the plain rules, EST is strongest
-overall at $42.3\%$, ahead of MOR on six of the seven size classes
-and behind it only on the $20{\times}15$ training class ($49.2\%$
-against $46.7\%$); MOR, at $45.5\%$ overall, in turn improves on
-MWKR, SPT and LPT in every class, which is why it is the rule
-against which per-instance results are reported in
-Section~\ref{sec:results-crosssize}. Published IJSP
-metaheuristics (fEABC~\citep{DiazFEABC2023} and
-ESABC~\citep{DiazICAE2023}; 30 runs and minutes of per-instance search
-on dedicated hardware) are included as reference yardsticks from a
-different computational class rather than as direct competitors.
+the two Giffler--Thompson combinations. The results of
+Section~\ref{sec:results} carry the strongest of each family---MOR,
+EST and G\&T-MWKR---while SPT, LPT, MWKR and the SPT tie-break of
+Giffler--Thompson are dominated by a wide margin in every size class
+and are not reported further. The
+learned-symbolic baseline is the dispatching rule evolved by genetic
+programming for this benchmark in the companion
+study~\citep{DiazGP2026}, compared budget by budget in
+Section~\ref{sec:positioning}.
+
+Three published IJSP metaheuristics are included as reference
+yardsticks rather than as direct competitors, since each searches
+every instance separately for minutes on dedicated hardware and
+reports 30-run averages: the genetic algorithm
+of~\citet{DiazGA2020}, the enhanced swarm artificial bee colony
+ESABC~\citep{DiazICAE2023} and the filtered elitist artificial bee
+colony fEABC~\citep{DiazFEABC2023}, the strongest of the three. Their
+figures are quoted from those papers, not re-run here.
 
 \section{Results}
 \label{sec:results}
