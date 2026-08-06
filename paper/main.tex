@@ -799,11 +799,15 @@ batched rollouts of the operating-fidelity tuning campaign
 lockstep and the batched forward pass does pay. The method therefore
 carries no dependence on specialized hardware.
 
-Second, the wall-clock figures quoted there are measurements on this
+Second, the wall-clock figures quoted later---training and inference
+times in Section~\ref{sec:positioning}, the cost of a tuning
+evaluation in Section~\ref{sec:hyperconfig}, the overhead of the
+attention variant in Section~\ref{sec:ablations-attn}---are
+measurements on this
 machine, whose four physical cores were at times shared by concurrent
 experimental arms. They are reported as orders of magnitude---hours to
-train, milliseconds to dispatch---and not as a timing benchmark;
-nothing in the paper's conclusions turns on them.
+train, milliseconds to seconds to dispatch---and not as a timing
+benchmark; nothing in the paper's conclusions turns on them.
 
 \begin{table}[t]
 \centering\small
