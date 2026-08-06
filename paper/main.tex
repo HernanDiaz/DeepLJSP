@@ -632,6 +632,12 @@ state $g_0$, are mixed into the context:
 g=\mathrm{MLP}_{ctx}\big(\big[\textstyle\frac1{|\mathcal{E}|}\sum_i\phi_i;\;
 \max_i\phi_i;\;g_0\big]\big)\in\mathbb{R}^{h}.
 \end{equation}
+The stage has no parameters of its own: it maps the
+$|\mathcal{E}|\times h$ embeddings to the $2h$ summaries that
+Table~\ref{tab:layers} feeds to the context MLP. Both statistics are
+taken over the real candidates only---in batched training the sets
+are padded to the batch maximum, and the mean divides by the true
+count while the max ignores the padded rows.
 This embed-then-pool pattern is the \emph{Deep Sets} construction
 of~\citet{Zaheer2017}, whose central result is that \emph{any}
 function invariant to the order of a set can be written in this
@@ -664,14 +670,17 @@ instance.
 \centering\small
 \caption{Layer specification of the policy/value network, at the
 hidden width $h{=}128$ used throughout. Shapes are input,
-hidden and output dimensions; each block has LayerNorm and ReLU
-between its two layers and a linear output.}
+hidden and output dimensions; every trainable block has LayerNorm and
+ReLU between its two layers and a linear output. Pooling and the
+masked softmax carry no parameters, and the four trainable blocks
+account for the whole network.}
 \label{tab:layers}
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llr}
 \toprule
 Block & Shape & Parameters \\
 \midrule
 Candidate encoder $\phi$ & $16\to128\to128$ & $18{,}944$ \\
+Pooling (mean, max) & $|\mathcal{E}|\times128\to256$ & --- \\
 Context MLP & $268\to128\to128$ & $51{,}200$ \\
 Policy head & $256\to128\to1$ & $33{,}281$ \\
 Value head & $128\to128\to1$ & $16{,}897$ \\

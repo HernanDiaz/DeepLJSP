@@ -483,8 +483,13 @@ try:
                      _n == _n_tex, f"{_n:,}")
         check_exacto(f"tab:layers {_attr}: forma {_forma}",
                      f"${_forma}$" in TEX)
+    # que la suma de los cuatro bloques SEA la red entera es la prueba de
+    # que el pooling (y el softmax) no aportan parametros, como dice la
+    # tabla con su guion
     check_exacto("tab:layers: la base suma 120.322", _suma == _base == 120322,
                  f"{_suma:,} / {_base:,}")
+    check_exacto("tab:layers: el pooling no tiene parametros",
+                 _base - _suma == 0)
     check_exacto("tab:layers: el bloque de atencion, 132.480",
                  _np(AttentionBlock(128, 4)) == 132480,
                  f"{_np(AttentionBlock(128, 4)):,}")
