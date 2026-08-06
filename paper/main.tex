@@ -65,7 +65,7 @@ scheduling problem (IJSP) models each processing time as a closed
 interval; published solvers search each instance separately with
 metaheuristics. This paper studies the complementary regime: a
 constructive policy, trained once by deep reinforcement learning,
-that returns a schedule in milliseconds. Dimensionless features and a permutation-invariant
+that returns a schedule in seconds. Dimensionless features and a permutation-invariant
 encoder make its parameter count independent of the numbers of jobs
 and machines. Trained by proximal policy optimization on four
 interval Taillard $20{\times}15$ instances, it reaches $13.8\%$ mean
@@ -121,7 +121,7 @@ paradigm, \emph{learning to dispatch}: a deep reinforcement learning
 (DRL) agent builds the schedule constructively, choosing one eligible
 operation at a time~\citep{Zhang2020L2D,Park2021GNN,Tassel2021}. The
 training cost is paid once; afterwards the policy returns a schedule
-for a new instance in milliseconds, which makes it attractive both as a standalone solver
+for a new instance in seconds, which makes it attractive both as a standalone solver
 under tight time budgets and as an initializer for search. Yet this
 paradigm has not crossed over to interval durations: a recent survey of
 learning-based job shop scheduling~\citep{Xu2025} lists no method
@@ -255,8 +255,8 @@ schedules---no operation can be started earlier without delaying
 another---and lifts the plain rules substantially; we write G\&T-SPT
 and G\&T-MWKR for the two combinations used here.
 
-These rules require one pass and no search, and produce a solution in
-milliseconds. Their limitation is that a fixed formula cannot suit
+These rules require one pass and no search, which makes them the
+cheapest constructive option available. Their limitation is that a fixed formula cannot suit
 every shop and objective~\citep{Haupt1989}, which motivates the
 learned rules of Section~\ref{sec:related-learning}, and is also why
 a constructive policy is compared against these rules and not against
@@ -788,7 +788,7 @@ Eq.~\eqref{eq:re}, using the published crisp lower bounds.
 \label{sec:environment}
 
 Table~\ref{tab:environment} lists the machine and the software stack.
-Two remarks matter for reading the costs reported later. First, every
+One remark matters for reading the costs reported later: every
 number in this paper---training, evaluation, the dispatching-rule
 baselines and the ablations---was produced on the CPU. The network is
 small enough (Section~\ref{sec:arch}) that a forward pass is
@@ -798,16 +798,6 @@ batched rollouts of the operating-fidelity tuning campaign
 (Section~\ref{sec:hyperconfig}), where many episodes advance in
 lockstep and the batched forward pass does pay. The method therefore
 carries no dependence on specialized hardware.
-
-Second, the wall-clock figures quoted later---training and inference
-times in Section~\ref{sec:positioning}, the cost of a tuning
-evaluation in Section~\ref{sec:hyperconfig}, the overhead of the
-attention variant in Section~\ref{sec:ablations-attn}---are
-measurements on this
-machine, whose four physical cores were at times shared by concurrent
-experimental arms. They are reported as orders of magnitude---hours to
-train, milliseconds to seconds to dispatch---and not as a timing
-benchmark; nothing in the paper's conclusions turns on them.
 
 \begin{table}[t]
 \centering\small
@@ -1295,9 +1285,14 @@ cost is dominated by environment interaction, not by the small
 network: a seed dispatches $1.2$ million operations, each paying for
 feature extraction over the unscheduled work, and the
 GPU-vectorization of rollouts in Section~\ref{sec:hyperconfig} bought
-its ${\sim}3\times$ precisely there. Constructing a solution
-takes milliseconds (greedy) to a few seconds (best-of-64 on
-$50{\times}20$). Against the hand-crafted rules the comparison is
+its ${\sim}3\times$ precisely there. The same cost governs inference:
+a greedy schedule takes $0.6$ seconds on a $15{\times}15$ instance
+and $4.0$ on a $50{\times}20$ one, roughly $2$--$4$ times what a
+hand-crafted dispatching rule costs on the same code path, and
+best-of-$64$ multiplies that by the budget ($41$ seconds and $6.8$
+minutes respectively). The comparison with per-instance metaheuristics
+is therefore one of computational class---train once, then dispatch
+---rather than one of wall-clock time at every budget. Against the hand-crafted rules the comparison is
 one-sided: a single greedy pass improves on MOR, EST and G\&T-MWKR on
 each of the 70 instances (paired Wilcoxon signed-rank test,
 $p<10^{-12}$; the matched-pairs rank-biserial correlation, an effect
@@ -1905,7 +1900,7 @@ determines the width before the policy has any say in it, separates
 two very different diagnoses and calls for a different experiment than
 any run here---a reward defined on the width alone would tell them
 apart. The third is deployment: a policy that
-prices an instance in milliseconds is a natural generator of initial
+schedules an instance in seconds is a natural generator of initial
 solutions for population-based search, and the quality of its sampling
 distribution, documented here at a fixed budget, is what such a use
 would exploit.
