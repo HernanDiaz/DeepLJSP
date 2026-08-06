@@ -633,8 +633,8 @@ g=\mathrm{MLP}_{ctx}\big(\big[\textstyle\frac1{|\mathcal{E}|}\sum_i\phi_i;\;
 \max_i\phi_i;\;g_0\big]\big)\in\mathbb{R}^{h}.
 \end{equation}
 The stage has no parameters of its own: it maps the
-$|\mathcal{E}|\times h$ embeddings to the $2h$ summaries that
-Table~\ref{tab:layers} feeds to the context MLP. Both statistics are
+$|\mathcal{E}|\times h$ embeddings to the $2h$ summaries the context
+MLP consumes. Both statistics are
 taken over the real candidates only---in batched training the sets
 are padded to the batch maximum, and the mean divides by the true
 count while the max ignores the padded rows.
