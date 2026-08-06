@@ -1481,6 +1481,20 @@ else:
                  "destacada", abs(sum(_gp_cpi.values()) / 70 - 17.71) > 0.5,
                  f"{sum(_gp_cpi.values()) / 70:.2f} vs 17.71")
 
+# 7.3 explica el nulo de la atencion diciendo que dos features ya son
+# relacionales (holgura contra el minimo de las elegibles, congestion
+# contra la carga media). Si esas definiciones cambian en la Tabla 1,
+# la explicacion deja de sostenerse y hay que enterarse aqui
+_fila_slack = next((l for l in TEX.splitlines()
+                    if "& slack &" in l), "")
+_fila_cong = next((l for l in TEX.splitlines()
+                   if "machine congestion" in l), "")
+check_exacto("7.3: la holgura se mide contra el minimo de las elegibles",
+             r"\min_{o'\in\mathcal{E}}" in _fila_slack,
+             _fila_slack.strip()[:60])
+check_exacto("7.3: la congestion se mide contra la carga media",
+             r"\bar L" in _fila_cong, _fila_cong.strip()[:60])
+
 print("\n== tab:irace: el espacio de busqueda ==")
 
 

@@ -1445,10 +1445,16 @@ evaluated at both operating points with paired seeds: $+0.9\%$ mean
 makespan at $300$ episodes (all six instances within the noise
 threshold) and $+1.5\%$ at $1000$ (one instance significantly worse),
 for $3.2$ times the parameters and ${\approx}30\%$ higher per-episode
-cost (Table~\ref{tab:insize-attn}). At these budgets the pooled context
-already conveys the interaction information the policy can exploit;
-richer pairwise structure may require larger budgets or instance
-distributions to pay off.
+cost (Table~\ref{tab:insize-attn}). Part of the explanation is in the
+representation: two of the per-operation features are themselves
+relational, computed against the eligible set rather than against the
+candidate alone---slack measures the earliest start relative to the
+earliest of all candidates, and congestion the machine's load
+relative to the average---so the comparisons an attention layer would
+have to learn are in part precomputed inputs. What remains for it are
+the pairwise relations those aggregates do not capture, and at these
+budgets they do not repay their cost; richer pairwise structure may
+require larger budgets or instance distributions to pay off.
 
 \begin{table}[t]
 \centering\small
