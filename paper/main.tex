@@ -702,7 +702,8 @@ it next, and the mean embedding does not identify that candidate.
 The embeddings of all $|\mathcal{E}|$ candidates are available at the
 decision step, so the missing operation is not information but a path
 between them.
-\emph{Self-attention} is the standard remedy, and the component most
+\emph{Self-attention}~\citep{Vaswani2017} is the standard remedy, and
+the component most
 commonly adopted in the neural combinatorial optimization literature
 (Section~\ref{sec:related-learning}). In an attention layer every
 candidate emits a \emph{query}, a \emph{key} and a \emph{value}; the
@@ -713,20 +714,29 @@ others, with the weights computed from the embeddings themselves rather
 than fixed in advance.
 
 We build this as a variant to be tested, not as part of the proposed
-model. A stack of $B$ pre-layer-normalization transformer blocks
-transforms $\{\phi_i\}$ after the shared encoder and before pooling,
-that is, between the embedding and pooling stages of
-Figure~\ref{fig:arch}. Each block normalizes the embeddings, applies
-multi-head attention over them ($4$ heads of dimension $32$, no
-dropout) and adds the result back, then applies a two-layer
-feed-forward network ($128\to256\to128$, ReLU) the same way; both
-additions are \emph{residual},
-that is, the block adds to its input instead of replacing it, so an
-untrained block behaves almost like the identity and the stack starts
-close to the base model. No positional encoding is used: the candidates
-form a set with no meaningful order, and numbering them would destroy
-the permutation invariance Section~\ref{sec:arch} was built to
-guarantee. Padding slots are masked out of the attention weights.
+model. A stack of $B$ pre-layer-normalization (pre-LN) transformer
+blocks transforms the embeddings after the shared encoder and before
+pooling, that is, between the embedding and pooling stages of
+Figure~\ref{fig:arch}. Writing $\Phi\in\mathbb{R}^{|\mathcal{E}|\times
+h}$ for the stacked embeddings, each block computes
+\begin{equation}
+\label{eq:attnblock}
+Z=\Phi+\mathrm{MHA}\big(\mathrm{LN}(\Phi)\big),\qquad
+\Phi'=Z+\mathrm{FFN}\big(\mathrm{LN}(Z)\big),
+\end{equation}
+where $\mathrm{MHA}$ is multi-head scaled dot-product attention ($4$
+heads of dimension $32$, no dropout), $\mathrm{FFN}$ is a two-layer
+perceptron ($128\to256\to128$, ReLU) applied to each row, and
+$\mathrm{LN}$ is LayerNorm. Both additions are \emph{residual}---the
+block adds to its input instead of replacing it---so an untrained
+block is close to the identity and the stack starts near the base
+model, the property for which the pre-LN arrangement is preferred
+over the original post-LN one~\citep{Xiong2020}. No positional
+encoding is used: without one, self-attention is
+permutation-\emph{equivariant}---reordering the candidates reorders
+the outputs correspondingly---so the pooled context remains
+permutation-invariant and the guarantees of Section~\ref{sec:arch}
+are preserved. Padding slots are masked out of the attention weights.
 
 Attention is a flag on the same code path, and $B{=}0$ reproduces the
 base network exactly---which is what makes the comparison of
