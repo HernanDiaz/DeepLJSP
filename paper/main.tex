@@ -1014,15 +1014,13 @@ dotted references measured on the same six instances: G\&T-MWKR
 above, at $27.9\%$, and fEABC below, at $9.6\%$, the latter a
 yardstick from a different computational class.
 
-The second observation is the one that needed the extra runs. Reported
-over three seeds, a collapse in variance is difficult to distinguish
-from three runs that happened to agree. Over ten, the worst seed at
-$1000$ episodes reaches $14.62\%$ and the best $13.12\%$, a range
-narrower than the gap between any two budgets, whereas at $100$
-episodes the same ten span $21.3$ to $36.2\%$. Ablations elsewhere in
-this paper are paired on the first three of these seeds, whose mean is
-$13.44\%$; that figure is the baseline those comparisons subtract, not
-a second estimate of the policy's performance.
+Observation (ii) is the one that required ten runs rather than three:
+over three seeds, a collapse in variance cannot be told apart from
+three runs that happen to agree. Over ten it is unambiguous. At
+$1000$ episodes the worst seed reaches $14.62\%$ and the best
+$13.12\%$, a range narrower than the gap between any two budgets,
+whereas at $100$ episodes the same ten seeds span $21.3$ to
+$36.2\%$.
 
 \begin{table}[t]
 \centering\small
@@ -1596,8 +1594,12 @@ interval to its worst case before the features are computed, so the
 width features are identically zero and the bounds coincide; the
 architecture, the hyperparameters and the schedule builder are
 untouched, and the environment still executes interval semantics.
-Three seeds retrained from scratch reach $13.62\%$ mean RE on the
-development set against the $13.44\%$ of the full representation---a
+Each ablation in this section is paired against the main arm on the
+same training seeds, so the baseline it subtracts is the mean over
+the seeds it shares---$13.44\%$ for the first three, against the
+$13.82\%$ of all ten. Three seeds retrained from scratch reach
+$13.62\%$ mean RE on the
+development set against that $13.44\%$---a
 difference of $0.18$ points, worse on twelve of the eighteen
 instance--seed pairs and better on six, and not significant (Wilcoxon
 signed-rank, $p=0.47$). By Eq.~\eqref{eq:upperclosed} this is the
