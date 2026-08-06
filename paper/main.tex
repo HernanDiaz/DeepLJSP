@@ -914,22 +914,25 @@ near-equivalent configurations.
 \subsection{Training and inference}
 \label{sec:training}
 
-We train with PPO~\citep{Schulman2017}; Table~\ref{tab:hyper} lists all
-hyperparameters. Most are standard PPO values; two choices depart
-from common JSP-DRL practice and are
-enabled by co-design with the normalized representation: a discount
-factor $\gamma=1$ (undiscounted finite horizon---future rewards count
-in full; with the customary $\gamma=0.99$ the terminal makespan
-signal reaches early decisions attenuated by $0.99^{nm}\!\approx\!0.05$
-for $20{\times}15$ instances) and batched minibatch updates with
-advantage normalization. Training on a set of instances proceeds in
-blocks (one instance at a time) with full weight transfer. A \emph{rollout} is one complete
-construction episode played by the current policy: \emph{sampled} if
-each operation is drawn from $\pi$, as during training, or
-\emph{greedy} if every step takes the most probable one. Sampled
-training episodes are interleaved with periodic greedy evaluations,
-and the best solution and best saved weights (the \emph{checkpoint})
-are tracked across both.
+The policy is trained with PPO~\citep{Schulman2017} under the
+hyperparameters of Table~\ref{tab:hyper}, most of which are standard
+PPO values. Training on a set of instances proceeds in blocks, one
+instance at a time, with the weights carried over from each block to
+the next. A \emph{rollout} is one complete construction episode
+played by the current policy: \emph{sampled} when each operation is
+drawn from $\pi$, as during training, and \emph{greedy} when every
+step takes the most probable operation. Sampled training episodes are
+interleaved with periodic greedy evaluations, and the best solution
+and the best weights (the \emph{checkpoint}) are tracked across both.
+
+Two choices depart from common JSP-DRL practice, and both are enabled
+by the normalized representation. First, the discount factor is
+$\gamma=1$: the horizon is finite, and discounting at the customary
+$\gamma=0.99$ would attenuate the terminal makespan signal by
+$0.99^{nm}\approx0.05$ before it reaches the earliest decisions of a
+$20{\times}15$ instance. Second, updates are applied in minibatches
+over transitions accumulated across episodes, with advantages
+normalized at every update.
 
 \paragraph{Best-of-$N$ inference.} At evaluation time we exploit the
 stochastic policy: one greedy rollout plus $N-1$ sampled ones,
