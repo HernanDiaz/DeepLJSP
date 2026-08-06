@@ -605,7 +605,7 @@ rates.
 The remaining obstacle is that the number of candidates changes at
 every step and from instance to instance, while a neural network
 requires inputs of fixed dimension. The architecture handles this with
-two elements: the \emph{same} small network reads every candidate, so any
+two elements: the \emph{same} network reads every candidate, so any
 number of them can be processed; and the resulting embeddings are
 \emph{pooled} into fixed-size summaries, so the scoring stage can see
 the whole decision at once. Formally, let
@@ -615,9 +615,12 @@ three stages (Figure~\ref{fig:arch}).
 
 \emph{Embed.} The shared two-layer MLP $\phi$ (width $h{=}128$,
 LayerNorm, ReLU, orthogonal initialization) maps each candidate to an
-embedding $\phi_i=\phi(x_i)$. Because the same weights process every
-candidate, the layer accepts any number of them, which makes this
-stage invariant to the number of jobs.
+embedding $\phi_i=\phi(x_i)$. The whole eligible set is processed in
+one forward pass, as the $|\mathcal{E}|\times16$ matrix of its rows;
+sharing the weights across rows is what lets the layer accept any
+number of candidates, and makes this stage invariant to the number of
+jobs. Candidates do not interact here: $\phi_i$ depends on $x_i$
+alone.
 
 \emph{Pool into a context.} The variable-size set
 $\{\phi_1,\dots,\phi_{|\mathcal{E}|}\}$ must be summarized into a
@@ -661,6 +664,9 @@ candidate is then scored against that same summary. What this cannot express is 
 \emph{particular} candidates: whether operation $i$ should take the
 machine now may depend on which other eligible operation would occupy
 it next, and the mean embedding does not identify that candidate.
+The embeddings of all $|\mathcal{E}|$ candidates are available at the
+decision step, so the missing operation is not information but a path
+between them.
 \emph{Self-attention} is the standard remedy, and the component most
 commonly adopted in the neural combinatorial optimization literature
 (Section~\ref{sec:related-learning}). In an attention layer every
