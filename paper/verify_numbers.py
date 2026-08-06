@@ -204,6 +204,7 @@ MEDIAS = {"v2-full": (27.4, 4.69), "v2-full-300ep": (17.4, 1.30),
           "v2-full-1000ep": (13.8, 0.47)}
 DEV6 = [f"TA{k}" for k in range(15, 21)]
 delta_max = 0.0
+_medias_presupuesto = {}
 for tags, celdas in TAB_INSIZE.items():
     por_semilla = {}
     for tag in tags:
@@ -232,6 +233,7 @@ for tags, celdas in TAB_INSIZE.items():
     m_tex, sd_tex = MEDIAS[tags[0]]
     check(f"{tags[0]}: media de la fila (texto {m_tex})", m_tex,
           sum(res_mean.values()) / 6)
+    _medias_presupuesto[tags[0]] = sum(res_mean.values()) / 6
     import statistics as _si
     por_sem = [_si.mean(re_pct(por_semilla[ta][s][0], ta) for ta in DEV6)
                for s in semillas]
@@ -258,6 +260,22 @@ FILA_MOR = {"TA15": 51.3, "TA16": 35.8, "TA17": 50.1,
             "TA18": 54.2, "TA19": 43.2, "TA20": 43.7}
 for ta, v in FILA_MOR.items():
     check(f"fila MOR {ta}", v, MOR_RE[ta])
+
+# 6.1(i): el rendimiento decreciente se enuncia como tasa medida, no
+# como extrapolacion a un techo. Los dos saltos son de x3 y x3.3 en
+# presupuesto, y el texto los llama "por triplicar"
+if len(_medias_presupuesto) == 3:
+    # las tasas se restan de las medias IMPRESAS, que es lo unico que el
+    # lector puede reproducir; sin redondear serian 10.06 y 3.54
+    _m = {k: round(v, 1) for k, v in _medias_presupuesto.items()}
+    _r1 = _m["v2-full"] - _m["v2-full-300ep"]
+    _r2 = _m["v2-full-300ep"] - _m["v2-full-1000ep"]
+    check("6.1: primer salto, 10.0 puntos (texto)", 10.0, _r1, tol=0.02)
+    check("6.1: segundo salto, 3.6 puntos (texto)", 3.6, _r2, tol=0.02)
+    check_exacto("6.1: el retorno decrece", _r2 < _r1,
+                 f"{_r1:.1f} -> {_r2:.1f}")
+else:
+    pendiente("6.1: las dos tasas de retorno", "faltan brazos de presupuesto")
 
 # fig:scaling: sus dos lineas de referencia van sobre TA15-TA20, no
 # sobre las 70. G&T da 29.5 en las setenta y 27.9 aqui; usar el de las

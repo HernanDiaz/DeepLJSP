@@ -1002,8 +1002,8 @@ for increasing training budgets over ten independent training runs,
 and Figure~\ref{fig:scaling} the aggregate picture. Three observations:
 (i) the policy scales monotonically with budget
 ($27.4\%\to17.4\%\to13.8\%$ mean RE at $100/300/1000$ episodes per
-instance) with clearly diminishing returns at the last step, locating
-the pure-budget ceiling near $11$--$12\%$; (ii) the spread between
+instance), with the return per tripling of the budget falling from
+$10.0$ points to $3.6$; (ii) the spread between
 training runs collapses as the budget grows, the standard deviation
 across the ten seed means falling from $4.69$ points at $100$ episodes
 to $1.30$ at $300$ and $0.47$ at $1000$---a factor of ten---so what
@@ -1012,9 +1012,7 @@ one; (iii) the gap to the strongest constructive baseline is a factor
 ${\approx}2.0$. Figure~\ref{fig:scaling} places the curve between two
 dotted references measured on the same six instances: G\&T-MWKR
 above, at $27.9\%$, and fEABC below, at $9.6\%$, the latter a
-yardstick from a different computational class. The attention variant
-is not drawn there---it has three seeds against these ten, so its
-paired comparison belongs in Table~\ref{tab:insize-attn}.
+yardstick from a different computational class.
 
 The second observation is the one that needed the extra runs. Reported
 over three seeds, a collapse in variance is difficult to distinguish
