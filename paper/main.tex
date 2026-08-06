@@ -1057,9 +1057,9 @@ G\&T-MWKR & 30.6 & 34.0 & 17.7 & 31.8 & 29.3 & 24.1 & 27.9 & --- \\
   \centering
   \includegraphics[width=.7\linewidth]{figures/fig_scaling.pdf}
   \caption{Mean RE on the development set versus training episodes per
-  instance, over ten training runs. The band spans the best and worst
-  of them; the dotted lines are G\&T-MWKR and fEABC on the same six
-  instances.}
+  instance, on a logarithmic axis, over ten training runs. The band
+  spans the best and worst of them; the dotted lines are G\&T-MWKR and
+  fEABC on the same six instances.}
   \label{fig:scaling}
 \end{figure}
 
@@ -1473,7 +1473,8 @@ no budget beyond which further sampling stops helping.
   \centering
   \includegraphics[width=.62\linewidth]{figures/fig_budget.pdf}
   \caption{Mean RE over the 70 instances as a function of the inference
-  budget $B$, reconstructed from stored rollouts. The band is the
+  budget $B$, on a base-2 logarithmic axis, reconstructed from stored
+  rollouts. The band is the
   10--90 percentile over resamplings, that is, the spread a
   practitioner would see across repetitions at that budget, not a
   confidence interval on the mean. The budget is split across the three
