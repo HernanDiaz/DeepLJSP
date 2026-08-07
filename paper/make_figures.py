@@ -352,10 +352,6 @@ def fig_byclass():
         m = re.search(r"tai(\d+_\d+)_(\d+)", nombre.lower())
         return TA_BASE[m.group(1)] + int(m.group(2))
 
-    gt = {int(r["ta"][2:]): float(r["GT-MWKR_re"]) for r in
-          csv.DictReader(open("benchmarks/constructive_per_instance.csv",
-                              encoding="utf-8"))}
-
     def _n2(nombre):
         m = re.search(r"tai(\d+_\d+)_(\d+)", nombre.lower())
         return TA_BASE[m.group(1)] + int(m.group(2))
@@ -364,6 +360,9 @@ def fig_byclass():
           csv.DictReader(open("benchmarks/reevo_fixedfit/summary.csv",
                               encoding="utf-8"))
           if r["method"] == "gp_tuned_seed1"}
+    gp1024 = {_n2(r["instance"]): float(r["best_at_1024"]) for r in
+              csv.DictReader(open("benchmarks/fair_gp_eps.csv",
+                                  encoding="utf-8"))}
     gre = defaultdict(list)
     for r in csv.DictReader(open("benchmarks/fair_v2_greedy.csv",
                                  encoding="utf-8")):
@@ -375,13 +374,14 @@ def fig_byclass():
         bo[_n(r["instance"])].append(float(r["re_comp"]))
     bo = {k: min(v) for k, v in bo.items()}
 
-    series = [("G&T-MWKR", gt, "steelblue"),
-              ("GP rule", gp, "mediumpurple"),
+    # emparejadas por presupuesto: los dos aprendices a una pasada y a
+    # 1024 muestras (G&T-MWKR salio de la figura: su sitio es la tabla)
+    series = [("GP rule, one pass", gp, "#b39ddb"),
               ("Policy, greedy", gre, "sandybrown"),
-              ("Policy, best-of-1024", bo, "seagreen")]
-    # Con diez instancias por clase una caja esconde mas de lo que
-    # resume (en 15x15 seis valores se apilan y el resto quedan fuera de
-    # los bigotes): se dibujan los diez puntos y su mediana.
+              ("GP rule, 1024 samples", gp1024, "mediumpurple"),
+              ("Policy, 1024 samples", bo, "seagreen")]
+    # Caja con los puntos superpuestos: los cuartiles y bigotes resumen,
+    # y con n=10 por clase ningun punto queda escondido.
     fig, ax = plt.subplots(figsize=(7.0, 3.8))
     ancho = 0.21
     rng = np.random.default_rng(11)
@@ -389,12 +389,17 @@ def fig_byclass():
         for i in range(len(CL)):
             vals = [datos[j] for j in range(i * 10 + 1, i * 10 + 11)]
             x = i + (k - 1.5) * ancho
-            ax.scatter(rng.normal(x, 0.028, len(vals)), vals, s=11,
-                       color=color, alpha=0.55, linewidth=0, zorder=2)
-            med = sorted(vals)[len(vals) // 2]
-            ax.hlines(med, x - 0.10, x + 0.10, color=color, linewidth=2.2,
-                      zorder=3)
+            bp = ax.boxplot([vals], positions=[x], widths=ancho * 0.82,
+                            patch_artist=True, showfliers=False,
+                            medianprops=dict(color=color, linewidth=1.8),
+                            boxprops=dict(facecolor=color, alpha=0.25,
+                                          edgecolor=color, linewidth=0.9),
+                            whiskerprops=dict(color=color, linewidth=0.9),
+                            capprops=dict(color=color, linewidth=0.9))
+            ax.scatter(rng.normal(x, 0.022, len(vals)), vals, s=7,
+                       color=color, alpha=0.6, linewidth=0, zorder=3)
         ax.plot([], [], color=color, linewidth=6, alpha=0.75, label=nombre)
+    ax.set_xlim(-0.6, len(CL) - 0.4)
     ax.set_xticks(range(len(CL)))
     ax.set_xticklabels([c.replace("_", r"$\times$") for c in CL])
     # la clase de entrenamiento y desarrollo, marcada

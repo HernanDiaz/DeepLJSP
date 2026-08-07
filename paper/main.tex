@@ -1067,6 +1067,8 @@ the companion study~\citep{DiazGP2026} appears beside them at each
 budget, deterministic at one pass and randomized by
 $\epsilon$-greedy dispatching when sampled, and fEABC closes the
 table as a 30-run average from a different computational class.
+Figure~\ref{fig:byclass} shows the two learners' per-instance
+distributions within each class at the paired budgets.
 
 Read zero-shot, every seed's network at $64$ samples
 outperforms G\&T-MWKR, the strongest constructive baseline, on
@@ -1166,11 +1168,11 @@ trade-off documented for the deterministic JSP~\citep{Zhang2020L2D}.
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{figures/fig_byclass.pdf}
-  \caption{Per-instance RE by size class over the 70 interval Taillard
-  instances: every instance is a point, bars mark class medians. The
-  $20{\times}15$ class is shaded because it holds the four training and
-  six development instances; the other six classes were touched by
-  neither.}
+  \caption{RE by size class over the 70 interval Taillard instances,
+  the two learners paired at one pass and at $1024$ samples. Boxes
+  span the quartiles with whiskers at $1.5$ IQR; every instance is
+  overlaid as a point. The shaded $20{\times}15$ class holds the
+  training and development instances.}
   \label{fig:byclass}
 \end{figure}
 
