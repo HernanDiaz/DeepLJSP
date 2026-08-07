@@ -1051,14 +1051,16 @@ G\&T-MWKR & 30.6 & 34.0 & 17.7 & 31.8 & 29.3 & 24.1 & 27.9 & --- \\
   \label{fig:scaling}
 \end{figure}
 
-\subsection{Zero-shot cross-size generalization}
+\subsection{Zero-shot cross-size generalization and position among
+constructive methods}
 \label{sec:results-crosssize}
+\label{sec:positioning}
 
 The size-invariant design allows direct evaluation of the
 $20{\times}15$-trained network on any class. Evaluation is
 \emph{zero-shot}: the trained weights are applied to sizes they never
 saw, with no additional training or fine-tuning of any kind.
-Table~\ref{tab:crosssize} reports zero-shot RE over all seventy
+Table~\ref{tab:seventy} reports zero-shot RE over all seventy
 instances, ten per class with none omitted: every seed's network
 outperforms MOR on \emph{every} one of them, with graceful degradation
 (class means from $11.0\%$ on $15{\times}15$ to $22.0\%$ on the
@@ -1078,31 +1080,139 @@ structure that is not size-bound.
 
 \begin{table}[t]
 \centering\small
-\caption{Zero-shot RE (\%) of the $20{\times}15$-trained network
-(best-of-64), mean [best] over the three training seeds, by size class
-over all 70 instances---ten per class, none omitted. The
-$20{\times}15$ row ($\dagger$) contains the training and development
+\caption{Mean RE (\%) per size class over the 70 interval Taillard
+instances, ten per class, none omitted. The two learners are paired at
+each of the three inference budgets; the GP rule is the featured
+evolved rule of the companion study~\citep{DiazGP2026}, deterministic
+at one pass and randomized by $\epsilon$-greedy dispatching at the
+sampled budgets, and the policy rows are means over its three seeds.
+fEABC is a 30-run average on dedicated hardware, quoted as a
+reference from a different computational class. The $20{\times}15$
+column ($\dagger$) holds the four training and six development
 instances and is not a generalization result; the other six classes
-were never trained on. Per-instance values are in the appendix.}
-\label{tab:crosssize}
-\setlength{\tabcolsep}{6pt}
-\begin{tabular}{lccc}
+are untouched. Per-instance values are in the appendix.}
+\label{tab:seventy}
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lcccccccc}
 \toprule
-Class & Policy & MOR & G\&T-MWKR \\
+Method & $15{\times}15$ & $20{\times}15^{\dagger}$ & $20{\times}20$ &
+$30{\times}15$ & $30{\times}20$ & $50{\times}15$ & $50{\times}20$ &
+All \\
 \midrule
-$15{\times}15$ & 11.0 [9.6] & 41.4 & 26.7 \\
-$20{\times}15^{\dagger}$ & 13.6 [13.0] & 46.7 & 29.0 \\
-$20{\times}20$ & 14.8 [14.0] & 47.3 & 30.9 \\
-$30{\times}15$ & 16.8 [16.0] & 44.1 & 33.6 \\
-$30{\times}20$ & 22.0 [20.7] & 58.8 & 36.8 \\
-$50{\times}15$ & 12.2 [11.1] & 34.1 & 23.9 \\
-$50{\times}20$ & 15.5 [13.9] & 45.9 & 25.5 \\
+EST & 32.3 & 49.2 & 41.5 & 42.4 & 56.6 & 33.2 & 41.0 & 42.3 \\
+MOR & 41.4 & 46.7 & 47.3 & 44.1 & 58.8 & 34.1 & 45.9 & 45.5 \\
+G\&T-MWKR & 26.7 & 29.0 & 30.9 & 33.6 & 36.8 & 23.9 & 25.5 & 29.5 \\
 \midrule
-All & \textbf{15.1} [14.0] & 45.5 & 29.5 \\
+GP rule, one pass & 15.7 & 16.6 & 18.1 & 21.1 & 24.1 & 13.8 & 14.6 &
+17.7 \\
+Policy, greedy & 16.9 & 18.3 & 18.5 & 21.2 & 26.1 & 15.8 & 18.8 &
+19.4 \\
+\midrule
+GP rule, 64 samples & 12.6 & 15.9 & 16.8 & 17.4 & 23.4 & 11.7 & 13.4 &
+15.9 \\
+Policy, 64 samples & 11.0 & 13.6 & 14.8 & 16.8 & 22.0 & 12.2 & 15.5 &
+\textbf{15.1} \\
+\midrule
+GP rule, 1024 samples & 10.2 & 14.0 & 15.1 & 15.5 & 21.0 & 10.6 &
+12.1 & 14.1 \\
+Policy, 1024 samples & \textbf{8.8} & \textbf{11.2} & \textbf{12.9} &
+\textbf{15.0} & \textbf{19.6} & \textbf{10.4} & \textbf{13.4} &
+\textbf{13.0} \\
+\midrule
+fEABC (30 runs) & 5.9 & 8.7 & 10.3 & 9.8 & 16.4 & 5.7 & 9.0 & 9.4 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
+
+Training the final model takes $66$--$123$ minutes per seed across
+the three seeds ($4{\times}1000$ episodes) on the commodity CPU of
+Table~\ref{tab:environment}. The
+cost is dominated by environment interaction, not by the small
+network: a seed dispatches $1.2$ million operations, each paying for
+feature extraction over the unscheduled work, and the
+GPU-vectorization of rollouts described in
+Section~\ref{sec:environment} bought its ${\sim}3\times$ precisely there. The same cost governs inference:
+a greedy schedule takes $0.6$ seconds on a $15{\times}15$ instance
+and $4.0$ on a $50{\times}20$ one, roughly $2$--$4$ times what a
+hand-crafted dispatching rule costs on the same code path, and
+best-of-$64$ multiplies that by the budget ($41$ seconds and $6.8$
+minutes respectively). The comparison with per-instance metaheuristics
+is therefore one of computational class---train once, then dispatch
+---rather than one of wall-clock time at every budget. Against the hand-crafted rules the comparison is
+one-sided: a single greedy pass improves on MOR, EST and G\&T-MWKR on
+each of the 70 instances (paired Wilcoxon signed-rank test,
+$p<10^{-12}$; the matched-pairs rank-biserial correlation, an effect
+size that reaches $1$ only when one side wins every single pair, is
+exactly $1$). Raising the inference budget to best-of-$1024$ brings the
+full-benchmark mean RE to $13.0\%$ over the 70 instances
+(Table~\ref{tab:seventy} and Figure~\ref{fig:byclass})---ahead of
+every deterministic constructive baseline on every instance, again with
+rank-biserial correlation $1$, and within $2.5$--$5.2$ points of the
+fEABC 30-run class averages.
+
+Against the evolved rule of the companion study the comparison is not
+one-sided, and its answer depends on the inference budget the two are
+given (Figure~\ref{fig:headtohead}). Pass for pass, the rule wins: one
+greedy pass of the policy improves on it in only 21 of the 70
+instances, a median deficit of $2.0$ points
+($p=4.6\times10^{-4}$), and averages $19.4\%$ against the rule's
+$17.7\%$. Which side of that pair is a maximum matters: the $17.7\%$
+is the best of the companion's 30 evolutions, selected on these same
+70 instances, whereas the $19.4\%$ is a mean over three seeds.
+Measured instead against what a single evolution should be expected to
+yield---$18.99\%$, the 30-run mean that study reports---the deficit at
+one pass is $0.4$ points rather than $1.7$. The featured rule is
+retained as the comparison, since it is the artifact that study
+publishes and the stronger test, but it is a selected one. Given
+$1024$ samples each---the companion randomizes its
+rule with $\epsilon$-greedy dispatching for exactly this
+purpose---the ordering reverses, though by less than the two headline
+averages alone would suggest: the policy wins 46 of 70 with a median
+advantage of $1.3$ points ($p=1.4\times10^{-3}$), $13.0\%$ against
+$14.1\%$.
+
+A single
+decision sequence drawn greedily from $1.2\times10^{5}$ parameters is
+worse than a compact evolved formula, so the network's advantage does
+not lie in its argmax; what it provides, and the formula does not, is
+a distribution whose samples improve faster with budget---the reading
+the best-of-$N$ ablation of Section~\ref{sec:ablations-bon} reaches
+from within. Both learners saw the same four training instances, but
+under different regimes and costs, so this compares published
+artifacts rather than a controlled study; the latter, with training as
+well as inference budgets matched, is the subject of dedicated ongoing
+work. The policy's standalone RE ($13.8\%$
+in-size; $11$--$22\%$ zero-shot class means) thus sits between dispatching rules
+($42.3\%$ for the best of them, EST) and per-instance metaheuristics
+($9.4\%$ mean RE for fEABC over 30 runs)---establishing, for the IJSP, the computational-class
+trade-off documented for the deterministic JSP~\citep{Zhang2020L2D}.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig_headtohead.pdf}
+  \caption{The DRL policy against the evolved rule of the companion
+  study~\citep{DiazGP2026} at matched inference budgets, one point per
+  instance over the 70 interval Taillard instances. Points below the
+  diagonal are instances where the policy wins. Left: one constructive
+  pass each. Right: 1024 samples each, the rule randomized with
+  $\epsilon$-greedy dispatching.}
+  \label{fig:headtohead}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig_byclass.pdf}
+  \caption{Per-instance RE by size class over the 70 interval Taillard
+  instances: every instance is a point, bars mark class medians. The
+  $20{\times}15$ class is shaded because it holds the four training and
+  six development instances; the other six classes were touched by
+  neither.}
+  \label{fig:byclass}
+\end{figure}
+
+
+\FloatBarrier
 
 \subsection{Cross-family generalization: the classical instances}
 \label{sec:results-classics}
@@ -1263,133 +1373,6 @@ Mean & 30.1 & 19.0 [12.0] & 17.2 [15.0] & 14.6 [10.4] & 12.4 [11.1] & 12.2 [8.4]
 \end{tabular}
 \end{table}
 
-\subsection{Position among constructive methods}
-\label{sec:positioning}
-
-Training the final model takes $66$--$123$ minutes per seed across
-the three seeds ($4{\times}1000$ episodes) on the commodity CPU of
-Table~\ref{tab:environment}. The
-cost is dominated by environment interaction, not by the small
-network: a seed dispatches $1.2$ million operations, each paying for
-feature extraction over the unscheduled work, and the
-GPU-vectorization of rollouts described in
-Section~\ref{sec:environment} bought its ${\sim}3\times$ precisely there. The same cost governs inference:
-a greedy schedule takes $0.6$ seconds on a $15{\times}15$ instance
-and $4.0$ on a $50{\times}20$ one, roughly $2$--$4$ times what a
-hand-crafted dispatching rule costs on the same code path, and
-best-of-$64$ multiplies that by the budget ($41$ seconds and $6.8$
-minutes respectively). The comparison with per-instance metaheuristics
-is therefore one of computational class---train once, then dispatch
----rather than one of wall-clock time at every budget. Against the hand-crafted rules the comparison is
-one-sided: a single greedy pass improves on MOR, EST and G\&T-MWKR on
-each of the 70 instances (paired Wilcoxon signed-rank test,
-$p<10^{-12}$; the matched-pairs rank-biserial correlation, an effect
-size that reaches $1$ only when one side wins every single pair, is
-exactly $1$). Raising the inference budget to best-of-$1024$ brings the
-full-benchmark mean RE to $13.0\%$ over the 70 instances
-(Table~\ref{tab:seventy} and Figure~\ref{fig:byclass})---ahead of
-every deterministic constructive baseline on every instance, again with
-rank-biserial correlation $1$, and within $2.5$--$5.2$ points of the
-fEABC 30-run class averages.
-
-Against the evolved rule of the companion study the comparison is not
-one-sided, and its answer depends on the inference budget the two are
-given (Figure~\ref{fig:headtohead}). Pass for pass, the rule wins: one
-greedy pass of the policy improves on it in only 21 of the 70
-instances, a median deficit of $2.0$ points
-($p=4.6\times10^{-4}$), and averages $19.4\%$ against the rule's
-$17.7\%$. Which side of that pair is a maximum matters: the $17.7\%$
-is the best of the companion's 30 evolutions, selected on these same
-70 instances, whereas the $19.4\%$ is a mean over three seeds.
-Measured instead against what a single evolution should be expected to
-yield---$18.99\%$, the 30-run mean that study reports---the deficit at
-one pass is $0.4$ points rather than $1.7$. The featured rule is
-retained as the comparison, since it is the artifact that study
-publishes and the stronger test, but it is a selected one. Given
-$1024$ samples each---the companion randomizes its
-rule with $\epsilon$-greedy dispatching for exactly this
-purpose---the ordering reverses, though by less than the two headline
-averages alone would suggest: the policy wins 46 of 70 with a median
-advantage of $1.3$ points ($p=1.4\times10^{-3}$), $13.0\%$ against
-$14.1\%$.
-
-A single
-decision sequence drawn greedily from $1.2\times10^{5}$ parameters is
-worse than a compact evolved formula, so the network's advantage does
-not lie in its argmax; what it provides, and the formula does not, is
-a distribution whose samples improve faster with budget---the reading
-the best-of-$N$ ablation of Section~\ref{sec:ablations-bon} reaches
-from within. Both learners saw the same four training instances, but
-under different regimes and costs, so this compares published
-artifacts rather than a controlled study; the latter, with training as
-well as inference budgets matched, is the subject of dedicated ongoing
-work. The policy's standalone RE ($13.8\%$
-in-size; $11$--$22\%$ zero-shot class means) thus sits between dispatching rules
-($42.3\%$ for the best of them, EST) and per-instance metaheuristics
-($9.4\%$ mean RE for fEABC over 30 runs)---establishing, for the IJSP, the computational-class
-trade-off documented for the deterministic JSP~\citep{Zhang2020L2D}.
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\linewidth]{figures/fig_headtohead.pdf}
-  \caption{The DRL policy against the evolved rule of the companion
-  study~\citep{DiazGP2026} at matched inference budgets, one point per
-  instance over the 70 interval Taillard instances. Points below the
-  diagonal are instances where the policy wins. Left: one constructive
-  pass each. Right: 1024 samples each, the rule randomized with
-  $\epsilon$-greedy dispatching.}
-  \label{fig:headtohead}
-\end{figure}
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\linewidth]{figures/fig_byclass.pdf}
-  \caption{Per-instance RE by size class over the 70 interval Taillard
-  instances: every instance is a point, bars mark class medians. The
-  $20{\times}15$ class is shaded because it holds the four training and
-  six development instances; the other six classes were touched by
-  neither.}
-  \label{fig:byclass}
-\end{figure}
-
-\begin{table}[t]
-\centering\small
-\caption{Mean RE (\%) per size class over the 70 interval Taillard
-instances. Constructive methods are a single deterministic pass unless
-stated; the GP rule is the featured evolved rule of the companion
-study~\citep{DiazGP2026}, also one pass---and the best of that study's
-30 evolutions, selected on these same instances, where the policy rows
-are means over three seeds (Section~\ref{sec:positioning}); fEABC is a
-30-run average on dedicated hardware, quoted as a reference from a
-different computational class. The
-$20{\times}15$ column ($\dagger$) is the training and development
-class: it contains the four instances the policy trained on and the
-six on which the design decisions were made, and is therefore not a
-generalization result; the other six classes are untouched.}
-\label{tab:seventy}
-\setlength{\tabcolsep}{3.5pt}
-\begin{tabular}{lcccccccc}
-\toprule
-Method & $15{\times}15$ & $20{\times}15^{\dagger}$ & $20{\times}20$ &
-$30{\times}15$ & $30{\times}20$ & $50{\times}15$ & $50{\times}20$ &
-All \\
-\midrule
-EST & 32.3 & 49.2 & 41.5 & 42.4 & 56.6 & 33.2 & 41.0 & 42.3 \\
-MOR & 41.4 & 46.7 & 47.3 & 44.1 & 58.8 & 34.1 & 45.9 & 45.5 \\
-G\&T-MWKR & 26.7 & 29.0 & 30.9 & 33.6 & 36.8 & 23.9 & 25.5 & 29.5 \\
-\midrule
-GP rule & 15.7 & 16.6 & 18.1 & 21.1 & 24.1 & 13.8 & 14.6 & 17.7 \\
-Policy (greedy) & 16.9 & 18.3 & 18.5 & 21.2 & 26.1 & 15.8 & 18.8 & 19.4 \\
-Policy (best-of-1024) & \textbf{8.8} & \textbf{11.2} & \textbf{12.9} &
-\textbf{15.0} & \textbf{19.6} & \textbf{10.4} & \textbf{13.4} &
-\textbf{13.0} \\
-\midrule
-fEABC (30 runs) & 5.9 & 8.7 & 10.3 & 9.8 & 16.4 & 5.7 & 9.0 & 9.4 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\FloatBarrier
 \section{Analysis}
 \label{sec:analysis}
 

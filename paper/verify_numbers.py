@@ -1075,6 +1075,27 @@ check("GP una pasada sobre las 70 (texto 17.7)", 17.7,
       sum(_gp.values()) / 70)
 check("GP con 1024 muestras (texto 14.1)", 14.1,
       sum(_gp1024.values()) / 70)
+
+# tab:seventy: las dos filas de best-of-64 que la tabla fusionada anade.
+# Las de GP salen del mismo deposito que su 1024 (fair_gp_eps.csv), donde
+# el brazo va aleatorizado con epsilon-greedy; su "una pasada" NO es esa
+# columna sino la regla determinista, que es lo que la caption declara
+_gp_bon = {}
+for _r in __import__("csv").DictReader(
+        open("benchmarks/fair_gp_eps.csv", encoding="utf-8")):
+    _gp_bon[ta_de(_r["instance"])] = (float(_r["best_at_1"]),
+                                      float(_r["best_at_64"]))
+_gp64_clases = [sum(_gp_bon[f"TA{i * 10 + j + 1}"][1] for j in range(10)) / 10
+                for i in range(7)]
+TAB70_GP64 = [12.6, 15.9, 16.8, 17.4, 23.4, 11.7, 13.4]
+for c, (v_tex, v_dat) in enumerate(zip(TAB70_GP64, _gp64_clases)):
+    check(f"tab:seventy GP-64 clase {c + 1} (texto {v_tex})", v_tex, v_dat)
+check("tab:seventy GP con 64 sobre las 70 (texto 15.9)", 15.9,
+      sum(v[1] for v in _gp_bon.values()) / 70)
+check_exacto("aviso: el 1-sample de fair_gp_eps NO es la pasada "
+             "determinista (18.5 vs 17.7)",
+             abs(sum(v[0] for v in _gp_bon.values()) / 70 - 17.7) > 0.5,
+             f"{sum(v[0] for v in _gp_bon.values()) / 70:.1f} vs 17.7")
 check("politica greedy sobre las 70 (texto 19.4)", 19.4,
       sum(gre[ta] for ta in _gp) / 70)
 
@@ -1516,19 +1537,22 @@ else:
     _mal7 = 0
     for cls, (m_tex, b_tex) in TAB7.items():
         v = _pc[cls]
-        check_exacto(f"tab:crosssize {cls}: diez instancias", len(v) == 10,
+        check_exacto(f"tab:seventy {cls}: diez instancias", len(v) == 10,
                      f"{len(v)}")
         for tex, dat in ((m_tex, sum(a for a, _ in v) / 10),
                          (b_tex, sum(b for _, b in v) / 10)):
             if abs(tex - dat) > 0.051:
                 print(f"  FALLO {cls}: texto={tex} datos={dat:.2f}")
                 _mal7 += 1
-    check_exacto("las 14 celdas de politica de tab:crosssize", _mal7 == 0,
-                 f"{_mal7} mal")
+    # la media por clase va impresa en tab:seventy; el "mejor por semilla"
+    # ya no se imprime desde que la tabla se fusiono, pero se sigue
+    # comprobando como centinela del dato
+    check_exacto("las 14 celdas de politica a 64 (media y mejor)",
+                 _mal7 == 0, f"{_mal7} mal")
     _todo7 = [x for v in _pc.values() for x in v]
-    check("tab:crosssize fila All, media (texto 15.1)", 15.1,
+    check("tab:seventy fila Policy-64, All (texto 15.1)", 15.1,
           sum(a for a, _ in _todo7) / 70)
-    check("tab:crosssize fila All, mejor (texto 14.0)", 14.0,
+    check("centinela: mejor por semilla a 64 sobre las 70 (14.0)", 14.0,
           sum(b for _, b in _todo7) / 70)
     # la afirmacion de 6.2: gana a MOR en TODAS
     _mor70 = {r["ta"]: MOR_RE[r["ta"]] for r in _b64}
