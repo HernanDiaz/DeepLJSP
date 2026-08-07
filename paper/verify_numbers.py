@@ -239,19 +239,24 @@ for tags, celdas in TAB_INSIZE.items():
                for s in semillas]
     check(f"{tags[0]}: sd entre las diez semillas (texto {sd_tex})",
           sd_tex, _si.stdev(por_sem), tol=0.006)
+    # los extremos por semilla ya no se imprimen en el texto: son la
+    # banda mejor-peor de fig:scaling, cuyos valores viven en
+    # make_figures.fig_scaling
     if tags[0] == "v2-full-1000ep":
-        check("6.1: peor semilla de las diez (texto 14.62)", 14.62,
-              max(por_sem), tol=0.006)
-        check("6.1: mejor semilla de las diez (texto 13.12)", 13.12,
-              min(por_sem), tol=0.006)
+        check("fig:scaling: peor semilla a 1000 eps (banda 14.6)", 14.6,
+              max(por_sem), tol=0.051)
+        check("fig:scaling: mejor semilla a 1000 eps (banda 13.1)", 13.1,
+              min(por_sem), tol=0.051)
         tres = [_si.mean(re_pct(por_semilla[ta][s][0], ta) for ta in DEV6)
                 for s in ("2", "3", "4")]
-        check("6.1: las tres de las ablaciones (texto 13.44)", 13.44,
+        check("7.4: las tres de las ablaciones (texto 13.44)", 13.44,
               _si.mean(tres))
+        check("7.4: las diez del brazo principal (texto 13.82)", 13.82,
+              _si.mean(por_sem))
     if tags[0] == "v2-full":
-        check("6.1: rango a 100 eps, minimo (texto 21.3)", 21.3,
+        check("fig:scaling: banda a 100 eps, minimo (21.3)", 21.3,
               min(por_sem), tol=0.051)
-        check("6.1: rango a 100 eps, maximo (texto 36.2)", 36.2,
+        check("fig:scaling: banda a 100 eps, maximo (36.2)", 36.2,
               max(por_sem), tol=0.051)
 print(f"  nota: delta maximo lex vs componentwise = {delta_max:.3f} puntos")
 
