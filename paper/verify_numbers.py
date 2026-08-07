@@ -1671,6 +1671,81 @@ else:
                  "destacada", abs(sum(_gp_cpi.values()) / 70 - 17.71) > 0.5,
                  f"{sum(_gp_cpi.values()) / 70:.2f} vs 17.71")
 
+    print("\n== tab:budget-rate: rendimiento y coste por duplicacion ==")
+    # misma reconstruccion que la figura (reparto del presupuesto entre los
+    # tres checkpoints, min del subconjunto), remuestreada con semilla fija
+    import numpy as _np
+    _NCK, _R = 341, 150
+    _POT = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1023]
+    _pools = {}
+    for (i, ck), v in _cur.items():
+        _pools.setdefault(i, []).append(
+            [x for idx, x in sorted(v) if idx != 0][:_NCK])
+    _pools = {i: _np.array(p) for i, p in _pools.items() if len(p) == 3}
+    _rng = _np.random.RandomState(20260807)
+    _curva = []
+    for _b in _POT:
+        _tot = 0.0
+        for _i, _pl in _pools.items():
+            _lb, _acc = _lbc[_i], 0.0
+            for _ in range(_R):
+                _q, _rst = divmod(_b, 3)
+                _cnt = [_q] * 3
+                for _c in _rng.choice(3, _rst, replace=False):
+                    _cnt[_c] += 1
+                _mej = float("inf")
+                for _c in range(3):
+                    if _cnt[_c]:
+                        _ix = _rng.choice(_NCK, _cnt[_c], replace=False)
+                        _mej = min(_mej, _pl[_c, _ix].min())
+                _acc += (_mej - _lb) / _lb * 100
+            _tot += _acc / _R
+        _curva.append(_tot / len(_pools))
+    _re = dict(zip(_POT, _curva))
+    _gan = {_POT[k]: _curva[k - 1] - _curva[k] for k in range(1, len(_POT))}
+    # en B=1 la esperanza es exacta (la media de las 1023 muestras), no
+    # hace falta remuestrear: es ademas el 21.4 que ya citaba el texto
+    check("tab:budget-rate RE en B=1 (exacta)", 21.4,
+          sum((_pl.mean() - _lbc[_i]) / _lbc[_i] * 100
+              for _i, _pl in _pools.items()) / len(_pools), tol=0.051)
+    for _b, _esp in ((8, 17.1), (64, 14.9), (128, 14.3),
+                     (256, 13.8), (512, 13.3), (1023, 12.9)):
+        check(f"tab:budget-rate RE en B={_b}", _esp, _re[_b], tol=0.11)
+    for _b, _esp in ((8, 1.03), (64, 0.62), (128, 0.57), (256, 0.50),
+                     (512, 0.46), (1023, 0.42)):
+        check(f"tab:budget-rate ganancia sobre B/2 en B={_b}", _esp,
+              _gan[_b], tol=0.055)
+    # la pendiente log-lineal de las tres ultimas octavas que cita el texto
+    _x = [math.log2(_b) for _b in _POT[-4:]]
+    _y = _curva[-4:]
+    _mx, _my = sum(_x) / 4, sum(_y) / 4
+    _pend = (sum((_a - _mx) * (_c - _my) for _a, _c in zip(_x, _y))
+             / sum((_a - _mx) ** 2 for _a in _x))
+    check("7.2: pendiente 0.46 puntos por duplicacion", 0.46, -_pend,
+          tol=0.03)
+    check("7.2: cuatro duplicaciones mas llegarian al 11%", 11.0,
+          _curva[-1] + 4 * _pend, tol=0.15)
+    # "cada octava rinde una decima parte menos que la anterior"
+    _raz = [_gan[_POT[k]] / _gan[_POT[k - 1]] for k in range(6, len(_POT))]
+    check_exacto("7.2: la ganancia mengua ~10% por octava en la cola",
+                 all(0.82 <= _r <= 0.98 for _r in _raz),
+                 " ".join(f"{_r:.2f}" for _r in _raz))
+    # el coste: lineal en B sobre el tiempo por muestra medido
+    _tie = {r["clase"]: r for r in __import__("csv").DictReader(
+        open("benchmarks/tiempos_inferencia.csv", encoding="utf-8"))}
+    _s2015 = float(_tie["20x15"]["bo64_s"]) / 64
+    _s5020 = float(_tie["50x20"]["bo64_s"]) / 64
+    check("7.2: segundos por muestra en 20x15", 1.03, _s2015, tol=0.006)
+    check("7.2: segundos por muestra en 50x20", 6.4, _s5020, tol=0.05)
+    check("7.2: B=1023 son 18 min en 20x15", 18.0, 1023 * _s2015 / 60,
+          tol=0.5)
+    check("7.2: B=1023 son 1.8 h en 50x20", 1.8, 1023 * _s5020 / 3600,
+          tol=0.05)
+    check("7.2: x16 el presupuesto son 4.7 h en 20x15", 4.7,
+          16 * 1023 * _s2015 / 3600, tol=0.05)
+    check("7.2: x16 el presupuesto son 29 h en 50x20", 29.0,
+          16 * 1023 * _s5020 / 3600, tol=0.5)
+
 # 7.3 explica el nulo de la atencion diciendo que dos features ya son
 # relacionales (holgura contra el minimo de las elegibles, congestion
 # contra la carga media). Si esas definiciones cambian en la Tabla 1,

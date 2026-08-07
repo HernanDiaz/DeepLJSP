@@ -1383,6 +1383,49 @@ nearest point to the nominal $1024$), with no knee: within the range
 tested there is
 no budget beyond which further sampling stops helping.
 
+The same reconstruction answers how much of that is still worth
+buying, and at what price. Table~\ref{tab:budget-rate} gives the mean
+RE at successive doublings together with what each doubling adds. The
+return decays slowly but does not vanish: it falls from $1.03$ points
+between $4$ and $8$ samples to $0.42$ between $512$ and $1023$, a
+log-linear rate of $0.46$ points per doubling over the last three
+octaves. Cost, meanwhile, grows exactly as fast as the budget. On the
+machine of Table~\ref{tab:environment} a sampled rollout takes
+$1.03$ s on a $20{\times}15$ instance and $6.4$ s on a
+$50{\times}20$ one, so $B{=}1023$ already spends $18$ minutes and
+$1.8$ hours per instance respectively, and the four further doublings
+that the measured rate would need to reach $11\%$ would spend $4.7$
+and $29$ hours. That exchange rate is the argument against closing the
+remaining distance to fEABC's $9.4\%$ by sampling alone: a
+per-instance metaheuristic covers it in minutes. Two caveats bound the
+arithmetic. Any budget above $1023$ lies outside the measured range,
+and inside that range the per-doubling gain is itself still
+shrinking---each octave returns about a tenth less than the one
+before---so a constant rate is the optimistic reading. And these
+samples come from a fixed policy, whose distribution bounds what any
+budget can reach; the alternative use of the same compute, seeding a
+search with the policy's samples
+(Section~\ref{sec:conclusions}), carries no such bound.
+
+\begin{table}[t]
+\centering\small
+\caption{Mean RE over the 70 instances at successive doublings of the
+inference budget, and what each doubling buys over half its budget.
+Reconstructed from the stored rollouts; the intermediate budgets,
+omitted for space, follow the same pattern.}
+\label{tab:budget-rate}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccccccc@{}}
+\toprule
+Budget $B$ & $1$ & $8$ & $64$ & $128$ & $256$ & $512$ & $1023$ \\
+\midrule
+Mean RE (\%) & $21.4$ & $17.1$ & $14.9$ & $14.3$ & $13.8$ & $13.3$ &
+$12.9$ \\
+Gain over $B/2$ (points) & --- & $1.03$ & $0.62$ & $0.57$ & $0.50$ &
+$0.46$ & $0.42$ \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
 \begin{figure}[t]
   \centering
   \includegraphics[width=.62\linewidth]{figures/fig_budget.pdf}
