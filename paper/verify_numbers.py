@@ -626,6 +626,22 @@ try:
     check_exacto("4.3: sesgos inicializados a cero",
                  all(float(m.bias.abs().sum()) == 0.0
                      for m in _red.modules() if isinstance(m, _nn.Linear)))
+    # el cableado que afirma la Eq. de puntuacion: la politica lee
+    # [phi_i; g] (256) y el valor lee g solo (128)
+    check_exacto("4.3: la politica lee [phi_i; g], el valor solo g",
+                 _red.policy_head[0].in_features == 256
+                 and _red.value_head[0].in_features == 128,
+                 f"{_red.policy_head[0].in_features} / "
+                 f"{_red.value_head[0].in_features}")
+    # y donde va la atencion: ENTRE el encoder y el pooling, que sigue
+    # ahi. 7.3 llego a decir que la sustituia; que no vuelva a pasar
+    _fw = __import__("inspect").getsource(PolicyValueNetV2.forward)
+    check_exacto("4.4 y 7.3: la atencion va antes del pooling, que sigue",
+                 _fw.index("self.attention") < _fw.index("mean_pool")
+                 < _fw.index("max_pool") and "self.attention" in _fw)
+    check_exacto("4.4: la red base no lleva bloques de atencion",
+                 len(_red.attention) == 0
+                 and len(PolicyValueNetV2(num_attention_layers=2).attention) == 2)
 except Exception as e:
     pendiente("coste de la atencion", f"no medible aqui ({type(e).__name__})")
 
