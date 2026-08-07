@@ -1241,6 +1241,15 @@ $9.8\%$, ESABC at $5.5\%$). On La29, La40, ABZ7 and ABZ8
 its best seed edges past the GA average itself, with no retraining of
 any kind.
 
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=.78\linewidth]{figures/fig_ladder.pdf}
+  \caption{Mean RE over the 12 classical interval instances, grouped
+  by the inference budget each method is given. Both learned entries
+  are means over independent runs.}
+  \label{fig:ladder}
+\end{figure}
+
 Against the evolved rules the comparison must be made budget by
 budget, as it was on the Taillard set, and Figure~\ref{fig:ladder} is
 arranged that way. Given one pass each, the policy's $17.2\%$ leads
@@ -1306,14 +1315,6 @@ direction matters for anyone choosing between the two approaches:
 evolving one rule and training one network do not expose a
 practitioner to the same risk from a single run.
 
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=.78\linewidth]{figures/fig_ladder.pdf}
-  \caption{Mean RE over the 12 classical interval instances, grouped
-  by the inference budget each method is given. Both learned entries
-  are means over independent runs.}
-  \label{fig:ladder}
-\end{figure}
 
 
 
