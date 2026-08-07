@@ -62,28 +62,27 @@ Shop Scheduling Problem}
 \abstract{Task durations on a shop floor are seldom known exactly
 when schedules must be committed. The interval job shop
 scheduling problem (IJSP) models each processing time as a closed
-interval; published solvers search each instance separately with
-metaheuristics. This paper studies the complementary regime: a
+interval; published solvers search each instance with metaheuristics. This paper studies the complementary regime: a
 constructive policy, trained once by deep reinforcement learning,
 that returns a schedule in seconds. Dimensionless features and a permutation-invariant
 encoder make its parameter count independent of the numbers of jobs
 and machines. Trained by proximal policy optimization on four
 interval Taillard $20{\times}15$ instances, it reaches $13.8\%$ mean
 relative error against crisp lower bounds on the development
-instances of that size, against ${\approx}46\%$ for the best
-dispatching rule, and outperforms it zero-shot on every instance of all
+instances of that size, where the best dispatching rule reaches
+${\approx}46\%$, and outperforms it zero-shot on every instance of all
 seven size classes; the same weights transfer to a second benchmark of classical
-instances. Against an evolved dispatching rule the ordering depends
-on the inference budget: pass for pass the rule wins, and at $1024$
-samples each the policy wins 46 of the 70. Three ablations are
+instances. Against an evolved rule the ordering depends
+on the inference budget: pass for pass the rule leads, and at $1024$
+samples each the policy is better on 46 of the 70. Three ablations are
 negative: self-attention does not improve on pooling, multi-size
 training does not overtake a single-size specialist, and the
 interval-width features can be removed at no cost, as the closed form
-of the worst-case makespan predicts. Training on crisp midpoints does
-cost $0.63$ points: what the interval model buys lies in the data
-rather than the features. A width-penalizing reward traces a tunable
-width--makespan frontier---yet the entire frontier is reproduced by
-sample selection from the default policy, without retraining.}
+of the objective predicts. Training on crisp midpoints does
+cost $0.63$ points: the interval model contributes through the data
+rather than the features. A width-penalizing reward traces a
+tunable width--makespan frontier---yet sample selection from the
+default policy reproduces all of it without retraining.}
 
 \keywords{job shop scheduling, interval uncertainty, deep reinforcement
 learning, neural combinatorial optimization, size invariance,

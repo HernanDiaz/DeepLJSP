@@ -674,6 +674,20 @@ try:
     check_exacto("4.2: la Tabla 2 enumera las 12", _filas["glob"] == 12,
                  str(_filas["glob"]))
 except Exception as e:
+    pendiente("estructura de la red", f"no medible aqui ({type(e).__name__})")
+
+# el abstract de Journal of Intelligent Manufacturing va limitado a
+# 150-250 palabras; llego a estar en 250 justas
+_abs = TEX.split("\\abstract{")[1].split("\\keywords")[0].rsplit("}", 1)[0]
+_abs = re.sub(r"\\[a-zA-Z]+", " ", _abs)
+_abs = re.sub(r"[{}$\\]", " ", _abs)
+_npal = len([x for x in _abs.split() if any(c.isalnum() for c in x)])
+check_exacto("abstract dentro de 150-250 palabras (con margen)",
+             150 <= _npal <= 245, f"{_npal} palabras")
+
+try:
+    pass
+except Exception as e:
     pendiente("coste de la atencion", f"no medible aqui ({type(e).__name__})")
 
 # tab:environment: las versiones se leen de lo que hay instalado, no del
