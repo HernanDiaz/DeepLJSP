@@ -174,7 +174,7 @@ pay off at practical training budgets?
   traditional dispatching rules---SPT, LPT, MOR, MWKR and EST, plus two
   Giffler--Thompson variants---which a single greedy pass improves on
   instance by instance. The learned-symbolic side is a rule evolved by
-  genetic programming for this same benchmark~\citep{DiazGP2026}, a
+  genetic programming (GP) for this same benchmark~\citep{DiazGP2026}, a
   comparison \citet{Xu2025} single out as missing from the literature:
   the two paradigms are rarely measured against each other under a
   common protocol. Here the answer is budget-dependent rather than a
@@ -279,7 +279,7 @@ the natural strict generalization; our architecture starts from the
 simpler construction and evaluates attention as a controlled ablation.
 
 Learning constructive heuristics is older than its neural incarnation:
-genetic programming (GP) hyper-heuristics evolve interpretable priority
+GP hyper-heuristics evolve interpretable priority
 expressions over hand-crafted attributes~\citep{Branke2016,Nguyen2017}.
 The survey by \citet{Xu2025} compares the GP and RL families
 for job shop scheduling and notes the scarcity of comparisons under a
@@ -1154,8 +1154,8 @@ trade-off documented for the deterministic JSP~\citep{Zhang2020L2D}.
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{figures/fig_headtohead.pdf}
-  \caption{The DRL policy against the evolved rule of the companion
-  study~\citep{DiazGP2026} at matched inference budgets, one point per
+  \caption{The DRL policy against the GP rule~\citep{DiazGP2026} at
+  matched inference budgets, one point per
   instance over the 70 interval Taillard instances. Points below the
   diagonal are instances where the policy wins. Left: one constructive
   pass each. Right: 1024 samples each, the rule randomized with

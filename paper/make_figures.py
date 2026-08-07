@@ -225,7 +225,7 @@ def fig_headtohead():
         ax.set_title(titulo, fontsize=10)
         ax.set_xlabel("GP rule: RE (%)")
         ax.text(0.96, 0.07, "policy wins %d/70" % gana,
-                transform=ax.transAxes, ha="right", fontsize=8.5,
+                transform=ax.transAxes, ha="right", fontsize=11,
                 color=color)
         ax.grid(alpha=0.3, linestyle="--")
     axes[0].set_ylabel("DRL policy: RE (%)")
