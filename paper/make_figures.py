@@ -391,13 +391,13 @@ def fig_byclass():
             x = i + (k - 1.5) * ancho
             bp = ax.boxplot([vals], positions=[x], widths=ancho * 0.82,
                             patch_artist=True, showfliers=False,
-                            medianprops=dict(color=color, linewidth=1.8),
-                            boxprops=dict(facecolor=color, alpha=0.25,
-                                          edgecolor=color, linewidth=0.9),
-                            whiskerprops=dict(color=color, linewidth=0.9),
-                            capprops=dict(color=color, linewidth=0.9))
-            ax.scatter(rng.normal(x, 0.022, len(vals)), vals, s=7,
-                       color=color, alpha=0.6, linewidth=0, zorder=3)
+                            medianprops=dict(color="black", linewidth=1.6),
+                            boxprops=dict(facecolor=color, alpha=0.55,
+                                          edgecolor=color, linewidth=1.4),
+                            whiskerprops=dict(color=color, linewidth=1.3),
+                            capprops=dict(color=color, linewidth=1.3))
+            ax.scatter(rng.normal(x, 0.022, len(vals)), vals, s=8,
+                       color=color, alpha=0.75, linewidth=0, zorder=3)
         ax.plot([], [], color=color, linewidth=6, alpha=0.75, label=nombre)
     ax.set_xlim(-0.6, len(CL) - 0.4)
     ax.set_xticks(range(len(CL)))
