@@ -985,7 +985,7 @@ Section~\ref{sec:positioning}.
 Three published IJSP metaheuristics are included as reference
 yardsticks rather than as direct competitors, since each searches
 every instance separately for minutes on dedicated hardware and
-reports 30-run averages: the genetic algorithm
+reports 30-run averages: the genetic algorithm (GA)
 of~\citet{DiazGA2020}, the enhanced swarm artificial bee colony
 ESABC~\citep{DiazICAE2023} and the filtered elitist artificial bee
 colony fEABC~\citep{DiazFEABC2023}, the strongest of the three. Their
@@ -1270,34 +1270,35 @@ are allowed to sample---which is what
 Section~\ref{sec:positioning} finds on the Taillard set, arrived at
 here on a family neither method was tuned for.
 
-The two readings of the table order the learners oppositely, and the
-reason is worth stating. On the mean the policy leads at all three
-budgets---$17.2\%$, $12.4\%$ and $10.3\%$ against $19.0\%$, $14.6\%$
-and $12.2\%$---while in the brackets GP leads at all three, $12.0\%$,
-$10.4\%$ and $8.4\%$ against $15.0\%$, $11.1\%$ and $9.6\%$. The
-brackets, however, are per-instance minima over unequal samples---30
-evolutions against three training seeds---drawn from unequal spreads:
-the standard deviation across the 30 rules averages $4.3$, $2.3$ and
-$2.0$ points at the three budgets, against $2.2$, $1.4$ and $0.7$
-across the policy's seeds. Both differences deepen the GP minimum.
-As an order of magnitude, the expected minimum of $n$ normal draws
-lies $c_n$ standard deviations below the mean, with $c_3=0.85$
-against $c_{30}=2.04$; applying $c_{30}$ to the policy's own spreads
-would place its bracket at $12.7\%$, $9.6\%$ and $8.8\%$, level with
-GP rather than behind it. The bracket ordering is therefore an
-artifact of how many runs each side selects over.
+One feature of the table needs explaining: the two readings order the
+learners oppositely. The policy has the better mean at all three
+budgets, and GP the better bracket at all three. The cause is the
+number of runs each bracket selects over---30 evolutions for GP
+against three training seeds for the policy---compounded by the wider
+spread of the evolved rules: their standard deviation across the 30
+averages $4.3$, $2.3$ and $2.0$ points at the three budgets, against
+$2.2$, $1.4$ and $0.7$ across the policy's seeds. A per-instance
+minimum taken from 30 draws of a wide distribution reaches further
+down than one taken from three draws of a narrow one. Quantitatively,
+the minimum of $n$ normal draws is expected about $0.85$ standard
+deviations below the mean for $n=3$ and $2.04$ for $n=30$; selecting
+the policy over 30 seeds would therefore place its bracket near
+$12.7\%$, $9.6\%$ and $8.8\%$, level with the $12.0\%$, $10.4\%$ and
+$8.4\%$ of GP instead of behind them. The bracket ordering measures
+how many runs each side was selected from, not which learner produces
+the better run.
 
-The rule the companion study features falls between the two readings,
-which its selection procedure explains. That study
-selects it as the lowest mean RE \emph{on the 70 Taillard instances},
-which is a best-of-30 chosen on data the twelve classical instances
-play no part in; its $17.9\%$, $14.2\%$ and $11.3\%$ beat the 30-run
-mean at all three budgets, so the selection does transfer across
-families---but only partway, since it lands at the fortieth percentile
-of the 30 here rather than at the top. It is that rule, and not the
-30-run mean, that Figure~\ref{fig:headtohead},
-Table~\ref{tab:seventy} and the appendix use, the 30 rules not being
-available on the Taillard set.
+The rule that the companion study features scores $17.9\%$, $14.2\%$
+and $11.3\%$ here, between the two readings, and its selection
+explains why. That study picked it as the best of its 30 evolutions
+by mean RE \emph{on the 70 Taillard instances}, a choice in which
+these twelve classical instances played no part. It still beats the
+30-rule mean at all three budgets, so the choice does carry across
+families; but it carries only partway, since twelve of the 30 do
+better here, placing it at the fortieth percentile rather than at the
+top. This is the rule used in Figure~\ref{fig:headtohead},
+Table~\ref{tab:seventy} and the appendix, where the other 29 were not
+available.
 
 What is not an artifact is the spread itself, smaller for the policy
 at every budget: evolving one rule and training one network do not
