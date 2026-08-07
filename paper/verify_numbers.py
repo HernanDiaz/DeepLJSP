@@ -884,7 +884,9 @@ check("6.3: peor regla de las 30 (texto 23.3)", 23.3, max(_m_regla.values()))
 check("6.3: media de las 30 reglas (texto 19.0)", 19.0,
       sum(_m_regla.values()) / 30)
 _pub = _m_regla["gp_tuned_seed1"]
-check_exacto("6.3: la publicada es la 12 de 30 (percentil 40)",
+# el analisis de la transferencia de la seleccion GP salio del texto:
+# queda como centinela del dato
+check_exacto("centinela: la regla publicada es la 13 de 30 en las clasicas",
              sum(1 for v in _m_regla.values() if v < _pub) == 12,
              f"{sum(1 for v in _m_regla.values() if v < _pub)}/30 mejores")
 try:
