@@ -339,15 +339,59 @@ for tag, (m_tex, b_tex) in TAB_ATTN.items():
     check(f"{tag}: mejor (texto {b_tex})", b_tex,
           sum(bests.values()) / len(bests))
 
-# +1.2% / +1.6% de makespan medio (pareado por instancia y semilla)
+# el makespan medio ya no se imprime (7.3 lo cuenta en puntos de RE y
+# con test pareado), pero se sigue comprobando como centinela del dato
 for tag_a, tag_b, delta_tex in [("v2-full-300ep", "v2-attn-300ep", 0.9),
                                 ("v2-full-1000ep", "v2-attn-1000ep", 1.5)]:
     da, db = bench_por_instancia(tag_a), bench_por_instancia(tag_b)
     if da and db:
         base = sum(sum(d["mids"]) for d in da.values())
         attn = sum(sum(d["mids"]) for d in db.values())
-        check(f"makespan medio {tag_b} vs base (texto +{delta_tex}%)",
+        check(f"centinela: makespan medio {tag_b} vs base (+{delta_tex}%)",
               delta_tex, (attn / base - 1) * 100, tol=0.1)
+
+# 7.3, la comparacion pareada que SI imprime el texto: 18 pares
+# (instancia, semilla), delta en puntos de RE, cuentas y Wilcoxon
+from scipy.stats import wilcoxon as _wilc  # noqa: E402
+
+for _tb, _d_tex, _pares_tex, _inst_tex, _p_tex in [
+        ("300ep", 1.03, 12, 5, 0.067), ("1000ep", 1.76, 16, 6, None)]:
+    _da = bench_por_instancia("v2-full-" + _tb)
+    _db = bench_por_instancia("v2-attn-" + _tb)
+    if not (_da and _db):
+        pendiente(f"7.3 pareado {_tb}", "sin directorios en outputs/")
+        continue
+    _dif = [re_pct(y, ta) - re_pct(x, ta) for ta in sorted(_da)
+            for x, y in zip(_da[ta]["mids"], _db[ta]["mids"])]
+    check_exacto(f"7.3 {_tb}: 18 pares (instancia, semilla)",
+                 len(_dif) == 18, str(len(_dif)))
+    check(f"7.3 {_tb}: la atencion pierde {_d_tex} puntos de RE",
+          _d_tex, sum(_dif) / len(_dif), tol=0.011)
+    check_exacto(f"7.3 {_tb}: peor en {_pares_tex} de los 18 pares",
+                 sum(1 for d in _dif if d > 0) == _pares_tex,
+                 str(sum(1 for d in _dif if d > 0)))
+    _pi = sum(1 for ta in _da
+              if sum(re_pct(v, ta) for v in _db[ta]["mids"])
+              > sum(re_pct(v, ta) for v in _da[ta]["mids"]))
+    check_exacto(f"7.3 {_tb}: peor en {_inst_tex} de las 6 instancias",
+                 _pi == _inst_tex, str(_pi))
+    _p = _wilc(_dif).pvalue
+    if _p_tex is None:
+        check_exacto(f"7.3 {_tb}: p<0.001", _p < 0.001, f"p={_p:.5f}")
+    else:
+        check(f"7.3 {_tb}: Wilcoxon p={_p_tex}", _p_tex, _p, tol=0.0011)
+
+# el sobrecoste por episodio que cita 7.3, desde los registros de corrida
+_wall = {}
+for _t in ("v2-full-1000ep", "v2-attn-1000ep"):
+    _f = glob.glob(f"benchmarks/{_t}__*.json")
+    if _f:
+        _r = json.load(open(_f[0], encoding="utf-8"))
+        _wall[_t] = (_r["total_wall_time_s"]
+                     / (len(_r["config"]["seeds"]) * _r["config"]["episodes"]))
+if len(_wall) == 2:
+    check("7.3: 1.7x el reloj por episodio (1000 ep)", 1.7,
+          _wall["v2-attn-1000ep"] / _wall["v2-full-1000ep"], tol=0.051)
 
 # =========================================================================
 print("\n== especialista vs multi-tamano ==")
