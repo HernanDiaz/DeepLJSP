@@ -1232,7 +1232,10 @@ Mean & 30.1 & 19.0 [12.0] & 17.2 [15.0] & 14.6 [10.4] & 12.4 [11.1] & 12.2 [8.4]
 Table~\ref{tab:classics} positions the policy (best-of-64, mean and
 best of the three seeds) against the shared-evaluator rules and the
 published 30-run averages of the per-instance metaheuristics, the
-latter quoted from Table~2 of~\citet{DiazFEABC2023}. The
+latter quoted from Table~2 of~\citet{DiazFEABC2023}. Its GP columns
+are the 30 evolutions themselves, the full set being available only
+on this family, whereas the single featured rule of
+Section~\ref{sec:positioning} represents GP on the Taillard set. The
 policy improves on EST and G\&T-MWKR on all twelve instances and lands
 at $12.4\%$ mean RE---between the hand-crafted constructive baselines
 ($30.1\%$ for G\&T-MWKR) and the per-instance searchers (GA at
@@ -1285,16 +1288,10 @@ the policy over 30 seeds would therefore place its bracket near
 $12.7\%$, $9.6\%$ and $8.8\%$, level with the $12.0\%$, $10.4\%$ and
 $8.4\%$ of GP instead of behind them. The bracket ordering measures
 how many runs each side was selected from, not which learner produces
-the better run.
-
-The GP columns here are the 30 evolutions themselves, the full set
-being available only on this family; the single featured rule of
-Section~\ref{sec:positioning} is what represents GP on the Taillard
-set.
-
-What is not an artifact is the spread itself, smaller for the policy
-at every budget: evolving one rule and training one network do not
-expose a practitioner to the same risk from the run they obtain.
+the better run. What is not an artifact is the spread itself, smaller
+for the policy at every budget: evolving one rule and training one
+network do not expose a practitioner to the same risk from the run
+they obtain.
 
 
 
