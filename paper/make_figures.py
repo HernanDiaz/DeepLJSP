@@ -382,7 +382,7 @@ def fig_byclass():
               ("Policy, 1024 samples", bo, "seagreen")]
     # Caja con los puntos superpuestos: los cuartiles y bigotes resumen,
     # y con n=10 por clase ningun punto queda escondido.
-    fig, ax = plt.subplots(figsize=(7.0, 3.8))
+    fig, ax = plt.subplots(figsize=(8.0, 3.7))
     ancho = 0.21
     rng = np.random.default_rng(11)
     for k, (nombre, datos, color) in enumerate(series):
@@ -408,11 +408,17 @@ def fig_byclass():
             va="top", fontsize=8, color="dimgray")
     ax.set_xlabel("Instance size class")
     ax.set_ylabel("RE (%)")
-    ax.legend(frameon=False, fontsize=8.5, ncol=4, loc="lower center",
-              bbox_to_anchor=(0.5, 1.01))
+    # la leyenda no debe ser mas ancha que los ejes: si sobresale, el
+    # recorte la incluye y los ejes encogen al escalar a \linewidth
+    ax.legend(frameon=False, fontsize=9, ncol=4, loc="lower center",
+              bbox_to_anchor=(0.5, 1.01), columnspacing=1.1,
+              handlelength=1.3, handletextpad=0.5)
     ax.grid(axis="y", alpha=0.3, linestyle="--")
     fig.tight_layout()
-    fig.savefig(os.path.join(FIG_DIR, "fig_byclass.pdf"))
+    # recortar al contenido: sin esto el PDF conserva margenes blancos
+    # y, colocado a \linewidth, los ejes quedan mas estrechos que la caja
+    fig.savefig(os.path.join(FIG_DIR, "fig_byclass.pdf"),
+                bbox_inches="tight", pad_inches=0.02)
     plt.close(fig)
 
 
