@@ -1044,10 +1044,11 @@ G\&T-MWKR & 30.6 & 34.0 & 17.7 & 31.8 & 29.3 & 24.1 & 27.9 & --- \\
 \begin{figure}[t]
   \centering
   \includegraphics[width=.7\linewidth]{figures/fig_scaling.pdf}
-  \caption{Mean RE on the development set versus training episodes per
-  instance, on a logarithmic axis, over ten training runs. The band
-  spans the best and worst of them; the dotted lines are G\&T-MWKR and
-  fEABC on the same six instances.}
+  \caption{Mean RE on the development set against the \emph{training}
+  budget, the episodes spent once per instance before deployment, on
+  a logarithmic axis and over ten training runs. The band spans the
+  best and worst of them; the dotted lines are G\&T-MWKR and fEABC on
+  the same six instances.}
   \label{fig:scaling}
 \end{figure}
 
@@ -1363,7 +1364,13 @@ $1024$ samples, which leaves the shape between them unstated. To
 recover it we stored every individual rollout of $342$ per checkpoint
 on each of the 70 instances---$71{,}820$ schedules---so that
 best-of-$B$ can be reconstructed for any $B$ without evaluating
-anything again. Figure~\ref{fig:budget} plots the result. Three
+anything again. Figure~\ref{fig:budget} plots the result. Its band is
+the spread a practitioner would see across repetitions at that
+budget, not a confidence interval on the mean; the budget is split
+across the three checkpoints as the deployed protocol splits it, with
+the greedy reference aggregated the same way, so it sits below the
+$19.4\%$ that Section~\ref{sec:positioning} reports as a mean over
+seeds; and EST, at $42.3\%$, is above the frame. Three
 readings follow. A single \emph{sampled} rollout is much
 worse than a greedy one, $21.4\%$ against $17.0\%$: the argmax is a
 good decision sequence and the distribution around it is wide. The
@@ -1379,16 +1386,10 @@ no budget beyond which further sampling stops helping.
 \begin{figure}[t]
   \centering
   \includegraphics[width=.62\linewidth]{figures/fig_budget.pdf}
-  \caption{Mean RE over the 70 instances as a function of the inference
-  budget $B$, on a base-2 logarithmic axis, reconstructed from stored
-  rollouts. The band is the
-  10--90 percentile over resamplings, that is, the spread a
-  practitioner would see across repetitions at that budget, not a
-  confidence interval on the mean. The budget is split across the three
-  checkpoints as the deployed protocol splits it, and the greedy
-  reference is aggregated the same way; the $19.4\%$ of
-  Section~\ref{sec:positioning} is the mean over seeds instead. EST, at
-  $42.3\%$, is off the top of the frame.}
+  \caption{Mean RE over the 70 instances against the \emph{inference}
+  budget $B$, the samples spent on each instance, on a base-2
+  logarithmic axis. The band is the 10--90 percentile over
+  resamplings.}
   \label{fig:budget}
 \end{figure}
 
