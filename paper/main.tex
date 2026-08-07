@@ -1118,26 +1118,22 @@ fEABC (30 runs) & 5.9 & 8.7 & 10.3 & 9.8 & 16.4 & 5.7 & 9.0 & 9.4 \\
 \end{table}
 
 
-Against the evolved rule of the companion study the comparison is not
-one-sided, and its answer depends on the inference budget the two are
-given (Figure~\ref{fig:headtohead}). Pass for pass, the rule wins: one
-greedy pass of the policy improves on it in only 21 of the 70
-instances, a median deficit of $2.0$ points
-($p=4.6\times10^{-4}$), and averages $19.4\%$ against the rule's
-$17.7\%$. Which side of that pair is a maximum matters: the $17.7\%$
-is the best of the companion's 30 evolutions, selected on these same
-70 instances, whereas the $19.4\%$ is a mean over three seeds.
-Measured instead against what a single evolution should be expected to
-yield---$18.99\%$, the 30-run mean that study reports---the deficit at
-one pass is $0.4$ points rather than $1.7$. The featured rule is
-retained as the comparison, since it is the artifact that study
-publishes and the stronger test, but it is a selected one. Given
-$1024$ samples each---the companion randomizes its
-rule with $\epsilon$-greedy dispatching for exactly this
-purpose---the ordering reverses, though by less than the two headline
-averages alone would suggest: the policy wins 46 of 70 with a median
-advantage of $1.3$ points ($p=1.4\times10^{-3}$), $13.0\%$ against
-$14.1\%$.
+Against the GP rule the comparison is not one-sided: its outcome
+depends on the inference budget both methods receive
+(Figure~\ref{fig:headtohead}). With one pass each, the rule is
+better. It averages $17.7\%$ against the policy's $19.4\%$, and the
+policy improves on it in only 21 of the 70 instances (median deficit
+$2.0$ points, $p=4.6\times10^{-4}$). This comparison is asymmetric,
+however: the $17.7\%$ rule is the best of 30 independent evolutions,
+selected on these same 70 instances, while the $19.4\%$ is a mean
+over the policy's three seeds. Against the mean of the 30 evolutions,
+$18.99\%$, the deficit at one pass is $0.4$ points. The selected rule
+is nonetheless kept as the comparison, because it is the published
+artifact and the harder test. With $1024$ samples each---the GP rule
+randomized by the $\epsilon$-greedy dispatching its study provides
+for this purpose---the ordering reverses: $13.0\%$ against $14.1\%$,
+with the policy better on 46 of the 70 (median advantage $1.3$
+points, $p=1.4\times10^{-3}$).
 
 A single
 decision sequence drawn greedily from $1.2\times10^{5}$ parameters is
