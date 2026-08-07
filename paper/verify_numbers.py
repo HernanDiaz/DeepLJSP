@@ -685,6 +685,18 @@ _npal = len([x for x in _abs.split() if any(c.isalnum() for c in x)])
 check_exacto("abstract dentro de 150-250 palabras (con margen)",
              150 <= _npal <= 245, f"{_npal} palabras")
 
+# bibliografia: que ninguna clave citada falte y que no sobre ninguna
+_bib = open("paper/refs.bib", encoding="utf-8").read()
+_citadas = set()
+for _m in re.finditer(r"\\cite[a-zA-Z]*\*?(?:\[[^\]]*\])*\{([^}]*)\}", TEX):
+    _citadas.update(_k.strip() for _k in _m.group(1).split(","))
+_citadas.discard("")
+_enbib = set(re.findall(r"@\w+\{([^,]+),", _bib))
+check_exacto("toda clave citada existe en refs.bib",
+             not (_citadas - _enbib), str(sorted(_citadas - _enbib)))
+check_exacto("refs.bib no arrastra entradas sin citar",
+             not (_enbib - _citadas), str(sorted(_enbib - _citadas)))
+
 try:
     pass
 except Exception as e:
