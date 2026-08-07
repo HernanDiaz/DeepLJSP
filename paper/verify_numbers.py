@@ -381,17 +381,37 @@ for _tb, _d_tex, _pares_tex, _inst_tex, _p_tex in [
     else:
         check(f"7.3 {_tb}: Wilcoxon p={_p_tex}", _p_tex, _p, tol=0.0011)
 
-# el sobrecoste por episodio que cita 7.3, desde los registros de corrida
-_wall = {}
-for _t in ("v2-full-1000ep", "v2-attn-1000ep"):
+# El sobrecoste por episodio que cita 7.3. Se mide a 300 episodios y NO
+# a 1000: alli el brazo base tiene un 1.87x de dispersion entre sus tres
+# semillas (3.97 / 6.30 / 7.41 s por episodio, misma configuracion), o
+# sea contencion de maquina, y dividir por esa media inflada rebajaba el
+# factor a 1.7. A 300 episodios los dos brazos son consistentes.
+_seg = {}
+for _t in ("v2-full-300ep", "v2-attn-300ep",
+           "v2-full-1000ep", "v2-attn-1000ep"):
     _f = glob.glob(f"benchmarks/{_t}__*.json")
     if _f:
         _r = json.load(open(_f[0], encoding="utf-8"))
-        _wall[_t] = (_r["total_wall_time_s"]
-                     / (len(_r["config"]["seeds"]) * _r["config"]["episodes"]))
-if len(_wall) == 2:
-    check("7.3: 1.7x el reloj por episodio (1000 ep)", 1.7,
-          _wall["v2-attn-1000ep"] / _wall["v2-full-1000ep"], tol=0.051)
+        _seg[_t] = sorted(_s["wall_time_s"] / _r["config"]["episodes"]
+                          for _s in _r["seeds"].values())
+if len(_seg) == 4:
+    for _t in ("v2-full-300ep", "v2-attn-300ep"):
+        check_exacto(f"7.3: {_t} es consistente entre semillas (<4%)",
+                     _seg[_t][-1] / _seg[_t][0] < 1.04,
+                     " ".join(f"{x:.2f}" for x in _seg[_t]))
+    check("7.3: 2.2x el reloj por episodio (300 ep)", 2.2,
+          (sum(_seg["v2-attn-300ep"]) / 3) / (sum(_seg["v2-full-300ep"]) / 3),
+          tol=0.051)
+    check_exacto("7.3: por que no se mide a 1000 ep (base dispersa 1.87x)",
+                 _seg["v2-full-1000ep"][-1] / _seg["v2-full-1000ep"][0] > 1.5,
+                 " ".join(f"{x:.2f}" for x in _seg["v2-full-1000ep"]))
+    # y que la variante de atencion si es estable a los dos presupuestos,
+    # lo que confirma que el disperso es el base y no la medida
+    check_exacto("7.3: la variante de atencion cuesta lo mismo a 300 y 1000",
+                 abs(sum(_seg["v2-attn-300ep"]) / sum(_seg["v2-attn-1000ep"])
+                     - 1) < 0.1,
+                 f"{sum(_seg['v2-attn-300ep'])/3:.2f} vs "
+                 f"{sum(_seg['v2-attn-1000ep'])/3:.2f} s/ep")
 
 # =========================================================================
 print("\n== especialista vs multi-tamano ==")
@@ -643,8 +663,16 @@ if datos_e:
                       for ta, d in datos_e.items()) / len(datos_e)
     print(f"  info  v2-elite27-1000ep: {media_e:.2f}% comp / "
           f"{media_e_lex:.2f}% lex (texto: 14.5 campana 1 / 14.73 campana 2)")
+    check("5.3: el elite de la campana 1 a 1000 eps (texto 14.5)", 14.5,
+          media_e_lex, tol=0.051)
     check_exacto("el elite confirmado no mejora el 13.4 por defecto",
                  media_e > 13.4, f"{media_e:.2f} > 13.4")
+    # 5.3 ya NO afirma nada sobre el coste de ese brazo: los relojes de
+    # las dos corridas no son comparables (el brazo por defecto dispersa
+    # 1.87x entre sus propias semillas), y el ~60% que decia el texto
+    # ademas invertia el sentido -- el elite corrio mas barato, no mas caro
+    check_exacto("5.3 no afirma un sobrecoste del elite (dato no fiable)",
+                 "higher training cost" not in TEX)
 # confirmacion del elite 22 (campana 2): tuning/confirm_elite22.log
 t22 = open("tuning/confirm_elite22.log", encoding="utf-8",
            errors="replace").read()
