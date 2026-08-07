@@ -253,18 +253,29 @@ def fig_importance():
         "makespan_maquina": "machine makespan", "dur_width_rel": "duration width",
         "makespan_job": "job makespan",
     }
-    filas = list(csv.DictReader(open("benchmarks/feature_importance.csv",
-                                     encoding="utf-8")))
-    filas.sort(key=lambda r: float(r["delta_puntos"]))
+    # cinco permutaciones por feature: media y desviacion tipica. El
+    # fichero de una sola extraccion se conserva pero ya no se dibuja
+    import statistics as _st
+    por_feat = {}
+    for r in csv.DictReader(open("benchmarks/feature_importance_rep.csv",
+                                 encoding="utf-8")):
+        por_feat.setdefault(r["feature"], []).append(
+            float(r["delta_puntos"]))
+    filas = [{"feature": f, "media": _st.mean(v), "sd": _st.stdev(v)}
+             for f, v in por_feat.items()]
+    filas.sort(key=lambda r: r["media"])
     nombres = [ETIQUETAS.get(r["feature"], r["feature"]) for r in filas]
-    valores = [float(r["delta_puntos"]) for r in filas]
+    valores = [r["media"] for r in filas]
+    errores = [r["sd"] for r in filas]
     # las dos features de anchura, resaltadas: son las que no aportan
     colores = ["indianred" if r["feature"].endswith("width_rel")
                else "steelblue" for r in filas]
 
     fig, ax = plt.subplots(figsize=(5.6, 4.4))
     y = range(len(nombres))
-    ax.barh(list(y), valores, color=colores, height=0.7)
+    ax.barh(list(y), valores, color=colores, height=0.7,
+            xerr=errores, error_kw={"ecolor": "0.3", "elinewidth": 0.9,
+                                    "capsize": 2})
     ax.set_yticks(list(y))
     ax.set_yticklabels(nombres, fontsize=8.5)
     # las barras de anchura son demasiado cortas para que el color se vea:
@@ -275,10 +286,10 @@ def fig_importance():
             etiqueta.set_fontweight("bold")
     ax.axvline(0, color="black", linewidth=0.8)
     ax.set_xlabel("$\\Delta$ mean RE when the feature is permuted (points)")
-    for i, v in enumerate(valores):
-        ax.text(v + (0.9 if v >= 0 else -0.9), i, "%+.1f" % v, va="center",
-                ha="left" if v >= 0 else "right", fontsize=8)
-    ax.set_xlim(min(valores) - 6, max(valores) + 8)
+    for i, (v, e) in enumerate(zip(valores, errores)):
+        ax.text(v + e + 1.0, i, "%+.1f" % v, va="center",
+                ha="left", fontsize=8)
+    ax.set_xlim(min(valores) - 6, max(valores) + 9)
     ax.grid(axis="x", alpha=0.3, linestyle="--")
     fig.tight_layout()
     fig.savefig(os.path.join(FIG_DIR, "fig_importance.pdf"))

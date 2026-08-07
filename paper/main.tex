@@ -1318,22 +1318,34 @@ the intact rollouts ($18.2\%$).
   \caption{Permutation importance of the 16 operation features: change
   in mean development-set RE when the feature's column is shuffled
   across the eligible operations at every decision (greedy rollouts,
-  three seeds; intact baseline $18.2\%$). The two interval-width
-  features are highlighted.}
+  three seeds; intact baseline $18.2\%$). Bars are the mean of five
+  independent permutation draws and whiskers their standard deviation.
+  The two interval-width features are highlighted.}
   \label{fig:importance}
 \end{figure}
 
-Three features carry the policy: the relative slack (whose permutation
-adds $51.0$ points of RE), the number of remaining operations in the
-job ($+28.1$), and the job's worst-case remaining work
-($+10.6$)---the attribute families behind MOR and MWKR, and the very
-attributes the companion study's evolved expressions
-select~\citep{DiazGP2026}. The interval-width features contribute
-nothing measurable at inference ($-0.1$ to $+0.2$ points), which is
-what the objective entails rather than a surprise: the worst-case
-makespan the reward minimizes is a function of the upper endpoints
-alone (Section~\ref{sec:ablations-interval}), so a width cannot
-inform a decision judged by it.
+Each column is permuted five times with independent draws, and the
+figure reports the mean degradation and its standard deviation over
+the five; a single draw moves the magnitudes by several points, though
+not the ordering. Three features carry the policy: the relative slack
+(whose permutation adds $56.5\pm2.4$ points of RE), the number of
+remaining operations in the job ($+33.6\pm1.4$), and the job's
+worst-case remaining work ($+9.6\pm1.0$)---the attribute families
+behind MOR and MWKR, and the very attributes the companion study's
+evolved expressions select~\citep{DiazGP2026}. Below a second tier of
+three features costing between $1.8$ and $2.9$ points, the remaining
+ten fall into a floor between $+0.3$ and $+1.0$ points that no
+measurement of this precision separates, and the two interval-width
+features sit inside it, one of them last of the sixteen
+($+0.3\pm0.3$ for the duration width, $+0.9\pm0.5$ for the start
+width). That the widths land on the floor is what the objective
+entails rather than a surprise: the worst-case makespan the reward
+minimizes is a function of the upper endpoints alone
+(Section~\ref{sec:ablations-interval}), so a width cannot inform a
+decision judged by it. That the floor is not exactly zero is expected
+too, since permuting any column perturbs an input distribution the
+network was trained against, whether or not that column informs the
+decision.
 
 The audit is therefore conditional on what the policy was trained to
 optimize---this objective and the reward weights of
@@ -1592,7 +1604,8 @@ enough to see it.
 
 Taken together with the permutation audit, the delimitation is sharper
 than a blanket statement about interval awareness. As \emph{input
-features} the widths are inert: unused at inference, free to remove,
+features} the widths are inert: at the floor of the permutation
+ranking, free to remove,
 and Eq.~\eqref{eq:upperclosed} says why in a way that generalizes past
 this network---any method minimizing the worst-case makespan of a
 semiactive schedule optimizes a function of the upper endpoints alone,
@@ -1818,9 +1831,10 @@ at three times its cost, and two independent automatic-configuration
 campaigns failed to beat the untuned defaults at the operating
 budget (Q3). Three more delimit the interval representation that
 motivated the design, and they separate two things the design had
-conflated. As inputs the widths are inert: the policy neither uses
-them at inference ($-0.1$ points when they are shuffled) nor suffers
-when they are removed from training ($13.62$ against $13.44\%$,
+conflated. As inputs the widths are inert: permuting them costs the
+policy $0.3$ and $0.9$ points, the floor of a ranking whose top
+feature costs $56.5$, and removing them from training costs nothing
+measurable ($13.62$ against $13.44\%$,
 $p=0.47$), which the closed recursion for the worst-case makespan
 predicts, since that quantity does not contain a lower bound. As
 training data the intervals are not inert: fitting the policy to the

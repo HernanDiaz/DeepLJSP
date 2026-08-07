@@ -1224,20 +1224,55 @@ check_exacto("mejor semilla < GA en La40, ABZ7 y ABZ8",
                  for i in ("La40", "ABZ7", "ABZ8")))
 
 print("\n== importancia de features ==")
+# 7.1 cita la medida con CINCO permutaciones por columna; la de una sola
+# extraccion se conserva en feature_importance.csv y se comprueba abajo
+# como centinela, porque sus magnitudes ya no se imprimen
+_rep = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/feature_importance_rep.csv", encoding="utf-8")):
+    _rep.setdefault(r["feature"], []).append(float(r["delta_puntos"]))
+    _base = float(r["re_base"])
+check_exacto("importancia: 16 features x 5 permutaciones",
+             len(_rep) == 16 and all(len(v) == 5 for v in _rep.values()),
+             f"{len(_rep)} features")
+check("base greedy del test (texto 18.2)", 18.2, _base)
+_med = {f: sum(v) / len(v) for f, v in _rep.items()}
+_sd = {f: _stt.stdev(v) for f, v in _rep.items()}
+for f, m_tex, s_tex in [("holgura", 56.5, 2.4), ("pos_restante", 33.6, 1.4),
+                        ("rem_up", 9.6, 1.0)]:
+    check(f"7.1: permutar {f} (texto +{m_tex})", m_tex, _med[f], tol=0.051)
+    check(f"7.1: su desviacion sobre las cinco (texto {s_tex})", s_tex,
+          _sd[f], tol=0.051)
+# el segundo escalon y el suelo que describe el texto
+_orden = sorted(_med.items(), key=lambda kv: -kv[1])
+check_exacto("7.1: el orden de cabeza es holgura, pos_restante, rem_up",
+             [f for f, _ in _orden[:3]] == ["holgura", "pos_restante",
+                                            "rem_up"],
+             str([f for f, _ in _orden[:3]]))
+check_exacto("7.1: segundo escalon de tres, entre 1.8 y 2.9 puntos",
+             all(1.75 <= v <= 2.95 for _, v in _orden[3:6]),
+             " ".join(f"{f}={v:.2f}" for f, v in _orden[3:6]))
+check_exacto("7.1: suelo de diez features entre +0.3 y +1.0",
+             len(_orden[6:]) == 10
+             and all(0.25 <= v <= 1.0 for _, v in _orden[6:]),
+             " ".join(f"{v:.2f}" for _, v in _orden[6:]))
+check_exacto("7.1: las dos anchuras estan en el suelo, una la ultima",
+             _orden[-1][0] == "dur_width_rel"
+             and "est_width_rel" in [f for f, _ in _orden[6:]],
+             f"ultima: {_orden[-1][0]}")
+for f, m_tex, s_tex in [("dur_width_rel", 0.3, 0.3),
+                        ("est_width_rel", 0.9, 0.5)]:
+    check(f"7.1 y 8: {f} (texto +{m_tex})", m_tex, _med[f], tol=0.051)
+    check(f"7.1: su desviacion (texto {s_tex})", s_tex, _sd[f], tol=0.051)
+# centinela del fichero de una sola extraccion: sus magnitudes eran las
+# que el texto citaba antes (51.0 / 28.1 / 10.6) y las de anchura casi
+# nulas; se guarda para que se vea de donde viene el cambio
 _imp = {r["feature"]: float(r["delta_puntos"])
         for r in __import__("csv").DictReader(
             open("benchmarks/feature_importance.csv", encoding="utf-8"))}
-_base = float(next(__import__("csv").DictReader(
-    open("benchmarks/feature_importance.csv",
-         encoding="utf-8")))["re_base"])
-check("base greedy del test (texto 18.2)", 18.2, _base)
-for f, v_tex in [("holgura", 51.0), ("pos_restante", 28.1),
-                 ("rem_up", 10.6), ("dur_up", 3.9)]:
-    check(f"permutar {f} (texto +{v_tex})", v_tex, _imp[f], tol=0.06)
-check_exacto("las features de anchura no aportan (|delta|<=0.5)",
-             abs(_imp["dur_width_rel"]) <= 0.5
-             and abs(_imp["est_width_rel"]) <= 0.5,
-             f"{_imp['dur_width_rel']:+.2f} / {_imp['est_width_rel']:+.2f}")
+for f, v in [("holgura", 51.0), ("pos_restante", 28.1), ("rem_up", 10.6)]:
+    check(f"centinela: una sola permutacion daba {f} = {v}", v, _imp[f],
+          tol=0.06)
 
 # =========================================================================
 
