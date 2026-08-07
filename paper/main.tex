@@ -1425,11 +1425,12 @@ $0.46$ & $0.42$ \\
 \subsection{Ablation: attention versus pooling}
 \label{sec:ablations-attn}
 
-The two-block attention encoder of Section~\ref{sec:attention}
-substitutes for the masked pooling of Section~\ref{sec:arch}, with the
-remainder of the architecture and the training and evaluation
-protocols held fixed: the same four training instances, the same six
-development instances, the same three seeds and the hyperparameters of
+The variant of Section~\ref{sec:attention} inserts two residual
+attention blocks between the shared per-operation encoder and the
+masked pooling of Section~\ref{sec:arch}, which it leaves in place;
+everything else is held fixed, including the training and evaluation
+protocols, the same four training instances, the same six development
+instances, the same three seeds and the hyperparameters of
 Table~\ref{tab:hyper}. The comparison is therefore paired at the level
 of (instance, seed), and was conducted at both training budgets
 employed in this study, $300$ and $1000$ episodes.
