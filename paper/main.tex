@@ -1237,9 +1237,10 @@ latter quoted from Table~2 of~\citet{DiazFEABC2023}. The
 policy improves on EST and G\&T-MWKR on all twelve instances and lands
 at $12.4\%$ mean RE---between the hand-crafted constructive baselines
 ($30.1\%$ for G\&T-MWKR) and the per-instance searchers (GA at
-$9.8\%$, ESABC at $5.5\%$). On La29, La40, ABZ7 and ABZ8
-its best seed edges past the GA average itself, with no retraining of
-any kind.
+$9.8\%$, ESABC at $5.5\%$). On La29, La40, ABZ7 and ABZ8 the
+policy's best seed reaches a lower RE than the 30-run average of GA,
+a method that searches each of these instances from scratch, whereas
+the policy has never seen them.
 
 \begin{figure}[!htb]
   \centering
