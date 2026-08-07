@@ -1426,32 +1426,25 @@ $0.46$ & $0.42$ \\
 \label{sec:ablations-attn}
 
 The two-block attention encoder of Section~\ref{sec:attention}
-replaces the pooling of Section~\ref{sec:arch} and nothing else: the
-same four training instances, the same six development instances, the
-same three seeds and the same hyperparameters of
-Table~\ref{tab:hyper}, so the comparison is paired at the level of
-(instance, seed). It was run at both training budgets of this study,
-$300$ and $1000$ episodes.
+substitutes for the masked pooling of Section~\ref{sec:arch}, with the
+remainder of the architecture and the training and evaluation
+protocols held fixed: the same four training instances, the same six
+development instances, the same three seeds and the hyperparameters of
+Table~\ref{tab:hyper}. The comparison is therefore paired at the level
+of (instance, seed), and was conducted at both training budgets
+employed in this study, $300$ and $1000$ episodes.
 
-At neither does it help, and at the longer one it hurts. Over the
-eighteen instance--seed pairs the attention variant is $1.03$ points
-of RE worse at $300$ episodes, worse on 12 of the 18 pairs and on 5 of
-the 6 instances (Wilcoxon signed-rank, $p=0.067$), and $1.76$ points
-worse at $1000$, on 16 of the 18 pairs and on all six instances
-($p<0.001$); Table~\ref{tab:insize-attn} reports the means and the
-best seed. It carries $3.2$ times the parameters and, on the recorded
-runs, $1.7$ times the wall clock per episode.
-
-Part of the explanation is in the
-representation: two of the per-operation features are themselves
-relational, computed against the eligible set rather than against the
-candidate alone---slack measures the earliest start relative to the
-earliest of all candidates, and congestion the machine's load
-relative to the average---so the comparisons an attention layer would
-have to learn are in part precomputed inputs. What remains for it are
-the pairwise relations those aggregates do not capture, and at these
-budgets they do not repay their cost; richer pairwise structure may
-require larger budgets or instance distributions to pay off.
+The variant yields no improvement at either budget and a significant
+degradation at the longer one. Across the eighteen instance--seed
+pairs it is $1.03$ points of RE inferior at $300$ episodes, degraded
+on 12 of the 18 pairs and on 5 of the 6 instances, a difference that
+does not reach significance (Wilcoxon signed-rank, $p=0.067$); at
+$1000$ episodes the deficit is $1.76$ points, on 16 of the 18 pairs
+and on all six instances ($p<0.001$).
+Table~\ref{tab:insize-attn} reports the corresponding means and best
+seeds. The variant carries $3.2$ times the parameters of the base
+network and, on the recorded runs, $1.7$ times the wall-clock cost per
+episode.
 
 \begin{table}[!htb]
 \centering\small
@@ -1467,6 +1460,18 @@ Deep Sets & \textbf{16.6} [15.6] & \textbf{13.4} [12.3] \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+The representation accounts for part of this outcome. Two of the
+per-operation features are themselves relational, computed against the
+eligible set rather than against the candidate alone: slack measures
+the earliest start relative to the earliest among all candidates, and
+congestion the machine's load relative to the average. The comparisons
+an attention layer would have to learn are thus partly available as
+precomputed inputs. What remains are the pairwise relations these
+aggregates do not summarize, and at the budgets tested they do not
+amortize their cost; larger training budgets or more heterogeneous
+instance distributions may be required for such structure to become
+profitable.
 
 \subsection{Ablation: specialist versus multi-size training}
 \label{sec:ablations-neg}
