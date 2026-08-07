@@ -1361,49 +1361,49 @@ was not repeated on those arms.
   \label{fig:budget}
 \end{figure}
 
-The paper reports the policy at three budgets---one greedy pass, $64$
-samples and $1024$---which leaves the shape between them unstated. To
-recover it we stored all $342$ rollouts per checkpoint
-on each of the 70 instances---$71{,}820$ schedules---so that
-best-of-$B$ can be reconstructed for any $B$ without evaluating
-anything again. Figure~\ref{fig:budget} plots the result. Its band is
-the spread across repetitions at that budget, not a confidence
-interval on the mean; the budget is split across the three
-checkpoints as the deployed protocol splits it, and the greedy
-reference is aggregated the same way, so it sits below the $19.4\%$
-of Section~\ref{sec:positioning}; EST, at $42.3\%$, is above the
-frame. A single \emph{sampled} rollout is much
-worse than a greedy one, $21.4\%$ against $17.0\%$: the argmax is a
-good decision sequence and the distribution around it is wide. The
-curve overtakes the evolved rule at $B{=}6$ and the greedy pass itself
-at $B{=}12$, so the budget at which sampling starts paying is small,
-far below the $64$ used throughout this paper. And the returns are
-close to logarithmic over three orders of magnitude, $14.9\%$ at $64$
-and $12.9\%$ at $1023$ ($341$ per checkpoint, the reconstruction's
-nearest point to the nominal $1024$), with no knee: within the range
-tested there is
-no budget beyond which further sampling stops helping.
+The policy is reported at three inference budgets---one greedy pass,
+$64$ samples and $1024$---which leaves its behaviour between them
+unspecified. To characterize it, all $342$ rollouts per checkpoint
+were retained on each of the 70 instances ($71{,}820$ schedules), so
+that best-of-$B$ is reconstructible for arbitrary $B$ without further
+evaluation. Figure~\ref{fig:budget} plots the resulting curve; its
+band is a dispersion over repetitions, not a confidence interval on
+the mean. The budget is partitioned over the three checkpoints as in
+the deployed protocol and the greedy reference is aggregated
+identically, which places it below the $19.4\%$ of
+Section~\ref{sec:positioning}; EST, at $42.3\%$, lies above the frame.
+A single \emph{sampled} rollout is substantially worse than the greedy
+one, $21.4\%$ against $17.0\%$: the argmax is a high-quality sequence
+within a broadly dispersed distribution. The curve overtakes the
+evolved rule at $B{=}6$ and the greedy pass at $B{=}12$, so sampling
+becomes profitable at budgets far below the $64$ used throughout. And
+the returns are near-logarithmic over three orders of magnitude,
+$14.9\%$ at $64$ and $12.9\%$ at $1023$ ($341$ per checkpoint, the
+reconstruction's closest point to the nominal $1024$), without an
+inflection: no budget within the tested range saturates.
 
-The same reconstruction says how much of that is still worth buying,
-and at what price: Table~\ref{tab:budget-rate} gives the mean RE at
-successive doublings and what each one adds. The
-return decays slowly but does not vanish: it falls from $1.03$ points
-between $4$ and $8$ samples to $0.42$ between $512$ and $1023$, a
-log-linear rate of $0.46$ points per doubling over the last three
-octaves. Cost grows just as fast as the budget. On the machine of
-Table~\ref{tab:environment} a sampled rollout takes $1.03$ s on a
-$20{\times}15$ instance and $6.4$ s on a $50{\times}20$ one, so
-$B{=}1023$ spends $18$ minutes and $1.8$ hours per instance, and the
-four further doublings the measured rate needs to reach $11\%$ would
-spend $4.7$ and $29$ hours. That exchange rate argues against closing
-the remaining distance to fEABC's $9.4\%$ by sampling alone, which a
-per-instance metaheuristic covers in minutes. Two caveats bound the
-arithmetic. Any budget above $1023$ lies outside the measured range,
-and inside it the gain is still shrinking---each octave returns about
-a tenth less than the one before---so a constant rate is the
-optimistic reading. And the samples come from a fixed policy, whose
-distribution bounds what any budget can reach; seeding a search with
-them (Section~\ref{sec:conclusions}) carries no such bound.
+The same reconstruction quantifies the marginal return of further
+sampling and its computational cost.
+Table~\ref{tab:budget-rate} reports the mean RE at successive
+doublings together with the increment each contributes. The marginal
+return decays slowly but does not vanish, from $1.03$ points between
+$4$ and $8$ samples to $0.42$ between $512$ and $1023$, a log-linear
+rate of $0.46$ points per doubling over the last three octaves;
+wall-clock cost, by contrast, scales linearly in $B$. On the machine
+of Table~\ref{tab:environment} a sampled rollout requires $1.03$ s on
+a $20{\times}15$ instance and $6.4$ s on a $50{\times}20$ one, so
+$B{=}1023$ amounts to $18$ minutes and $1.8$ hours per instance, and
+the four additional doublings needed to reach $11\%$ at the measured
+rate would amount to $4.7$ and $29$ hours. Sampling is therefore an
+inefficient route to the residual gap against fEABC's $9.4\%$, which
+a per-instance metaheuristic attains in minutes. Two qualifications
+bound this extrapolation. Budgets above $1023$ lie outside the
+measured range, and within it the marginal return is itself
+contracting---each octave yields approximately a tenth less than its
+predecessor---so a constant rate is the optimistic reading. Moreover
+the samples are drawn from a fixed policy, whose distribution bounds
+the quality attainable at any budget; using them to seed a search
+(Section~\ref{sec:conclusions}) is not subject to that bound.
 
 \begin{table}[!htb]
 \centering\small
