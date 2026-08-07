@@ -1461,13 +1461,14 @@ Deep Sets & \textbf{16.6} [15.6] & \textbf{13.4} [12.3] \\
 \end{tabular}
 \end{table}
 
-The representation accounts for part of this outcome. Two of the
-per-operation features are themselves relational, computed against the
-eligible set rather than against the candidate alone: slack measures
-the earliest start relative to the earliest among all candidates, and
-congestion the machine's load relative to the average. The comparisons
-an attention layer would have to learn are thus partly available as
-precomputed inputs. What remains are the pairwise relations these
+The representation accounts for part of this outcome. One of the
+per-operation features is itself relational with respect to the
+eligible set: slack measures the candidate's earliest start against
+the earliest among all candidates, so the comparison an attention
+layer would have to learn along that axis is already available as a
+precomputed input. A second, machine congestion, is relational with
+respect to the machines rather than the candidates, contrasting a
+machine's remaining load with the average over machines. What remains are the pairwise relations these
 aggregates do not summarize, and at the budgets tested they do not
 amortize their cost; larger training budgets or more heterogeneous
 instance distributions may be required for such structure to become
