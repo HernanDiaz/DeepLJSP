@@ -1746,6 +1746,42 @@ else:
     check("7.2: x16 el presupuesto son 29 h en 50x20", 29.0,
           16 * 1023 * _s5020 / 3600, tol=0.5)
 
+    print("\n== 8: el hueco entre el argmax y la cola de su distribucion ==")
+    # la cuarta direccion de las conclusiones: cuanto separa la decision
+    # comprometida de la mejor que la propia distribucion produce, en la
+    # politica y en la regla, y con que dispersion
+    _mu = _sg = _zg = _zt = 0.0
+    for _i, _pl in _pools.items():
+        _lb = _lbc[_i]
+        _r = (_pl.ravel() - _lb) / _lb * 100
+        _gre = min((_v - _lb) / _lb * 100 for _v in _gre_pool[_i])
+        _m, _s = _r.mean(), _r.std()
+        _mu += _m
+        _sg += _s
+        _zg += (_m - _gre) / _s
+        _zt += (_m - _r.min()) / _s
+    _n = len(_pools)
+    check("8: sd de la distribucion muestreada (3.2 puntos)", 3.2,
+          _sg / _n, tol=0.051)
+    check("8: el argmax esta a 1.4 sd de la media", 1.4, _zg / _n,
+          tol=0.051)
+    check("8: la mejor de mil esta a 2.6 sd de la media", 2.6, _zt / _n,
+          tol=0.051)
+    # y el mismo hueco en la regla evolucionada, desde su propio deposito
+    _gp = list(__import__("csv").DictReader(
+        open("benchmarks/fair_gp_eps.csv", encoding="utf-8")))
+    check_exacto("8: fair_gp_eps cubre las 70", len(_gp) == 70, str(len(_gp)))
+    check("8: la regla a 1024 muestras (tab:seventy 14.1)", 14.1,
+          sum(float(r["best_at_1024"]) for r in _gp) / 70, tol=0.051)
+    check("8: y a 64, para identificar que es la destacada (15.9)", 15.9,
+          sum(float(r["best_at_64"]) for r in _gp) / 70, tol=0.051)
+    # la fila parte en dos lineas del .tex, asi que se une antes de cortar
+    _lin = TEX.splitlines()
+    _k = next(k for k, l in enumerate(_lin) if l.startswith("GP rule, one pass"))
+    _paso_gp = float((_lin[_k] + " " + _lin[_k + 1]).split("&")[8]
+                     .replace("\\\\", "").strip())
+    check("8: la pasada unica de la regla (tab:seventy)", 17.7, _paso_gp)
+
 # 7.3 explica el nulo de la atencion diciendo que dos features ya son
 # relacionales (holgura contra el minimo de las elegibles, congestion
 # contra la carga media). Si esas definiciones cambian en la Tabla 1,

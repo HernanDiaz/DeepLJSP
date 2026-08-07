@@ -1836,7 +1836,7 @@ operations and worst-case remaining work---the attributes
 hand-crafted and evolved rules exploit---while ignoring the width
 features at inference.
 
-Three directions follow. The first is suggested by the ablation of
+Four directions follow. The first is suggested by the ablation of
 Section~\ref{sec:ablations-neg}: since a specialist transfers so well
 and multi-size training buys so little, the productive use of size
 invariance is probably not to train on many sizes at once but to
@@ -1855,7 +1855,24 @@ apart. The third is deployment: a policy that
 schedules an instance in seconds is a natural generator of initial
 solutions for population-based search, and the quality of its sampling
 distribution, documented here at a fixed budget, is what such a use
-would exploit.
+would exploit. The fourth turns the budget analysis of
+Section~\ref{sec:ablations-bon} inward. The policy commits to a
+schedule worth $17.0\%$ while its own thousand samples reach
+$12.9\%$: four points separate the decision the network makes from
+the best one it produces, and finding that one costs a thousand
+rollouts. The evolved rule shows the same separation---$17.7\%$ for
+its single pass against $14.1\%$ randomized to a thousand---so the
+gap belongs to randomized constructive search rather than to learning
+as such; what differs is the remedy, since the weights of a network
+can be moved onto its own best rollouts by retraining on them and
+iterating, where a formula would have to be evolved anew. How much of
+the gap is learnable is open, and its shape is measurable: the
+sampled distribution has a standard deviation of $3.2$ points per
+instance, so its best draw of a thousand sits $2.6$ of them below the
+mean while the argmax sits $1.4$, and part of that distance is the
+luck of the tail rather than a decision rule. Such retraining would
+also sharpen the distribution that best-of-$N$ exploits, so the
+greedy and the sampled ends have to be measured together.
 
 
 \begin{appendices}
