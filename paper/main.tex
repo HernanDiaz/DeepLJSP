@@ -1270,31 +1270,22 @@ are allowed to sample---which is what
 Section~\ref{sec:positioning} finds on the Taillard set, arrived at
 here on a family neither method was tuned for.
 
-The $1024$ figures deserve one note about protocol. Elsewhere this
-paper spends that budget as $342$ samples on each of the three
-checkpoints ($1026$ in all; the round $1024$ is nominal), keeping the
-best across them, which is what the deployed
-system does and what Section~\ref{sec:positioning} compares. Here each
-checkpoint receives its own $1024$ and the three are averaged, because
-a single GP run is a single rule and pooling three networks against
-one rule would match the sample budget while unmatching the model
-count. The two protocols land in the same place, $10.13\%$ pooled
-against $10.27\%$ per run, so nothing turns on the choice; the
-protocol is stated explicitly because it cannot be recovered from the
-reported figures.
-
-Each entry of Table~\ref{tab:classics} is a mean over that method's
-independent runs, with the per-instance best over those runs in
-brackets: the first measures what the method delivers, the second
-what its best run delivered. Against what a single evolution should
-be expected to yield---$19.0\%$, $14.6\%$ and $12.2\%$ at the three
-budgets---the policy's $17.2\%$, $12.4\%$ and $10.3\%$ lead at every
-one. Against the best of the 30 rules, which averages $15.3\%$,
-$12.8\%$ and $11.0\%$, it trails at one pass and leads at the other
-two. The bracketed columns are not equally strong evidence, and none
-is attainable by a single run: they select per instance over 30
-evolutions for GP and 30 executions for GA, against three training
-seeds for the policy.
+The two readings of the table order the learners oppositely, and the
+reason is worth stating. On the mean the policy leads at all three
+budgets---$17.2\%$, $12.4\%$ and $10.3\%$ against $19.0\%$, $14.6\%$
+and $12.2\%$---while in the brackets GP leads at all three, $12.0\%$,
+$10.4\%$ and $8.4\%$ against $15.0\%$, $11.1\%$ and $9.6\%$. The
+brackets, however, are per-instance minima over unequal samples---30
+evolutions against three training seeds---drawn from unequal spreads:
+the standard deviation across the 30 rules averages $4.3$, $2.3$ and
+$2.0$ points at the three budgets, against $2.2$, $1.4$ and $0.7$
+across the policy's seeds. Both differences deepen the GP minimum.
+As an order of magnitude, the expected minimum of $n$ normal draws
+lies $c_n$ standard deviations below the mean, with $c_3=0.85$
+against $c_{30}=2.04$; applying $c_{30}$ to the policy's own spreads
+would place its bracket at $12.7\%$, $9.6\%$ and $8.8\%$, level with
+GP rather than behind it. The bracket ordering is therefore an
+artifact of how many runs each side selects over.
 
 The rule the companion study features falls between the two readings,
 which its selection procedure explains. That study
@@ -1308,13 +1299,9 @@ of the 30 here rather than at the top. It is that rule, and not the
 Table~\ref{tab:seventy} and the appendix use, the 30 rules not being
 available on the Taillard set.
 
-Per instance the standard
-deviation across the 30 evolved rules averages $4.3$ points, against
-$2.2$ across the policy's three seeds. Neither figure should be pushed
-far, since 30 runs and 3 seeds are not the same evidence, but the
-direction matters for anyone choosing between the two approaches:
-evolving one rule and training one network do not expose a
-practitioner to the same risk from a single run.
+What is not an artifact is the spread itself, smaller for the policy
+at every budget: evolving one rule and training one network do not
+expose a practitioner to the same risk from the run they obtain.
 
 
 

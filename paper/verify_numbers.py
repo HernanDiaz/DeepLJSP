@@ -961,6 +961,56 @@ check("clasicas: GP con 1024 (texto 11.3)", 11.3,
 check("clasicas: politica con 1024 agregada (texto 10.13)", 10.13,
       sum(_p1024.values()) / 12, tol=0.006)
 
+# 6.3: por que los corchetes ordenan al reves que las medias. Son minimos
+# por instancia sobre muestras desiguales (30 evoluciones contra 3
+# semillas) y dispersiones desiguales; se recomputan ambas y el
+# contrafactual de seleccionar la politica sobre 30
+import statistics as _stt
+_C3, _C30 = 0.8463, 2.0428
+
+
+def _disp_gp(k):
+    _sd, _mn = [], []
+    for _i in _INST12:
+        _v = [_bon[_r][_i][k] for _r in _bon]
+        _sd.append(_stt.stdev(_v))
+        _mn.append(min(_v))
+    return _stt.mean(_sd), _stt.mean(_mn)
+
+
+def _disp_pol(fichero, col="re"):
+    _d = {}
+    for _r in __import__("csv").DictReader(open(fichero, encoding="utf-8")):
+        _d.setdefault(_r["name"], []).append(float(_r[col]))
+    assert all(len(v) == 3 for v in _d.values())
+    return (_stt.mean([_stt.stdev(v) for v in _d.values()]),
+            _stt.mean([min(v) for v in _d.values()]),
+            _stt.mean([_stt.mean(v) for v in _d.values()]))
+
+
+if _mejor_regla:
+    _POL_F = ["benchmarks/eval_classic12_greedy.csv",
+              "benchmarks/eval_classic12_policy.csv",
+              "benchmarks/eval_classic12_bo1024_porsemilla.csv"]
+    _SD_GP_TEX = [4.3, 2.3, 2.0]
+    _SD_POL_TEX = [2.2, 1.4, 0.7]
+    _CONTRA_TEX = [12.7, 9.6, 8.8]
+    for _k, (_f, _sg_tex, _sp_tex, _c_tex) in enumerate(
+            zip(_POL_F, _SD_GP_TEX, _SD_POL_TEX, _CONTRA_TEX)):
+        _sd_gp, _min_gp = _disp_gp(_k)
+        _sd_pol, _min_pol, _mu_pol = _disp_pol(_f)
+        check(f"6.3: sd de las 30 reglas, presupuesto {_k} (texto {_sg_tex})",
+              _sg_tex, _sd_gp, tol=0.051)
+        check(f"6.3: sd de las 3 semillas, presupuesto {_k} "
+              f"(texto {_sp_tex})", _sp_tex, _sd_pol, tol=0.051)
+        check(f"6.3: contrafactual c30 sobre la politica (texto {_c_tex})",
+              _c_tex, _mu_pol - _C30 * _sd_pol, tol=0.06)
+        check_exacto(f"6.3: el corchete de GP es menor, presupuesto {_k}",
+                     _min_gp < _min_pol,
+                     f"GP {_min_gp:.1f} vs Pol {_min_pol:.1f}")
+        check_exacto(f"6.3: la sd de la politica es menor, presupuesto {_k}",
+                     _sd_pol < _sd_gp, f"{_sd_pol:.2f} < {_sd_gp:.2f}")
+
 # el 1024 POR SEMILLA: cada checkpoint con sus propias 1024 muestras,
 # que es lo comparable con "una regla con 1024" del lado GP
 _ps = {}
