@@ -1061,8 +1061,11 @@ $20{\times}15$-trained network on any class. Evaluation is
 \emph{zero-shot}: the trained weights are applied to sizes they never
 saw, with no additional training or fine-tuning of any kind.
 Table~\ref{tab:seventy} reports RE over all seventy instances by size
-class. Its policy rows are means over the three training seeds
-and its per-instance values are in the appendix; the evolved rule of
+class. Its greedy and 64-sample policy rows are means over the three
+training seeds, while the 1024-sample row spends $342$ samples on
+each of the three checkpoints and keeps the best across them, as the
+deployed system does;
+its per-instance values are in the appendix, and the evolved rule of
 the companion study~\citep{DiazGP2026} appears beside them at each
 budget, deterministic at one pass and randomized by
 $\epsilon$-greedy dispatching when sampled, and fEABC closes the
