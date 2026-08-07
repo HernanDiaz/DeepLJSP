@@ -1078,14 +1078,7 @@ $1000$-operation episodes. Degradation is not monotone in instance
 size: $50{\times}15$, at $12.2\%$, transfers better than either
 $30$-job class, which the dispatching rules also find easier, so
 the difficulty the network inherits is the instances' and not a limit
-of the transfer. Transfer quality improves with in-size training
-budget (mean over seeds on the one instance per class evaluated at
-both budgets: TA41, of $30{\times}20$, from $30.3\%$ with the
-$300$-episode checkpoints to $25.9\%$ with the $1000$-episode ones;
-TA51, of $50{\times}15$, from $22.2\%$ to
-$15.3\%$), i.e.\ the \emph{specialist}---our shorthand
-for the network trained on the single $20{\times}15$ class---learns
-structure that is not size-bound.
+of the transfer.
 
 \begin{table}[t]
 \centering\small
@@ -1124,32 +1117,6 @@ fEABC (30 runs) & 5.9 & 8.7 & 10.3 & 9.8 & 16.4 & 5.7 & 9.0 & 9.4 \\
 \end{tabular}
 \end{table}
 
-
-Training the final model takes $66$--$123$ minutes per seed across
-the three seeds ($4{\times}1000$ episodes) on the commodity CPU of
-Table~\ref{tab:environment}. The
-cost is dominated by environment interaction, not by the small
-network: a seed dispatches $1.2$ million operations, each paying for
-feature extraction over the unscheduled work, and the
-GPU-vectorization of rollouts described in
-Section~\ref{sec:environment} bought its ${\sim}3\times$ precisely there. The same cost governs inference:
-a greedy schedule takes $0.6$ seconds on a $15{\times}15$ instance
-and $4.0$ on a $50{\times}20$ one, roughly $2$--$4$ times what a
-hand-crafted dispatching rule costs on the same code path, and
-best-of-$64$ multiplies that by the budget ($41$ seconds and $6.8$
-minutes respectively). The comparison with per-instance metaheuristics
-is therefore one of computational class---train once, then dispatch
----rather than one of wall-clock time at every budget. Against the hand-crafted rules the comparison is
-one-sided: a single greedy pass improves on MOR, EST and G\&T-MWKR on
-each of the 70 instances (paired Wilcoxon signed-rank test,
-$p<10^{-12}$; the matched-pairs rank-biserial correlation, an effect
-size that reaches $1$ only when one side wins every single pair, is
-exactly $1$). Raising the inference budget to best-of-$1024$ brings the
-full-benchmark mean RE to $13.0\%$ over the 70 instances
-(Table~\ref{tab:seventy} and Figure~\ref{fig:byclass})---ahead of
-every deterministic constructive baseline on every instance, again with
-rank-biserial correlation $1$, and within $2.5$--$5.2$ points of the
-fEABC 30-run class averages.
 
 Against the evolved rule of the companion study the comparison is not
 one-sided, and its answer depends on the inference budget the two are

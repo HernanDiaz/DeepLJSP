@@ -169,7 +169,7 @@ est_dev = sum(est_pi[f"TA{k}"] for k in range(15, 21)) / 6
 check_exacto("en desarrollo MOR < EST (sostiene el ~46 del abstract)",
              est_dev > 46.0, f"EST dev {est_dev:.1f}")
 
-# la frase estadistica de 6.6: greedy gana a MOR, EST y G&T en las 70
+# centinela (el texto ya no lo imprime): greedy gana a MOR, EST y G&T
 gre = {}
 for r in open("benchmarks/fair_v2_greedy.csv",
               encoding="utf-8").read().splitlines()[1:]:
@@ -398,7 +398,7 @@ check("bo1024 media sobre las 70 (texto 13.0)", 13.0,
       sum(_bo.values()) / 70)
 gana_bo = {n: sum(_bo[ta] < d[ta] for ta in _bo)
            for n, d in [("MOR", MOR_RE), ("G&T", GT_RE), ("EST", est_pi)]}
-check_exacto("bo1024 gana a MOR, G&T y EST en las 70",
+check_exacto("centinela: bo1024 gana a MOR, G&T y EST en las 70",
              all(v == 70 for v in gana_bo.values()), str(gana_bo))
 _bo_clases = [sum(_bo[f"TA{i * 10 + j + 1}"] for j in range(10)) / 10
               for i in range(7)]
@@ -442,8 +442,8 @@ check("posicionamiento: fEABC medio (texto 9.4)", 9.4,
 # impresas, asi que el texto cita ese redondeo
 _dist = [round(b, 1) - round(f, 1)
          for b, f in zip(_bo_clases, feabc_clases)]
-check("distancia minima al fEABC (texto 2.5)", 2.5, min(_dist))
-check("distancia maxima al fEABC (texto 5.2)", 5.2, max(_dist))
+check("centinela: distancia minima al fEABC (2.5)", 2.5, min(_dist))
+check("centinela: distancia maxima al fEABC (5.2)", 5.2, max(_dist))
 
 # =========================================================================
 print("\n== coste computacional ==")
@@ -451,7 +451,7 @@ d = json.load(open(sorted(glob.glob(
     "benchmarks/v2-full-1000ep__*.json"))[-1], encoding="utf-8"))
 minutos = [s["wall_time_s"] / 60 for s in d["seeds"].values()]
 media_min = sum(minutos) / len(minutos)
-check_exacto("66-123 min por semilla (4x1000 episodios)",
+check_exacto("centinela: 66-123 min por semilla",
              round(min(minutos)) == 66 and round(max(minutos)) == 123,
              f"semillas: {', '.join(f'{m:.0f}' for m in minutos)} min "
              f"(media {media_min:.0f})")
@@ -665,9 +665,9 @@ for r in __import__("csv").DictReader(
         open("benchmarks/eval_crosssize_bo64_300ep.csv", encoding="utf-8")):
     _c300.setdefault(ta_de(r["instance"]), []).append(float(r["re_comp"]))
 _c300 = {ta: sum(v) / len(v) for ta, v in _c300.items()}
-check("TA41 con 300 eps (texto 30.3)", 30.3, _c300["TA41"])
-check("TA51 con 300 eps (texto 22.2)", 22.2, _c300["TA51"])
-check_exacto("mas presupuesto -> mejor transferencia en ambas",
+check("centinela: TA41 con 300 eps (30.3)", 30.3, _c300["TA41"])
+check("centinela: TA51 con 300 eps (22.2)", 22.2, _c300["TA51"])
+check_exacto("centinela: mas presupuesto mejora la transferencia",
              _c300["TA41"] > sum(_cs["TA41"]) / 3
              and _c300["TA51"] > sum(_cs["TA51"]) / 3)
 
