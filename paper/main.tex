@@ -1137,21 +1137,22 @@ for this purpose---the ordering reverses: $13.0\%$ against $14.1\%$,
 with the policy better on 46 of the 70 (median advantage $1.3$
 points, $p=1.4\times10^{-3}$).
 
-A single
-decision sequence drawn greedily from $1.2\times10^{5}$ parameters is
-worse than a compact evolved formula, so the network's advantage does
-not lie in its argmax; what it provides, and the formula does not, is
-a distribution whose samples improve faster with budget---the reading
-the best-of-$N$ ablation of Section~\ref{sec:ablations-bon} reaches
-from within. Both learners saw the same four training instances, but
-under different regimes and costs, so this compares published
-artifacts rather than a controlled study; the latter, with training as
-well as inference budgets matched, is the subject of dedicated ongoing
-work. The policy's standalone RE ($13.8\%$
-in-size; $11$--$22\%$ zero-shot class means) thus sits between dispatching rules
-($42.3\%$ for the best of them, EST) and per-instance metaheuristics
-($9.4\%$ mean RE for fEABC over 30 runs)---establishing, for the IJSP, the computational-class
-trade-off documented for the deterministic JSP~\citep{Zhang2020L2D}.
+The reversal identifies where the network's advantage lies. Its
+greedy schedule is worse than the rule's single pass, so the
+advantage is not in the most probable decision sequence; it is in the
+distribution around that sequence, whose samples improve faster with
+budget than the randomized rule's. The best-of-$N$ ablation of
+Section~\ref{sec:ablations-bon} reaches the same conclusion from the
+training side. The comparison has one limitation: both learners
+trained on the same four instances, but under different regimes and
+costs, so it compares two published artifacts rather than a
+controlled study---one with training as well as inference budgets
+matched is the subject of ongoing work. In sum, the policy's
+standalone RE ($13.8\%$ in-size, $11$--$22\%$ zero-shot class means)
+places it between the dispatching rules ($42.3\%$ for EST, the
+strongest) and the per-instance metaheuristics ($9.4\%$ for fEABC),
+reproducing for the IJSP the computational-class trade-off documented
+for the deterministic JSP~\citep{Zhang2020L2D}.
 
 \begin{figure}[t]
   \centering
