@@ -1359,19 +1359,28 @@ solutions frequently arose in early, exploratory episodes and were
 never surpassed by the greedy policy---evidence that the policy's value
 concentrates in its sampling distribution.
 
-The paper reports the policy at two budgets, one greedy pass and
-$1024$ samples, which leaves the shape between them unstated. To
-recover it we stored every individual rollout of $342$ per checkpoint
+\begin{figure}[!b]
+  \centering
+  \includegraphics[width=.62\linewidth]{figures/fig_budget.pdf}
+  \caption{Mean RE over the 70 instances against the \emph{inference}
+  budget $B$, the samples spent on each instance, on a base-2
+  logarithmic axis. The band is the 10--90 percentile over
+  resamplings.}
+  \label{fig:budget}
+\end{figure}
+
+The paper reports the policy at three budgets---one greedy pass, $64$
+samples and $1024$---which leaves the shape between them unstated. To
+recover it we stored all $342$ rollouts per checkpoint
 on each of the 70 instances---$71{,}820$ schedules---so that
 best-of-$B$ can be reconstructed for any $B$ without evaluating
 anything again. Figure~\ref{fig:budget} plots the result. Its band is
-the spread a practitioner would see across repetitions at that
-budget, not a confidence interval on the mean; the budget is split
-across the three checkpoints as the deployed protocol splits it, with
-the greedy reference aggregated the same way, so it sits below the
-$19.4\%$ that Section~\ref{sec:positioning} reports as a mean over
-seeds; and EST, at $42.3\%$, is above the frame. Three
-readings follow. A single \emph{sampled} rollout is much
+the spread across repetitions at that budget, not a confidence
+interval on the mean; the budget is split across the three
+checkpoints as the deployed protocol splits it, and the greedy
+reference is aggregated the same way, so it sits below the $19.4\%$
+of Section~\ref{sec:positioning}; EST, at $42.3\%$, is above the
+frame. A single \emph{sampled} rollout is much
 worse than a greedy one, $21.4\%$ against $17.0\%$: the argmax is a
 good decision sequence and the distribution around it is wide. The
 curve overtakes the evolved rule at $B{=}6$ and the greedy pass itself
@@ -1383,36 +1392,32 @@ nearest point to the nominal $1024$), with no knee: within the range
 tested there is
 no budget beyond which further sampling stops helping.
 
-The same reconstruction answers how much of that is still worth
-buying, and at what price. Table~\ref{tab:budget-rate} gives the mean
-RE at successive doublings together with what each doubling adds. The
+The same reconstruction says how much of that is still worth buying,
+and at what price: Table~\ref{tab:budget-rate} gives the mean RE at
+successive doublings and what each one adds. The
 return decays slowly but does not vanish: it falls from $1.03$ points
 between $4$ and $8$ samples to $0.42$ between $512$ and $1023$, a
 log-linear rate of $0.46$ points per doubling over the last three
-octaves. Cost, meanwhile, grows exactly as fast as the budget. On the
-machine of Table~\ref{tab:environment} a sampled rollout takes
-$1.03$ s on a $20{\times}15$ instance and $6.4$ s on a
-$50{\times}20$ one, so $B{=}1023$ already spends $18$ minutes and
-$1.8$ hours per instance respectively, and the four further doublings
-that the measured rate would need to reach $11\%$ would spend $4.7$
-and $29$ hours. That exchange rate is the argument against closing the
-remaining distance to fEABC's $9.4\%$ by sampling alone: a
-per-instance metaheuristic covers it in minutes. Two caveats bound the
+octaves. Cost grows just as fast as the budget. On the machine of
+Table~\ref{tab:environment} a sampled rollout takes $1.03$ s on a
+$20{\times}15$ instance and $6.4$ s on a $50{\times}20$ one, so
+$B{=}1023$ spends $18$ minutes and $1.8$ hours per instance, and the
+four further doublings the measured rate needs to reach $11\%$ would
+spend $4.7$ and $29$ hours. That exchange rate argues against closing
+the remaining distance to fEABC's $9.4\%$ by sampling alone, which a
+per-instance metaheuristic covers in minutes. Two caveats bound the
 arithmetic. Any budget above $1023$ lies outside the measured range,
-and inside that range the per-doubling gain is itself still
-shrinking---each octave returns about a tenth less than the one
-before---so a constant rate is the optimistic reading. And these
-samples come from a fixed policy, whose distribution bounds what any
-budget can reach; the alternative use of the same compute, seeding a
-search with the policy's samples
-(Section~\ref{sec:conclusions}), carries no such bound.
+and inside it the gain is still shrinking---each octave returns about
+a tenth less than the one before---so a constant rate is the
+optimistic reading. And the samples come from a fixed policy, whose
+distribution bounds what any budget can reach; seeding a search with
+them (Section~\ref{sec:conclusions}) carries no such bound.
 
-\begin{table}[t]
+\begin{table}[!htb]
 \centering\small
 \caption{Mean RE over the 70 instances at successive doublings of the
 inference budget, and what each doubling buys over half its budget.
-Reconstructed from the stored rollouts; the intermediate budgets,
-omitted for space, follow the same pattern.}
+Intermediate budgets, omitted for space, follow the same pattern.}
 \label{tab:budget-rate}
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccccccc@{}}
 \toprule
@@ -1425,16 +1430,6 @@ $0.46$ & $0.42$ \\
 \bottomrule
 \end{tabular*}
 \end{table}
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=.62\linewidth]{figures/fig_budget.pdf}
-  \caption{Mean RE over the 70 instances against the \emph{inference}
-  budget $B$, the samples spent on each instance, on a base-2
-  logarithmic axis. The band is the 10--90 percentile over
-  resamplings.}
-  \label{fig:budget}
-\end{figure}
 
 \FloatBarrier
 \subsection{Ablation: attention versus pooling}
