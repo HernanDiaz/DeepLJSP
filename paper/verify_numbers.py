@@ -642,6 +642,37 @@ try:
     check_exacto("4.4: la red base no lleva bloques de atencion",
                  len(_red.attention) == 0
                  and len(PolicyValueNetV2(num_attention_layers=2).attention) == 2)
+    # los dos cardinales del encoder que 4.2 y 4.3 afirman, contra el
+    # codigo y contra el numero de filas de cada tabla de features
+    from jobshop_rl.agents_v2.networks import (  # noqa: E402
+        GLOBAL_FEATURE_DIM, OP_FEATURE_DIM)
+
+    check_exacto("4.2: 16 features por operacion", OP_FEATURE_DIM == 16,
+                 str(OP_FEATURE_DIM))
+    check_exacto("4.2: 12 features globales", GLOBAL_FEATURE_DIM == 12,
+                 str(GLOBAL_FEATURE_DIM))
+    check_exacto("4.3: el encoder recibe esas 16 y el contexto 2h+12",
+                 _red.op_encoder[0].in_features == OP_FEATURE_DIM
+                 and _red.context[0].in_features == 2 * 128
+                 + GLOBAL_FEATURE_DIM,
+                 f"{_red.op_encoder[0].in_features} / "
+                 f"{_red.context[0].in_features}")
+    # las tablas numeran por rangos (1--2, 9--10...), asi que se suman
+    _filas = {}
+    for _lab, _tab in (("op", "tab:opfeatures"),
+                       ("glob", "tab:globalfeatures")):
+        _bloque = TEX.split(_tab)[1].split(r"\end{tabular")[0]
+        _n = 0
+        for _l in _bloque.splitlines():
+            _m = re.match(r"\s*(\d+)(?:--(\d+))?\s*&", _l)
+            if _m:
+                _n += (int(_m.group(2)) - int(_m.group(1)) + 1
+                       if _m.group(2) else 1)
+        _filas[_lab] = _n
+    check_exacto("4.2: la Tabla 1 enumera las 16", _filas["op"] == 16,
+                 str(_filas["op"]))
+    check_exacto("4.2: la Tabla 2 enumera las 12", _filas["glob"] == 12,
+                 str(_filas["glob"]))
 except Exception as e:
     pendiente("coste de la atencion", f"no medible aqui ({type(e).__name__})")
 

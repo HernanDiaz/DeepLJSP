@@ -168,8 +168,17 @@ confirmación full (v2-elite27-1000ep vs v2-full-1000ep, regla estándar).
 Inyección vía env vars DEEPLJSP_V2_* (AgentFactory).
 
 **VEREDICTO CONFIRMACIÓN (2026-07-05)**: la élite #27 a 1000 eps da
-+1.66% (5/6 ruido, 1 peor; RE 14.5% vs 13.4%) con entrenamiento ~60% más
-lento → NO se adopta. La advertencia se materializó: el óptimo de baja
++1.66% (5/6 ruido, 1 peor; RE 14.5% vs 13.4%) → NO se adopta.
+
+> **Corrección (2026-08-08)**: este párrafo decía además «con
+> entrenamiento ~60% más lento», y era falso y del revés. Los registros
+> dan 3.59 s/episodio para la élite #27 contra 5.89 del brazo por
+> defecto. Y ese 5.89 tampoco vale como referencia: las tres semillas
+> del brazo por defecto a 1000 eps corrieron a 3.97, 6.30 y 7.41
+> s/episodio con la *misma* configuración —contención de máquina, no
+> algoritmo—, así que ninguno de los dos relojes soporta una afirmación
+> de coste. La frase se ha eliminado de §5.3 del paper; el motivo para
+> no adoptar la élite es el 14.5% contra 13.4%, que sí está medido. La advertencia se materializó: el óptimo de baja
 fidelidad no transfiere al punto de operación. **La configuración default
 (valores estándar de literatura) queda validada como robusta** — resultado
 de sensibilidad valioso para el paper: el rendimiento del v2 no depende de
