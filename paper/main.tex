@@ -1351,14 +1351,6 @@ was not repeated on those arms.
 \subsection{Ablation: best-of-$N$ inference}
 \label{sec:ablations-bon}
 
-Introducing best-of-64 inference (over one greedy rollout) improved the
-development-set mean makespan by $3.6\%$, strictly better on 3 of 6
-development instances and worse on none, while sharply reducing seed
-variance. Diagnostically, before this change the best training
-solutions frequently arose in early, exploratory episodes and were
-never surpassed by the greedy policy---evidence that the policy's value
-concentrates in its sampling distribution.
-
 \begin{figure}[!b]
   \centering
   \includegraphics[width=.62\linewidth]{figures/fig_budget.pdf}
