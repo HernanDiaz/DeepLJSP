@@ -1554,11 +1554,31 @@ else:
           sum(a for a, _ in _todo7) / 70)
     check("centinela: mejor por semilla a 64 sobre las 70 (14.0)", 14.0,
           sum(b for _, b in _todo7) / 70)
-    # la afirmacion de 6.2: gana a MOR en TODAS
-    _mor70 = {r["ta"]: MOR_RE[r["ta"]] for r in _b64}
-    _gana70 = sum(float(r["re_mean"]) < _mor70[r["ta"]] for r in _b64)
-    check_exacto("6.2: la politica bate a MOR en las 70", _gana70 == 70,
-                 f"{_gana70}/70")
+    # la afirmacion de 6.2 es POR SEMILLA ("every seed's network"), no
+    # sobre la media: hay que reconstruir el best-of-64 de cada checkpoint
+    # desde el deposito de rollouts, 210 pares (instancia, semilla)
+    import collections as _col
+    _dep = _col.defaultdict(lambda: _col.defaultdict(list))
+    _lb_dep = {}
+    for _r in __import__("csv").DictReader(
+            open("benchmarks/eval_budget_curve.csv", encoding="utf-8")):
+        _s = re.search(r"seed(\d+)", _r["checkpoint"]).group(1)
+        _dep[_r["instance"]][_s].append(float(_r["mid_comp"]))
+        _lb_dep[_r["instance"]] = float(_r["lb"])
+    _pares = _malG = _malM = 0
+    for _inst, _seeds in _dep.items():
+        _ta, _lb = ta_de(_inst), _lb_dep[_inst]
+        for _s, _vals in _seeds.items():
+            _re64 = (min(_vals[:64]) - _lb) / _lb * 100
+            _pares += 1
+            _malG += _re64 >= GT_RE[_ta]
+            _malM += _re64 >= MOR_RE[_ta]
+    check_exacto("6.2: 210 pares (instancia, semilla)", _pares == 210,
+                 f"{_pares}")
+    check_exacto("6.2: cada semilla bate a G&T-MWKR en las 70",
+                 _malG == 0, f"{_malG} pares sin batirla")
+    check_exacto("6.2: y tambien a MOR (afirmacion mas debil)",
+                 _malM == 0, f"{_malM} pares sin batirla")
     # y que 50x15 transfiere mejor que las de 30 maquinas, como dice 6.2
     check_exacto("6.2: 50x15 transfiere mejor que 30x15 y 30x20",
                  sum(a for a, _ in _pc["50x15"]) / 10
