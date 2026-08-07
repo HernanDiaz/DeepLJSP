@@ -1277,8 +1277,8 @@ learners oppositely. The policy has the better mean at all three
 budgets, and GP the better bracket at all three. The cause is the
 number of runs each bracket selects over---30 evolutions for GP
 against three training seeds for the policy---compounded by the wider
-spread of the evolved rules: their standard deviation across the 30
-averages $4.3$, $2.3$ and $2.0$ points at the three budgets, against
+dispersion of the evolved rules: their standard deviation across the
+30 averages $4.3$, $2.3$ and $2.0$ points at the three budgets, against
 $2.2$, $1.4$ and $0.7$ across the policy's seeds. A per-instance
 minimum taken from 30 draws of a wide distribution reaches further
 down than one taken from three draws of a narrow one. Quantitatively,
@@ -1288,10 +1288,10 @@ the policy over 30 seeds would therefore place its bracket near
 $12.7\%$, $9.6\%$ and $8.8\%$, level with the $12.0\%$, $10.4\%$ and
 $8.4\%$ of GP instead of behind them. The bracket ordering measures
 how many runs each side was selected from, not which learner produces
-the better run. What is not an artifact is the spread itself, smaller
-for the policy at every budget: evolving one rule and training one
-network do not expose a practitioner to the same risk from the run
-they obtain.
+the better run. What is not an artifact is the dispersion across runs
+itself, smaller for the policy at every budget: evolving one rule and
+training one network do not expose a practitioner to the same risk
+from the run they obtain.
 
 
 
