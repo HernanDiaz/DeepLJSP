@@ -1060,9 +1060,16 @@ The size-invariant design allows direct evaluation of the
 $20{\times}15$-trained network on any class. Evaluation is
 \emph{zero-shot}: the trained weights are applied to sizes they never
 saw, with no additional training or fine-tuning of any kind.
-Table~\ref{tab:seventy} reports zero-shot RE over all seventy
-instances, ten per class with none omitted: every seed's network
-outperforms MOR on \emph{every} one of them, with graceful degradation
+Table~\ref{tab:seventy} reports RE over all seventy instances by size
+class, none omitted, and is read from here to the end of this
+subsection. Its policy rows are means over the three training seeds
+and its per-instance values are in the appendix; the evolved rule of
+the companion study~\citep{DiazGP2026} appears beside them at each
+budget, deterministic at one pass and randomized by
+$\epsilon$-greedy dispatching when sampled, and fEABC closes the
+table as a 30-run average from a different computational class. Read
+zero-shot, every seed's network
+outperforms MOR on \emph{every} one of the seventy, with graceful degradation
 (class means from $11.0\%$ on $15{\times}15$ to $22.0\%$ on the
 hardest transfer, $30{\times}20$) and no failure mode up to
 $1000$-operation episodes. Degradation is not monotone in instance
@@ -1081,16 +1088,8 @@ structure that is not size-bound.
 \begin{table}[t]
 \centering\small
 \caption{Mean RE (\%) per size class over the 70 interval Taillard
-instances, ten per class, none omitted. The two learners are paired at
-each of the three inference budgets; the GP rule is the featured
-evolved rule of the companion study~\citep{DiazGP2026}, deterministic
-at one pass and randomized by $\epsilon$-greedy dispatching at the
-sampled budgets, and the policy rows are means over its three seeds.
-fEABC is a 30-run average on dedicated hardware, quoted as a
-reference from a different computational class. The $20{\times}15$
-column ($\dagger$) holds the four training and six development
-instances and is not a generalization result; the other six classes
-are untouched. Per-instance values are in the appendix.}
+instances, ten per class. The $20{\times}15$ column ($\dagger$) is the
+training and development class.}
 \label{tab:seventy}
 \setlength{\tabcolsep}{3.5pt}
 \begin{tabular}{lcccccccc}
@@ -1105,19 +1104,18 @@ G\&T-MWKR & 26.7 & 29.0 & 30.9 & 33.6 & 36.8 & 23.9 & 25.5 & 29.5 \\
 \midrule
 GP rule, one pass & 15.7 & 16.6 & 18.1 & 21.1 & 24.1 & 13.8 & 14.6 &
 17.7 \\
-Policy, greedy & 16.9 & 18.3 & 18.5 & 21.2 & 26.1 & 15.8 & 18.8 &
-19.4 \\
+\textbf{Policy}, greedy & 16.9 & 18.3 & 18.5 & 21.2 & 26.1 & 15.8 &
+18.8 & 19.4 \\
 \midrule
 GP rule, 64 samples & 12.6 & 15.9 & 16.8 & 17.4 & 23.4 & 11.7 & 13.4 &
 15.9 \\
-Policy, 64 samples & 11.0 & 13.6 & 14.8 & 16.8 & 22.0 & 12.2 & 15.5 &
-\textbf{15.1} \\
+\textbf{Policy}, 64 samples & 11.0 & 13.6 & 14.8 & 16.8 & 22.0 & 12.2 &
+15.5 & 15.1 \\
 \midrule
 GP rule, 1024 samples & 10.2 & 14.0 & 15.1 & 15.5 & 21.0 & 10.6 &
 12.1 & 14.1 \\
-Policy, 1024 samples & \textbf{8.8} & \textbf{11.2} & \textbf{12.9} &
-\textbf{15.0} & \textbf{19.6} & \textbf{10.4} & \textbf{13.4} &
-\textbf{13.0} \\
+\textbf{Policy}, 1024 samples & 8.8 & 11.2 & 12.9 & 15.0 & 19.6 & 10.4 &
+13.4 & 13.0 \\
 \midrule
 fEABC (30 runs) & 5.9 & 8.7 & 10.3 & 9.8 & 16.4 & 5.7 & 9.0 & 9.4 \\
 \bottomrule
