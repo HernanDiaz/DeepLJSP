@@ -43,6 +43,15 @@ existentes, pareado por (instancia, semilla), Wilcoxon.
 4. La sembrada solo-terminal responde, gane o pierda, si el shaping
    denso es necesario; su resultado se reporta sea cual sea.
 
+## Parada obligatoria antes de adoptar (2026-08-07)
+
+La confirmación MIDE y escribe el veredicto; no adopta nada. Al
+terminar se para y la decisión —reejecutar el aparato con los pesos
+nuevos o mantener los actuales— se toma con el autor, viendo el
+resultado. La regla 2 dice qué haríamos si la mejora es clara, pero
+la ejecución de esa rama no arranca sin su visto bueno; su criterio
+declarado es que una diferencia pequeña no justifica el cambio.
+
 ## Qué NO se toca
 
 Ningún fichero de campañas anteriores (parameters/scenario/logs con
