@@ -178,7 +178,7 @@ pay off at practical training budgets?
   comparison \citet{Xu2025} single out as missing from the literature:
   the two paradigms are rarely measured against each other under a
   common protocol. Here the answer is budget-dependent rather than a
-  verdict: pass for pass the evolved rule wins, and at $1024$ samples
+  verdict: pass for pass the evolved rule leads, and at $1024$ samples
   each the policy does.
 \item \textbf{An analysis of what earns its cost}
   (Section~\ref{sec:analysis}): a permutation audit of which inputs
@@ -1486,7 +1486,7 @@ $4000$) and at equalized
 \emph{per-instance} budget ($12{,}000$ episodes---three times the
 specialist's total cost), against the $20{\times}15$ specialist, all
 sides with best-of-64 inference and averaged over their three seeds. At
-comparable total budget the specialist wins on all five common evaluation
+comparable total budget the specialist leads on all five common evaluation
 instances ($10.5$ vs.\ $15.9$ on $15{\times}15$; $15.0$ vs.\ $20.0$
 on $20{\times}20$; $25.9$ vs.\ $30.6$ on the unseen $30{\times}20$).
 Tripling the multi-size budget recovers two of the five ($9.6$ vs.\
@@ -1495,7 +1495,7 @@ $50{\times}20$) but not the rest: the specialist stays ahead on
 $20{\times}20$ ($15.0$ vs.\ $19.4$), a class the multi-size agent
 itself trained on, and on both $30{\times}15$ and $30{\times}20$. At
 matched cost, per-instance training depth dominates size diversity;
-even at triple cost, diversity buys back a minority of instances.
+even at triple cost, diversity recovers a minority of instances.
 
 Earlier development iterations provide the complementary caution, and
 two are worth naming. Appending four uncertainty features that are
@@ -1637,8 +1637,8 @@ $12.80\%$ for the default arm and $12.69\%$ for the robust one
 ($p=0.93$); ranking by $f_\lambda$, $11.74\%$ and $12.20\%$
 ($p=0.12$), if anything the wrong way round. What narrows the interval
 is which sample is kept, not which weights produced it: applying the
-robust criterion to the \emph{default} policy's own pool already buys
-most of the reduction, at a comparable cost in RE. The network, in
+robust criterion to the \emph{default} policy's own pool already
+attains most of the reduction, at a comparable cost in RE. The network, in
 other words, is not merely indifferent to the widths in its input; it
 does not become sensitive to them when the objective penalizes width.
 
@@ -1846,7 +1846,7 @@ features at inference.
 
 Four directions follow. The first is suggested by the ablation of
 Section~\ref{sec:ablations-neg}: since a specialist transfers so well
-and multi-size training buys so little, the productive use of size
+and multi-size training contributes so little, the productive use of size
 invariance is probably not to train on many sizes at once but to
 fine-tune a specialist onto a new class cheaply, a curriculum question
 this paper leaves open. The second concerns the representation, and
