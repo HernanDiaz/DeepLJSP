@@ -1313,6 +1313,17 @@ column is shuffled across the eligible operations, and the resulting
 mean RE over the development set and the three seeds is compared with
 the intact rollouts ($18.2\%$).
 
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=.72\linewidth]{figures/fig_importance.pdf}
+  \caption{Permutation importance of the 16 operation features: change
+  in mean development-set RE when the feature's column is shuffled
+  across the eligible operations at every decision (greedy rollouts,
+  three seeds; intact baseline $18.2\%$). The two interval-width
+  features are highlighted.}
+  \label{fig:importance}
+\end{figure}
+
 Three features carry the policy: the relative slack (whose permutation
 adds $51.0$ points of RE), the number of remaining operations in the
 job ($+28.1$), and the job's worst-case remaining work
@@ -1323,16 +1334,6 @@ nothing measurable at inference ($-0.1$ to $+0.2$ points): whatever
 the policy does with uncertainty, its decisions rest on worst-case
 magnitudes rather than on interval widths per se.
 
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=.72\linewidth]{figures/fig_importance.pdf}
-  \caption{Permutation importance of the 16 operation features: change
-  in mean development-set RE when the feature's column is shuffled
-  across the eligible operations at every decision (greedy rollouts,
-  three seeds; intact baseline $18.2\%$). The two interval-width
-  features are highlighted.}
-  \label{fig:importance}
-\end{figure}
 
 \subsection{Ablation: best-of-$N$ inference}
 \label{sec:ablations-bon}
