@@ -1144,9 +1144,13 @@ Section~\ref{sec:ablations-bon} reaches the same conclusion from the
 training side. The policy's
 standalone RE ($13.8\%$ in-size, $11$--$22\%$ zero-shot class means)
 places it between the dispatching rules ($42.3\%$ for EST, the
-strongest) and the per-instance metaheuristics ($9.4\%$ for fEABC),
-reproducing for the IJSP the computational-class trade-off documented
-for the deterministic JSP~\citep{Zhang2020L2D}.
+strongest) and the per-instance metaheuristics ($9.4\%$ for fEABC).
+This is the ordering that \citet{Zhang2020L2D} established for the
+deterministic JSP---a learned constructive policy improves on the
+hand-crafted rules but does not reach the methods that search each
+instance anew, trading some solution quality for a cost paid once at
+training rather than at every instance---and it had not been
+established for the interval variant.
 
 \begin{figure}[t]
   \centering
