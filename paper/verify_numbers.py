@@ -1273,6 +1273,15 @@ _imp = {r["feature"]: float(r["delta_puntos"])
 for f, v in [("holgura", 51.0), ("pos_restante", 28.1), ("rem_up", 10.6)]:
     check(f"centinela: una sola permutacion daba {f} = {v}", v, _imp[f],
           tol=0.06)
+# 7.1 dice que una sola extraccion reordena la mitad baja pero no las
+# tres de cabeza; es exactamente lo que separa los dos ficheros
+_o1 = [f for f, _ in sorted(_imp.items(), key=lambda kv: -kv[1])]
+_o5 = [f for f, _ in _orden]
+check_exacto("7.1: una extraccion conserva las tres de cabeza",
+             _o1[:3] == _o5[:3], str(_o1[:3]))
+check_exacto("7.1: pero reordena la mitad baja",
+             _o1[8:] != _o5[8:],
+             f"{sum(a == b for a, b in zip(_o1, _o5))}/16 posiciones iguales")
 
 # =========================================================================
 
