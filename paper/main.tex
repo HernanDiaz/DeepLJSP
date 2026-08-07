@@ -1330,9 +1330,21 @@ job ($+28.1$), and the job's worst-case remaining work
 ($+10.6$)---the attribute families behind MOR and MWKR, and the very
 attributes the companion study's evolved expressions
 select~\citep{DiazGP2026}. The interval-width features contribute
-nothing measurable at inference ($-0.1$ to $+0.2$ points): whatever
-the policy does with uncertainty, its decisions rest on worst-case
-magnitudes rather than on interval widths per se.
+nothing measurable at inference ($-0.1$ to $+0.2$ points), which is
+what the objective entails rather than a surprise: the worst-case
+makespan the reward minimizes is a function of the upper endpoints
+alone (Section~\ref{sec:ablations-interval}), so a width cannot
+inform a decision judged by it.
+
+The audit is therefore conditional on what the policy was trained to
+optimize---this objective and the reward weights of
+Section~\ref{sec:mdp}---and a different one need not produce the same
+ranking. The natural test is an objective that does contain the
+width, and Section~\ref{sec:ablations-interval} runs it: retraining
+under $f_\lambda$ leaves the weights indistinguishable from the
+default arm's under a common selection criterion, which is evidence
+that the ranking would survive that change, though the audit itself
+was not repeated on those arms.
 
 
 \subsection{Ablation: best-of-$N$ inference}
