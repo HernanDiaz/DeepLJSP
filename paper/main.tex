@@ -1609,6 +1609,17 @@ rises by $1.94$ points, to $15.38\%$ ($p=0.007$). Unlike the two
 ablations above, both effects are significant: a width-rewarding
 objective is available, at a price of about two points of RE.
 
+\begin{figure}[!t]
+  \centering
+  \includegraphics[width=.66\linewidth]{figures/fig_frontier.pdf}
+  \caption{Mean relative width of the selected schedule against its
+  mean RE, over the 18 (instance, seed) pools of each arm's common
+  rollout deposit. The deployed arms trace the frontier; re-ranking
+  the default policy's deposit reproduces it; under a common criterion
+  the retrained arms do not separate.}
+  \label{fig:frontier}
+\end{figure}
+
 Figure~\ref{fig:frontier} locates where that trade is produced.
 Training and selection changed together in the deployed package, so
 the two are separated on fresh deposits of $64$ rollouts per (arm,
@@ -1634,17 +1645,6 @@ indifferent to the widths in its input; it does not become sensitive
 to them when the objective penalizes width. The
 predictability--performance trade is real, tunable and monotone, and
 it arises entirely at selection time.
-
-\begin{figure}[!htb]
-  \centering
-  \includegraphics[width=.66\linewidth]{figures/fig_frontier.pdf}
-  \caption{Mean relative width of the selected schedule against its
-  mean RE, over the 18 (instance, seed) pools of each arm's common
-  rollout deposit. The deployed arms trace the frontier; re-ranking
-  the default policy's deposit reproduces it; under a common criterion
-  the retrained arms do not separate.}
-  \label{fig:frontier}
-\end{figure}
 
 \paragraph{Contrast with the evolved rule.} The companion study runs
 the same objective at the same $\lambda$ and reaches the opposite
