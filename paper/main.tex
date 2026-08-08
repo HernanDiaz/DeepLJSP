@@ -471,8 +471,9 @@ r_t \;=\; w_{\mathrm{mk}}\,r^{\mathrm{mk}}_t
       + w_{\mathrm{cr}}\,r^{\mathrm{cr}}_t
       + w_{\mathrm{ba}}\,r^{\mathrm{ba}}_t,
 \end{equation}
-each component collapsing intervals by their worst case (upper bound)
-and scaled by the instance's lower bound, so that no weight depends
+each component collapsing intervals by the upper endpoint---the
+primary key of the ranking of Eq.~\eqref{eq:lex}---and scaled by the
+instance's lower bound, so that no weight depends
 on the instance's magnitude. The weights were fixed by hand during
 development and afterwards submitted to a racing campaign of their
 own, over all six free in $[0,1]$, which did not improve on them
@@ -1361,10 +1362,11 @@ measurement of this precision separates, and the two interval-width
 features sit inside it, one of them last of the sixteen
 ($+0.3\pm0.3$ for the duration width, $+0.9\pm0.5$ for the start
 width). That the widths land on the floor is what the objective
-entails rather than a surprise: the worst-case makespan the reward
-minimizes is a function of the upper endpoints alone
+entails rather than a surprise: the primary key of the criterion of
+Eq.~\eqref{eq:lex}---the worst-case makespan, on which the reward also
+trains---is a function of the upper endpoints alone
 (Section~\ref{sec:ablations-interval}), so a width cannot inform a
-decision judged by it. The same asymmetry appears within the features
+decision judged by that criterion. The same asymmetry appears within the features
 themselves. Three quantities enter as a pair of interval endpoints,
 and in the two pairs that rise above the floor the upper endpoint
 costs several times its lower counterpart---$9.6$ against $1.8$ for
@@ -1572,8 +1574,14 @@ c^{U}_{o}=\max\!\big(c^{U}_{JP(o)},\,c^{U}_{MP(o)}\big)+p^{U}_{o},
 \end{equation}
 a recursion in upper bounds alone: $C^U_{\max}$ is a deterministic
 function of the processing order and the upper endpoints, and the
-lower endpoints do not appear in it. The reward of
-Section~\ref{sec:mdp} minimizes exactly that quantity---across its six
+lower endpoints do not appear in it. $C^U_{\max}$ is also the primary
+key of the lexicographic criterion of Eq.~\eqref{eq:lex} under which
+every schedule in this paper is compared. Its secondary key, the lower
+endpoint, is consulted only on exact ties of the upper one, and on the
+rollout pools of this section such ties do not arise---the upper-bound
+minimizer is unique in every one of the 90 (arm, instance, seed)
+pools---so in practice the criterion reduces to its primary key. The reward of
+Section~\ref{sec:mdp} trains on that primary key---across its six
 components not one reads a lower bound---so there is no channel
 through which knowing an interval's width could reduce what the policy
 is being trained to reduce. A width feature can at best be an
@@ -1648,10 +1656,10 @@ than a blanket statement about interval awareness. As \emph{input
 features} the widths are inert: at the floor of the permutation
 ranking, free to remove,
 and Eq.~\eqref{eq:upperclosed} says why in a way that generalizes past
-this network---any method minimizing the worst-case makespan of a
-semiactive schedule optimizes a function of the upper endpoints alone,
-so interval-aware inputs cannot pay for themselves under that
-objective, whatever the model class. What is \emph{not} inert is the
+this network---any method that ranks semiactive schedules by the
+criterion of Eq.~\eqref{eq:lex} optimizes, through its primary key, a
+function of the upper endpoints alone, so interval-aware inputs cannot
+contribute under that criterion, whatever the model class. What is \emph{not} inert is the
 training distribution: the policy fitted to the real upper bounds
 beats the one fitted to midpoints, which is exactly the case the
 recursion leaves open. The boundary of the claim is therefore the

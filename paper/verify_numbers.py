@@ -1720,6 +1720,14 @@ else:
                      len(_pool) == 90 and all(len(v) == 64
                                               for v in _pool.values()),
                      f"{len(_pool)} combinaciones")
+        # 7.5: la clave secundaria del criterio lexicografico nunca
+        # decide -- el minimo del extremo superior es unico en cada pool
+        _con_empate = sum(
+            1 for v in _pool.values()
+            if sum(1 for lo, up in v if up == min(u for _, u in v)) > 1)
+        check_exacto("7.5: el minimizador del extremo superior es unico "
+                     "en los 90 pools", _con_empate == 0,
+                     f"{_con_empate} pools con empate")
 
         def _sel64(v, lam):
             if lam == 0.0:
