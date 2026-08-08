@@ -1290,6 +1290,19 @@ _o1 = [f for f, _ in sorted(_imp.items(), key=lambda kv: -kv[1])]
 _o5 = [f for f, _ in _orden]
 check_exacto("7.1: una extraccion conserva las tres de cabeza",
              _o1[:3] == _o5[:3], str(_o1[:3]))
+# la asimetria entre extremos que cita 7.1: en los dos pares que salen
+# del suelo el superior cuesta varias veces mas que el inferior
+for _sup, _inf, _m_sup, _m_inf in [("rem_up", "rem_lo", 9.6, 1.8),
+                                   ("dur_up", "dur_lo", 2.1, 1.0)]:
+    check(f"7.1: {_sup} (texto +{_m_sup})", _m_sup, _med[_sup], tol=0.051)
+    check(f"7.1: {_inf} (texto +{_m_inf})", _m_inf, _med[_inf], tol=0.051)
+    check_exacto(f"7.1: {_sup} cuesta varias veces {_inf}",
+                 _med[_sup] / _med[_inf] >= 2.0,
+                 f"{_med[_sup] / _med[_inf]:.1f}x")
+# y que el tercer par se queda en el suelo, por eso el texto dice DOS
+check_exacto("7.1: el par de comienzo no sale del suelo",
+             _med["est_up"] <= 1.0 and _med["est_lo"] <= 1.0,
+             f"{_med['est_up']:.2f} / {_med['est_lo']:.2f}")
 check_exacto("7.1: pero reordena la mitad baja",
              _o1[8:] != _o5[8:],
              f"{sum(a == b for a, b in zip(_o1, _o5))}/16 posiciones iguales")

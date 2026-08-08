@@ -1364,10 +1364,16 @@ width). That the widths land on the floor is what the objective
 entails rather than a surprise: the worst-case makespan the reward
 minimizes is a function of the upper endpoints alone
 (Section~\ref{sec:ablations-interval}), so a width cannot inform a
-decision judged by it. That the floor is not exactly zero is expected
-too, since permuting any column perturbs an input distribution the
-network was trained against, whether or not that column informs the
-decision.
+decision judged by it. The same recursion predicts a pattern the audit
+was not designed to test and finds anyway: three quantities enter as a
+pair of endpoints, and in the two pairs that rise above the floor the
+upper endpoint costs several times its lower counterpart---$9.6$
+against $1.8$ for the job's remaining work, $2.1$ against $1.0$ for
+the duration---which is the asymmetry a criterion written in upper
+endpoints alone should induce. That the floor is not exactly zero is
+expected too, since permuting any column perturbs an input
+distribution the network was trained against, whether or not that
+column informs the decision.
 
 The audit is therefore conditional on what the policy was trained to
 optimize---this objective and the reward weights of
