@@ -1551,14 +1551,17 @@ try:
                  0.040 <= _pmp <= 0.050, f"p={_pmp:.4f}")
 except ImportError:
     pendiente("Wilcoxon del punto medio a diez", "sin scipy")
-for nombre, arm, v_tex in [("no-width", _nw, 13.62),
-                           ("punto medio", _mp, 14.18)]:
+# el punto medio a 3 semillas ya no se imprime (7.4 reporta solo las
+# diez, a peticion del autor); sus numeros quedan como centinelas
+for nombre, arm, v_tex, es_cent in [("no-width", _nw, 13.62, False),
+                                    ("punto medio", _mp, 14.18, True)]:
     if not arm:
         pendiente(f"brazo {nombre}", "sin directorios en outputs/")
         continue
-    check_exacto(f"{nombre}: 3 semillas x 6 instancias", len(arm) == 18,
-                 f"{len(arm)} pares")
-    check(f"{nombre}: media (texto {v_tex})", v_tex,
+    _pref = "centinela: " if es_cent else ""
+    check_exacto(f"{_pref}{nombre}: 3 semillas x 6 instancias",
+                 len(arm) == 18, f"{len(arm)} pares")
+    check(f"{_pref}{nombre}: media ({v_tex})", v_tex,
           sum(arm.values()) / len(arm))
     comunes = sorted(set(_full) & set(arm))
     d = [arm[k] - _full[k] for k in comunes]
