@@ -1661,11 +1661,19 @@ the terminals' equivalent and the objective, and still its weights do
 not move at any $\lambda$; what moves is the ranking among its
 samples. The same reward therefore reaches the decision function of an
 evolved rule and does not reach the decision function of a trained
-policy, at least at this training scale, while the trade itself is
-priced comparably on the two sides---about $2.5$ points of RE per
-point of width across the companion's sweep, about $1.9$ across
-ours---so the paradigms differ less in what predictability costs than
-in which part of the system pays it. Two explanations remain open:
+policy, at least at this training scale. The trade itself is priced
+comparably on the two sides---about $2.5$ points of RE per point of
+width across the companion's sweep, about $1.9$ across ours---so what
+separates the paradigms is not what predictability costs but where the
+cost is charged. In GP the decision function pays: the evolved rule
+becomes width-averse, and every schedule it constructs carries that
+bias. In DRL the selection stage pays: the weights are unchanged, and
+the cost is incurred sample by sample, whenever the ranking passes
+over a rollout with a better expected makespan in favor of a narrower
+one. The difference is operational at deployment: changing the
+trade-off of a width-averse rule requires evolving a new rule, whereas
+the policy's trade-off is a parameter of the ranking, adjustable at
+inference time over the same samples. Two explanations remain open:
 that no training signal reaches these features, or that the semiactive
 constructive setting fixes the width independently of the policy's
 decisions.
