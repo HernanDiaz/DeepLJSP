@@ -1516,37 +1516,51 @@ profitable.
 \subsection{Ablation: specialist versus multi-size training}
 \label{sec:ablations-neg}
 
-Size invariance enables training on mixed size classes, a natural
-hypothesis for improving transfer. We trained agents on twelve
-instances spanning $15{\times}15$, $20{\times}15$ and $20{\times}20$,
-at a comparable total budget ($3000$ episodes, to the specialist's
-$4000$) and at equalized
-\emph{per-instance} budget ($12{,}000$ episodes---three times the
-specialist's total cost), against the $20{\times}15$ specialist, all
-sides with best-of-64 inference and averaged over their three seeds. At
-comparable total budget the specialist leads on all five common evaluation
-instances ($10.5$ vs.\ $15.9$ on $15{\times}15$; $15.0$ vs.\ $20.0$
-on $20{\times}20$; $25.9$ vs.\ $30.6$ on the unseen $30{\times}20$).
-Tripling the multi-size budget recovers two of the five ($9.6$ vs.\
-$10.5$ on $15{\times}15$; $15.8$ vs.\ $16.8$ on the unseen
-$50{\times}20$) but not the rest: the specialist stays ahead on
-$20{\times}20$ ($15.0$ vs.\ $19.4$), a class the multi-size agent
-itself trained on, and on both $30{\times}15$ and $30{\times}20$. At
-matched cost, per-instance training depth dominates size diversity;
-even at triple cost, diversity recovers a minority of instances.
+Size invariance removes the architectural obstacle to training on
+several size classes at once, so a natural hypothesis is that size
+diversity in the training set improves transfer. The reference is the
+$20{\times}15$ specialist used throughout the paper, which spends
+$1000$ episodes on each of its four training instances, $4000$ in
+total. Two multi-size agents were trained on twelve instances spanning
+$15{\times}15$, $20{\times}15$ and $20{\times}20$: one at a comparable
+total budget ($3000$ episodes, $250$ per instance) and one at the
+specialist's per-instance depth ($12{,}000$ episodes, triple the
+specialist's total cost). All arms use best-of-64 inference averaged
+over the same three seeds; the evaluation takes one instance from each
+of five size classes, two inside the multi-size training distribution
+($15{\times}15$, $20{\times}20$) and three unseen by both sides
+($30{\times}15$, $30{\times}20$, $50{\times}20$).
 
-Earlier development iterations provide the complementary caution, and
-two are worth naming. Appending four uncertainty features that are
-linear combinations of ones already present---the widths and midpoints
-of quantities the encoder already receives as bounds---cost $9.1\%$ in
-mean makespan. Normalizing the temporal features by the instance lower
-bound, an input scaling retrofitted onto an optimizer co-adapted to the
-raw magnitudes, cost $112.7\%$: learning collapsed outright. Both
-figures are against the configuration in force when each was tried, at
-a reduced screening budget, and both modifications were rejected on
-that evidence. Representation changes therefore have to be co-designed
-with the optimization rather than added to a configuration already
-tuned without them.
+At comparable total budget the specialist attains the lower RE on all
+five instances---$10.5\%$ against the multi-size agent's $15.9\%$ on
+$15{\times}15$, $15.0$ against $20.0$ on $20{\times}20$, $25.9$
+against $30.6$ on $30{\times}20$---including the two classes only its
+opponent had trained on. Tripling the multi-size budget reverses the
+comparison on $15{\times}15$ ($10.5$ against $9.6$) and on
+$50{\times}20$ ($16.8$ against $15.8$) but on no other class: the
+specialist remains ahead on $30{\times}15$, on $30{\times}20$ ($25.9$
+against $28.3$) and on $20{\times}20$ ($15.0$ against $19.4$), a class
+inside the multi-size training set. At matched cost, per-instance
+training depth dominates size diversity; even at triple cost,
+diversity recovers a minority of the classes.
+
+Two modifications rejected during development show the same
+interaction between representation and optimization from the other
+side. Appending four uncertainty features that are linear combinations
+of inputs already present---the widths and midpoints of quantities the
+encoder receives as bounds---raised mean makespan by $9.1\%$:
+redundant inputs slowed learning while adding no information the first
+layer could not already form. Normalizing the temporal features by the
+instance lower bound raised it by $112.7\%$, an outright collapse of
+learning---yet this is the normalization the deployed representation
+of Section~\ref{sec:features} is built on, where it is co-designed
+with the initialization and the learning rates rather than
+retrofitted onto an optimizer adapted to the raw magnitudes. Both
+figures are against the configuration in force when each change was
+tried, at a reduced screening budget. A representation change is
+therefore not separable from the optimizer it feeds; the ingredient
+that collapses when grafted onto one configuration can be the
+foundation of another.
 
 \subsection{What interval awareness contributes}
 \label{sec:ablations-interval}
