@@ -74,9 +74,8 @@ ${\approx}46\%$, and outperforms it zero-shot on every instance of all
 seven size classes; the same weights transfer to a second benchmark of classical
 instances. Against an evolved rule the ordering depends
 on the inference budget: pass for pass the rule leads, and at $1024$
-samples each the policy is better on 46 of the 70. Three ablations are
-negative: self-attention does not improve on pooling, multi-size
-training does not overtake a single-size specialist, and the
+samples each the policy is better on 46 of the 70. Two ablations are
+negative: self-attention does not improve on pooling, and the
 interval-width features can be removed at no cost, as the closed form
 of the objective predicts. Training on crisp midpoints does
 cost $0.63$ points: the interval model contributes through the data
@@ -148,7 +147,7 @@ instances compete with strong hand-crafted constructive baselines?
 \emph{Q2:} can a single network, trained on one size class, remain
 useful across the whole benchmark without retraining? \emph{Q3:} which
 standard ingredients of the JSP-DRL toolbox---attention encoders,
-multi-size training, automatic hyperparameter configuration---actually
+automatic hyperparameter configuration---actually
 earn their cost at practical training budgets?
 
 \paragraph{Contributions.}
@@ -181,10 +180,10 @@ earn their cost at practical training budgets?
   each the policy does.
 \item \textbf{An analysis of what earns its cost}
   (Section~\ref{sec:analysis}): a permutation audit of which inputs
-  the network consults, six controlled ablations (inference budget,
-  the attention variant, specialist versus multi-size training, and
+  the network consults, five controlled ablations (inference budget,
+  the attention variant, and
   three that delimit what interval awareness contributes) of which
-  four are negative results, a $\lambda$-sweep that traces a
+  three are negative results, a $\lambda$-sweep that traces a
   width--makespan frontier and locates all of it in sample selection
   rather than in the learned weights, a Monte Carlo comparison of how
   faithfully the schedules execute, and a two-campaign
@@ -589,9 +588,7 @@ widths of every temporal quantity, making the uncertainty explicit)
 and the global state (aggregates over the whole shop, which no
 per-operation priority rule consults). The
 audit of Section~\ref{sec:results-importance} reports, a posteriori,
-which of these inputs the trained network actually uses. Two
-properties of the representation are supported by the ablations of
-Section~\ref{sec:ablations-neg}: interval
+which of these inputs the trained network actually uses. Interval
 widths enter as relative, hence non-linear, magnitudes, so they are
 not linear combinations of the remaining inputs; and the
 normalization is set jointly with the initialization and the learning
@@ -1515,55 +1512,6 @@ amortize their cost; larger training budgets or more heterogeneous
 instance distributions may be required for such structure to become
 profitable.
 
-\subsection{Ablation: specialist versus multi-size training}
-\label{sec:ablations-neg}
-
-Size invariance removes the architectural obstacle to training on
-several size classes at once, so a natural hypothesis is that size
-diversity in the training set improves transfer. The reference is the
-$20{\times}15$ specialist used throughout the paper, which spends
-$1000$ episodes on each of its four training instances, $4000$ in
-total. Two multi-size agents were trained on twelve instances spanning
-$15{\times}15$, $20{\times}15$ and $20{\times}20$: one at a comparable
-total budget ($3000$ episodes, $250$ per instance) and one at the
-specialist's per-instance depth ($12{,}000$ episodes, triple the
-specialist's total cost). All arms use best-of-64 inference averaged
-over the same three seeds; the evaluation takes one instance from each
-of five size classes, two inside the multi-size training distribution
-($15{\times}15$, $20{\times}20$) and three unseen by both sides
-($30{\times}15$, $30{\times}20$, $50{\times}20$).
-
-At comparable total budget the specialist attains the lower RE on all
-five instances---$10.5\%$ against the multi-size agent's $15.9\%$ on
-$15{\times}15$, $15.0$ against $20.0$ on $20{\times}20$, $25.9$
-against $30.6$ on $30{\times}20$---including the two classes only its
-opponent had trained on. Tripling the multi-size budget reverses the
-comparison on $15{\times}15$ ($10.5$ against $9.6$) and on
-$50{\times}20$ ($16.8$ against $15.8$) but on no other class: the
-specialist remains ahead on $30{\times}15$, on $30{\times}20$ ($25.9$
-against $28.3$) and on $20{\times}20$ ($15.0$ against $19.4$), a class
-inside the multi-size training set. At matched cost, per-instance
-training depth dominates size diversity; even at triple cost,
-diversity recovers a minority of the classes.
-
-Two modifications rejected during development show the same
-interaction between representation and optimization from the other
-side. Appending four uncertainty features that are linear combinations
-of inputs already present---the widths and midpoints of quantities the
-encoder receives as bounds---raised mean makespan by $9.1\%$:
-redundant inputs slowed learning while adding no information the first
-layer could not already form. Normalizing the temporal features by the
-instance lower bound raised it by $112.7\%$, an outright collapse of
-learning---yet this is the normalization the deployed representation
-of Section~\ref{sec:features} is built on, where it is co-designed
-with the initialization and the learning rates rather than
-retrofitted onto an optimizer adapted to the raw magnitudes. Both
-figures are against the configuration in force when each change was
-tried, at a reduced screening budget. A representation change is
-therefore not separable from the optimizer it feeds; the ingredient
-that collapses when grafted onto one configuration can be the
-foundation of another.
-
 \subsection{What interval awareness contributes}
 \label{sec:ablations-interval}
 
@@ -1851,8 +1799,7 @@ overtakes it only when both are given $1024$ samples
 compact formula is its sampling distribution rather than its argmax.
 Of the standard techniques evaluated, only best-of-$N$ inference
 improved results at practical budgets: self-attention did not improve on pooling,
-multi-size training did not overtake the single-size specialist even
-at three times its cost, and three automatic-configuration
+and three automatic-configuration
 campaigns---two over the optimizer, one over the reward
 weights---failed to beat the hand-set values by more than the
 resolution of the confirmation protocol (Q3). Three more delimit the interval representation that
@@ -1883,12 +1830,7 @@ operations and worst-case remaining work---the attributes
 hand-crafted and evolved rules exploit---while ignoring the width
 features at inference.
 
-Four directions follow. The first is suggested by the ablation of
-Section~\ref{sec:ablations-neg}: since a specialist transfers so well
-and multi-size training contributes so little, the productive use of size
-invariance is probably not to train on many sizes at once but to
-fine-tune a specialist onto a new class cheaply, a curriculum question
-this paper leaves open. The second concerns the representation, and
+Three directions follow. The first concerns the representation, and
 the robust arm of Section~\ref{sec:ablations-interval} sharpens rather
 than settles it: paying for the width in the reward narrows the
 schedules the policy \emph{selects} without measurably changing the
@@ -1898,11 +1840,11 @@ never reaches them, or whether a semiactive constructive decision
 determines the width before the policy has any say in it, separates
 two very different diagnoses and calls for a different experiment than
 any run here---a reward defined on the width alone would tell them
-apart. The third is deployment: a policy that
+apart. The second is deployment: a policy that
 schedules an instance in seconds is a natural generator of initial
 solutions for population-based search, and the quality of its sampling
 distribution, documented here at a fixed budget, is what such a use
-would exploit. The fourth turns the budget analysis of
+would exploit. The third turns the budget analysis of
 Section~\ref{sec:ablations-bon} inward. The policy commits to a
 schedule worth $17.0\%$ while its own thousand samples reach
 $12.9\%$: four points separate the decision the network makes from

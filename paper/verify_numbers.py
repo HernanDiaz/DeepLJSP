@@ -425,7 +425,8 @@ if len(_seg) == 4:
                  f"{sum(_seg['v2-attn-1000ep'])/3:.2f} s/ep")
 
 # =========================================================================
-print("\n== especialista vs multi-tamano ==")
+print("\n== especialista vs multi-tamano (centinelas: la seccion se "
+      "elimino del paper) ==")
 # bo64, media de 3 semillas, la MISMA agregacion en ambos lados
 _multi = {}
 for r in __import__("csv").DictReader(
@@ -441,18 +442,18 @@ for r in __import__("csv").DictReader(
 _espec = {ta: sum(v) / len(v) for ta, v in _espec.items()}
 CINCO = ["TA5", "TA25", "TA31", "TA41", "TA61"]
 for ta, v_tex in [("TA5", 15.9), ("TA25", 20.0), ("TA41", 30.6)]:
-    check(f"multi-3000 {ta} (texto {v_tex})", v_tex, _multi[("3000", ta)])
+    check(f"centinela: multi-3000 {ta} ({v_tex})", v_tex, _multi[("3000", ta)])
 for ta, v_tex in [("TA5", 9.6), ("TA25", 19.4), ("TA41", 28.3),
                   ("TA61", 15.8)]:
-    check(f"multi-12k {ta} (texto {v_tex})", v_tex, _multi[("12k", ta)])
+    check(f"centinela: multi-12k {ta} ({v_tex})", v_tex, _multi[("12k", ta)])
 for ta, v_tex in [("TA5", 10.5), ("TA25", 15.0), ("TA31", 15.8),
                   ("TA41", 25.9), ("TA61", 16.8)]:
-    check(f"especialista {ta} (texto {v_tex})", v_tex, _espec[ta])
+    check(f"centinela: especialista {ta} ({v_tex})", v_tex, _espec[ta])
 gana3000 = sum(_espec[ta] < _multi[("3000", ta)] for ta in CINCO)
-check_exacto("presupuesto total igualado: especialista 5/5",
+check_exacto("centinela: total igualado, especialista 5/5",
              gana3000 == 5, f"{gana3000}/5")
 gana12k = sum(_espec[ta] < _multi[("12k", ta)] for ta in CINCO)
-check_exacto("triple presupuesto: el multi recupera 2 de 5",
+check_exacto("centinela: triple, el multi recupera 2 de 5",
              gana12k == 3, f"especialista gana {gana12k}/5")
 
 # =========================================================================
@@ -551,10 +552,12 @@ else:
     for _id, _v_tex, _que in [("idea-11", 9.11, "features anexadas"),
                               ("idea-12", 112.65, "normalizacion")]:
         _m = re.search(re.escape(_id) + r".*?\*\*\+([\d.]+)%\*\*", _log)
-        check(f"7.4: {_id} ({_que}) en el registro", _v_tex,
+        check(f"centinela: {_id} ({_que}) en el registro", _v_tex,
               float(_m.group(1)) if _m else -1, tol=0.006)
-    check_exacto("7.4: el texto cita 9.1 y 112.7",
-                 "$9.1\\%$" in TEX and "$112.7\\%$" in TEX)
+    # la seccion que citaba estas cautelas se elimino del paper
+    check_exacto("las cautelas de desarrollo ya no se citan",
+                 "$9.1\\%$" not in TEX and "$112.7\\%$" not in TEX
+                 and "multi-size" not in TEX)
 
 try:
     import torch
