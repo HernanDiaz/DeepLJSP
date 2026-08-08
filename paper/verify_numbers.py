@@ -1394,6 +1394,11 @@ for ta, celdas in _filas.items():
             _mal += 1
 check_exacto(f"las {len(_filas) * 5} celdas del apendice", _mal == 0,
              f"{_mal} mal")
+# y la columna de cotas, que es el denominador de todas las demas
+_lbs = dict(re.findall(r"(TA\d+) & (\d+) &", _blk))
+_mal_lb = [ta for ta, v in _lbs.items() if int(v) != LB[ta]]
+check_exacto("las 70 cotas inferiores del apendice", not _mal_lb,
+             str(_mal_lb[:5]))
 
 
 print("\n== delimitacion de la conciencia intervalar ==")
