@@ -92,6 +92,37 @@ a la confirmación:
   primera carrera** —élite 3ª de 3 en la iteración 1— y cayó en la
   segunda. Es decir, compite, pero no queda entre las mejores.
 
+## Confirmación y decisión (2026-08-08 04:02)
+
+Ganadora #15 reentrenada a 3 semillas sobre TA11-14, best-of-64 sobre
+TA15-20, pareada contra los checkpoints por defecto:
+
+| semilla | ganadora #15 | default |
+|---|---|---|
+| 2 | 13.03 | 12.93 |
+| 3 | 14.22 | 14.04 |
+| 4 | 14.87 | 13.67 |
+| **media** | **14.04** | **13.55** |
+
+Peor en las tres semillas. Mejor en 7 de los 18 pares. Wilcoxon
+pareado **p = 0.2097**.
+
+**Se aplica la regla 1**: no hay mejora significativa —de hecho no hay
+mejora ninguna—, así que los pesos a mano quedan validados por una
+carrera dedicada, **no se reejecuta nada** y los checkpoints
+desplegados siguen siendo los mismos. La rama 2, la que obligaba a
+parar y decidir con el autor, no se activa: su condición era una
+mejora significativa y no la hay. El criterio declarado del autor
+—«si es muy cercano quizás no merezca la pena cambiarlo»— apunta en
+la misma dirección con más razón todavía, porque la ganadora es peor.
+
+Escrito en el paper: §5.3 gana la campaña como tercer párrafo (con la
+eliminación de la solo-terminal y la planitud del objetivo en los
+pesos, que valen más que el veredicto) y §4.1 deja de decir que los
+pesos nunca entraron en el estudio de configuración. Catorce
+comprobaciones nuevas leen el log de la confirmación y el de la
+carrera.
+
 ## Qué NO se toca
 
 Ningún fichero de campañas anteriores (parameters/scenario/logs con
