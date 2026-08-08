@@ -1,0 +1,142 @@
+=== CONFIRMACIÓN ganadora #15 vs default (4x1000 eps, 3 semillas) ===
+pesos: makespan=0.4487,idle=0.1779,critical=0.5513,balance=0.2669,progress=0.9154,local=0.5014
+2026-08-08 02:15:45,142 - JobShopRL.ORToolsSolver - INFO - Google OR-Tools importado correctamente.
+Total de problemas registrados: 167
+
+[seed 2] entrenando ganadora #15 ...
+2026-08-08 02:15:45,151 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 02:15:45,194 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 2
+2026-08-08 02:15:45,195 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 2
+2026-08-08 02:15:45,197 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 2
+2026-08-08 02:24:41,000 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 02:24:41,003 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 2
+2026-08-08 02:24:41,004 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 2
+2026-08-08 02:32:55,579 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 02:32:55,582 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 2
+2026-08-08 02:32:55,583 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 2
+2026-08-08 02:41:07,494 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 02:41:07,496 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 2
+2026-08-08 02:41:07,497 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 2
+2026-08-08 02:49:21,243 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 02:49:21,245 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 02:49:33,249 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 02:49:33,252 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 02:49:44,803 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 02:49:44,806 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 02:49:56,514 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 02:49:56,516 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 02:50:08,145 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 02:50:08,147 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 02:50:19,776 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 02:50:19,779 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+[seed 2] ganadora dev RE: 15.5 12.8 12.1 14.0 11.9 11.8  media=13.03
+2026-08-08 02:50:31,560 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 02:50:31,563 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 02:50:31,564 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 2
+2026-08-08 02:50:31,591 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 02:50:31,594 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 02:50:43,365 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 02:50:43,368 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 02:50:55,157 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 02:50:55,159 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 02:51:06,927 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 02:51:06,930 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 02:51:18,571 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 02:51:18,574 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 02:51:30,487 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 02:51:30,489 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+[seed 2] default  dev RE: 12.7 11.4 11.7 14.9 13.9 13.1  media=12.93
+
+[seed 3] entrenando ganadora #15 ...
+2026-08-08 02:51:42,273 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 02:51:42,276 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 3
+2026-08-08 02:51:42,276 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 3
+2026-08-08 02:51:42,277 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 3
+2026-08-08 02:59:55,149 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 02:59:55,152 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 3
+2026-08-08 02:59:55,153 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 3
+2026-08-08 03:08:11,136 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 03:08:11,138 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 3
+2026-08-08 03:08:11,139 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 3
+2026-08-08 03:16:26,533 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 03:16:26,536 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 3
+2026-08-08 03:16:26,537 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 3
+2026-08-08 03:24:43,533 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 03:24:43,535 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 03:24:55,669 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 03:24:55,671 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 03:25:08,195 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 03:25:08,198 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 03:25:19,930 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 03:25:19,933 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 03:25:31,777 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 03:25:31,780 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 03:25:43,720 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 03:25:43,723 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+[seed 3] ganadora dev RE: 13.7 13.0 14.2 17.6 12.7 14.2  media=14.22
+2026-08-08 03:25:55,384 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 03:25:55,386 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 03:25:55,387 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 3
+2026-08-08 03:25:55,412 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 03:25:55,415 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 03:26:07,226 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 03:26:07,229 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 03:26:19,018 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 03:26:19,021 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 03:26:30,699 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 03:26:30,701 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 03:26:42,580 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 03:26:42,583 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 03:26:54,387 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 03:26:54,389 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+[seed 3] default  dev RE: 14.1 13.0 14.0 18.1 13.7 11.3  media=14.04
+
+[seed 4] entrenando ganadora #15 ...
+2026-08-08 03:27:06,121 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 03:27:06,124 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 4
+2026-08-08 03:27:06,125 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 4
+2026-08-08 03:27:06,125 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 4
+2026-08-08 03:35:24,380 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 03:35:24,382 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 4
+2026-08-08 03:35:24,383 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 4
+2026-08-08 03:43:57,911 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 03:43:57,914 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 4
+2026-08-08 03:43:57,914 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 4
+2026-08-08 03:52:13,161 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 03:52:13,164 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 4
+2026-08-08 03:52:13,165 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 4
+2026-08-08 04:00:29,123 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 04:00:29,126 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 04:00:40,725 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 04:00:40,728 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 04:00:53,180 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 04:00:53,183 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 04:01:05,093 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 04:01:05,095 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 04:01:17,187 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 04:01:17,189 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 04:01:28,931 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 04:01:28,933 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+[seed 4] ganadora dev RE: 15.9 13.2 12.1 18.3 15.2 14.5  media=14.87
+2026-08-08 04:01:41,048 - JobShopRL.ExperimentFactory - INFO - Pesos de recompensa fijados por DEEPLJSP_REWARD_WEIGHTS
+2026-08-08 04:01:41,051 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 04:01:41,051 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 4
+2026-08-08 04:01:41,073 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 04:01:41,076 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 04:01:52,992 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 04:01:52,995 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 04:02:04,751 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 04:02:04,754 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 04:02:16,568 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 04:02:16,570 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 04:02:28,510 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 04:02:28,512 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+2026-08-08 04:02:40,278 - JobShopRL.ExperimentFactory - INFO - Usando configuración de recompensa adaptativa generada automáticamente
+2026-08-08 04:02:40,281 - JobShopRL.SeedUtils - INFO - Semilla aleatoria establecida: 1
+[seed 4] default  dev RE: 14.8 12.4 13.3 16.3 13.2 12.1  media=13.67
+
+=== RESULTADO (pareado por instancia y semilla) ===
+MEDIA  14.04  13.55  +0.49
+mejor en 7 de 18 pares
+Wilcoxon pareado: p=0.2097
+VEREDICTO: sin mejora significativa -> regla 1 del plan (los pesos a mano quedan validados)

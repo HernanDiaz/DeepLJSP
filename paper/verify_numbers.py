@@ -2009,6 +2009,61 @@ def _espacio(path):
 
 _c1 = _espacio("tuning/parameters.txt")
 _c2 = _espacio("tuning/parameters_serious.txt")
+print("\n== campana 3: los pesos del reward ==")
+_t3 = open("tuning/confirm_reward.log", encoding="utf-8",
+           errors="replace").read()
+_m3 = re.search(r"MEDIA\s+([\d.]+)\s+([\d.]+)\s+([+-][\d.]+)", _t3)
+check("5.3: la ganadora de pesos a 1000 eps (texto 14.04)", 14.04,
+      float(_m3.group(1)), tol=0.005)
+check("5.3: el default en la misma confirmacion (texto 13.55)", 13.55,
+      float(_m3.group(2)), tol=0.005)
+check_exacto("5.3: mejor en 7 de los 18 pares",
+             "mejor en 7 de 18 pares" in _t3)
+check("5.3: Wilcoxon de la confirmacion (texto 0.21)", 0.21,
+      float(re.search(r"Wilcoxon pareado: p=([\d.]+)", _t3).group(1)),
+      tol=0.005)
+check_exacto("5.3: el veredicto es la regla 1 del plan",
+             "sin mejora significativa" in _t3)
+# el espacio que se corrio: seis pesos, cada uno en [0,1]
+_p3 = _espacio("tuning/parameters_reward.txt")
+check_exacto("5.3: seis pesos, todos en [0, 1]",
+             len(_p3) == 6 and all(v[1] == ["0.0", "1.0"]
+                                   for v in _p3.values()),
+             str(sorted(_p3)))
+_l3 = open("tuning/irace_reward.log", encoding="utf-8",
+           errors="replace").read()
+check_exacto("5.3: 299 experimentos",
+             "# experimentsUsed: 299" in _l3)
+# la solo-terminal, eliminada en la primera ronda
+_sem = [l.split() for l in
+        open("tuning/configurations_reward.txt", encoding="utf-8")
+        .read().splitlines()[1:]]
+check_exacto("5.3: se sembro la solo-terminal (1,0,0,0,0,0)",
+             ["1.0", "0.0", "0.0", "0.0", "0.0", "0.0"] in _sem,
+             str(_sem))
+_it1 = _l3.split("Iteration 2 of")[0]
+_el1 = _it1.rsplit("Elite configurations", 1)[-1]
+check_exacto("5.3: la solo-terminal no sobrevive la primera ronda",
+             not re.search(r"^\s*2\s+1\.0+\s+0\.0+", _el1, re.M),
+             _el1.strip().splitlines()[-1][:60])
+# las cuatro elites finales: dispersion y concordancia entre semillas
+_fin = _l3.split("# Best configurations (")[1]
+_elites = [[float(x) for x in m.group(2).split()]
+           for m in re.finditer(r"\s*(\d+)\s+((?:[\d.]+\s*){6})$",
+                                _fin, re.M)]
+check_exacto("5.3: cuatro elites finales", len(_elites) == 4,
+             str(len(_elites)))
+_rango = max(max(c[j] for c in _elites) - min(c[j] for c in _elites)
+             for j in range(6))
+check("5.3: se diferencian hasta 0.48 en una componente", 0.48, _rango,
+      tol=0.005)
+_kw = [float(w) for _, w in re.findall(
+    r"\|\s*[-=x.:!]\s*\|.*?\|([-+][\d.]+)\|([\d.]+)\|",
+    _l3.rsplit("Iteration 5 of 5", 1)[-1])]
+check_exacto("5.3: Kendall W de 0.02 a 0.05 al final de la carrera",
+             _kw and 0.02 <= min(_kw[-5:]) and max(_kw[-5:]) <= 0.05,
+             " ".join(f"{w:.2f}" for w in _kw[-5:]))
+
 check_exacto("campana 1: 8 parametros", len(_c1) == 8, str(len(_c1)))
 check_exacto("campana 2: 6 parametros", len(_c2) == 6, str(len(_c2)))
 check_exacto("campana 2 fija minibatch y update-every",
