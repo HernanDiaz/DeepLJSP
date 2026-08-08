@@ -1641,8 +1641,10 @@ retraces the frontier almost point for point, ending at $11.09\%$
 width and $17.05\%$ RE where the arm actually trained on $f_4$ lands
 at $10.99\%$ and $17.75\%$. What narrows the interval is which sample
 is kept, not which weights produced it: the network is not merely
-indifferent to the widths in its input; it does not become sensitive
-to them when the objective penalizes width. The
+indifferent to the width features in its input; its proposal
+distribution does not become narrower when the objective penalizes
+width---the retrained weights propose samples as wide as the
+default's. The
 predictability--performance trade is real, tunable and monotone, and
 it arises entirely at selection time.
 
