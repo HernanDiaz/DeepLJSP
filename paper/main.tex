@@ -449,8 +449,9 @@ Section~\ref{sec:training}.
 \label{sec:mdp}
 
 Schedule construction is a finite-horizon \emph{Markov decision
-process}: the state carries everything relevant to deciding onward,
-and the horizon is exactly $nm$ steps, one per operation. The state
+process}: the state is a sufficient statistic for the remaining
+decisions, so the optimal continuation depends on the history only
+through it, and the horizon is exactly $nm$ steps, one per operation. The state
 after $t$ steps is the partial schedule---each job's next-operation
 pointer, the job and machine completion intervals---and the eligible
 set $\mathcal{E}_t$, written $\mathcal{E}$ when the step is
