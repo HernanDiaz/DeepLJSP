@@ -72,7 +72,8 @@ relative error against crisp lower bounds on the development
 instances of that size, where the best dispatching rule reaches
 ${\approx}46\%$, and outperforms it zero-shot on every instance of all
 seven size classes; the same weights transfer to a second benchmark of classical
-instances. Against an evolved rule the ordering depends
+instances. Against a dispatching rule evolved by genetic programming
+for the same benchmark, the ordering depends
 on the inference budget: pass for pass the rule leads, and at $1024$
 samples each the policy is better on 46 of the 70. Two ablations are
 negative: self-attention does not improve on pooling, and the
@@ -84,8 +85,8 @@ tunable width--makespan frontier---yet sample selection from the
 default policy reproduces all of it without retraining.}
 
 \keywords{job shop scheduling, interval uncertainty, deep reinforcement
-learning, neural combinatorial optimization, size invariance,
-dispatching}
+learning, neural combinatorial optimization, genetic programming
+hyper-heuristics, size invariance, dispatching}
 
 \maketitle
 
@@ -300,8 +301,7 @@ side for the interval benchmark used here, which lets
 Section~\ref{sec:positioning} put the two artifacts on the same
 instances at matched \emph{inference} budgets. A controlled comparison
 of the two paradigms with \emph{training} budgets matched as well is
-beyond the scope of either paper and is the subject of dedicated
-ongoing work.
+beyond the scope of either paper.
 
 \section{Problem Statement}
 \label{sec:problem}
@@ -1814,13 +1814,15 @@ pairs rather than as claims about the population of seeds. The one
 ablation extended to ten seeds, the midpoint control of
 Section~\ref{sec:ablations-interval}, is also the one whose verdict
 the extension changed, which is the measure of what the three-seed
-comparisons can miss. Finally, the comparison against the evolved rule of
-Section~\ref{sec:positioning} matches inference budgets but not
-training ones, and it compares two published artifacts rather than two
-paradigms trained under one protocol; that study, which is what
-\citet{Xu2025} call for, and the use of the policy's sampling
-distribution to seed population-based search, are the subject of
-dedicated ongoing work.
+comparisons can miss. Finally, the comparison with the rule evolved by
+genetic programming shares the evaluation protocol end to end---the
+same instances, interval arithmetic, ranking criterion, inference
+budgets and execution realizations, run in a single harness---but not
+the training side: each learner was trained as its own study
+prescribes, with budgets that no common currency equalizes, and the
+featured rule was selected over the full benchmark while the policy's
+seeds were not. The comparison of the two paradigms with training
+matched as well, which \citet{Xu2025} call for, remains open.
 
 \FloatBarrier
 \section{Conclusions and Future Work}
