@@ -1588,162 +1588,138 @@ is being trained to reduce. A width feature can at best be an
 auxiliary signal for learning; it cannot be information about the
 objective, because the objective does not contain it.
 
-The first ablation below therefore confirms a property of the
-objective rather than discovering one. The remaining questions are whether the widths
-help \emph{learning} even though they cannot help the objective
-(first), whether the upper bounds seen during training must be the
-true ones (second, which Eq.~\eqref{eq:upperclosed} does not settle,
-since training on midpoints changes the upper bounds themselves), and
-what happens when the objective is changed so that width does enter it
-(third).
+The permutation audit of Section~\ref{sec:results-importance} found
+both width features at the floor of its ranking, consistent with this
+entailment. Three training-time ablations ask the causal questions the
+audit cannot: whether the policy would be any worse had it never seen
+the uncertainty at all; whether the upper bounds shown during training
+must be the true ones---which Eq.~\eqref{eq:upperclosed} does not
+settle, since midpoint training changes the upper endpoints
+themselves; and whether the policy would come to consult the widths
+under an objective that pays for them. Each ablation is paired against
+the main arm on the training seeds it shares, so the baseline it
+subtracts is the mean over those seeds: $13.44\%$ for the three-seed
+comparisons, against the $13.82\%$ of all ten.
 
-The representation of Section~\ref{sec:features} was designed to make
-uncertainty visible: interval widths enter as relative magnitudes, and
-the durations, earliest starts and remaining work of a candidate
-appear as bounds rather than as point estimates. The permutation audit
-of Section~\ref{sec:results-importance} already found the two width
-features unused at inference. Three training-time ablations ask the
-stronger questions: whether the policy would be any worse had it never
-been able to see the uncertainty at all, whether it needs the true
-bounds during training, and whether it would use the widths if the
-reward paid for them.
+\paragraph{Widths as inputs.} The first ablation removes the
+information: the encoder collapses every interval to its worst case
+before the features are computed, so the width features are
+identically zero and the bounds coincide, while the architecture, the
+hyperparameters and the schedule builder remain untouched and the
+environment still executes interval semantics. Three seeds retrained
+from scratch reach $13.62\%$ mean RE against the shared baseline's
+$13.44\%$: a difference of $0.18$ points, worse on twelve of the
+eighteen instance--seed pairs, not significant (Wilcoxon signed-rank,
+$p=0.47$). The measurement is not redundant with the prediction,
+because Eq.~\eqref{eq:upperclosed} concerns the objective while the
+widths could in principle have shaped the value function or the
+exploration as an auxiliary signal. They do not, and the effect size
+bounds what room remains: the paired differences have a standard
+deviation of $1.54$ points, so $0.18$ is $0.12$ of one, and detecting
+an effect that small at conventional power would require on the order
+of ninety seeds.
 
-The first removes the information. The encoder collapses every
-interval to its worst case before the features are computed, so the
-width features are identically zero and the bounds coincide; the
-architecture, the hyperparameters and the schedule builder are
-untouched, and the environment still executes interval semantics.
-Each ablation in this section is paired against the main arm on the
-same training seeds, so the baseline it subtracts is the mean over
-the seeds it shares---$13.44\%$ for the first three, against the
-$13.82\%$ of all ten. Three seeds retrained from scratch reach
-$13.62\%$ mean RE on the
-development set against that $13.44\%$---a
-difference of $0.18$ points, worse on twelve of the eighteen
-instance--seed pairs and better on six, and not significant (Wilcoxon
-signed-rank, $p=0.47$). By Eq.~\eqref{eq:upperclosed} this is the
-expected outcome, and the experiment is worth running only because the
-prediction concerns the objective while the measurement concerns
-learning: the widths could in principle have acted as a useful
-auxiliary signal, shaping the value function or the exploration even
-while contributing nothing to the quantity minimized. They do not. The
-effect size makes the bound precise: the paired differences have a
-standard deviation of $1.54$ points, so $0.18$ is $0.12$ of one, and
-detecting an effect that small at conventional power would take on the
-order of ninety seeds. Whatever the widths contribute is therefore an
-order of magnitude below the run-to-run noise of training itself.
-
-The second removes the uncertainty from training altogether. Because
-the benchmark perturbs each crisp duration symmetrically, the original
-crisp instances \emph{are} the midpoint scenario of their interval
-counterparts, which makes them available as a control: we train on
-them and evaluate, unchanged, on the interval instances. This one is
-not covered by Eq.~\eqref{eq:upperclosed}---training on midpoints
-replaces the upper endpoints themselves, so the policy is fitted to a
-different problem---and it is the ablation where the extra runs
-changed the answer. Over three seeds the gap was $0.74$ points and not
-significant; over ten it is $0.63$ points, from $13.82\%$ to
-$14.45\%$, worse on 36 of the 60 instance--seed pairs and positive for
-eight of the ten seeds ($p=0.045$). Training on the true upper bounds
-is therefore slightly better than training on their midpoints. The
-margin is small---under five per cent of the RE it improves, at a
-power of about $0.7$, so it should be read as a detected effect and
-not a measured one---but it is there, and three seeds had not been
-enough to see it.
-
-Taken together with the permutation audit, the delimitation is sharper
+\paragraph{Intervals as training data.} The second ablation removes
+the uncertainty from training altogether. The benchmark perturbs each
+crisp duration symmetrically, so the original crisp instances
+\emph{are} the midpoint scenario of their interval counterparts: the
+policy is trained on them and evaluated, unchanged, on the interval
+instances. This is the case Eq.~\eqref{eq:upperclosed} leaves
+open---midpoint training replaces the upper endpoints themselves---and
+the one ablation where additional seeds changed the answer: over three
+seeds the gap was $0.74$ points and not significant, over ten it is
+$0.63$ points, from $13.82\%$ to $14.45\%$, worse on 36 of the 60
+instance--seed pairs and positive for eight of the ten seeds
+($p=0.045$). Training on the true upper bounds is slightly better than
+training on their midpoints---a detected effect rather than a measured
+one, at a power of about $0.7$. The delimitation is therefore sharper
 than a blanket statement about interval awareness. As \emph{input
-features} the widths are inert: at the floor of the permutation
-ranking, free to remove,
-and Eq.~\eqref{eq:upperclosed} says why in a way that generalizes past
-this network---any method that ranks semiactive schedules by the
-criterion of Eq.~\eqref{eq:lex} optimizes, through its primary key, a
-function of the upper endpoints alone, so interval-aware inputs cannot
-contribute under that criterion, whatever the model class. What is \emph{not} inert is the
-training distribution: the policy fitted to the real upper bounds
-beats the one fitted to midpoints, which is exactly the case the
-recursion leaves open. The boundary of the claim is therefore the
-reward and the data, not the architecture. Under an objective that
-does contain the width---which has no counterpart in the crisp
-problem---the companion study finds its width terminals do earn their
-place~\citep{DiazGP2026}.
+features} the widths are inert, and Eq.~\eqref{eq:upperclosed} says
+why in a way that generalizes past this network: any method that ranks
+semiactive schedules by the criterion of Eq.~\eqref{eq:lex} optimizes,
+through its primary key, a function of the upper endpoints alone,
+whatever the model class. As \emph{training distribution} the
+intervals are not inert. The boundary of the claim is the reward and
+the data, not the architecture.
 
-The third ablation changes the objective so that the width enters it.
-We retrain the
-policy, unchanged in every other respect, under
+\paragraph{A width-penalizing objective.} The third ablation changes
+the objective so that the width enters it. The policy is retrained,
+unchanged in every other respect, under
 \begin{equation}
 \label{eq:robust}
 f_\lambda \;=\; C^U_{\max} + \lambda\,\bigl(C^U_{\max}-C^L_{\max}\bigr),
 \qquad \lambda=1,
 \end{equation}
 which charges the schedule for the width of the interval it predicts
-and is the analogue of the robust objective of the companion study.
-Because optimizing one quantity and selecting by another would be
+and is the analogue of the robust objective of the companion study;
+since optimizing one quantity and selecting by another would be
 incoherent, the best-of-$N$ inference of this arm ranks its samples by
-$f_\lambda$ as well. Deployed as that package, the objective does what
-it promises: over the same eighteen instance--seed pairs the interval
-narrows from $12.85\%$ to $11.90\%$ of the expected makespan
-(narrower on 13 of 18, $p=0.010$) and the expected makespan itself
+$f_\lambda$ as well. Deployed as that package, the objective delivers
+what it promises: over the same eighteen instance--seed pairs the
+predicted interval narrows from $12.85\%$ to $11.90\%$ of the expected
+makespan (narrower on 13 of 18, $p=0.010$) while the expected makespan
 rises by $1.94$ points, to $15.38\%$ ($p=0.007$). Unlike the two
-ablations above, both effects are significant. A width-rewarding
-objective is available, and it costs about two points of RE.
+ablations above, both effects are significant: a width-rewarding
+objective is available, at a price of about two points of RE.
 
-Training and
-selection changed together above, so we separate them: from a fresh
-pool of $64$ rollouts per instance and seed we reconstruct the
-best-of-64 of \emph{both} arms under one common criterion, so that
-only the weights differ. Under that control the two policies become
-indistinguishable---ranking by the upper bound, the widths are
-$12.80\%$ for the default arm and $12.69\%$ for the robust one
-($p=0.93$); ranking by $f_\lambda$, $11.74\%$ and $12.20\%$
-($p=0.12$), if anything the wrong way round. What narrows the interval
-is which sample is kept, not which weights produced it: applying the
-robust criterion to the \emph{default} policy's own pool already
-attains most of the reduction, at a comparable cost in RE. The network, in
-other words, is not merely indifferent to the widths in its input; it
-does not become sensitive to them when the objective penalizes width.
+Figure~\ref{fig:frontier} locates where that trade is produced.
+Training and selection changed together in the deployed package, so
+the two are separated on fresh deposits of $64$ rollouts per (arm,
+instance, seed), with three further arms retrained from scratch at
+$\lambda=0.5$, $2$ and $4$ (three seeds each); every selection is
+recomputed on these common deposits, which is why the $\lambda{=}1$
+figures differ slightly from the training-run schedules just quoted.
+Deployed---each arm's samples ranked by its own
+$f_\lambda$---the five arms trace a monotone frontier, from $12.80\%$
+relative width at the default end to $10.99\%$ at $\lambda=4$, with
+the expected makespan climbing by $3.49$ points ($p=0.0002$). Under a
+common selection criterion the frontier vanishes: no retrained arm
+proposes narrower rollouts than the default one---at $\lambda=1$ the
+widths are $12.80\%$ against $12.69\%$ ($p=0.93$), and three of the
+four arms are marginally wider---with no paired width difference
+approaching significance (smallest $p=0.37$). Conversely, re-ranking
+the \emph{default} policy's own deposit by each $f_\lambda$ in turn
+retraces the frontier almost point for point, ending at $11.09\%$
+width and $17.05\%$ RE where the arm actually trained on $f_4$ lands
+at $10.99\%$ and $17.75\%$. What narrows the interval is which sample
+is kept, not which weights produced it: the network is not merely
+indifferent to the widths in its input; it does not become sensitive
+to them when the objective penalizes width. The
+predictability--performance trade is real, tunable and monotone, and
+it arises entirely at selection time.
 
-Three further arms, retrained from scratch at $\lambda=0.5$, $2$
-and~$4$ (three seeds each), show that this is not a quirk of
-$\lambda=1$. Deployed as packages---both selections now measured on
-the fresh rollout pools of the control above, which is why the
-$\lambda{=}1$ figures differ slightly from the training-run schedules
-quoted earlier---the five arms trace a monotone frontier: the
-relative width decreases with $\lambda$---$12.80\%$, $12.38\%$, $12.20\%$,
-$11.88\%$, $10.99\%$---while the expected makespan climbs to
-$17.75\%$ at the far end ($+3.49$ points over the default arm,
-$p=0.0002$). Under the fixed selection the frontier does not appear: no
-retrained arm proposes narrower rollouts than the default one---three
-of the four are in fact marginally wider---and no paired width
-difference comes near significance (smallest $p=0.37$). The frontier
-can even be had without the retraining: ranking the default policy's
-own pool by each $f_\lambda$ in turn retraces it almost point for
-point, ending at $11.09\%$ width and $17.05\%$ RE under $f_4$, where
-the arm actually trained on that objective lands at $10.99\%$ and
-$17.75\%$. The predictability--performance trade is therefore real,
-tunable and monotone, and it arises entirely at selection time.
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=.66\linewidth]{figures/fig_frontier.pdf}
+  \caption{Mean relative width of the selected schedule against its
+  mean RE, over the 18 (instance, seed) pools of each arm's common
+  rollout deposit. The deployed arms trace the frontier; re-ranking
+  the default policy's deposit reproduces it; under a common criterion
+  the retrained arms do not separate.}
+  \label{fig:frontier}
+\end{figure}
 
-The companion study runs the same objective at the same $\lambda$ and
-reaches the opposite finding, which makes the pair worth reading
-together. There, penalizing width narrows the schedules only when the
-rule has width terminals to act through: sweeping $\lambda$ from $0$
-to $4$ moves the relative width by $1.64$ points for rules that have
-them and by $0.13$ points for rules that do not, from which that
-study concludes that the objective works \emph{through} the
-representation~\citep{DiazGP2026}. Our network has both the terminals'
-equivalent and the objective, and still its weights do not move at any
-$\lambda$; what moves is the ranking among its samples. The same
-reward therefore reaches the decision function of an evolved rule and
-does not reach the decision function of a trained policy, at least at
-this training scale. The trade itself is priced comparably in the
-two---the companion pays about $2.5$ points of RE per point of width
-across its sweep, ours about $1.9$ across the same range of
-$\lambda$---so the paradigms differ less in what predictability costs
-than in which part of the system pays it.
-
-Two explanations remain open: that no training signal reaches these
-features, or that the semiactive constructive setting fixes the width
-independently of the policy's decisions.
+\paragraph{Contrast with the evolved rule.} The companion study runs
+the same objective at the same $\lambda$ and reaches the opposite
+finding, which makes the pair worth reading together. There,
+penalizing width narrows the schedules only when the rule has width
+terminals to act through: sweeping $\lambda$ from $0$ to $4$ moves the
+relative width by $1.64$ points for rules that have them and by
+$0.13$ points for rules that do not, from which that study concludes
+that the objective works \emph{through} the
+representation~\citep{DiazGP2026}. The network of this paper has both
+the terminals' equivalent and the objective, and still its weights do
+not move at any $\lambda$; what moves is the ranking among its
+samples. The same reward therefore reaches the decision function of an
+evolved rule and does not reach the decision function of a trained
+policy, at least at this training scale, while the trade itself is
+priced comparably on the two sides---about $2.5$ points of RE per
+point of width across the companion's sweep, about $1.9$ across
+ours---so the paradigms differ less in what predictability costs than
+in which part of the system pays it. Two explanations remain open:
+that no training signal reaches these features, or that the semiactive
+constructive setting fixes the width independently of the policy's
+decisions.
 
 \FloatBarrier
 \subsection{Executional robustness}

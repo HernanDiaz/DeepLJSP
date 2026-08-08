@@ -541,6 +541,73 @@ def fig_ladder():
     plt.close(fig)
 
 
+# ----------------------------------------------------------------------
+# Fig: frontera ancho-makespan del barrido de lambda (7.5)
+# Origen: benchmarks/robust_lambda/rollouts.csv + rollouts_sweep.csv
+# (90 pools de 64 rollouts con extremos inferior y superior)
+# ----------------------------------------------------------------------
+def fig_frontier():
+    import csv
+    from collections import defaultdict
+
+    pools = defaultdict(list)
+    lbs = {}
+    for f in ("benchmarks/robust_lambda/rollouts.csv",
+              "benchmarks/robust_lambda/rollouts_sweep.csv"):
+        for r in csv.DictReader(open(f, encoding="utf-8")):
+            pools[(r["arm"], r["seed"], r["instance"])].append(
+                (float(r["lower"]), float(r["upper"])))
+            lbs[r["instance"]] = float(r["lb"])
+    pools = {k: v[:64] for k, v in pools.items()}   # rollouts.csv se relee
+
+    def sel(v, lam):
+        # lam=None: el criterio lexicografico de la Eq. (3)
+        if lam is None:
+            return min(v, key=lambda t: (t[1], t[0]))
+        return min(v, key=lambda t: t[1] + lam * (t[1] - t[0]))
+
+    def punto(brazo, lam):
+        ws, res = [], []
+        for (a, _s, inst), v in pools.items():
+            if a != brazo:
+                continue
+            lo, up = sel(v, lam)
+            mid = (lo + up) / 2
+            ws.append((up - lo) / mid * 100)
+            res.append((mid - lbs[inst]) / lbs[inst] * 100)
+        return sum(ws) / len(ws), sum(res) / len(res)
+
+    BRAZOS = [("base", None, "0"), ("lam0p5", 0.5, "0.5"),
+              ("lam1", 1.0, "1"), ("lam2", 2.0, "2"), ("lam4", 4.0, "4")]
+    despl = [punto(b, lam) for b, lam, _ in BRAZOS]
+    libre = [punto("base", lam) for _, lam, _ in BRAZOS]
+    fija = [punto(b, None) for b, _, _ in BRAZOS]
+
+    fig, ax = plt.subplots(figsize=(5.4, 3.8))
+    ax.plot([w for w, _ in despl], [r for _, r in despl], "o-",
+            color="steelblue", label="retrained at $\\lambda$, deployed",
+            zorder=3)
+    ax.plot([w for w, _ in libre], [r for _, r in libre], "s--",
+            markerfacecolor="none", color="indianred",
+            label="default weights, re-ranked by $f_\\lambda$", zorder=2)
+    ax.scatter([w for w, _ in fija], [r for _, r in fija], marker="^",
+               color="0.45",
+               label="retrained arms, common criterion", zorder=2)
+    for (w, r), (_, _, et) in zip(despl, BRAZOS):
+        ax.annotate(f"$\\lambda{{=}}{et}$", (w, r), fontsize=8.5,
+                    xytext=(4, 4), textcoords="offset points")
+    ax.set_xlabel("mean relative width of the selected schedule (%)")
+    ax.set_ylabel("mean RE (%)")
+    ax.grid(alpha=0.3, linestyle="--")
+    ax.legend(fontsize=8.5, loc="upper left")
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIG_DIR, "fig_frontier.pdf"))
+    plt.close(fig)
+    print("frontera:", " ".join(f"({w:.2f},{r:.2f})" for w, r in despl))
+    print("libre   :", " ".join(f"({w:.2f},{r:.2f})" for w, r in libre))
+    print("fija    :", " ".join(f"({w:.2f},{r:.2f})" for w, r in fija))
+
+
 if __name__ == "__main__":
     fig_scaling()
     fig_crosssize()
@@ -551,4 +618,5 @@ if __name__ == "__main__":
     fig_eps()
     fig_byclass()
     fig_ladder()
+    fig_frontier()
     print("Figuras generadas en", FIG_DIR)
