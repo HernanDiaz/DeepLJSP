@@ -282,7 +282,7 @@ GP hyper-heuristics evolve interpretable priority
 expressions over hand-crafted attributes~\citep{Branke2016,Nguyen2017}.
 The survey by \citet{Xu2025} compares the GP and RL families
 for job shop scheduling and notes the scarcity of comparisons under a
-common protocol. A companion study~\citep{DiazGP2026} develops the GP
+common protocol. A recent study~\citep{DiazGP2026} develops the GP
 side for the interval benchmark used here, which lets
 Section~\ref{sec:positioning} put the two artifacts on the same
 instances at matched \emph{inference} budgets. A controlled comparison
@@ -994,8 +994,7 @@ EST and G\&T-MWKR---while SPT, LPT, MWKR and the SPT tie-break of
 Giffler--Thompson are dominated by a wide margin in every size class
 and are not reported further. The
 learned-symbolic baseline is the dispatching rule evolved by genetic
-programming for this benchmark in the companion
-study~\citep{DiazGP2026}, compared budget by budget in
+programming for this same benchmark by~\citet{DiazGP2026}, compared budget by budget in
 Section~\ref{sec:positioning}.
 
 Three published IJSP metaheuristics are included as reference
@@ -1079,8 +1078,8 @@ $20{\times}15$-trained network on any class. Evaluation is
 \emph{zero-shot}: the trained weights are applied to sizes they never
 saw, with no additional training or fine-tuning of any kind.
 Table~\ref{tab:seventy} reports RE over all seventy instances by size
-class, with its per-instance values in the appendix; the evolved rule of
-the companion study~\citep{DiazGP2026} appears beside the policy at each
+class, with its per-instance values in the appendix; the evolved rule
+of~\citet{DiazGP2026} appears beside the policy at each
 budget, deterministic at one pass and randomized by
 $\epsilon$-greedy dispatching when sampled, and fEABC closes the
 table as a 30-run average from a different computational class.
@@ -1351,8 +1350,8 @@ carry the policy: the relative slack
 (whose permutation adds $56.5\pm2.4$ points of RE), the number of
 remaining operations in the job ($+33.6\pm1.4$), and the job's
 worst-case remaining work ($+9.6\pm1.0$)---the attribute families
-behind MOR and MWKR, and the very attributes the companion study's
-evolved expressions select~\citep{DiazGP2026}. Below a second tier of
+behind MOR and MWKR, and the very attributes the
+evolved expressions of~\citet{DiazGP2026} select. Below a second tier of
 three features costing between $1.8$ and $2.9$ points, the remaining
 ten fall into a floor between $+0.3$ and $+1.0$ points that no
 measurement of this precision separates, and the two interval-width
@@ -1598,7 +1597,7 @@ f_\lambda \;=\; C^U_{\max} + \lambda\,\bigl(C^U_{\max}-C^L_{\max}\bigr),
 \qquad \lambda=1,
 \end{equation}
 which charges the schedule for the width of the interval it predicts
-and is the analogue of the robust objective of the companion study;
+and is the analogue of the robust objective of the GP study~\citep{DiazGP2026};
 since optimizing one quantity and selecting by another would be
 incoherent, the best-of-$N$ inference of this arm ranks its samples by
 $f_\lambda$ as well. Deployed as that package, the objective delivers
@@ -1648,7 +1647,7 @@ default's. The
 predictability--performance trade is real, tunable and monotone, and
 it arises entirely at selection time.
 
-\paragraph{Contrast with the evolved rule.} The companion study runs
+\paragraph{Contrast with the evolved rule.} The GP study runs
 the same objective at the same $\lambda$ and reaches the opposite
 finding, which makes the pair worth reading together. There,
 penalizing width narrows the schedules only when the rule has width
@@ -1663,7 +1662,7 @@ samples. The same reward therefore reaches the decision function of an
 evolved rule and does not reach the decision function of a trained
 policy, at least at this training scale. The trade itself is priced
 comparably on the two sides---about $2.5$ points of RE per point of
-width across the companion's sweep, about $1.9$ across ours---so what
+width across that study's sweep, about $1.9$ across ours---so what
 separates the paradigms is not what predictability costs but where the
 cost is charged. In GP the decision function pays: the evolved rule
 becomes width-averse, and every schedule it constructs carries that
@@ -1717,7 +1716,7 @@ G\&T-MWKR and $7.14$ for MOR, and those two gaps are systematic (the
 policy is more faithful on $13/15$ and $14/15$ instances respectively,
 paired Wilcoxon signed-rank test, $p<0.001$ in both cases). Against
 the other two the policy is indistinguishable: EST deviates by $6.35$
-($9/15$, $p=0.30$) and the evolved rule of the companion study by
+($9/15$, $p=0.30$) and the evolved rule of~\citet{DiazGP2026} by
 $6.12$ ($9/15$, $p=0.72$), level with the policy and well inside the
 noise.
 
@@ -1726,7 +1725,7 @@ rule, an evolved formula and the policy under two inference
 budgets---and they have one thing in common: none of them optimizes
 the width of the interval it predicts. A schedule can deviate little
 without being short, so faithfulness has to be pursued deliberately
-rather than inherited from a makespan objective; the companion study
+rather than inherited from a makespan objective; the GP study
 reaches the same conclusion from its side, where its rule likewise
 improves on G\&T-MWKR but not on EST until an objective that penalizes
 width is introduced~\citep{DiazGP2026}.
@@ -1880,7 +1879,7 @@ greedy and the sampled ends have to be measured together.
 Table~\ref{tab:perinstance} lists, for each of the 70 interval Taillard
 instances, the crisp lower bound and the RE (\%) of the earliest-start
 rule, of Giffler--Thompson with MWKR tie-breaking, of the evolved rule
-of the companion study~\citep{DiazGP2026}, and of the policy at its two
+of~\citet{DiazGP2026}, and of the policy at its two
 inference budgets: greedy, averaged over the three training seeds, and
 best-of-1024. The ten $20{\times}15$ instances TA11--TA20 are the
 training and development set.
