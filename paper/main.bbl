@@ -3,6 +3,36 @@
 \bibcommenthead
 
 \bibitem [\protect \citeauthoryear {%
+Abdullah%
+\ \BBA {} Abdolrazzagh-Nezhad%
+}{%
+Abdullah%
+\ \BBA {} Abdolrazzagh-Nezhad%
+}{%
+{\protect \APACyear {2014}}%
+}]{%
+Abdullah2014}
+\APACinsertmetastar {%
+Abdullah2014}%
+\begin{APACrefauthors}%
+Abdullah, S.%
+\BCBT {}\ \BBA {} Abdolrazzagh-Nezhad, M.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2014}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Fuzzy job-shop scheduling problems: A review} {Fuzzy
+  job-shop scheduling problems: A review}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Information Sciences}{278}{}{380--407,}
+\newblock
+
+\newblock
+
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
 Bello%
 , Pham%
 , Le%
@@ -31,6 +61,38 @@ Bello, I.%
   {Neural combinatorial optimization with reinforcement learning.}
 \newblock
 \APACrefnote{arXiv:1611.09940}
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Bertsimas%
+\ \BBA {} Sim%
+}{%
+Bertsimas%
+\ \BBA {} Sim%
+}{%
+{\protect \APACyear {2004}}%
+}]{%
+Bertsimas2004}
+\APACinsertmetastar {%
+Bertsimas2004}%
+\begin{APACrefauthors}%
+Bertsimas, D.%
+\BCBT {}\ \BBA {} Sim, M.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2004}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {The price of robustness} {The price of
+  robustness}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Operations Research}{52}{1}{35--53,}
+\newblock
+\begin{APACrefDOI} \doi{10.1287/opre.1030.0065} \end{APACrefDOI}
+\newblock
+
+\newblock
+
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
@@ -68,6 +130,64 @@ Branke, J.%
 
 \newblock
 
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Breiman%
+}{%
+Breiman%
+}{%
+{\protect \APACyear {2001}}%
+}]{%
+Breiman2001}
+\APACinsertmetastar {%
+Breiman2001}%
+\begin{APACrefauthors}%
+Breiman, L.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2001}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Random forests} {Random forests}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Machine Learning}{45}{1}{5--32,}
+\newblock
+\begin{APACrefDOI} \doi{10.1023/A:1010933404324} \end{APACrefDOI}
+\newblock
+
+\newblock
+
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Corsini%
+, Porrello%
+, Calderara%
+\BCBL {}\ \BBA {} Dell'Amico%
+}{%
+Corsini%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2024}}%
+}]{%
+Corsini2024}
+\APACinsertmetastar {%
+Corsini2024}%
+\begin{APACrefauthors}%
+Corsini, A.%
+, Porrello, A.%
+, Calderara, S.%
+\BCBL {} Dell'Amico, M.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2024}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Self-labeling the job shop scheduling problem}
+  {Self-labeling the job shop scheduling problem}.{\BBCQ}
+\newblock
+ \APACrefbtitle {Advances in Neural Information Processing Systems (NeurIPS).}
+  {Advances in neural information processing systems (neurips).}
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
@@ -271,6 +391,38 @@ D{\'i}az~Rodr{\'i}guez, H.%
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
+Gabel%
+\ \BBA {} Riedmiller%
+}{%
+Gabel%
+\ \BBA {} Riedmiller%
+}{%
+{\protect \APACyear {2008}}%
+}]{%
+Gabel2008}
+\APACinsertmetastar {%
+Gabel2008}%
+\begin{APACrefauthors}%
+Gabel, T.%
+\BCBT {}\ \BBA {} Riedmiller, M.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2008}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Adaptive reactive job-shop scheduling with reinforcement
+  learning agents} {Adaptive reactive job-shop scheduling with reinforcement
+  learning agents}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{International Journal of Information Technology and
+  Intelligent Computing}{24}{4}{14--18,}
+\newblock
+
+\newblock
+
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
 Garey%
 , Johnson%
 \BCBL {}\ \BBA {} Sethi%
@@ -371,6 +523,42 @@ Gonz{\'a}lez-Rodr{\'i}guez, I.%
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
+Grumbach%
+, M{\"u}ller%
+, Reusch%
+\BCBL {}\ \BBA {} Trojahn%
+}{%
+Grumbach%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2024}}%
+}]{%
+Grumbach2024}
+\APACinsertmetastar {%
+Grumbach2024}%
+\begin{APACrefauthors}%
+Grumbach, F.%
+, M{\"u}ller, A.%
+, Reusch, P.%
+\BCBL {} Trojahn, S.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2024}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Robust-stable scheduling in dynamic flow shops based on
+  deep reinforcement learning} {Robust-stable scheduling in dynamic flow shops
+  based on deep reinforcement learning}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Journal of Intelligent Manufacturing}{35}{2}{667--686,}
+\newblock
+\begin{APACrefDOI} \doi{10.1007/s10845-022-02069-x} \end{APACrefDOI}
+\newblock
+
+\newblock
+
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
 Haupt%
 }{%
 Haupt%
@@ -393,6 +581,71 @@ Haupt, R.%
 \APACjournalVolNumPages{OR Spektrum}{11}{1}{3--16,}
 \newblock
 \begin{APACrefDOI} \doi{10.1007/bf01721162} \end{APACrefDOI}
+\newblock
+
+\newblock
+
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Kasperski%
+\ \BBA {} Zieli{\'n}ski%
+}{%
+Kasperski%
+\ \BBA {} Zieli{\'n}ski%
+}{%
+{\protect \APACyear {2016}}%
+}]{%
+Kasperski2016}
+\APACinsertmetastar {%
+Kasperski2016}%
+\begin{APACrefauthors}%
+Kasperski, A.%
+\BCBT {}\ \BBA {} Zieli{\'n}ski, P.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2016}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Robust discrete optimization under discrete and interval
+  uncertainty: A survey} {Robust discrete optimization under discrete and
+  interval uncertainty: A survey}.{\BBCQ}
+\newblock
+ \APACrefbtitle {Robustness Analysis in Decision Aiding, Optimization, and
+  Analytics.} {Robustness analysis in decision aiding, optimization, and
+  analytics.}
+\newblock
+\APACaddressPublisher{}{Springer}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Kayhan%
+\ \BBA {} Yildiz%
+}{%
+Kayhan%
+\ \BBA {} Yildiz%
+}{%
+{\protect \APACyear {2023}}%
+}]{%
+Kayhan2023}
+\APACinsertmetastar {%
+Kayhan2023}%
+\begin{APACrefauthors}%
+Kayhan, B.M.%
+\BCBT {}\ \BBA {} Yildiz, G.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2023}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Reinforcement learning applications to machine
+  scheduling problems: a comprehensive literature review} {Reinforcement
+  learning applications to machine scheduling problems: a comprehensive
+  literature review}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Journal of Intelligent Manufacturing}{34}{}{905--929,}
+\newblock
+\begin{APACrefDOI} \doi{10.1007/s10845-021-01847-3} \end{APACrefDOI}
 \newblock
 
 \newblock
@@ -425,6 +678,36 @@ Kool, W.%
 \newblock
  \APACrefbtitle {International Conference on Learning Representations
   ({ICLR}).} {International conference on learning representations ({ICLR}).}
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Kwon%
+\ \protect \BOthers {.}}{%
+Kwon%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2020}}%
+}]{%
+Kwon2020}
+\APACinsertmetastar {%
+Kwon2020}%
+\begin{APACrefauthors}%
+Kwon, Y\BHBI D.%
+, Choo, J.%
+, Kim, B.%
+, Yoon, I.%
+, Gwon, Y.%
+\BCBL {} Min, S.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2020}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {{POMO}: Policy optimization with multiple optima for
+  reinforcement learning} {{POMO}: Policy optimization with multiple optima for
+  reinforcement learning}.{\BBCQ}
+\newblock
+ \APACrefbtitle {Advances in Neural Information Processing Systems (NeurIPS).}
+  {Advances in neural information processing systems (neurips).}
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
@@ -736,6 +1019,43 @@ Schulman, J.%
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
+Song%
+, Chen%
+, Li%
+\BCBL {}\ \BBA {} Cao%
+}{%
+Song%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2023}}%
+}]{%
+Song2023FJSP}
+\APACinsertmetastar {%
+Song2023FJSP}%
+\begin{APACrefauthors}%
+Song, W.%
+, Chen, X.%
+, Li, Q.%
+\BCBL {} Cao, Z.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2023}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Flexible job-shop scheduling via graph neural network
+  and deep reinforcement learning} {Flexible job-shop scheduling via graph
+  neural network and deep reinforcement learning}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{IEEE Transactions on Industrial
+  Informatics}{19}{2}{1600--1610,}
+\newblock
+\begin{APACrefDOI} \doi{10.1109/TII.2022.3189725} \end{APACrefDOI}
+\newblock
+
+\newblock
+
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
 Sotskov%
 , Matsveichuk%
 \BCBL {}\ \BBA {} Hatsura%
@@ -1012,6 +1332,39 @@ Zaheer, M.%
  \APACrefbtitle {Advances in Neural Information Processing Systems
   ({NeurIPS}).} {Advances in neural information processing systems
   ({NeurIPS}).}
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Zhang%
+, Cao%
+, Song%
+, Wu%
+\BCBL {}\ \BBA {} Zhang%
+}{%
+Zhang%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2024}}%
+}]{%
+Zhang2024L2S}
+\APACinsertmetastar {%
+Zhang2024L2S}%
+\begin{APACrefauthors}%
+Zhang, C.%
+, Cao, Z.%
+, Song, W.%
+, Wu, Y.%
+\BCBL {} Zhang, J.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2024}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Deep reinforcement learning guided improvement heuristic
+  for job shop scheduling} {Deep reinforcement learning guided improvement
+  heuristic for job shop scheduling}.{\BBCQ}
+\newblock
+ \APACrefbtitle {International Conference on Learning Representations (ICLR).}
+  {International conference on learning representations (iclr).}
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%

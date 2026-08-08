@@ -206,8 +206,11 @@ and Section~\ref{sec:conclusions} concludes.
 
 Uncertain processing times have been modeled with probability
 distributions, fuzzy numbers and intervals. The fuzzy JSP line is
-mature~\citep{GonzalezRodriguez2010,Palacios2015}; the interval model can
-be read as its minimal-commitment limit, retaining only support bounds.
+mature~\citep{Abdullah2014,GonzalezRodriguez2010,Palacios2015}; the
+interval model can
+be read as its minimal-commitment limit, retaining only support
+bounds, and is the standard minimal representation of uncertainty in
+robust discrete optimization at large~\citep{Kasperski2016}.
 \citet{Lei2011} opened the interval line with population-based
 neighborhood search; genetic algorithms with interval
 rankings~\citep{DiazGA2020}, robustness-oriented tardiness
@@ -268,11 +271,21 @@ computational class.
 Neural combinatorial optimization began with pointer
 networks~\citep{Vinyals2015} and their RL training~\citep{Bello2016};
 attention encoders became standard for routing~\citep{Kool2019,
-Nazari2018}. For the deterministic JSP, \citet{Zhang2020L2D} learn dispatching policies over
+Nazari2018}. Reinforcement learning for job-shop dispatching predates
+the deep era~\citep{Gabel2008}, and its applications to machine
+scheduling are surveyed by \citet{Kayhan2023}. For the deterministic
+JSP, \citet{Zhang2020L2D} learn dispatching policies over
 disjunctive-graph GNN embeddings, \citet{Park2021GNN} refine
-such representations and report cross-size generalization, and \citet{Tassel2021} contribute an efficient environment formulation.
+such representations and report cross-size generalization, and \citet{Tassel2021} contribute an efficient environment formulation;
+the paradigm has since been extended to richer variants such as the
+flexible job shop~\citep{Song2023FJSP}, from construction to
+DRL-guided improvement over complete schedules~\citep{Zhang2024L2S},
+and toward robustness under dynamic disruptions, where
+\citet{Grumbach2024} size slack buffers in stochastic flow shops---an
+uncertainty model that is distributional and event-driven rather than
+interval-valued.
 Sampling several rollouts and keeping the best is a standard
-inference-time lever~\citep{Kool2019}. Permutation-invariant set encoders
+inference-time lever~\citep{Kool2019,Kwon2020}. Permutation-invariant set encoders
 were formalized as Deep Sets~\citep{Zaheer2017}, of which attention is
 the natural strict generalization; our architecture starts from the
 simpler construction and evaluates attention as a controlled ablation.
@@ -335,7 +348,8 @@ a^{U}<b^{U} \;\vee\; \big(a^{U}=b^{U}\wedge a^{L}<b^{L}\big),
 \label{eq:lex}
 \end{equation}
 which prioritizes the worst case, in line with min--max robust
-optimization and with the IJSP literature~\citep{DiazGA2020,
+optimization~\citep{Bertsimas2004,Kasperski2016} and with the IJSP
+literature~\citep{DiazGA2020,
 DiazICAE2023}. For reporting we follow the field
 convention~\citep{DiazGA2020,DiazICAE2023}:
 \begin{equation}
@@ -1325,7 +1339,8 @@ deviate from the predicted values.
 
 The policy is not interpretable the way a priority expression is, but
 its inputs can be audited. Figure~\ref{fig:importance} reports a
-permutation test: at every decision of a greedy rollout, one feature
+permutation test~\citep{Breiman2001}: at every decision of a greedy
+rollout, one feature
 column is shuffled across the eligible operations, and the resulting
 mean RE over the development set and the three seeds is compared with
 the intact rollouts ($18.2\%$).
@@ -1882,7 +1897,9 @@ its single pass against $14.1\%$ randomized to a thousand---so the
 gap belongs to randomized constructive search rather than to learning
 as such; what differs is the remedy, since the weights of a network
 can be moved onto its own best rollouts by retraining on them and
-iterating, where a formula would have to be evolved anew. How much of
+iterating---the self-labeling strategy that \citet{Corsini2024}
+demonstrate on the crisp JSP---where a formula would have to be
+evolved anew. How much of
 the gap is learnable is open, and its shape is measurable: the
 sampled distribution has a standard deviation of $3.2$ points per
 instance, so its best draw of a thousand sits $2.6$ of them below the
