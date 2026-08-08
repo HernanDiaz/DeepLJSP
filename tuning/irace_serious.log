@@ -1,0 +1,268 @@
+#------------------------------------------------------------------------------
+# irace: An implementation in R of (Elitist) Iterated Racing
+# Version: 4.4.3.dd8d85f
+# Copyright (C) 2010-2025
+# Manuel Lopez-Ibanez     <manuel.lopez-ibanez@manchester.ac.uk>
+# Jeremie Dubois-Lacoste
+# Leslie Perez Caceres    <leslie.perez.caceres@ulb.ac.be>
+#
+# This is free software, and you are welcome to redistribute it under certain
+# conditions.  See the GNU General Public License for details. There is NO
+# WARRANTY; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# irace builds upon previous code from the race package:
+#     race: Racing methods for the selection of the best
+#     Copyright (C) 2003 Mauro Birattari
+#------------------------------------------------------------------------------
+# installed at: C:/Users/herdi/AppData/Local/Programs/R/R-4.6.1/library/irace
+# called with: --scenario scenario_serious.txt --recovery-file irace_serious_recovery.Rdata
+# 2026-07-09 09:02:39 CEST: Reading parameter file 'E:/PycharmProjects/DeepLJSP/tuning/parameters_serious.txt'.
+# 2026-07-09 09:02:39 CEST: Recovering from file: 'E:/PycharmProjects/DeepLJSP/tuning/irace_serious_recovery.Rdata'
+# 2026-07-09 09:02:39 CEST: Read 4 configuration(s) from file 'E:/PycharmProjects/DeepLJSP/tuning/configurations_serious.txt'
+# 2026-07-09 09:02:40 CEST: Initialization
+# Elitist race
+# Elitist new instances: 1
+# Elitist limit: 2
+# nbIterations: 4
+# minNbSurvival: 4
+# nbParameters: 6
+# seed: 20260706
+# confidence level: 0.95
+# budget: 300
+# mu: 6
+# deterministic: FALSE
+
+# 2026-07-09 09:02:40 CEST: Iteration 1 of 4
+# experimentsUsed: 0
+# remainingBudget: 300
+# currentBudget: 75
+# nbConfigurations: 10
+# Markers:
+     x No test is performed.
+     c Configurations are discarded only due to capping.
+     - The test is performed and some configurations are discarded.
+     = The test is performed but no configuration is discarded.
+     ! The test is performed and configurations could be discarded but elite configurations are preserved.
+     . Alive configurations were already evaluated on this instance and nothing is discarded.
+     : All alive configurations are elite, but some need to be evaluated on this instance.
+
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+| |   Instance|      Alive|       Best|       Mean best| Exp so far|  W time|  rho|KenW|  Qvar|
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+|x|          1|         10|          3|     13.47870000|         10|00:00:00|   NA|  NA|    NA|
+|x|          2|         10|          5|     12.93560000|         20|00:00:00|+0.59|0.79|0.3544|
+|x|          3|         10|          7|     13.79136667|         30|00:00:00|+0.64|0.76|0.3190|
+|x|          4|         10|          5|     13.83725000|         40|00:00:00|+0.55|0.67|0.3374|
+|x|          5|         10|          5|     13.90058000|         50|00:00:00|+0.54|0.63|0.3869|
+|-|          6|          7|          3|     14.30610000|         60|00:00:00|-0.11|0.08|0.9413|
+|=|          7|          7|          5|     14.16152857|         67|00:00:00|-0.02|0.13|0.8795|
+|=|          8|          7|          3|     14.01796250|         74|00:00:00|-0.00|0.12|0.8704|
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+Best-so-far configuration:           3    mean value:      14.01796250
+Description of the best-so-far configuration:
+  .ID.    lr entropy clip kepochs  gae hidden .PARENT.
+3    3 7e-04  0.0058  0.3       8 0.90    256       NA
+
+# 2026-07-09 09:02:41 CEST: Elite configurations (first number is the configuration ID; listed from best to worst according to the sum of ranks):
+     lr entropy clip kepochs  gae hidden
+3 7e-04  0.0058  0.3       8 0.90    256
+5 9e-04  0.0042  0.1       8 0.95    128
+4 7e-04  0.0121  0.3       8 0.90    256
+2 3e-04  0.0069  0.3       8 0.90    128
+# 2026-07-09 09:02:41 CEST: Iteration 2 of 4
+# experimentsUsed: 74
+# remainingBudget: 226
+# currentBudget: 75
+# nbConfigurations: 11
+# Markers:
+     x No test is performed.
+     c Configurations are discarded only due to capping.
+     - The test is performed and some configurations are discarded.
+     = The test is performed but no configuration is discarded.
+     ! The test is performed and configurations could be discarded but elite configurations are preserved.
+     . Alive configurations were already evaluated on this instance and nothing is discarded.
+     : All alive configurations are elite, but some need to be evaluated on this instance.
+
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+| |   Instance|      Alive|       Best|       Mean best| Exp so far|  W time|  rho|KenW|  Qvar|
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+|x|          9|         11|         13|     13.19390000|         11|00:00:00|   NA|  NA|    NA|
+|x|          5|         11|         13|     13.17460000|         18|00:00:00|+0.49|0.75|0.1200|
+|x|          6|         11|         13|     13.18103333|         25|00:00:00|+0.66|0.77|0.0800|
+|x|          1|         11|         13|     13.89852500|         32|00:00:00|+0.25|0.44|0.4014|
+|x|          2|         11|         13|     13.59470000|         39|00:00:00|+0.23|0.39|0.5137|
+|-|          4|          5|         13|     13.62740000|         46|00:00:00|+0.06|0.22|0.7697|
+|=|          8|          5|         13|     13.95030000|         47|00:00:00|-0.07|0.08|0.8730|
+|=|          3|          5|         13|     13.82035000|         48|00:00:00|-0.03|0.10|0.8239|
+|=|          7|          5|         13|     13.97668889|         49|00:00:00|-0.04|0.07|0.8463|
+# 2026-07-09 09:02:41 CEST: Recovery completed.
+|=|         10|          5|         13|     14.10176000|         54|00:00:00|-0.03|0.07|0.8414|
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+Best-so-far configuration:          13    mean value:      14.10176000
+Description of the best-so-far configuration:
+   .ID.    lr entropy clip kepochs  gae hidden .PARENT.
+13   13 9e-04  0.0127  0.3       8 0.95    128        4
+
+# 2026-07-09 09:02:41 CEST: Elite configurations (first number is the configuration ID; listed from best to worst according to the sum of ranks):
+      lr entropy clip kepochs  gae hidden
+13 9e-04  0.0127  0.3       8 0.95    128
+5  9e-04  0.0042  0.1       8 0.95    128
+3  7e-04  0.0058  0.3       8 0.90    256
+4  7e-04  0.0121  0.3       8 0.90    256
+# 2026-07-09 09:02:41 CEST: Iteration 3 of 4
+# experimentsUsed: 128
+# remainingBudget: 172
+# currentBudget: 86
+# nbConfigurations: 11
+# Markers:
+     x No test is performed.
+     c Configurations are discarded only due to capping.
+     - The test is performed and some configurations are discarded.
+     = The test is performed but no configuration is discarded.
+     ! The test is performed and configurations could be discarded but elite configurations are preserved.
+     . Alive configurations were already evaluated on this instance and nothing is discarded.
+     : All alive configurations are elite, but some need to be evaluated on this instance.
+
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+| |   Instance|      Alive|       Best|       Mean best| Exp so far|  W time|  rho|KenW|  Qvar|
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+|x|         11|         11|         13|     13.15530000|         11|01:52:22|   NA|  NA|    NA|
+|x|          8|         11|         22|     12.32395000|         18|01:12:42|+0.07|0.54|0.9817|
+|x|          5|         11|         22|     12.70023333|         25|01:18:38|+0.38|0.59|0.6545|
+|x|          9|         11|         22|     12.79765000|         32|01:20:04|+0.35|0.51|0.6535|
+|x|          3|         11|         22|     13.30622000|         39|01:21:00|+0.31|0.44|0.6882|
+|-|          7|          5|         22|     13.32005000|         46|01:19:45|+0.19|0.32|0.7242|
+|=|          1|          5|         22|     13.35668571|         47|00:19:31|+0.13|0.25|0.7507|
+|=|          2|          5|         22|     13.19061250|         48|00:19:29|+0.16|0.27|0.7529|
+|!|          6|          5|         22|     13.17942222|         49|00:19:25|+0.22|0.31|0.7136|
+|!|          4|          5|         22|     13.22992000|         50|00:19:30|+0.27|0.34|0.6811|
+|-|         10|          1|         22|     13.24440000|         51|00:19:26|   NA|  NA|    NA|
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+Best-so-far configuration:          22    mean value:      13.24440000
+Description of the best-so-far configuration:
+   .ID.    lr entropy clip kepochs  gae hidden .PARENT.
+22   22 7e-04  0.0063  0.1       8 0.90    256        5
+
+# 2026-07-09 19:04:36 CEST: Elite configurations (first number is the configuration ID; listed from best to worst according to the sum of ranks):
+      lr entropy clip kepochs  gae hidden
+22 7e-04  0.0063  0.1       8 0.90    256
+# 2026-07-09 19:04:36 CEST: Iteration 4 of 4
+# experimentsUsed: 179
+# remainingBudget: 121
+# currentBudget: 121
+# nbConfigurations: 11
+# Markers:
+     x No test is performed.
+     c Configurations are discarded only due to capping.
+     - The test is performed and some configurations are discarded.
+     = The test is performed but no configuration is discarded.
+     ! The test is performed and configurations could be discarded but elite configurations are preserved.
+     . Alive configurations were already evaluated on this instance and nothing is discarded.
+     : All alive configurations are elite, but some need to be evaluated on this instance.
+
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+| |   Instance|      Alive|       Best|       Mean best| Exp so far|  W time|  rho|KenW|  Qvar|
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+|x|         12|         11|         22|     11.19510000|         11|01:40:55|   NA|  NA|    NA|
+|x|          1|         11|         28|     12.48820000|         21|01:38:22|+0.55|0.77|0.4916|
+|x|          3|         11|         28|     12.76536667|         31|01:38:31|+0.23|0.49|0.7400|
+|x|          4|         11|         28|     13.72407500|         41|01:54:00|-0.03|0.23|0.9559|
+|x|         10|         11|         25|     13.35710000|         51|01:39:53|-0.04|0.17|0.9270|
+|=|          8|         11|         22|     13.06346667|         61|01:38:54|+0.03|0.19|0.8600|
+|=|          6|         11|         22|     13.06724286|         71|01:38:51|+0.06|0.19|0.8143|
+|=|          5|         11|         22|     13.11543750|         81|01:38:53|+0.09|0.21|0.7924|
+|-|         11|          7|         22|     13.15292222|         91|01:51:08|-0.03|0.09|0.8596|
+|=|          7|          7|         22|     13.17655000|         97|01:02:14|+0.01|0.11|0.8261|
+|=|          9|          7|         22|     13.16867273|        103|00:57:42|+0.04|0.12|0.7914|
+|=|          2|          7|         22|     13.07362500|        109|01:04:32|+0.08|0.15|0.7548|
+|-|         13|          4|         22|     12.99320000|        116|01:24:42|+0.00|0.08|0.7240|
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+Best-so-far configuration:          22    mean value:      12.99320000
+Description of the best-so-far configuration:
+   .ID.    lr entropy clip kepochs  gae hidden .PARENT.
+22   22 7e-04  0.0063  0.1       8 0.90    256        5
+
+# 2026-07-10 14:53:19 CEST: Elite configurations (first number is the configuration ID; listed from best to worst according to the sum of ranks):
+      lr entropy clip kepochs  gae hidden
+22 7e-04  0.0063  0.1       8 0.90    256
+25 5e-04  0.0057  0.1       8 0.90    128
+30 9e-04  0.0071  0.1       8 0.90    256
+31 6e-04  0.0051  0.1       8 0.95    256
+# 2026-07-10 14:53:19 CEST: Stopped because there is not enough budget left to race more than the minimum (4).
+# You may either increase the budget or set 'minNbSurvival' to a lower value.
+# Iteration: 5
+# nbIterations: 5
+# experimentsUsed: 295
+# timeUsed: 0
+# remainingBudget: 5
+# currentBudget: 5
+# number of elites: 4
+# nbConfigurations: 4
+# Total CPU user time: 0.92, CPU sys time: 0.7, Wall-clock time: 107440
+# 2026-07-10 14:53:19 CEST: Starting post-selection:
+# Configurations selected: 22, 25, 30, 31, 26.
+# Pending instances: 0, 0, 0, 0, 0.
+# 2026-07-10 14:53:19 CEST: seed: 20260706
+# Configurations: 5
+# Available experiments: 5
+# minSurvival: 1
+# Markers:
+     x No test is performed.
+     c Configurations are discarded only due to capping.
+     - The test is performed and some configurations are discarded.
+     = The test is performed but no configuration is discarded.
+     ! The test is performed and configurations could be discarded but elite configurations are preserved.
+     . Alive configurations were already evaluated on this instance and nothing is discarded.
+     : All alive configurations are elite, but some need to be evaluated on this instance.
+
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+| |   Instance|      Alive|       Best|       Mean best| Exp so far|  W time|  rho|KenW|  Qvar|
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+|.|          7|          5|         25|     12.62210000|          0|00:00:00|   NA|  NA|    NA|
+|.|          8|          5|         25|     13.72175000|          0|00:00:00|-0.50|0.25|1.3003|
+|.|          4|          5|         25|     13.59993333|          0|00:00:00|-0.10|0.27|0.8815|
+|.|         12|          5|         25|     13.90530000|          0|00:00:00|+0.02|0.26|0.7918|
+|.|          9|          5|         25|     13.90462000|          0|00:00:00|+0.04|0.23|0.7274|
+|.|          1|          5|         25|     13.81545000|          0|00:00:00|-0.01|0.16|0.6991|
+|.|          5|          5|         25|     13.89097143|          0|00:00:00|-0.01|0.13|0.7715|
+|.|          2|          5|         25|     13.77955000|          0|00:00:00|+0.05|0.17|0.7274|
+|.|         11|          5|         25|     13.84227778|          0|00:00:00|+0.07|0.18|0.7440|
+|.|          6|          5|         25|     13.84824000|          0|00:00:00|+0.10|0.19|0.7132|
+|.|          3|          5|         25|     13.73622727|          0|00:00:00|+0.05|0.14|0.7630|
+|.|         10|          5|         25|     13.64338333|          0|00:00:00|+0.07|0.15|0.7565|
+|.|         13|          5|         25|     13.59386154|          0|00:00:00|+0.10|0.17|0.7285|
+|=|         14|          5|         22|     13.16086429|          5|01:05:09|+0.08|0.14|0.7448|
++-+-----------+-----------+-----------+----------------+-----------+--------+-----+----+------+
+Best-so-far configuration:          22    mean value:      13.16086429
+Description of the best-so-far configuration:
+   .ID.    lr entropy clip kepochs  gae hidden .PARENT.
+22   22 7e-04  0.0063  0.1       8 0.90    256        5
+
+# 2026-07-10 15:58:29 CEST: Elite configurations (first number is the configuration ID; listed from best to worst according to the sum of ranks):
+      lr entropy clip kepochs  gae hidden
+22 7e-04  0.0063  0.1       8 0.90    256
+25 5e-04  0.0057  0.1       8 0.90    128
+30 9e-04  0.0071  0.1       8 0.90    256
+31 6e-04  0.0051  0.1       8 0.95    256
+# Total CPU user time: 1.02, CPU sys time: 0.89, Wall-clock time: 111349.9
+# Best configurations (first number is the configuration ID; listed from best to worst according to the sum of ranks):
+      lr entropy clip kepochs  gae hidden
+22 7e-04  0.0063  0.1       8 0.90    256
+25 5e-04  0.0057  0.1       8 0.90    128
+30 9e-04  0.0071  0.1       8 0.90    256
+31 6e-04  0.0051  0.1       8 0.95    256
+# Best configurations as commandlines (first number is the configuration ID; listed from best to worst according to the sum of ranks):
+22 --lr 0.0007 --entropy 0.0063 --clip 0.1 --kepochs 8 --gae 0.90 --hidden 256
+25 --lr 0.0005 --entropy 0.0057 --clip 0.1 --kepochs 8 --gae 0.90 --hidden 128
+30 --lr 0.0009 --entropy 0.0071 --clip 0.1 --kepochs 8 --gae 0.90 --hidden 256
+31 --lr 0.0006 --entropy 0.0051 --clip 0.1 --kepochs 8 --gae 0.95 --hidden 256
+
+
+# Testing of elite configurations: 1 
+# Testing iteration configurations: FALSE 
+# 2026-07-10 15:58:29 CEST: No test instances, skip testing
+Aviso:
+In irace.cmdline(c("--scenario", "scenario_serious.txt", "--recovery-file",  :
+  'irace.cmdline' está en desuso.
+Utilizar 'irace.cmdline' en su lugar.
+Ver help("Deprecated")
