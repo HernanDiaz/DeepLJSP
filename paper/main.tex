@@ -895,37 +895,32 @@ defaults and eliminated the seeded default during racing; yet its
 winner, retrained on the four training instances over three seeds,
 again failed to improve: $14.73\%$ against $13.52\%$ over the six
 development instances.
-A third campaign left the optimizer alone and raced the reward
-instead: the six weights of Eq.~\eqref{eq:reward}, each free in
-$[0,1]$, over $299$ experiments at the same operating fidelity, seeded
-with the weights of Section~\ref{sec:mdp}, with a terminal-only vector
-$(1,0,0,0,0,0)$ and with a uniform one. Its winner, confirmed under
-the same protocol, did not improve the deployed weights either:
-$14.04\%$ against $13.55\%$ over the eighteen instance--seed pairs,
-better on 7 of them (Wilcoxon signed-rank, $p=0.21$). Two of its
-by-products are worth reporting. The terminal-only vector was
-eliminated in the first round, so the dense shaping is not
-dispensable. And four elites survived the full race while differing by
-as much as $0.48$ in a single weight, with an agreement across seeds
-on which is better of $W=0.02$--$0.05$ by Kendall's coefficient: at
+A third campaign raced the reward instead of the optimizer: the six
+weights of Eq.~\eqref{eq:reward}, each free in $[0,1]$, over $299$
+experiments at operating fidelity. Its winner did not improve the
+deployed weights either, $14.04\%$ against $13.55\%$ under the same
+confirmation protocol (Wilcoxon signed-rank, $p=0.21$). Two
+by-products matter more than the verdict. A seeded terminal-only
+vector $(1,0,0,0,0,0)$ was eliminated in the first round, so the dense
+shaping is not dispensable; and four elites survived the full race
+differing by as much as $0.48$ in a single weight, with a Kendall
+agreement across seeds of $W=0.02$--$0.05$ on which is better, so at
 this budget the objective is flat in the reward weights relative to
 the noise between training runs.
 
 Automatic configuration therefore does not beat the defaults of
-Table~\ref{tab:hyper} for this problem \emph{even when performed at
-the operating budget}, and the same holds for the reward weights. The
-bound this establishes is the one the protocol supports and no more.
-With a standard deviation of $0.47$ points across seed means at $1000$
-episodes (Section~\ref{sec:results-insize}) and three seeds per arm, a
-paired confirmation resolves differences of about one point of RE at
-conventional power; what the three campaigns exclude is therefore an
-improvement larger than that, not any improvement at all. The same
-arithmetic explains their common signature---in all three the racing
-optimum differed from the confirmation optimum---and it is what
-matters here for automatic DRL configuration: single-run training
-outcomes are too noisy to separate near-equivalent configurations, and
-buying that resolution by repeating each evaluation would divide the
-number of configurations a fixed budget can race.
+Table~\ref{tab:hyper} for this problem \emph{even at the operating
+budget}, nor do raced reward weights improve on the hand-set
+ones---within the resolution of the protocol. With a standard
+deviation of $0.47$ points across seed means at $1000$ episodes
+(Section~\ref{sec:results-insize}) and three seeds per arm, a paired
+confirmation resolves about one point of RE, so what the three
+campaigns exclude is an improvement larger than that rather than any
+improvement at all. The same arithmetic explains their common
+signature, the racing optimum never matching the confirmation
+optimum: single-run outcomes are too noisy to separate near-equivalent
+configurations, and buying resolution by repeating each evaluation
+divides the configurations a fixed budget can race.
 
 \subsection{Training and inference}
 \label{sec:training}
