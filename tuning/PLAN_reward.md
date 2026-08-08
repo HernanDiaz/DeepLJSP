@@ -52,6 +52,46 @@ resultado. La regla 2 dice qué haríamos si la mejora es clara, pero
 la ejecución de esa rama no arranca sin su visto bueno; su criterio
 declarado es que una diferencia pequeña no justifica el cambio.
 
+## Lo que dio la carrera (2026-08-08 02:14, ANTES de la confirmación)
+
+299 de 300 experimentos, 44 horas, 6 iteraciones. Sobreviven **cuatro**
+élites. Ganadora #15: makespan 0.4487, idle 0.1779, critical 0.5513,
+balance 0.2669, progress 0.9154, local 0.5014.
+
+Lo informativo no es la ganadora, es la dispersión entre las cuatro
+supervivientes (`scripts/analiza_irace_reward.py`):
+
+| peso | #15 | #20 | #30 | #35 | rango | actual |
+|---|---|---|---|---|---|---|
+| makespan | 0.449 | 0.768 | 0.569 | 0.581 | 0.32 | 1.00 |
+| idle | 0.178 | 0.023 | 0.182 | 0.178 | 0.16 | 0.24 |
+| critical | 0.551 | 0.287 | 0.768 | 0.468 | 0.48 | 0.10 |
+| balance | 0.267 | 0.500 | 0.277 | 0.319 | 0.23 | 0.10 |
+| progress | 0.915 | 0.645 | 0.987 | 0.892 | 0.34 | 0.26 |
+| local | 0.501 | 0.330 | 0.491 | 0.648 | 0.32 | 0.15 |
+
+Cuatro vectores que difieren hasta en 0.48 en una componente empatan.
+Y la concordancia entre semillas sobre cuál es mejor, en la última
+carrera, es **Kendall W = 0.02–0.05**: prácticamente ninguna. A
+fidelidad de operación los seis pesos no son identificables; el ruido
+de semilla domina el efecto del peso. Ése es el resultado, gane quien
+gane la confirmación.
+
+Dos cosas sí son consistentes entre las cuatro élites: `idle` es el
+peso más pequeño en las cuatro, y `progress` el más grande en tres de
+cuatro. Ninguna reproduce la ordenación del vector desplegado
+(makespan > progress > idle > local > critical > balance).
+
+Sobre las sembradas, y esto responde a la regla 4 del plan sin esperar
+a la confirmación:
+
+- **solo-terminal (1,0,0,0,0,0): eliminada en la primera ronda**. El
+  shaping denso no es prescindible.
+- **uniforme (0.5×6): eliminada en la primera ronda.**
+- **efectivo-congelado (el vector actual a mano): sobrevivió la
+  primera carrera** —élite 3ª de 3 en la iteración 1— y cayó en la
+  segunda. Es decir, compite, pero no queda entre las mejores.
+
 ## Qué NO se toca
 
 Ningún fichero de campañas anteriores (parameters/scenario/logs con
