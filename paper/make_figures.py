@@ -599,7 +599,7 @@ def fig_frontier():
     ax.set_xlabel("mean relative width of the selected schedule (%)")
     ax.set_ylabel("mean RE (%)")
     ax.grid(alpha=0.3, linestyle="--")
-    ax.legend(fontsize=8.5, loc="upper left")
+    ax.legend(fontsize=8.5, loc="upper right")
     fig.tight_layout()
     fig.savefig(os.path.join(FIG_DIR, "fig_frontier.pdf"))
     plt.close(fig)
