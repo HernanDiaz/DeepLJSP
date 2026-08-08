@@ -125,6 +125,10 @@ en_tex("$29.5\\%$ mean RE")
 check("G&T-MWKR sobre las 70 (texto 29.5)", 29.5, ab["G&T-MWKR"])
 check("MOR sobre las 70 (texto 45.5)", 45.5, ab["MOR"])
 check("G&T-SPT sobre las 70 (texto 70.6)", 70.6, ab["G&T-SPT"])
+# 2.2 cuantifica lo que aporta la restriccion de Giffler-Thompson
+check("2.2: MWKR sin Giffler-Thompson (texto 64.7)", 64.7, ab["MWKR"])
+check_exacto("2.2: y el texto da los dos extremos",
+             "from $64.7\\%$ to $29.5\\%$" in TEX)
 check("EST sobre las 70 (texto 42.3)", 42.3, ab["EST"])
 check_exacto("EST es la mejor regla suelta sobre las 70",
              ab["EST"] < min(ab["MOR"], ab["MWKR"], ab["SPT"], ab["LPT"]),
@@ -402,6 +406,13 @@ if len(_seg) == 4:
     check("7.3: 2.2x el reloj por episodio (300 ep)", 2.2,
           (sum(_seg["v2-attn-300ep"]) / 3) / (sum(_seg["v2-full-300ep"]) / 3),
           tol=0.051)
+    # 4.4 anunciaba el mismo coste y se quedo con el ~30% retirado de 7.3
+    check_exacto("4.4 cita el mismo factor que 7.3 y no el viejo ~30%",
+                 "by\n$2.2$ (Section" in TEX and "$30\\%$ more" not in TEX)
+    # las conclusiones contaban dos campanas de configuracion; son tres
+    check_exacto("8: las conclusiones cuentan tres campanas",
+                 "three automatic-configuration" in TEX
+                 and "two independent automatic-configuration" not in TEX)
     check_exacto("7.3: por que no se mide a 1000 ep (base dispersa 1.87x)",
                  _seg["v2-full-1000ep"][-1] / _seg["v2-full-1000ep"][0] > 1.5,
                  " ".join(f"{x:.2f}" for x in _seg["v2-full-1000ep"]))

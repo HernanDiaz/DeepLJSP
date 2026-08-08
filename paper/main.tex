@@ -251,8 +251,9 @@ each step restricts the candidates to the conflict set of the machine
 that would finish earliest, and applies a priority rule only to break
 ties within that set. The restriction guarantees \emph{active}
 schedules---no operation can be started earlier without delaying
-another---and lifts the plain rules substantially; we write G\&T-SPT
-and G\&T-MWKR for the two combinations used here.
+another---and improves markedly on the plain rules: on the benchmark
+used here it takes MWKR from $64.7\%$ to $29.5\%$ of RE. We write
+G\&T-SPT and G\&T-MWKR for the two combinations used here.
 
 These rules require one pass and no search, which makes them the
 cheapest constructive option available. Their limitation is that a fixed formula cannot suit
@@ -386,7 +387,7 @@ operations---the next unscheduled operation of each job---so the
 generic $\pi(a\,|\,s)$ specializes to $\pi(i\,|\,s)$, a distribution
 over which eligible operation $i$ to schedule next; an
 \emph{episode} is the construction of one complete schedule, and the
-reward rests on the makespan achieved. The trained policy is then a
+reward is a function of the makespan achieved. The trained policy is then a
 dispatching criterion in its own right: at each step it orders the
 eligible operations by preferences learned from experience rather than
 by a fixed, hand-written formula.
@@ -697,8 +698,8 @@ candidate is then scored against that same summary. What this cannot express is 
 machine now may depend on which other eligible operation would occupy
 it next, and the mean embedding does not identify that candidate.
 The embeddings of all $|\mathcal{E}|$ candidates are available at the
-decision step, so the missing operation is not information but a path
-between them.
+decision step, so what the architecture lacks is not the information
+but a path along which one candidate can condition another.
 \emph{Self-attention}~\citep{Vaswani2017} is the standard remedy, and
 the component most
 commonly adopted in the neural combinatorial optimization literature
@@ -744,7 +745,8 @@ value projections, the output projection, two layer normalizations and
 the feed-forward network (Table~\ref{tab:layers})---so the $B{=}2$
 variant we evaluate grows the
 network from $1.2\times10^{5}$ to $3.9\times10^{5}$ parameters, a
-factor of $3.2$, and makes an episode about $30\%$ more expensive.
+factor of $3.2$, and multiplies the wall-clock cost of an episode by
+$2.2$ (Section~\ref{sec:ablations-attn}).
 
 During batched training, variable-size candidate sets are padded to the
 batch maximum with a boolean mask applied to attention, pooling and
@@ -787,10 +789,10 @@ number in this paper---training, evaluation, the dispatching-rule
 baselines and the ablations---was produced on the CPU. The network is
 small enough (Section~\ref{sec:arch}) that a forward pass is
 negligible next to the environment step that follows it, so the GPU
-buys nothing for a single rollout; it was used only for the vectorized
+yields no speedup for a single rollout; it was used only for the vectorized
 batched rollouts of the operating-fidelity tuning campaign
 (Section~\ref{sec:hyperconfig}), where many episodes advance in
-lockstep and the batched forward pass does pay. The method therefore
+lockstep and the batched forward pass amortizes. The method therefore
 carries no dependence on specialized hardware.
 
 \begin{table}[t]
@@ -962,10 +964,11 @@ are additionally reported for a single greedy pass and, in the
 budget-matched comparisons of Sections~\ref{sec:results-insize}
 and~\ref{sec:positioning}, for $N{=}1024$. This
 choice is motivated empirically in Section~\ref{sec:ablations-bon}:
-during training, the best solutions frequently originate from sampled
-episodes, i.e.\ the policy is more valuable as a \emph{distribution}
-than as its argmax---consistent with sampling-based decoding in neural
-combinatorial optimization~\citep{Kool2019}.
+sampling overtakes the greedy pass at twelve rollouts and continues to
+improve to the largest budget measured, so the policy is more valuable
+as a \emph{distribution} than as its argmax---consistent with
+sampling-based decoding in neural combinatorial
+optimization~\citep{Kool2019}.
 
 \begin{algorithm}[t]
 \caption{Best-of-$N$ inference}
@@ -1014,7 +1017,8 @@ figures are quoted from those papers, not re-run here.
 
 Table~\ref{tab:insize} reports per-instance RE on the development set
 for increasing training budgets over ten independent training runs,
-and Figure~\ref{fig:scaling} the aggregate picture. Three observations:
+and Figure~\ref{fig:scaling} their means against the budget. Three
+observations:
 (i) the policy scales monotonically with budget
 ($27.4\%\to17.4\%\to13.8\%$ mean RE at $100/300/1000$ episodes per
 instance), with the return per tripling of the budget falling from
@@ -1845,9 +1849,10 @@ compact formula is its sampling distribution rather than its argmax.
 Of the standard techniques evaluated, only best-of-$N$ inference
 improved results at practical budgets: self-attention did not improve on pooling,
 multi-size training did not overtake the single-size specialist even
-at three times its cost, and two independent automatic-configuration
-campaigns failed to beat the untuned defaults at the operating
-budget (Q3). Three more delimit the interval representation that
+at three times its cost, and three automatic-configuration
+campaigns---two over the optimizer, one over the reward
+weights---failed to beat the hand-set values by more than the
+resolution of the confirmation protocol (Q3). Three more delimit the interval representation that
 motivated the design, and they separate two things the design had
 conflated. As inputs the widths are inert: permuting them costs the
 policy $0.3$ and $0.9$ points, the floor of a ranking whose top
