@@ -1807,13 +1807,14 @@ policy builds semiactive schedules, so the space it searches excludes
 the active schedules that the conflict-set restriction reaches and
 the insertion-based ones beyond them; the strongest constructive
 baseline of this paper exploits the first of those and the policy
-still leads it, but the ceiling is real. Third, the ablations are run
-over three training seeds and compared pairwise on them; ten seeds of
-the main arm bound how much that choice can matter
-(Section~\ref{sec:results-insize}), but the ablation arms themselves
-were not extended, so their differences are stated as paired effects
-over eighteen instance--seed pairs rather than as claims about the
-population of seeds. Finally, the comparison against the evolved rule of
+still leads it, but the ceiling is real. Third, most ablations are run
+over three training seeds and compared pairwise on them, so their
+differences are stated as paired effects over eighteen instance--seed
+pairs rather than as claims about the population of seeds. The one
+ablation extended to ten seeds, the midpoint control of
+Section~\ref{sec:ablations-interval}, is also the one whose verdict
+the extension changed, which is the measure of what the three-seed
+comparisons can miss. Finally, the comparison against the evolved rule of
 Section~\ref{sec:positioning} matches inference budgets but not
 training ones, and it compares two published artifacts rather than two
 paradigms trained under one protocol; that study, which is what
@@ -1831,7 +1832,8 @@ best hand-crafted constructive baselines by a wide margin on its
 training class (Q1: $13.8\%$ versus $27.9\%$ for G\&T-MWKR and
 ${\approx}46\%$ for the best plain rule). Because the representation is
 dimensionless and the encoder permutation-invariant, one network serves
-the entire benchmark: evaluated zero-shot, it outperforms the best
+the entire benchmark: evaluated zero-shot at its deployed budget, it
+outperforms the best
 dispatching rule on every tested instance of all seven size classes,
 and the same weights improve on every rule on all twelve classical
 instances of the FT, La and ABZ families (Q2). Against a rule evolved
@@ -1841,7 +1843,8 @@ overtakes it only when both are given $1024$ samples
 (Section~\ref{sec:positioning}), so what the network contributes over a
 compact formula is its sampling distribution rather than its argmax.
 Of the standard techniques evaluated, only best-of-$N$ inference
-improved results at practical budgets: self-attention did not improve on pooling,
+improved results at practical budgets: self-attention blocks added to
+the pooled encoder brought no improvement,
 and three automatic-configuration
 campaigns---two over the optimizer, one over the reward
 weights---failed to beat the hand-set values by more than the
@@ -1865,20 +1868,23 @@ held fixed the robust weights and the default ones are
 indistinguishable, and ranking the default policy's own samples by
 $f_\lambda$ retraces the frontier without any retraining---what
 narrows the interval is which sample is kept, not which network
-produced it. At execution time the policy's schedules are the
-most dependable of the constructive pool, matching EST, the
-robustness benchmark that evolved rules also fail to beat; and a
+produced it. At execution time the policy's schedules sit in the most
+dependable group of the constructive pool, level with EST and with the
+evolved rule at both inference budgets---methods that share one trait:
+none charges for the width of its prediction---while the
+width-charging arm attains the lowest deviation of the comparison,
+carrying the selection-time narrowing through to execution. And a
 permutation audit shows the network leaning on slack, remaining
 operations and worst-case remaining work---the attributes
-hand-crafted and evolved rules exploit---while ignoring the width
-features at inference.
+hand-crafted and evolved rules exploit---with the width features at
+the floor of its ranking.
 
 Three directions follow. The first concerns the representation, and
 the robust arm of Section~\ref{sec:ablations-interval} sharpens rather
 than settles it: paying for the width in the reward narrows the
 schedules the policy \emph{selects} without measurably changing the
-policy itself, so the width features remain unconsulted even when the
-objective would reward consulting them. Whether the gradient simply
+policy itself, so the proposal distribution stays as wide when the
+objective penalizes width as when it does not. Whether the gradient simply
 never reaches them, or whether a semiactive constructive decision
 determines the width before the policy has any say in it, separates
 two very different diagnoses and calls for a different experiment than
