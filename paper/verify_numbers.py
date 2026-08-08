@@ -2064,6 +2064,31 @@ check_exacto("5.3: Kendall W de 0.02 a 0.05 al final de la carrera",
              _kw and 0.02 <= min(_kw[-5:]) and max(_kw[-5:]) <= 0.05,
              " ".join(f"{w:.2f}" for w in _kw[-5:]))
 
+# el limite de resolucion que 5.3 declara: sd 0.47 entre medias de
+# semilla y n=3 por brazo dan ~1 punto de efecto minimo detectable
+_mde = 2.8 * 0.47 * (2.0 / 3) ** 0.5
+check("5.3: tres semillas resuelven ~1 punto de RE", 1.0, _mde, tol=0.11)
+check_exacto("5.3: y el 0.47 es el de 6.1",
+             "$0.47$ at $1000$" in TEX)
+# la contraprueba de que la inyeccion por entorno llega al modelo: la
+# elite 27 llevaba hidden=64 y su checkpoint no tiene 120.322 parametros
+try:
+    import torch as _th
+
+    _d27 = sorted(glob.glob("outputs/bench_v2-elite27-1000ep__*_seed2"))
+    if _d27:
+        _sd27 = _th.load(_d27[0] + "/best_model.pt", map_location="cpu",
+                         weights_only=True)
+        _r27 = _sd27.get("network", _sd27)
+        _w27 = next(v for k, v in _r27.items()
+                    if k.endswith("weight") and v.dim() == 2
+                    and v.shape[1] == 16)
+        check_exacto("5.3: la inyeccion por entorno llego al modelo "
+                     "(elite 27, hidden 64)", int(_w27.shape[0]) == 64,
+                     f"hidden={int(_w27.shape[0])}")
+except Exception as e:
+    pendiente("inyeccion de la elite 27", f"no medible ({type(e).__name__})")
+
 check_exacto("campana 1: 8 parametros", len(_c1) == 8, str(len(_c1)))
 check_exacto("campana 2: 6 parametros", len(_c2) == 6, str(len(_c2)))
 check_exacto("campana 2 fija minibatch y update-every",

@@ -916,11 +916,19 @@ the noise between training runs.
 
 Automatic configuration therefore does not beat the defaults of
 Table~\ref{tab:hyper} for this problem \emph{even when performed at
-the operating budget}, and the same holds for the reward weights, so
-the reported results do not depend on fine tuning. In all three
-campaigns the racing optimum differed from the confirmation optimum,
-which matters for automatic DRL configuration: single-run training
-outcomes are too noisy to separate near-equivalent configurations.
+the operating budget}, and the same holds for the reward weights. The
+bound this establishes is the one the protocol supports and no more.
+With a standard deviation of $0.47$ points across seed means at $1000$
+episodes (Section~\ref{sec:results-insize}) and three seeds per arm, a
+paired confirmation resolves differences of about one point of RE at
+conventional power; what the three campaigns exclude is therefore an
+improvement larger than that, not any improvement at all. The same
+arithmetic explains their common signature---in all three the racing
+optimum differed from the confirmation optimum---and it is what
+matters here for automatic DRL configuration: single-run training
+outcomes are too noisy to separate near-equivalent configurations, and
+buying that resolution by repeating each evaluation would divide the
+number of configurations a fixed budget can race.
 
 \subsection{Training and inference}
 \label{sec:training}
