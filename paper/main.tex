@@ -1733,12 +1733,15 @@ distance to the other group is systematic: G\&T-MWKR deviates by
 $6.86$ and MOR by $7.14$, with the policy more faithful on $13$ and
 $14$ of the fifteen instances respectively (paired Wilcoxon
 signed-rank, $p<0.001$ in both cases). Sampling does not degrade
-calibration: selecting the lowest worst case among $64$ rollouts
-leaves $\bar\varepsilon$ unchanged with respect to the greedy pass.
+calibration on either side of the budget match: the policy's
+best-of-64 deviates as its greedy pass does ($6.12$ against $6.18$),
+and the rule randomized by the $\epsilon$-greedy dispatching of its
+study deviates as its deterministic pass does ($6.34$ against $6.12$;
+$9/15$, $p=0.31$).
 
 The composition of the leading group explains the ranking. It holds a
-hand-crafted rule, an evolved formula and the policy at two inference
-budgets, and the presence of EST---the weakest method of this paper
+hand-crafted rule and both learners at their two inference budgets,
+and the presence of EST---the weakest method of this paper
 in solution quality, at $42.3\%$ mean RE
 (Table~\ref{tab:seventy})---shows that faithfulness and quality are
 separate properties: a method can predict reliably while scheduling
@@ -1747,7 +1750,7 @@ The mechanism is the interval itself. Every realization's makespan
 lies within the predicted interval (Section~\ref{sec:problem}), so
 the width of that interval bounds the deviation any execution can
 produce: the narrower the prediction, the smaller the largest
-deviation it admits. None of the four methods at the top optimizes
+deviation it admits. None of the methods in the leading group optimizes
 the width of the interval it predicts, so their faithfulness is
 bounded by whatever widths their makespan-directed construction
 happens to produce. Faithfulness must therefore be pursued

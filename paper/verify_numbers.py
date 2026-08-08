@@ -1735,6 +1735,7 @@ else:
                      "en los 90 pools", _con_empate == 0,
                      f"{_con_empate} pools con empate")
 
+
         def _sel64(v, lam):
             if lam == 0.0:
                 return min(v, key=lambda t: (t[1], t[0]))
@@ -2027,6 +2028,32 @@ check_exacto("7.3: la holgura se mide contra el minimo de las elegibles",
              _fila_slack.strip()[:60])
 check_exacto("7.3: la congestion se mide contra la carga media",
              r"\bar L" in _fila_cong, _fila_cong.strip()[:60])
+
+print("\n== fig:eps: la regla a presupuesto igualado ==")
+if not os.path.exists("benchmarks/eval_eps_gp_bo64.csv"):
+    pendiente("GP best-of-64 en fig:eps", "sin eval_eps_gp_bo64.csv")
+else:
+    _g64 = {r["instance"]: float(r["eps"]) * 1000 for r in
+            __import__("csv").DictReader(
+                open("benchmarks/eval_eps_gp_bo64.csv", encoding="utf-8"))}
+    _g1 = {r["instance"]: float(r["eps"]) * 1000 for r in
+           __import__("csv").DictReader(
+               open("benchmarks/eval_eps_all.csv", encoding="utf-8"))
+           if r["method"] == "GP"}
+    check_exacto("GP-bo64: las quince instancias", len(_g64) == 15,
+                 str(len(_g64)))
+    check("7.5: GP best-of-64 (texto 6.34)", 6.34,
+          sum(_g64.values()) / 15)
+    _dg = [_g64[i] - _g1[i] for i in sorted(_g64)]
+    check_exacto("7.5: peor en 9 de 15 frente a su pasada unica",
+                 sum(1 for x in _dg if x > 0) == 9,
+                 f"{sum(1 for x in _dg if x > 0)}/15")
+    try:
+        from scipy.stats import wilcoxon as _w75
+        check("7.5: Wilcoxon del GP-bo64 (texto 0.31)", 0.31,
+              _w75(_dg).pvalue, tol=0.005)
+    except ImportError:
+        pendiente("Wilcoxon GP-bo64", "sin scipy")
 
 print("\n== tab:irace: el espacio de busqueda ==")
 

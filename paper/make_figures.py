@@ -322,10 +322,18 @@ def fig_eps():
         else:
             g = m
         por[g].setdefault(r["instance"], []).append(float(r["eps"]) * 1000)
+    # la regla a presupuesto igualado (64 muestras eps-greedy) vive en su
+    # propio deposito, medida con las mismas realizaciones
+    for r in csv.DictReader(open("benchmarks/eval_eps_gp_bo64.csv",
+                                 encoding="utf-8")):
+        por["GP\n(best-of-64)"].setdefault(r["instance"], []).append(
+            float(r["eps"]) * 1000)
+    por["GP\n(one pass)"] = por.pop("GP")
     med = {g: {i: sum(v) / len(v) for i, v in d.items()}
            for g, d in por.items()}
 
-    orden = ["MOR", "GT-MWKR", "EST", "GP", "Policy\n(greedy)",
+    orden = ["MOR", "GT-MWKR", "EST", "GP\n(one pass)", "GP\n(best-of-64)",
+             "Policy\n(greedy)",
              "Policy\n(best-of-64)", "Policy $f_\\lambda$\n(best-of-64)"]
     fig, ax = plt.subplots(figsize=(8.0, 3.4))
     datos = [list(med[g].values()) for g in orden]
