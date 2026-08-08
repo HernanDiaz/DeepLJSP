@@ -327,23 +327,29 @@ def fig_eps():
 
     orden = ["MOR", "GT-MWKR", "EST", "GP", "Policy\n(greedy)",
              "Policy\n(best-of-64)", "Policy $f_\\lambda$\n(best-of-64)"]
-    fig, ax = plt.subplots(figsize=(7.0, 3.6))
+    fig, ax = plt.subplots(figsize=(8.0, 3.4))
+    datos = [list(med[g].values()) for g in orden]
+    bp = ax.boxplot(datos, positions=list(range(len(orden))), widths=0.52,
+                    whis=1.5, showfliers=False, patch_artist=True,
+                    medianprops={"color": "black", "linewidth": 1.2})
+    for parche, g in zip(bp["boxes"], orden):
+        parche.set_facecolor("#D8EFD8" if "Policy" in g else "#D5E5F0")
+        parche.set_edgecolor("0.35")
     rng = __import__("numpy").random.default_rng(7)
-    for k, g in enumerate(orden):
-        vals = list(med[g].values())
-        ax.scatter(rng.normal(k, 0.055, len(vals)), vals, s=16, alpha=0.45,
-                   color="gray", zorder=2)
+    for k, (g, vals) in enumerate(zip(orden, datos)):
+        ax.scatter(rng.normal(k, 0.05, len(vals)), vals, s=14, alpha=0.5,
+                   color="gray", zorder=3)
         m = sum(vals) / len(vals)
-        ax.hlines(m, k - 0.28, k + 0.28, color="seagreen"
-                  if "Policy" in g else "steelblue", linewidth=2.4, zorder=3)
-        ax.text(k, m, " %.2f" % m, va="bottom", ha="center", fontsize=8.5,
-                color="seagreen" if "Policy" in g else "steelblue")
+        color = "seagreen" if "Policy" in g else "steelblue"
+        ax.scatter([k], [m], marker="D", s=26, color=color, zorder=4)
+        ax.text(k + 0.33, m, "%.2f" % m, va="center", ha="left",
+                fontsize=8.5, color=color)
     ax.set_xticks(range(len(orden)))
     ax.set_xticklabels(orden, fontsize=8.5)
     ax.set_ylabel("$\\bar\\varepsilon \\times 10^{3}$")
     ax.grid(axis="y", alpha=0.3, linestyle="--")
-    fig.tight_layout()
-    fig.savefig(os.path.join(FIG_DIR, "fig_eps.pdf"))
+    ax.set_xlim(-0.55, len(orden) - 0.25)
+    fig.savefig(os.path.join(FIG_DIR, "fig_eps.pdf"), bbox_inches="tight")
     plt.close(fig)
 
 

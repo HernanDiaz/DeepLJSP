@@ -1706,6 +1706,17 @@ former by the data split of Section~\ref{sec:instances}, the latter
 as the evaluation sample of the original cross-size runs---so no
 instance is selected with this comparison in view.
 
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig_eps.pdf}
+  \caption{Executional robustness by method:
+  $\bar\varepsilon\times10^{3}$ over the fifteen evaluation instances;
+  lower is a more faithful prediction. Boxes span the quartiles with
+  whiskers at $1.5$ IQR, every instance is overlaid as a point, and
+  diamonds mark the means quoted in the text.}
+  \label{fig:eps}
+\end{figure}
+
 The constructive methods separate into two groups, and the policy is
 in the better one without leading it (Figure~\ref{fig:eps}). Its
 schedules deviate by $\bar\varepsilon\times10^{3}=6.18$ under greedy
@@ -1743,20 +1754,6 @@ expected makespan. Whether that trade is worth making depends on the
 shop rather than on the model; this section's earlier comparison
 shows that the trade is obtained only when the objective charges for
 the width.
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=.68\linewidth]{figures/fig_eps.pdf}
-  \caption{Executional robustness by method: mean
-  $\bar\varepsilon\times10^{3}$ (bars) over the fifteen evaluation
-  instances, each shown as a point. Lower is a more faithful a-priori
-  prediction. EST, the evolved rule and the policy are
-  indistinguishable at the top and MOR and G\&T-MWKR are not; the
-  robust arm $f_\lambda$, the only method here that pays for the
-  interval width, is ahead of all of them but not significantly so.}
-  \label{fig:eps}
-\end{figure}
-
 
 \subsection{Limitations}
 \label{sec:limitations}
