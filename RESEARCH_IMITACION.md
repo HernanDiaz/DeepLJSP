@@ -51,3 +51,28 @@ Piloto barato pre-modelo: curvas (degradación por nivel de ruido k) y
 constructor (política actual o clon) -> denoiser iterativo ->
 auto-mejora. Solver anytime enteramente aprendido; es la dirección de
 despliegue de la seccion 8 llevada un paso más.
+
+## Piloto v1 (2026-08-10): TSN2 como experto
+
+Ficheros verificados en T2N2/results/phaseB_TS/N2_tuned: 82 instancias
+(las 70 TA + 12 clasicas), 30 runs cada una, formato decodificado
+(id de operacion = trabajo*m + k) y CONFIRMADO por replay bit a bit en
+nuestro entorno. Calidad del experto: 3.66% RE medio sobre las 70
+(mejor-de-30: 2.51%) -- 5.7 puntos mejor que fEABC.
+
+Resultado v1 (mismo protocolo que v0, solo cambia el experto):
+acierto de imitacion 56% -> 64% (y subiendo al corte: el experto
+coherente ES mas aprendible), pero clon greedy en dev 23.74% -- peor
+que v0 (19.58%) y que la politica RL (18.25%). Diagnostico:
+desplazamiento de distribucion (Ross & Bagnell): los estados de las
+trayectorias TS son casi-optimos; el clon, al fallar, cae fuera de lo
+enseñado y los errores se componen 300 pasos.
+
+El par v0/v1 cierra el diagnostico: v0 fallo por profesor incoherente,
+v1 por distribucion ajena. Remedios por orden de baratura para v2:
+ 1. warm start desde el checkpoint RL (base sensata off-manifold);
+ 2. dataset mixto (estados del experto + estados de rollouts propios);
+ 3. escala: TS cubre las 82 instancias, no solo TA11-14;
+ 4. ruido de replay (corromper prefijos del experto y continuar):
+    la idea del denoising reaparece como remedio del shift;
+ 5. evaluar el clon como distribucion (best-of-64), no solo su argmax.
