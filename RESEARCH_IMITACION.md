@@ -76,3 +76,22 @@ v1 por distribucion ajena. Remedios por orden de baratura para v2:
  4. ruido de replay (corromper prefijos del experto y continuar):
     la idea del denoising reaparece como remedio del shift;
  5. evaluar el clon como distribucion (best-of-64), no solo su argmax.
+
+## Palanca 5 medida (2026-08-10): los clones como distribucion
+
+best-of-64 en TA15-20: clon v0 = 13.94% (!), clon v1-TS = 20.42%.
+Referencia: politica RL desplegada 13.4% (protocolo benchmark; no
+identico -- 3 checkpoints con historia vs una red y 64 muestras).
+
+EL RESULTADO DEL PILOTO: el clon v0, entrenado 4 minutos por CE sobre
+64 secuencias muestreadas, casi iguala como distribucion a la politica
+PPO de 4000 episodios. El argmax destilado es mediocre; la
+DISTRIBUCION destilada casi no pierde nada. Rima con la tesis del
+paper (el valor vive en la distribucion) y sugiere que PPO podria ser
+necesario solo para generar las primeras muestras, no para el
+refinamiento -- la hipotesis central a confirmar en v2 con validacion
+seria (mas instancias, split por secuencias, varias tiradas).
+
+v1-TS mejora con muestreo (23.7 -> 20.4) pero el shift sigue
+dominando: tampoco la distribucion del clon de TS pisa los estados
+adecuados. El warm start + dataset mixto siguen siendo el camino.
