@@ -432,6 +432,16 @@ if _da10 and _db10:
                 > sum(re_pct(v, ta) for v in _da10[ta]["mids"]))
     check_exacto("7.3 1000ep: peor en las 6 instancias", _pi10 == 6,
                  str(_pi10))
+    # y en las diez semillas de diez: la unanimidad doble que cita 7.3
+    _sems10 = sorted({i for ta in _db10
+                      for i in range(len(_db10[ta]["mids"]))})
+    _peor_sem = sum(
+        1 for i in _sems10
+        if sum(re_pct(_db10[ta]["mids"][i], ta) for ta in _db10)
+        > sum(re_pct(_da10[ta]["mids"][i], ta) for ta in _da10))
+    check_exacto("7.3 1000ep: peor en las 10 semillas de 10",
+                 len(_sems10) == 10 and _peor_sem == 10,
+                 f"{_peor_sem}/{len(_sems10)}")
     check_exacto("7.3 1000ep: p<0.001",
                  _wilc(_dif10).pvalue < 0.001,
                  f"p={_wilc(_dif10).pvalue:.2e}")
