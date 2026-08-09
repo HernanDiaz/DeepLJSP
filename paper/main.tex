@@ -1562,27 +1562,29 @@ must be the true ones---which Eq.~\eqref{eq:upperclosed} does not
 settle, since midpoint training changes the upper endpoints
 themselves; and whether the policy would come to consult the widths
 under an objective that pays for them. Each ablation is paired against
-the main arm on the training seeds it shares, so the baseline it
-subtracts is the mean over those seeds: $13.44\%$ for the three-seed
-comparisons, against the $13.82\%$ of all ten.
+the main arm on the training seeds it shares: the first two over all
+ten seeds, whose baseline is the $13.82\%$ of
+Section~\ref{sec:results-insize}, and the third over the three seeds
+of its rollout deposits, whose baseline is the $13.44\%$ mean of
+those three.
 
 \paragraph{Widths as inputs.} The first ablation removes the
 information: the encoder collapses every interval to its worst case
 before the features are computed, so the width features are
 identically zero and the bounds coincide, while the architecture, the
 hyperparameters and the schedule builder remain untouched and the
-environment still executes interval semantics. Three seeds retrained
-from scratch reach $13.62\%$ mean RE against the shared baseline's
-$13.44\%$: a difference of $0.18$ points, worse on twelve of the
-eighteen instance--seed pairs, not significant (Wilcoxon signed-rank,
-$p=0.47$). The measurement is not redundant with the prediction,
+environment still executes interval semantics. Ten seeds retrained
+from scratch reach $13.86\%$ mean RE against the ten-seed baseline's
+$13.82\%$: a difference of $0.04$ points, worse on 31 of the sixty
+instance--seed pairs, not significant (Wilcoxon signed-rank,
+$p=0.93$). The measurement is not redundant with the prediction,
 because Eq.~\eqref{eq:upperclosed} concerns the objective while the
 widths could in principle have shaped the value function or the
 exploration as an auxiliary signal. They do not, and the effect size
 bounds what room remains: the paired differences have a standard
-deviation of $1.54$ points, so $0.18$ is $0.12$ of one, and detecting
+deviation of $1.86$ points, so $0.04$ is $0.02$ of one, and detecting
 an effect that small at conventional power would require on the order
-of ninety seeds.
+of three thousand seeds.
 
 \paragraph{Intervals as training data.} The second ablation removes
 the uncertainty from training altogether. The benchmark perturbs each
@@ -1810,17 +1812,16 @@ policy builds semiactive schedules, so the space it searches excludes
 the active schedules that the conflict-set restriction reaches and
 the insertion-based ones beyond them; the strongest constructive
 baseline of this paper exploits the first of those and the policy
-still leads it, but the ceiling is real. Third, part of the ablations
-are run over three training seeds and compared pairwise on them, so
-their differences are stated as paired effects over eighteen
-instance--seed pairs rather than as claims about the population of
-seeds. The two arms extended to ten seeds both revised their
-three-seed readings---the midpoint control of
-Section~\ref{sec:ablations-interval} turned a null into a detected
-effect, and the attention deficit of
-Section~\ref{sec:ablations-attn} shrank from $1.76$ to $1.06$
-points---which is the measure of what the remaining three-seed
-comparisons can miss. Finally, the comparison with the rule evolved by
+still leads it, but the ceiling is real. Third, the
+$\lambda$-sweep arms and the rollout-deposit controls of
+Section~\ref{sec:ablations-interval} are run over three training
+seeds and compared pairwise on them, so those differences are stated
+as paired effects over eighteen instance--seed pairs rather than as
+claims about the population of seeds. The three arms extended to ten
+seeds calibrate what a three-seed comparison can miss: the midpoint
+control turned a null into a detected effect, the attention deficit
+shrank from $1.76$ to $1.06$ points, and the no-width null sharpened
+from $0.18$ to $0.04$ points. Finally, the comparison with the rule evolved by
 genetic programming shares the evaluation protocol end to end---the
 same instances, interval arithmetic, ranking criterion, inference
 budgets and execution realizations, run in a single harness---but not
@@ -1861,8 +1862,8 @@ motivated the design, and they separate two things the design had
 conflated. As inputs the widths are inert: permuting them costs the
 policy $0.3$ and $0.9$ points, the floor of a ranking whose top
 feature costs $56.5$, and removing them from training costs nothing
-measurable ($13.62$ against $13.44\%$,
-$p=0.47$), which the closed recursion for the worst-case makespan
+measurable over ten seeds ($13.86$ against $13.82\%$,
+$p=0.93$), which the closed recursion for the worst-case makespan
 predicts, since that quantity does not contain a lower bound. As
 training data the intervals are not inert: fitting the policy to the
 crisp midpoints instead costs $0.63$ points over ten seeds

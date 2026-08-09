@@ -453,6 +453,40 @@ if _da10 and _db10:
                  str(len(_gl.glob(
                      "outputs/bench_v2-attn-1000ep-ext__*_seed*"))))
 
+# 7.4 Widths as inputs, a diez semillas: 60 pares contra el brazo
+# principal, y el nulo que se afila (0.18 -> 0.04)
+_nw10 = bench_por_instancia_multi("v2-nowidth-1000ep-b",
+                                  "v2-nowidth-1000ep-ext")
+if _da10 and _nw10:
+    _difnw = [re_pct(y, ta) - re_pct(x, ta) for ta in sorted(_da10)
+              for x, y in zip(_da10[ta]["mids"], _nw10[ta]["mids"])]
+    check_exacto("7.4 no-width: 60 pares", len(_difnw) == 60,
+                 str(len(_difnw)))
+    check("7.4 no-width: media a diez semillas (texto 13.86)", 13.86,
+          sum(re_pct(v, ta) for ta in _nw10
+              for v in _nw10[ta]["mids"]) / 60, tol=0.006)
+    check("7.4 no-width: delta +0.04", 0.04,
+          sum(_difnw) / len(_difnw), tol=0.006)
+    check_exacto("7.4 no-width: peor en 31 de 60",
+                 sum(1 for d in _difnw if d > 0) == 31,
+                 str(sum(1 for d in _difnw if d > 0)))
+    import statistics as _st74
+    _sdnw = _st74.stdev(_difnw)
+    check("7.4 no-width: sd 1.86", 1.86, _sdnw, tol=0.006)
+    check("7.4 no-width: d de Cohen 0.02", 0.02,
+          abs(sum(_difnw) / len(_difnw)) / _sdnw, tol=0.006)
+    _n74 = (2.8 / (abs(sum(_difnw) / len(_difnw)) / _sdnw)) ** 2 / 6
+    check_exacto("7.4 no-width: ~tres mil semillas para detectarlo",
+                 2300 <= _n74 <= 3300, f"{_n74:.0f}")
+    _pnw = _wilc(_difnw).pvalue
+    check_exacto("7.4 no-width: p=0.93", 0.90 <= _pnw <= 0.96,
+                 f"p={_pnw:.3f}")
+    check_exacto("7.4: la extension no-width tiene 7 semillas exactas",
+                 len(_gl.glob(
+                     "outputs/bench_v2-nowidth-1000ep-ext__*_seed*")) == 7,
+                 str(len(_gl.glob(
+                     "outputs/bench_v2-nowidth-1000ep-ext__*_seed*"))))
+
 # El sobrecoste por episodio que cita 7.3. Se mide a 300 episodios y NO
 # a 1000: alli el brazo base tiene un 1.87x de dispersion entre sus tres
 # semillas (3.97 / 6.30 / 7.41 s por episodio, misma configuracion), o
@@ -1621,7 +1655,7 @@ except ImportError:
     pendiente("Wilcoxon del punto medio a diez", "sin scipy")
 # el punto medio a 3 semillas ya no se imprime (7.4 reporta solo las
 # diez, a peticion del autor); sus numeros quedan como centinelas
-for nombre, arm, v_tex, es_cent in [("no-width", _nw, 13.62, False),
+for nombre, arm, v_tex, es_cent in [("no-width", _nw, 13.62, True),
                                     ("punto medio", _mp, 14.18, True)]:
     if not arm:
         pendiente(f"brazo {nombre}", "sin directorios en outputs/")
@@ -1638,22 +1672,22 @@ for nombre, arm, v_tex, es_cent in [("no-width", _nw, 13.62, False),
         from scipy import stats as _st
         p = _st.wilcoxon(d)[1]
         if nombre == "no-width":
-            check("no-width: delta medio (texto +0.18)", 0.18,
+            check("centinela: no-width delta medio a 3 semillas (+0.18)", 0.18,
                   sum(d) / len(d), tol=0.02)
             # 7.5 razona con el tamano del efecto, no solo con el p
             import statistics as _s7
             _sd = _s7.stdev(d)
-            check("no-width: sd de las diferencias (texto 1.54)", 1.54,
+            check("centinela: no-width sd a 3 semillas (1.54)", 1.54,
                   _sd, tol=0.006)
-            check("no-width: d de Cohen (texto 0.12)", 0.12,
+            check("centinela: no-width d a 3 semillas (0.12)", 0.12,
                   abs(sum(d) / len(d)) / _sd, tol=0.006)
-            check_exacto("no-width: harian falta ~90 semillas",
+            check_exacto("centinela: a 3 semillas salian ~90 semillas",
                          80 <= (2.8 / (abs(sum(d) / len(d)) / _sd)) ** 2 / 6
                          <= 100,
                          f"{(2.8 / (abs(sum(d) / len(d)) / _sd)) ** 2 / 6:.0f}")
-            check_exacto("no-width: peor en 12 de 18", peor == 12,
+            check_exacto("centinela: no-width peor en 12 de 18", peor == 12,
                          f"{peor}/18")
-            check_exacto("no-width: no significativo (texto p=0.47)",
+            check_exacto("centinela: no-width p=0.47 a 3 semillas",
                          0.44 <= p <= 0.50, f"p={p:.3f}")
         else:
             print(f"  info  punto medio a tres semillas: p={p:.3f} "
