@@ -1480,18 +1480,20 @@ attention blocks between the shared per-operation encoder and the
 masked pooling of Section~\ref{sec:arch}, which it leaves in place;
 everything else is held fixed, including the training and evaluation
 protocols, the same four training instances, the same six development
-instances, the same three seeds and the hyperparameters of
+instances, the same seeds and the hyperparameters of
 Table~\ref{tab:hyper}. The comparison is therefore paired at the level
 of (instance, seed), and was conducted at both training budgets
-employed in this study, $300$ and $1000$ episodes.
+employed in this study: over three seeds at $300$ episodes and over
+ten at $1000$, the operating budget.
 
 The variant yields no improvement at either budget and a significant
-degradation at the longer one. Across the eighteen instance--seed
+degradation at the operating one. Across the eighteen instance--seed
 pairs it is $1.03$ points of RE inferior at $300$ episodes, degraded
 on 12 of the 18 pairs and on 5 of the 6 instances, a difference that
 does not reach significance (Wilcoxon signed-rank, $p=0.067$); at
-$1000$ episodes the deficit is $1.76$ points, on 16 of the 18 pairs
-and on all six instances ($p<0.001$).
+$1000$ episodes the deficit is $1.06$ points over the sixty
+instance--seed pairs, degraded on 41 of the 60 and on all six
+instances ($p<0.001$).
 Table~\ref{tab:insize-attn} reports the corresponding means and best
 seeds. The variant carries $3.2$ times the parameters of the base
 network and $2.2$ times its wall-clock cost per episode, the latter
@@ -1500,15 +1502,16 @@ arm agree to within $4\%$.
 
 \begin{table}[!htb]
 \centering\small
-\caption{Attention ablation: mean [best] RE (\%) on the development
-set.}
+\caption{Attention ablation: mean [best seed] RE (\%) on the
+development set, over three seeds at $300$ episodes and ten at
+$1000$.}
 \label{tab:insize-attn}
 \begin{tabular}{lcc}
 \toprule
 Configuration & 300 eps & 1000 eps \\
 \midrule
-Deep Sets & \textbf{16.6} [15.6] & \textbf{13.4} [12.3] \\
-+ attention ($B{=}2$) & 17.6 [16.3] & 15.2 [14.0] \\
+Deep Sets & \textbf{16.6} [16.2] & \textbf{13.8} [13.1] \\
++ attention ($B{=}2$) & 17.6 [17.2] & 14.9 [14.2] \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1807,13 +1810,16 @@ policy builds semiactive schedules, so the space it searches excludes
 the active schedules that the conflict-set restriction reaches and
 the insertion-based ones beyond them; the strongest constructive
 baseline of this paper exploits the first of those and the policy
-still leads it, but the ceiling is real. Third, most ablations are run
-over three training seeds and compared pairwise on them, so their
-differences are stated as paired effects over eighteen instance--seed
-pairs rather than as claims about the population of seeds. The one
-ablation extended to ten seeds, the midpoint control of
-Section~\ref{sec:ablations-interval}, is also the one whose verdict
-the extension changed, which is the measure of what the three-seed
+still leads it, but the ceiling is real. Third, part of the ablations
+are run over three training seeds and compared pairwise on them, so
+their differences are stated as paired effects over eighteen
+instance--seed pairs rather than as claims about the population of
+seeds. The two arms extended to ten seeds both revised their
+three-seed readings---the midpoint control of
+Section~\ref{sec:ablations-interval} turned a null into a detected
+effect, and the attention deficit of
+Section~\ref{sec:ablations-attn} shrank from $1.76$ to $1.06$
+points---which is the measure of what the remaining three-seed
 comparisons can miss. Finally, the comparison with the rule evolved by
 genetic programming shares the evaluation protocol end to end---the
 same instances, interval arithmetic, ranking criterion, inference

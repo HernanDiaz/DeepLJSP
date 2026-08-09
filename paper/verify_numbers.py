@@ -328,20 +328,47 @@ if datos1000:
 
 # =========================================================================
 print("\n== tab:insize-attn ==")
-TAB_ATTN = {"v2-attn-300ep": (17.6, 16.3), "v2-attn-1000ep": (15.2, 14.0)}
+# el 1000ep se extendio a diez semillas (tag -ext, run 80226df); los
+# duplicados accidentales del 2026-08-09 estan en cuarentena y ningun
+# glob los ve
+TAB_ATTN = {("v2-attn-300ep",): (17.6, 17.2),
+            ("v2-attn-1000ep", "v2-attn-1000ep-ext"): (14.88, 14.2),
+            ("v2-full-300ep",): (16.6, 16.2),
+            ("v2-full-1000ep", "v2-full-1000ep-ext-c"): (13.8, 13.1)}
 attn_media = {}
-for tag, (m_tex, b_tex) in TAB_ATTN.items():
-    datos = bench_por_instancia(tag)
+
+
+def bench_por_instancia_multi(*tags):
+    out = None
+    for t in tags:
+        d = bench_por_instancia(t)
+        if d is None:
+            continue
+        if out is None:
+            out = {}
+        for ta, v in d.items():
+            out.setdefault(ta, {"mids": [], "lex": []})
+            out[ta]["mids"].extend(v["mids"])
+            out[ta]["lex"].extend(v["lex"])
+    return out
+
+
+for tags, (m_tex, b_tex) in TAB_ATTN.items():
+    tag = tags[0]
+    datos = bench_por_instancia_multi(*tags)
     if datos is None:
         pendiente(f"benchmark {tag}", "sin directorios en outputs/")
         continue
     medias = {ta: re_pct(sum(d["mids"]) / len(d["mids"]), ta)
               for ta, d in datos.items()}
-    bests = {ta: re_pct(min(d["mids"]), ta) for ta, d in datos.items()}
     attn_media[tag] = sum(medias.values()) / len(medias)
-    check(f"{tag}: media (texto {m_tex})", m_tex, attn_media[tag])
-    check(f"{tag}: mejor (texto {b_tex})", b_tex,
-          sum(bests.values()) / len(bests))
+    n_sem = len(next(iter(datos.values()))["mids"])
+    por_sem = [sum(re_pct(d["mids"][i], ta) for ta, d in datos.items())
+               / len(datos) for i in range(n_sem)]
+    check(f"{tag}: media sobre {n_sem} semillas (texto {m_tex})",
+          m_tex, attn_media[tag], tol=0.06)
+    check(f"{tag}: mejor semilla (texto {b_tex})", b_tex, min(por_sem),
+          tol=0.06)
 
 # el makespan medio ya no se imprime (7.3 lo cuenta en puntos de RE y
 # con test pareado), pero se sigue comprobando como centinela del dato
@@ -358,8 +385,9 @@ for tag_a, tag_b, delta_tex in [("v2-full-300ep", "v2-attn-300ep", 0.9),
 # (instancia, semilla), delta en puntos de RE, cuentas y Wilcoxon
 from scipy.stats import wilcoxon as _wilc  # noqa: E402
 
-for _tb, _d_tex, _pares_tex, _inst_tex, _p_tex in [
-        ("300ep", 1.03, 12, 5, 0.067), ("1000ep", 1.76, 16, 6, None)]:
+for _tb, _d_tex, _pares_tex, _inst_tex, _p_tex, _cent in [
+        ("300ep", 1.03, 12, 5, 0.067, False),
+        ("1000ep", 1.76, 16, 6, None, True)]:
     _da = bench_por_instancia("v2-full-" + _tb)
     _db = bench_por_instancia("v2-attn-" + _tb)
     if not (_da and _db):
@@ -367,23 +395,53 @@ for _tb, _d_tex, _pares_tex, _inst_tex, _p_tex in [
         continue
     _dif = [re_pct(y, ta) - re_pct(x, ta) for ta in sorted(_da)
             for x, y in zip(_da[ta]["mids"], _db[ta]["mids"])]
-    check_exacto(f"7.3 {_tb}: 18 pares (instancia, semilla)",
+    _pref = "centinela: " if _cent else "7.3 "
+    check_exacto(f"{_pref}{_tb}: 18 pares (instancia, semilla)",
                  len(_dif) == 18, str(len(_dif)))
-    check(f"7.3 {_tb}: la atencion pierde {_d_tex} puntos de RE",
+    check(f"{_pref}{_tb}: la atencion pierde {_d_tex} puntos de RE",
           _d_tex, sum(_dif) / len(_dif), tol=0.011)
-    check_exacto(f"7.3 {_tb}: peor en {_pares_tex} de los 18 pares",
+    check_exacto(f"{_pref}{_tb}: peor en {_pares_tex} de los 18 pares",
                  sum(1 for d in _dif if d > 0) == _pares_tex,
                  str(sum(1 for d in _dif if d > 0)))
     _pi = sum(1 for ta in _da
               if sum(re_pct(v, ta) for v in _db[ta]["mids"])
               > sum(re_pct(v, ta) for v in _da[ta]["mids"]))
-    check_exacto(f"7.3 {_tb}: peor en {_inst_tex} de las 6 instancias",
+    check_exacto(f"{_pref}{_tb}: peor en {_inst_tex} de las 6 instancias",
                  _pi == _inst_tex, str(_pi))
     _p = _wilc(_dif).pvalue
     if _p_tex is None:
-        check_exacto(f"7.3 {_tb}: p<0.001", _p < 0.001, f"p={_p:.5f}")
+        check_exacto(f"{_pref}{_tb}: p<0.001", _p < 0.001, f"p={_p:.5f}")
     else:
-        check(f"7.3 {_tb}: Wilcoxon p={_p_tex}", _p_tex, _p, tol=0.0011)
+        check(f"{_pref}{_tb}: Wilcoxon p={_p_tex}", _p_tex, _p, tol=0.0011)
+
+# 7.3 a diez semillas: 60 pares contra las diez del brazo principal
+_da10 = bench_por_instancia_multi("v2-full-1000ep", "v2-full-1000ep-ext-c")
+_db10 = bench_por_instancia_multi("v2-attn-1000ep", "v2-attn-1000ep-ext")
+if _da10 and _db10:
+    _dif10 = [re_pct(y, ta) - re_pct(x, ta) for ta in sorted(_da10)
+              for x, y in zip(_da10[ta]["mids"], _db10[ta]["mids"])]
+    check_exacto("7.3 1000ep: 60 pares (instancia, semilla)",
+                 len(_dif10) == 60, str(len(_dif10)))
+    check("7.3 1000ep: la atencion pierde 1.06 puntos", 1.06,
+          sum(_dif10) / len(_dif10), tol=0.011)
+    check_exacto("7.3 1000ep: peor en 41 de los 60 pares",
+                 sum(1 for d in _dif10 if d > 0) == 41,
+                 str(sum(1 for d in _dif10 if d > 0)))
+    _pi10 = sum(1 for ta in _da10
+                if sum(re_pct(v, ta) for v in _db10[ta]["mids"])
+                > sum(re_pct(v, ta) for v in _da10[ta]["mids"]))
+    check_exacto("7.3 1000ep: peor en las 6 instancias", _pi10 == 6,
+                 str(_pi10))
+    check_exacto("7.3 1000ep: p<0.001",
+                 _wilc(_dif10).pvalue < 0.001,
+                 f"p={_wilc(_dif10).pvalue:.2e}")
+    # y que ninguna cuarentena contamina los globs
+    import glob as _gl
+    check_exacto("7.3: la extension tiene 7 semillas exactas (run 80226df)",
+                 len(_gl.glob(
+                     "outputs/bench_v2-attn-1000ep-ext__*_seed*")) == 7,
+                 str(len(_gl.glob(
+                     "outputs/bench_v2-attn-1000ep-ext__*_seed*"))))
 
 # El sobrecoste por episodio que cita 7.3. Se mide a 300 episodios y NO
 # a 1000: alli el brazo base tiene un 1.87x de dispersion entre sus tres
