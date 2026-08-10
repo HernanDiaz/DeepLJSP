@@ -1,0 +1,24 @@
+
+=== clon v3 (1 semillas, 2 rondas x 1 epocas, n=16, top=2, lr=5e-05, ent=0.01, kl=0.5, paciencia=4) ===
+[semilla 1] warm start desde v2_final_deepsets_1000ep_seed2.pt
+[semilla 1] antes: greedy 17.72% bo64 13.90% bo16 15.89%
+  [linea base a batir: bo16=15.89]
+    int__tai20_15_01: mejor 13.30% elite 13.30% (598 decisiones)
+    int__tai20_15_02: mejor 12.98% elite 12.98% (598 decisiones)
+    int__tai20_15_03: mejor 12.26% elite 12.26% (598 decisiones)
+    int__tai20_15_04: mejor 11.45% elite 11.45% (598 decisiones)
+  ronda  0: sel RE=13.32% (2392 dec.) H=0.962 | dev greedy=19.30 bo16=15.32 * (151 s)
+    int__tai20_15_01: mejor 12.93% elite 12.93% (598 decisiones)
+    int__tai20_15_02: mejor 13.53% elite 13.53% (598 decisiones)
+    int__tai20_15_03: mejor 16.10% elite 12.26% (598 decisiones)
+    int__tai20_15_04: mejor 13.64% elite 11.45% (598 decisiones)
+  ronda  1: sel RE=13.68% (2392 dec.) H=0.984 | dev greedy=19.13 bo16=15.10 * (153 s)
+[semilla 1] DESPUES: greedy 19.13% bo64 14.24%
+
+=== RESUMEN ===
+      greedy_antes: 17.72%
+    greedy_despues: 19.13%
+        bo64_antes: 13.90%
+      bo64_despues: 14.24%
+    elite_re_train: 12.54%
+  referencias: politica RL greedy 18.25 / bo64 13.4; clon v0 bo64 13.94; clon v2 nulo protegido; experto TS ~3.6

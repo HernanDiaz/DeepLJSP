@@ -77,7 +77,33 @@ semillas, luego las dos curvas son el mismo experimento a dos
 presupuestos y cuestan una sola evaluacion -- y la seleccion de ronda
 se hace por bo64. Coste: ~9.7 min por ronda en vez de 5.7.
 
-**Resultado (tirada real)**: (pendiente, ~5 h 30 desde las 13:37)
+**Resultado (tirada real, 3 semillas x 10 rondas, n=64, top=4)**:
+POSITIVO 3/3 — el primer entrenamiento de la linea que mejora la
+metrica de despliegue. bo64: 13.90->11.95, 13.83->13.07, 13.83->13.26
+(media 13.86->12.76, −1.10); las tres bajo la referencia PPO 13.4.
+Elite en entrenamiento: 11.36% de media (mejor instancia: 8.96%).
+Log en logs/clon_v3_real.log y benchmarks/clon_v3/.
+
+Lecturas finas del log:
+- Patron reproducido en las tres semillas: rondas 1-2 malas y
+  despegue en la ronda 3. La paciencia de 4 corto a la semilla 2 en
+  la ronda 4, exactamente donde las otras dos despegaron: paciencia
+  mas larga (6-8) es la variante obvia si se itera.
+- La semilla 1 seguia acelerando al agotar las 10 rondas
+  (13.19->12.93->12.62->11.95): mas rondas, segunda variante obvia.
+- La entropia no se degrada (H estable por semilla: 0.96 / 1.31-1.35 /
+  1.12-1.18): la mejora no viene de afilar sino de RECOLOCAR la masa
+  — la tesis del diagnostico v2, ahora con confirmacion positiva.
+- El greedy medio empeora (18.25->18.81): el bucle optimiza la
+  distribucion, no el argmax; el comercio argmax/distribucion cambia
+  de signo respecto a la v2, como predice el origen de las etiquetas.
+
+**Conclusion**: la auto-mejora supervisada funciona donde la
+imitacion de experto externo fallo, con la misma perdida y las mismas
+guardas; la unica diferencia es de QUIEN son las etiquetas. Queda
+como punto de datos central de la linea; el rumbo (decision del
+autor) sigue siendo el denoising/v4, con la v3 como evidencia de que
+la politica aun tenia margen dentro de su propia distribucion.
 
 ## 2026-08-10 · v4: ruin & recreate, la linea base del denoising
 
