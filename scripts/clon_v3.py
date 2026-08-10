@@ -64,8 +64,8 @@ WARM = {1: "models/v2_final_deepsets_1000ep_seed2.pt",
         2: "models/v2_final_deepsets_1000ep_seed3.pt",
         3: "models/v2_final_deepsets_1000ep_seed4.pt"}
 N_BO = 64
-N_BO_SEL = 16          # presupuesto barato para elegir ronda
-SALIDA = "benchmarks/clon_v3"
+N_BO_SEL = 16          # prefijo informativo; la seleccion va por bo64
+SALIDA = "benchmarks/clon_v3"      # sobreescribible con --salida
 
 
 def _paso(env, state, a):
@@ -296,6 +296,7 @@ def una_semilla(sem, rondas, epocas, n, top, lr, ent_coef, kl_coef,
 
 
 def main():
+    global SALIDA
     ap = argparse.ArgumentParser()
     ap.add_argument("--seeds", type=int, default=3)
     ap.add_argument("--rondas", type=int, default=10)
@@ -306,7 +307,9 @@ def main():
     ap.add_argument("--ent", type=float, default=0.01)
     ap.add_argument("--kl", type=float, default=0.5)
     ap.add_argument("--paciencia", type=int, default=4)
+    ap.add_argument("--salida", type=str, default=SALIDA)
     args = ap.parse_args()
+    SALIDA = args.salida
     os.makedirs(SALIDA, exist_ok=True)
     reg = open(os.path.join(SALIDA, "log.txt"), "a", encoding="utf-8")
 
@@ -317,7 +320,8 @@ def main():
 
     log(f"\n=== clon v3 ({args.seeds} semillas, {args.rondas} rondas x "
         f"{args.epocas} epocas, n={args.n}, top={args.top}, lr={args.lr}, "
-        f"ent={args.ent}, kl={args.kl}, paciencia={args.paciencia}) ===")
+        f"ent={args.ent}, kl={args.kl}, paciencia={args.paciencia}, "
+        f"salida={SALIDA}) ===")
     filas = []
     for sem in range(1, args.seeds + 1):
         filas.append(una_semilla(sem, args.rondas, args.epocas, args.n,
