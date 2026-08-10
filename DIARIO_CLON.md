@@ -142,4 +142,35 @@ lanzadores llaman a python con Start-Process y redirecciones nativas
 (-RedirectStandardOutput/-RedirectStandardError), nunca con `*>` ni
 `2>&1` dentro del ps1. Relanzada a las 22:29.
 
-**Resultado**: (pendiente)
+**Resultado (18 pares, 3 politicas x 6 dev)**: DERROTA CLARA de la
+reparacion ciega — R&R 16.16% vs bo64 13.86% (4/18, dif media +2.30,
+Wilcoxon p=0.001). Diagnosticos: (a) paralisis de aceptacion, 3.7/63
+movimientos aceptados de media y dos paralisis totales; (b) la
+correlacion greedy-deficit 0.52 — la destruccion de cola no repara
+errores tempranos (con d<=150 de ~300, medio horario es inmutable);
+(c) las victorias son por decimas, las derrotas por puntos.
+
+**Conclusion**: el resultado que la via necesitaba, con simetria
+util para el paper: la politica constructiva NUNCA vio estados de
+reparacion — covariate shift en inferencia, como la v1 lo sufrio en
+entrenamiento. Reparar es otra distribucion de estados; hay que
+entrenar sobre ella. La linea base queda medida y es batible.
+
+**Diseño v5 (el denoiser aprendido) que esto dicta**:
+1. Datos: pares (solucion buena corrompida -> restauracion), la
+   maquinaria de la fase B de la v2 con soluciones TSN2/elites como
+   objetivo — la distribucion de entrenamiento ES la de inferencia
+   del arnes R&R.
+2. Corrupcion en cualquier tramo (no solo cola), via resto_experto;
+   y d hasta T para incluir reinicios.
+3. Evaluacion: el MISMO arnes v4 a presupuesto igual, sustituyendo
+   la politica de reconstruccion por la entrenada; exito = batir
+   tanto al bo64 como al R&R ciego con p<0.05.
+4. Los checkpoints v3 (mejor distribucion) son el warm start natural.
+
+## 2026-08-10 · v3-ext: la asintota (encolada, nocturna)
+
+30 rondas, paciencia 8, 3 semillas, salida benchmarks/clon_v3_ext/
+(--salida nuevo; nada se sobreescribe). Mide donde aplana la
+configuracion que a 10 rondas dio 12.76 de media. **Resultado**:
+(pendiente, ~6 h desde el cierre de la v4)

@@ -1,0 +1,13 @@
+
+=== v4 ruin&recreate (1 politicas x 2 instancias, presupuesto 8xT, bo8, d U[15,150]) ===
+  [politica 1: v2_final_deepsets_1000ep_seed2.pt]
+    int__tai20_15_05: greedy 15.65 bo8 14.04 R&R 15.46 (7 it, 1 aceptadas, 603 forwards vs 2400 del bo)
+    int__tai20_15_06: greedy 13.68 bo8 13.68 R&R 11.84 (7 it, 2 aceptadas, 633 forwards vs 2400 del bo)
+  [politica 1: 25 s]
+
+=== RESUMEN ===
+  re_greedy: 14.66%
+      re_bo: 13.86%
+      re_rr: 13.65%
+  R&R mejor que bo8 en 1/2 pares (dif media -0.21)
+  referencias: politica RL bo64 13.4; clon v0 13.94; experto TS ~3.66

@@ -1,0 +1,34 @@
+
+=== v4 ruin&recreate (3 politicas x 6 instancias, presupuesto 64xT, bo64, d U[15,150]) ===
+  [politica 1: v2_final_deepsets_1000ep_seed2.pt]
+    int__tai20_15_05: greedy 15.65 bo64 14.04 R&R 15.42 (63 it, 2 aceptadas, 5109 forwards vs 19200 del bo)
+    int__tai20_15_06: greedy 13.68 bo64 12.65 R&R 11.91 (63 it, 3 aceptadas, 5558 forwards vs 19200 del bo)
+    int__tai20_15_07: greedy 18.37 bo64 13.47 R&R 15.73 (63 it, 6 aceptadas, 5580 forwards vs 19200 del bo)
+    int__tai20_15_08: greedy 22.98 bo64 17.61 R&R 22.98 (63 it, 0 aceptadas, 5014 forwards vs 19200 del bo)
+    int__tai20_15_09: greedy 17.34 bo64 13.10 R&R 13.14 (63 it, 7 aceptadas, 5473 forwards vs 19200 del bo)
+    int__tai20_15_10: greedy 18.32 bo64 12.54 R&R 16.17 (63 it, 4 aceptadas, 5518 forwards vs 19200 del bo)
+  [politica 1: 394 s]
+  [politica 2: v2_final_deepsets_1000ep_seed3.pt]
+    int__tai20_15_05: greedy 25.21 bo64 16.02 R&R 15.83 (63 it, 6 aceptadas, 5422 forwards vs 19200 del bo)
+    int__tai20_15_06: greedy 17.39 bo64 12.94 R&R 17.39 (63 it, 0 aceptadas, 5379 forwards vs 19200 del bo)
+    int__tai20_15_07: greedy 13.99 bo64 13.44 R&R 12.79 (63 it, 2 aceptadas, 4791 forwards vs 19200 del bo)
+    int__tai20_15_08: greedy 19.86 bo64 16.34 R&R 18.99 (63 it, 5 aceptadas, 5403 forwards vs 19200 del bo)
+    int__tai20_15_09: greedy 18.81 bo64 12.42 R&R 15.88 (63 it, 5 aceptadas, 5332 forwards vs 19200 del bo)
+    int__tai20_15_10: greedy 17.47 bo64 11.83 R&R 14.47 (63 it, 4 aceptadas, 5323 forwards vs 19200 del bo)
+  [politica 2: 371 s]
+  [politica 3: v2_final_deepsets_1000ep_seed4.pt]
+    int__tai20_15_05: greedy 18.37 bo64 12.32 R&R 16.92 (63 it, 3 aceptadas, 4917 forwards vs 19200 del bo)
+    int__tai20_15_06: greedy 20.48 bo64 12.46 R&R 17.65 (63 it, 8 aceptadas, 5376 forwards vs 19200 del bo)
+    int__tai20_15_07: greedy 14.67 bo64 11.97 R&R 12.76 (63 it, 3 aceptadas, 5520 forwards vs 19200 del bo)
+    int__tai20_15_08: greedy 20.37 bo64 16.45 R&R 19.46 (63 it, 3 aceptadas, 5136 forwards vs 19200 del bo)
+    int__tai20_15_09: greedy 14.19 bo64 14.23 R&R 13.40 (63 it, 2 aceptadas, 5119 forwards vs 19200 del bo)
+    int__tai20_15_10: greedy 21.33 bo64 15.58 R&R 19.92 (63 it, 4 aceptadas, 4832 forwards vs 19200 del bo)
+  [politica 3: 387 s]
+
+=== RESUMEN ===
+  re_greedy: 18.25%
+      re_bo: 13.86%
+      re_rr: 16.16%
+  R&R mejor que bo64 en 4/18 pares (dif media +2.30)
+  Wilcoxon pareado R&R vs bo: p=0.0010
+  referencias: politica RL bo64 13.4; clon v0 13.94; experto TS ~3.66
