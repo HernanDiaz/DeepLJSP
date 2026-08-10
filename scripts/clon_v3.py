@@ -138,19 +138,33 @@ def re_pct(mid, pid):
 
 
 def evalua_dev(red, n_bo=N_BO):
-    g, b = [], []
+    """Una sola pasada de n_bo muestras por instancia; devuelve
+    (greedy, best-of-16, best-of-n_bo).
+
+    El best-of-16 sale del PREFIJO de las mismas semillas, asi que las
+    dos curvas son el mismo experimento a dos presupuestos y cuestan
+    una sola evaluacion. El humo dejo claro por que hacen falta las
+    dos: la ronda que mejoraba a 16 muestras empeoraba a 64 (15.10
+    frente a 14.24), de modo que elegir por el presupuesto barato
+    optimiza un proxy sesgado del despliegue."""
+    g, b16, b64 = [], [], []
     for pid in DEV:
         env = EnvironmentFactory.create_from_problem_id(pid, "adaptive",
                                                         seed=1)
         enc = AgentV2(env, seed=1, attention_layers=0).encoder
         g.append(re_pct(rollout(env, red, enc, False, 0)[0], pid))
         mejor, clave = None, None
+        m16, c16 = None, None
         for i in range(n_bo):
             mid, up, lo = rollout(env, red, enc, i > 0, 1000 + i)
             if clave is None or (up, lo) < clave:
                 mejor, clave = mid, (up, lo)
-        b.append(re_pct(mejor, pid))
-    return sum(g) / len(g), sum(b) / len(b)
+            if i == N_BO_SEL - 1:
+                m16, c16 = mejor, clave
+        b16.append(re_pct(m16 if m16 is not None else mejor, pid))
+        b64.append(re_pct(mejor, pid))
+    n = len(DEV)
+    return sum(g) / n, sum(b16) / n, sum(b64) / n
 
 
 def muestrea_ronda(red, sem, ronda, n, top, elite, log):
@@ -200,15 +214,14 @@ def una_semilla(sem, rondas, epocas, n, top, lr, ent_coef, kl_coef,
     red.load_state_dict(torch.load(warm, map_location="cpu",
                                    weights_only=True)["network"])
     log(f"[semilla {sem}] warm start desde {os.path.basename(warm)}")
-    g0, b0f = evalua_dev(red)
-    _, b0 = evalua_dev(red, N_BO_SEL)
-    log(f"[semilla {sem}] antes: greedy {g0:.2f}% bo{N_BO} {b0f:.2f}% "
-        f"bo{N_BO_SEL} {b0:.2f}%")
+    g0, b16_0, b0 = evalua_dev(red)
+    log(f"[semilla {sem}] antes: greedy {g0:.2f}% bo{N_BO_SEL} "
+        f"{b16_0:.2f}% bo{N_BO} {b0:.2f}%")
 
     opt = torch.optim.Adam(red.parameters(), lr=lr)
     elite = {}
     mejor_bo, mejor_estado, sin_mejora = b0, None, 0
-    log(f"  [linea base a batir: bo{N_BO_SEL}={b0:.2f}]")
+    log(f"  [linea base a batir: bo{N_BO}={b0:.2f}]")
     for ronda in range(rondas):
         t0 = time.time()
         red.eval()
@@ -248,7 +261,7 @@ def una_semilla(sem, rondas, epocas, n, top, lr, ent_coef, kl_coef,
                 ent_media += float(ent.detach())
                 n_lotes += 1
         red.eval()
-        g_r, b_r = evalua_dev(red, N_BO_SEL)
+        g_r, b16_r, b_r = evalua_dev(red)
         marca = ""
         if b_r < mejor_bo:
             mejor_bo, sin_mejora = b_r, 0
@@ -259,8 +272,8 @@ def una_semilla(sem, rondas, epocas, n, top, lr, ent_coef, kl_coef,
             sin_mejora += 1
         log(f"  ronda {ronda:>2}: sel RE={re_sel:.2f}% "
             f"({len(train)} dec.) H={ent_media / max(n_lotes, 1):.3f} | "
-            f"dev greedy={g_r:.2f} bo{N_BO_SEL}={b_r:.2f}{marca} "
-            f"({time.time() - t0:.0f} s)")
+            f"dev greedy={g_r:.2f} bo{N_BO_SEL}={b16_r:.2f} "
+            f"bo{N_BO}={b_r:.2f}{marca} ({time.time() - t0:.0f} s)")
         if sin_mejora >= paciencia:
             log(f"  parada temprana en la ronda {ronda}")
             break
@@ -271,14 +284,15 @@ def una_semilla(sem, rondas, epocas, n, top, lr, ent_coef, kl_coef,
                                        weights_only=True)["network"])
         log("  ninguna ronda mejoro la linea base: RESTAURADO el "
             "warm start")
-    g1, b1 = evalua_dev(red)
-    log(f"[semilla {sem}] DESPUES: greedy {g1:.2f}% bo{N_BO} {b1:.2f}%")
+    g1, b16_1, b1 = evalua_dev(red)
+    log(f"[semilla {sem}] DESPUES: greedy {g1:.2f}% bo{N_BO_SEL} "
+        f"{b16_1:.2f}% bo{N_BO} {b1:.2f}%")
     torch.save({"network": red.state_dict()},
                os.path.join(SALIDA, f"clon_v3_seed{sem}.pt"))
     elite_re = sum(re_pct(m, p) for p, (_, m, _) in elite.items()) / len(elite)
-    return {"semilla": sem, "greedy_antes": g0, "bo64_antes": b0f,
-            "greedy_despues": g1, "bo64_despues": b1,
-            "mejor_bo_sel": mejor_bo, "elite_re_train": elite_re}
+    return {"semilla": sem, "greedy_antes": g0, "bo16_antes": b16_0,
+            "bo64_antes": b0, "greedy_despues": g1, "bo16_despues": b16_1,
+            "bo64_despues": b1, "elite_re_train": elite_re}
 
 
 def main():
@@ -315,8 +329,9 @@ def main():
         w.writeheader()
         w.writerows(filas)
     log("\n=== RESUMEN ===")
-    for c in ("greedy_antes", "greedy_despues", "bo64_antes",
-              "bo64_despues", "elite_re_train"):
+    for c in ("greedy_antes", "greedy_despues", "bo16_antes",
+              "bo16_despues", "bo64_antes", "bo64_despues",
+              "elite_re_train"):
         log(f"  {c:>16}: {sum(f[c] for f in filas) / len(filas):.2f}%")
     log("  referencias: politica RL greedy 18.25 / bo64 13.4; "
         "clon v0 bo64 13.94; clon v2 nulo protegido; experto TS ~3.6")

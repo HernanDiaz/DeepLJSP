@@ -62,4 +62,19 @@ salida benchmarks/clon_v3/.
 re-muestreo fresco deberia mover la masa hacia su propia cola buena y
 bajar del 13.4. Señal interna a vigilar: `sel RE` (calidad media de lo
 seleccionado) deberia decrecer ronda a ronda.
-**Resultado**: (pendiente)
+**Humo (1 semilla, 2 rondas, n=16)**: las etiquetas son buenas (top-2
+de 16 muestras: 13.32% de RE) y el bo16 mejora ronda a ronda
+(15.89 -> 15.32 -> 15.10) con la entropia estable (0.96 -> 0.98) y el
+greedy sacrificado (17.72 -> 19.13). PERO el bo64 final EMPEORO:
+13.90 -> 14.24. Salidas archivadas en benchmarks/clon_v3/humo/.
+
+**Correccion antes de la tirada real**: el criterio de seleccion y la
+metrica de despliegue divergen. El bucle afila lo justo para ganar con
+16 muestras y perder con 64, asi que elegir ronda por bo16 optimiza un
+proxy sesgado. `evalua_dev` pasa a hacer UNA pasada de 64 muestras y
+devolver greedy / bo16 / bo64 -- el bo16 es el prefijo de las mismas
+semillas, luego las dos curvas son el mismo experimento a dos
+presupuestos y cuestan una sola evaluacion -- y la seleccion de ronda
+se hace por bo64. Coste: ~9.7 min por ronda en vez de 5.7.
+
+**Resultado (tirada real)**: (pendiente, ~5 h 30 desde las 13:37)
