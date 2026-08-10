@@ -78,3 +78,33 @@ presupuestos y cuestan una sola evaluacion -- y la seleccion de ronda
 se hace por bo64. Coste: ~9.7 min por ronda en vez de 5.7.
 
 **Resultado (tirada real)**: (pendiente, ~5 h 30 desde las 13:37)
+
+## 2026-08-10 · v4: ruin & recreate, la linea base del denoising
+
+**Decision de rumbo** (del autor): tras la v3, pasar a la via del
+denoising en lugar de seguir iterando la construccion. Motivo tecnico:
+la Eq. (9) implica que en construccion los anchos no pueden informar
+al objetivo, pero un operador de MEJORA ve horarios completos, donde
+el ancho es observable y accionable — es el escenario donde la
+estructura intervalar deja de ser decorativa.
+
+**Que**: antes de aprender un denoiser, medir la reparacion SIN
+aprender: destruir las ultimas d ~ U[15,150] decisiones del incumbente
+y reconstruir muestreando con la politica desplegada; aceptar si
+mejora la clave de la Eq. (3). Presupuesto igual al bo64 (64xT pasos
+de entorno, replays incluidos: contabilidad conservadora). bo64
+recalculado en el mismo script con las semillas de evaluacion de
+siempre -> 18 pares exactos, Wilcoxon. Script scripts/clon_v4_rr.py,
+salida benchmarks/clon_v4_rr/, encolado tras la v3.
+
+**Humo (1 politica, 2 instancias, presupuesto 8xT, 25 s)**: arnes
+correcto de punta a punta; con 7 iteraciones R&R ya gano en TA16
+(11.84 vs 13.68 del bo8) y perdio en TA15 (15.46 vs 14.04). A 8xT el
+muestreo de d apenas itera; el veredicto es a 64xT.
+
+**Criterio para el siguiente paso**: si R&R >= bo64, el denoiser
+aprendido tiene una linea base que superar y la via queda abierta con
+listón; si R&R < bo64, la reconstruccion ciega no basta y el
+argumento para APRENDER el operador de reparacion es directo.
+
+**Resultado**: (pendiente)
