@@ -168,3 +168,31 @@ sobre schedules.
 Dataset ~100-150k decisiones (replay ~10 min); entrenamiento CE
 ~30-60 min por tirada en CPU; evaluacion dev greedy+bo64 ~15 min.
 Una tarde de maquina para el experimento completo con 3 semillas.
+
+## Resultado v2 (2026-08-10, 3 semillas, commit del script 068ec2f)
+
+Nulo protegido: ninguna semilla batio su bo16 de partida; la guarda
+restauro los tres warm starts (DESPUES = ANTES, sin perdida). Log
+completo en logs/clon_v2_real.log.
+
+Los tres hallazgos del log:
+1. El greedy SI mejora, y mucho: 17.72->15.97, 18.79->16.14,
+   18.23->16.59 en las mejores epocas -- la imitacion de TS afila el
+   argmax 1.7-2.7 puntos por debajo del argmax RL.
+2. El best-of no acompana: bo16 ~ greedy en casi todas las epocas.
+   Con H~1.9 estable (el ancla KL funciona), la conclusion es que el
+   valor de la distribucion RL no es su entropia sino DONDE pone la
+   masa: la CE conserva diversidad numerica pero pierde la diversidad
+   util que el best-of-N explota.
+3. Tension de diseno: seleccionar por bo16 descarta los estados de
+   greedy afilado, que son el producto interesante para un solver de
+   una pasada (~16% bateria al greedy RL en 2.3 puntos).
+
+Opciones v2.1 (decidir con el autor):
+- variante seleccionada por GREEDY (producto: argmax-solver);
+- doble cabeza o mezcla de politicas (imitacion para el argmax,
+  original para muestrear): servir bo64 con la RL y greedy con el clon
+  ya lo logra HOY sin entrenar nada;
+- perdida sobre la distribucion (RL desde el reward con el clon como
+  propuesta), o ranking loss entre muestras en vez de CE por decision;
+- curriculo de corrupcion creciente (denoising completo).

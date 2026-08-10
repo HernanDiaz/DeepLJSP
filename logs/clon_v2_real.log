@@ -1,0 +1,61 @@
+Total de problemas registrados: 167
+
+=== clon v2 (3 semillas, 40 epocas, lr=5e-05, ent=0.01, kl=0.5) ===
+[semilla 1] warm start desde v2_final_deepsets_1000ep_seed2.pt
+[semilla 1] antes de imitar: greedy 17.72% bo64 13.90% bo16 15.89%
+  int__tai20_15_01: A=7176 B=6529 C=2392 decisiones
+  int__tai20_15_02: A=7176 B=6324 C=2392 decisiones
+  int__tai20_15_03: A=7176 B=6451 C=2392 decisiones
+  int__tai20_15_04: A=7176 B=6306 C=2392 decisiones
+[semilla 1] dataset: 63882 train / 7175 val (182 s)
+  [linea base a batir: bo16=15.89]
+  ep   0: train CE=2.0501 ac=0.311 H=1.770 | val CE=2.1202 ac=0.298 | dev greedy=16.34 bo16=16.34
+  ep   1: train CE=1.9623 ac=0.318 H=1.900 | val CE=2.0425 ac=0.311 | dev greedy=17.37 bo16=17.00
+  ep   2: train CE=1.9021 ac=0.328 H=1.880 | val CE=1.9847 ac=0.316 | dev greedy=18.30 bo16=18.07
+  ep   3: train CE=1.8774 ac=0.335 H=1.857 | val CE=1.9466 ac=0.319 | dev greedy=15.97 bo16=15.97
+  ep   4: train CE=1.8416 ac=0.340 H=1.842 | val CE=1.9187 ac=0.324 | dev greedy=17.27 bo16=17.27
+  ep   5: train CE=1.8125 ac=0.343 H=1.827 | val CE=1.8762 ac=0.333 | dev greedy=18.06 bo16=16.56
+  parada temprana en la epoca 5
+  ninguna epoca mejoro la linea base: RESTAURADO el warm start
+[semilla 1] DESPUES: greedy 17.72% bo64 13.90%
+[semilla 2] warm start desde v2_final_deepsets_1000ep_seed3.pt
+[semilla 2] antes de imitar: greedy 18.79% bo64 13.83% bo16 14.67%
+  int__tai20_15_01: A=7176 B=6447 C=2392 decisiones
+  int__tai20_15_02: A=7176 B=6345 C=2392 decisiones
+  int__tai20_15_03: A=7175 B=6623 C=2390 decisiones
+  int__tai20_15_04: A=7176 B=6453 C=2391 decisiones
+[semilla 2] dataset: 64136 train / 7176 val (183 s)
+  [linea base a batir: bo16=14.67]
+  ep   0: train CE=2.1746 ac=0.284 H=1.977 | val CE=2.1785 ac=0.278 | dev greedy=17.84 bo16=17.71
+  ep   1: train CE=2.0615 ac=0.301 H=2.001 | val CE=2.0753 ac=0.299 | dev greedy=16.14 bo16=16.14
+  ep   2: train CE=2.0251 ac=0.305 H=1.974 | val CE=2.0389 ac=0.305 | dev greedy=16.63 bo16=16.63
+  ep   3: train CE=1.9787 ac=0.312 H=1.957 | val CE=1.9907 ac=0.316 | dev greedy=18.98 bo16=18.57
+  ep   4: train CE=1.9444 ac=0.317 H=1.948 | val CE=1.9521 ac=0.320 | dev greedy=18.03 bo16=17.83
+  ep   5: train CE=1.8980 ac=0.326 H=1.934 | val CE=1.9073 ac=0.330 | dev greedy=18.33 bo16=17.99
+  parada temprana en la epoca 5
+  ninguna epoca mejoro la linea base: RESTAURADO el warm start
+[semilla 2] DESPUES: greedy 18.79% bo64 13.83%
+[semilla 3] warm start desde v2_final_deepsets_1000ep_seed4.pt
+[semilla 3] antes de imitar: greedy 18.23% bo64 13.83% bo16 15.91%
+  int__tai20_15_01: A=7176 B=6416 C=2392 decisiones
+  int__tai20_15_02: A=7176 B=6411 C=2392 decisiones
+  int__tai20_15_03: A=7175 B=6533 C=2392 decisiones
+  int__tai20_15_04: A=7176 B=6537 C=2391 decisiones
+[semilla 3] dataset: 64167 train / 7176 val (184 s)
+  [linea base a batir: bo16=15.91]
+  ep   0: train CE=2.1182 ac=0.301 H=1.893 | val CE=2.1773 ac=0.278 | dev greedy=17.85 bo16=17.85
+  ep   1: train CE=2.0059 ac=0.322 H=1.969 | val CE=2.0673 ac=0.298 | dev greedy=16.59 bo16=16.59
+  ep   2: train CE=1.9708 ac=0.328 H=1.942 | val CE=2.0326 ac=0.303 | dev greedy=17.33 bo16=17.05
+  ep   3: train CE=1.9421 ac=0.334 H=1.923 | val CE=2.0010 ac=0.306 | dev greedy=20.42 bo16=19.22
+  ep   4: train CE=1.9241 ac=0.336 H=1.908 | val CE=1.9755 ac=0.309 | dev greedy=19.32 bo16=18.47
+  ep   5: train CE=1.8964 ac=0.344 H=1.901 | val CE=1.9452 ac=0.314 | dev greedy=20.26 bo16=19.55
+  parada temprana en la epoca 5
+  ninguna epoca mejoro la linea base: RESTAURADO el warm start
+[semilla 3] DESPUES: greedy 18.23% bo64 13.83%
+
+=== RESUMEN ===
+      greedy_antes: 18.25%
+    greedy_despues: 18.25%
+        bo64_antes: 13.86%
+      bo64_despues: 13.86%
+  referencias: politica RL greedy 18.25 / bo64 13.4; clon v0 bo64 13.94; clon v1-TS bo64 20.42; experto TS ~3.6
