@@ -133,4 +133,13 @@ aprendido tiene una linea base que superar y la via queda abierta con
 listón; si R&R < bo64, la reconstruccion ciega no basta y el
 argumento para APRENDER el operador de reparacion es directo.
 
+**Incidente de encolado (16:42-22:28)**: el lanzador ps1 murio al
+instante de arrancar la v4 real: en PowerShell 5.1, `*>` sobre un
+ejecutable nativo convierte cada linea de stderr en ErrorRecord, y
+con `$ErrorActionPreference = "Stop"` el primer INFO del logging de
+Python (stderr) mato el script. Seis horas perdidas. Leccion: los
+lanzadores llaman a python con Start-Process y redirecciones nativas
+(-RedirectStandardOutput/-RedirectStandardError), nunca con `*>` ni
+`2>&1` dentro del ps1. Relanzada a las 22:29.
+
 **Resultado**: (pendiente)
