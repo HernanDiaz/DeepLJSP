@@ -95,3 +95,76 @@ seria (mas instancias, split por secuencias, varias tiradas).
 v1-TS mejora con muestreo (23.7 -> 20.4) pero el shift sigue
 dominando: tampoco la distribucion del clon de TS pisa los estados
 adecuados. El warm start + dataset mixto siguen siendo el camino.
+
+## Diseño v2 (acordado con el autor, 2026-08-10)
+
+Objetivo: que el clon de TSN2 conserve la calidad del experto tambien
+en despliegue, atacando los dos fallos medidos (v0: profesor
+incoherente; v1: covariate shift).
+
+### Modelo y arranque
+
+- La MISMA PolicyValueNetV2 (cabeza de valor sin perdida, peso
+  muerto): intercambiable con toda la infraestructura existente
+  (best-of-N, evaluacion, formato de checkpoint).
+- **Warm start**: inicializar desde un checkpoint RL desplegado
+  (v2_final_deepsets_1000ep_seedX), no desde cero. La imitacion pasa
+  de sobrescribir una politica a refinarla: comportamiento sensato
+  fuera de la variedad del experto, refinamiento hacia TS dentro.
+
+### Dataset mixto 50/25/25
+
+1. **50% replay puro del experto**: las 30 soluciones TSN2 por
+   instancia, replay a decisiones etiquetadas (como v1). Enseña la
+   autopista.
+2. **25% replay con prefijo corrompido** (la idea del denoising como
+   remedio del shift, estilo DART): ejecutar las primeras k decisiones
+   al azar o con la politica actual (k ~ U[5, 60]), y desde ahi seguir
+   el RESTO del orden del experto, etiquetando solo las decisiones
+   post-desvio. Factible siempre (la permutacion con repeticion
+   decodifica semiactivo sin proyeccion). Enseña a volver a la
+   autopista desde el arcen.
+3. **25% estados de rollouts propios con etiqueta por auto-seleccion**
+   (Corsini): desde estados visitados por el propio clon (o la
+   politica RL), muestrear N continuaciones, quedarse con la mejor
+   bajo la Eq. (3), y etiquetar con su primera decision. Cubre la
+   distribucion de despliegue con el experto barato.
+
+### Escala y validacion (lo que el prototipo no tuvo)
+
+- Entrenamiento: las 4 de entrenamiento COMO MINIMO; opcion de subir a
+  mas instancias con solucion TS (hay 82) respetando la politica de
+  exclusion (TA15-20 nunca; las del irace del TS, ver
+  seeds/INSTRUCCIONES_PILOTO_TS.md, tampoco para evaluar).
+- **Split de validacion por SECUENCIAS enteras** (no por decisiones
+  sueltas: decisiones de la misma secuencia son casi duplicados y
+  inflan la validacion): p.ej. 24/30 runs a entrenamiento, 6/30 a
+  validacion por instancia. La CE de validacion separa ambiguedad
+  (suelo compartido) de sobreajuste (brecha train/val).
+- Varias tiradas (>=3 semillas de entrenamiento del clon) antes de
+  creer ningun numero: la leccion de todo el paper.
+
+### Metricas de exito, en orden
+
+1. Clon greedy en dev < 18.25% (bate el argmax de la politica RL).
+2. Clon best-of-64 en dev < 13.4% (bate a la politica desplegada);
+   el v0 ya roza esto (13.94) sin TS -- el listado minimo de la v2 es
+   no perder eso.
+3. Techo aspiracional: acercarse al experto (~3.6%); cada punto entre
+   13.4 y 3.6 es territorio nuevo para metodos constructivos.
+4. Diagnosticos: CE de validacion (suelo de ambiguedad), acierto
+   train/val, y RE por nivel de corrupcion k (la curva de
+   recuperacion, tambien piloto del denoising).
+
+### Bucle opcional (v3, si v2 responde)
+
+Iterar estilo Corsini: el clon v2 genera pools nuevos -> best-of-N ->
+re-etiquetar -> reentrenar. Y el puente al denoising completo: el
+ingrediente 2 con k creciente ES el curriculo de difusion discreta
+sobre schedules.
+
+### Coste estimado
+
+Dataset ~100-150k decisiones (replay ~10 min); entrenamiento CE
+~30-60 min por tirada en CPU; evaluacion dev greedy+bo64 ~15 min.
+Una tarde de maquina para el experimento completo con 3 semillas.
