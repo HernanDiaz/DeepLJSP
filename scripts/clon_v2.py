@@ -33,7 +33,6 @@ Salida NUEVA: benchmarks/clon_v2/. No toca nada existente.
 import argparse
 import csv
 import glob
-import json
 import os
 import sys
 import time
@@ -60,8 +59,11 @@ from jobshop_rl.models.interval import final_makespan          # noqa: E402
 TS_DIR = r"E:/PycharmProjects/DeepLJSP/T2N2/results/phaseB_TS/N2_tuned"
 TRAIN = [f"int__tai20_15_{i:02d}" for i in range(1, 5)]      # TA11-14
 DEV = [f"int__tai20_15_{i:02d}" for i in range(5, 11)]       # TA15-20
-WARM = "models/v2_final_deepsets_1000ep_seed2.pt"
-CKPTS = [f"models/v2_final_deepsets_1000ep_seed{s}.pt" for s in (2, 3, 4)]
+# warm start rotatorio: el clon `sem` parte del checkpoint desplegado
+# seed(sem+1); tres puntos de partida reales, mejora pareada por maestro
+WARM = {1: "models/v2_final_deepsets_1000ep_seed2.pt",
+        2: "models/v2_final_deepsets_1000ep_seed3.pt",
+        3: "models/v2_final_deepsets_1000ep_seed4.pt"}
 M = 15                       # maquinas de la clase 20x15
 RUNS_TRAIN, RUNS_VAL = 24, 6         # split por secuencias, de las 30
 N_CORRUPTAS = 24             # secuencias con prefijo corrompido por instancia
@@ -149,23 +151,7 @@ def rollout(env, red, enc, muestrear, semilla, devolver_seq=False):
     return (r, seq) if devolver_seq else r
 
 
-def prefijo_aleatorio(env, k, rng):
-    """Ejecuta k decisiones al azar; devuelve (state, Counter de trabajos)."""
-    state = env.reset()
-    hechas = Counter()
-    for _ in range(k):
-        eleg = state["eligible_ops"]
-        if not eleg:
-            break
-        a = int(rng.integers(len(eleg)))
-        hechas[eleg[a] + 1] += 1
-        state, done = _paso(env, state, a)
-        if done:
-            break
-    return hechas
-
-
-def construye_dataset(red, rng, log):
+def construye_dataset(red, rng, sem, log):
     """(train, val) como listas de (op, gl, accion)."""
     train, val = [], []
     for pid in TRAIN:
@@ -189,48 +175,40 @@ def construye_dataset(red, rng, log):
             if r:
                 val.extend(r[0])
 
-        # (B) prefijo corrompido: k ~ U[5,60], resto del orden experto
+        # (B) prefijo corrompido: k ~ U[5,60] decisiones al azar en el
+        # MISMO entorno que luego etiqueta (nada de reconstruir el
+        # prefijo en otro: en semiactivo el ORDEN de despacho fija las
+        # secuencias de maquina, y una reconstruccion canonica
+        # colapsaria corrupciones distintas al mismo estado)
         nb = 0
-        for i in range(N_CORRUPTAS):
+        for _ in range(N_CORRUPTAS):
             seq, _ = tr[int(rng.integers(len(tr)))]
             k = int(rng.integers(5, 61))
-            hechas = prefijo_aleatorio(env, k, rng)
-            resto = resto_experto(seq, hechas)
-            # replay del prefijo aleatorio + resto, etiquetando el resto
-            env2 = EnvironmentFactory.create_from_problem_id(pid, "adaptive",
-                                                             seed=1)
-            state = env2.reset()
-            pend = Counter(hechas)
-            ok = True
-            for _ in range(sum(hechas.values())):
+            state = env.reset()
+            hechas = Counter()
+            for _ in range(k):
                 eleg = state["eligible_ops"]
-                cand = [i2 for i2, o in enumerate(eleg)
-                        if pend.get(o + 1, 0)]
-                if not cand:
-                    ok = False
+                if not eleg:
                     break
-                a = cand[0]
-                pend[eleg[a] + 1] -= 1
-                state, _ = _paso(env2, state, a)
-            if not ok:
-                continue
-            for job in resto:
+                a = int(rng.integers(len(eleg)))
+                hechas[eleg[a] + 1] += 1
+                state, done = _paso(env, state, a)
+                if done:
+                    break
+            for job in resto_experto(seq, hechas):
                 eleg = state["eligible_ops"]
                 if not eleg:
                     break
                 try:
                     a = eleg.index(job - 1)
                 except ValueError:
-                    ok = False
                     break
                 if len(eleg) > 1:
                     op, gl = enc.encode(state)
                     train.append((op.astype(np.float32),
                                   gl.astype(np.float32), a))
                     nb += 1
-                state, done = _paso(env2, state, a)
-            if not ok:
-                continue
+                state, done = _paso(env, state, a)
 
         # (C) auto-seleccion sobre la distribucion propia: de N muestras
         # se replayan las TOP_AUTOSEL mejores bajo la Eq. (3). Una sola
@@ -238,7 +216,8 @@ def construye_dataset(red, rng, log):
         # en el error de la v0, donde el experto ERAN colas afortunadas
         cand = []
         for i in range(N_AUTOSEL):
-            (mid, up, lo), seq = rollout(env, red, enc, i > 0, 5000 + i,
+            (mid, up, lo), seq = rollout(env, red, enc, i > 0,
+                                         5000 + 1000 * sem + i,
                                          devolver_seq=True)
             cand.append(((up, lo), seq))
         cand.sort(key=lambda t: t[0])
@@ -306,16 +285,17 @@ def una_semilla(sem, epocas, lr, ent_coef, log):
     torch.manual_seed(sem)
     rng = np.random.default_rng(sem)
     red = PolicyValueNetV2()
-    red.load_state_dict(torch.load(WARM, map_location="cpu",
+    warm = WARM[(sem - 1) % 3 + 1]
+    red.load_state_dict(torch.load(warm, map_location="cpu",
                                    weights_only=True)["network"])
-    log(f"[semilla {sem}] warm start desde {os.path.basename(WARM)}")
+    log(f"[semilla {sem}] warm start desde {os.path.basename(warm)}")
     g0, b0f = evalua_dev(red)
     _, b0 = evalua_dev(red, N_BO_SEL)
     log(f"[semilla {sem}] antes de imitar: greedy {g0:.2f}% "
         f"bo{N_BO} {b0f:.2f}% bo{N_BO_SEL} {b0:.2f}%")
 
     t0 = time.time()
-    train, val = construye_dataset(red, rng, log)
+    train, val = construye_dataset(red, rng, sem, log)
     log(f"[semilla {sem}] dataset: {len(train)} train / {len(val)} val "
         f"({time.time() - t0:.0f} s)")
 
@@ -329,7 +309,7 @@ def una_semilla(sem, epocas, lr, ent_coef, log):
     opt = torch.optim.Adam(red.parameters(), lr=lr)
     idx = np.arange(len(train))
     mejor_bo, mejor_estado, sin_mejora = b0, None, 0
-    log(f"  [linea base a batir: bo{N_BO_SEL} de partida]")
+    log(f"  [linea base a batir: bo{N_BO_SEL}={b0:.2f}]")
     for ep in range(epocas):
         rng.shuffle(idx)
         red.train()
