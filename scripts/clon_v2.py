@@ -358,7 +358,7 @@ def una_semilla(sem, epocas, lr, ent_coef, kl_coef, log):
             f"H={ent_media / max(n_lotes, 1):.3f} | "
             f"val CE={ce_v:.4f} ac={ac_v:.3f} | dev greedy={g_e:.2f} "
             f"bo{N_BO_SEL}={b_e:.2f}{marca}")
-        if sin_mejora >= 4:
+        if sin_mejora >= 6:
             log(f"  parada temprana en la epoca {ep}")
             break
     if mejor_estado:
