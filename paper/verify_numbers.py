@@ -2144,7 +2144,7 @@ else:
            if r["method"] == "GP"}
     check_exacto("GP-bo64: las quince instancias", len(_g64) == 15,
                  str(len(_g64)))
-    check("7.5: GP best-of-64 (texto 6.34)", 6.34,
+    check("centinela: eps15 GP best-of-64 (6.34)", 6.34,
           sum(_g64.values()) / 15)
     _dg = [_g64[i] - _g1[i] for i in sorted(_g64)]
     check_exacto("7.5: peor en 9 de 15 frente a su pasada unica",
@@ -2152,10 +2152,96 @@ else:
                  f"{sum(1 for x in _dg if x > 0)}/15")
     try:
         from scipy.stats import wilcoxon as _w75
-        check("7.5: Wilcoxon del GP-bo64 (texto 0.31)", 0.31,
+        check("centinela: eps15 Wilcoxon GP-bo64 (0.31)", 0.31,
               _w75(_dg).pvalue, tol=0.005)
     except ImportError:
         pendiente("Wilcoxon GP-bo64", "sin scipy")
+
+print("\n== 7.5 sobre las setenta ==")
+if not os.path.exists("benchmarks/eval_eps_all70.csv"):
+    pendiente("robustez sobre las 70", "sin eval_eps_all70.csv")
+else:
+    import statistics as _s70
+    from scipy.stats import wilcoxon as _w70
+    _e70 = {}
+    for r in __import__("csv").DictReader(
+            open("benchmarks/eval_eps_all70.csv", encoding="utf-8")):
+        _e70.setdefault(r["instance"], {})[r["method"]] = (
+            float(r["eps"]) * 1000, float(r["width_rel"]))
+    _i70 = sorted(_e70)
+    check_exacto("eps70: 70 instancias x 17 metodos",
+                 len(_i70) == 70 and all(len(v) == 17
+                                         for v in _e70.values()),
+                 f"{len(_i70)} x {len(next(iter(_e70.values())))}")
+
+    def _g70(f):
+        return {i: f(_e70[i]) for i in _i70}
+
+    _mor = _g70(lambda d: d["MOR"][0])
+    _gt = _g70(lambda d: d["GT-MWKR"][0])
+    _est = _g70(lambda d: d["EST"][0])
+    _gp1 = _g70(lambda d: d["GP"][0])
+    _gpb = _g70(lambda d: d["GP-bo64"][0])
+    _pg = _g70(lambda d: _s70.mean(d[f"policy-greedy-seed{s}"][0]
+                                   for s in (2, 3, 4)))
+    _pb = _g70(lambda d: _s70.mean(d[f"policy-bo64-seed{s}"][0]
+                                   for s in (2, 3, 4)))
+    _lb_ = _g70(lambda d: _s70.mean(d[f"lam1-seed{s}-bo64"][0]
+                                    for s in (2, 3, 4)))
+    for _nom, _dd, _v in [("MOR", _mor, 6.48), ("GT-MWKR", _gt, 6.27),
+                          ("EST", _est, 5.71), ("GP una pasada", _gp1, 5.66),
+                          ("GP bo64", _gpb, 5.56),
+                          ("politica greedy", _pg, 5.59),
+                          ("politica bo64", _pb, 5.48),
+                          ("robusto bo64", _lb_, 5.23)]:
+        check(f"eps70: {_nom} (texto {_v})", _v,
+              _s70.mean(_dd.values()), tol=0.006)
+
+    def _par70(a, b):
+        d = [a[i] - b[i] for i in _i70]
+        return (sum(1 for x in d if x < 0), _w70(d).pvalue)
+
+    _n, _p = _par70(_pb, _mor)
+    check_exacto("eps70: politica mas fiel que MOR en 63/70, p<1e-10",
+                 _n == 63 and _p < 1e-10, f"{_n}/70 p={_p:.1e}")
+    _n, _p = _par70(_pb, _gt)
+    check_exacto("eps70: y que GT-MWKR en 65/70, p<1e-10",
+                 _n == 65 and _p < 1e-10, f"{_n}/70 p={_p:.1e}")
+    _n, _p = _par70(_pb, _est)
+    check_exacto("eps70: y que EST en 45/70, p=0.011",
+                 _n == 45 and 0.008 <= _p <= 0.014, f"{_n}/70 p={_p:.3f}")
+    _n, _p = _par70(_pb, _gp1)
+    check_exacto("eps70: nivelada con GP a una pasada (p=0.069)",
+                 0.06 <= _p <= 0.08, f"{_n}/70 p={_p:.3f}")
+    _n, _p = _par70(_pb, _gpb)
+    check_exacto("eps70: y con GP bo64 (p=0.38)",
+                 0.35 <= _p <= 0.42, f"p={_p:.2f}")
+    _n, _p = _par70(_pb, _pg)
+    check_exacto("eps70: muestrear no degrada a la politica (p=0.29)",
+                 0.26 <= _p <= 0.33, f"p={_p:.2f}")
+    _n, _p = _par70(_gpb, _gp1)
+    check_exacto("eps70: ni a la regla (p=0.54)",
+                 0.50 <= _p <= 0.58, f"p={_p:.2f}")
+    _n, _p = _par70(_lb_, _pb)
+    check_exacto("eps70: el robusto gana al default en 49/70, p<0.001",
+                 _n == 49 and _p < 1e-3, f"{_n}/70 p={_p:.1e}")
+    _wl = _s70.mean(_s70.mean(_e70[i][f"lam1-seed{s}-bo64"][1]
+                              for s in (2, 3, 4)) for i in _i70)
+    _wp = _s70.mean(_s70.mean(_e70[i][f"policy-bo64-seed{s}"][1]
+                              for s in (2, 3, 4)) for i in _i70)
+    check("eps70: ancho del robusto (texto 11.2)", 11.2, _wl, tol=0.05)
+    check("eps70: ancho del default (texto 11.8)", 11.8, _wp, tol=0.05)
+
+    # coherencia entre depositos: en las 15 instancias compartidas, el
+    # protocolo identico debe reproducir los valores del fichero de 15
+    _e15 = {}
+    for r in __import__("csv").DictReader(
+            open("benchmarks/eval_eps_all.csv", encoding="utf-8")):
+        _e15[(r["instance"], r["method"])] = float(r["eps"])
+    _difmax = max(abs(_e15[k] - _e70[k[0]][k[1]][0] / 1000)
+                  for k in _e15 if k[1] in _e70[k[0]])
+    check_exacto("eps70: reproduce el deposito de 15 en lo compartido",
+                 _difmax < 1e-9, f"dif max {_difmax:.2e}")
 
 print("\n== tab:irace: el espacio de busqueda ==")
 

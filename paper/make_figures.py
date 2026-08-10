@@ -304,11 +304,10 @@ def fig_eps():
     import csv
     from collections import defaultdict
 
-    # eval_eps_all.csv, no el fichero antiguo: aquel sembraba con
-    # hash() de la cadena, aleatorizado por proceso, y su barrido se
-    # relanzo a mitad. Este trae ademas el brazo robusto lambda=1.
+    # eval_eps_all70.csv: el benchmark completo, los 17 metodos de 7.5
+    # con las mismas realizaciones sembradas por instancia
     por = defaultdict(dict)
-    for r in csv.DictReader(open("benchmarks/eval_eps_all.csv",
+    for r in csv.DictReader(open("benchmarks/eval_eps_all70.csv",
                                  encoding="utf-8")):
         m = r["method"]
         if m.startswith("lam1-") and m.endswith("-bo64"):
@@ -319,16 +318,13 @@ def fig_eps():
             g = "Policy\n(best-of-64)"
         elif m.startswith("policy-greedy"):
             g = "Policy\n(greedy)"
+        elif m == "GP-bo64":
+            g = "GP\n(best-of-64)"
+        elif m == "GP":
+            g = "GP\n(one pass)"
         else:
             g = m
         por[g].setdefault(r["instance"], []).append(float(r["eps"]) * 1000)
-    # la regla a presupuesto igualado (64 muestras eps-greedy) vive en su
-    # propio deposito, medida con las mismas realizaciones
-    for r in csv.DictReader(open("benchmarks/eval_eps_gp_bo64.csv",
-                                 encoding="utf-8")):
-        por["GP\n(best-of-64)"].setdefault(r["instance"], []).append(
-            float(r["eps"]) * 1000)
-    por["GP\n(one pass)"] = por.pop("GP")
     med = {g: {i: sum(v) / len(v) for i, v in d.items()}
            for g, d in por.items()}
 

@@ -281,13 +281,19 @@ def evalua_dev(red, n_bo=N_BO):
     return sum(g) / len(g), sum(b) / len(b)
 
 
-def una_semilla(sem, epocas, lr, ent_coef, log):
+def una_semilla(sem, epocas, lr, ent_coef, kl_coef, log):
     torch.manual_seed(sem)
     rng = np.random.default_rng(sem)
     red = PolicyValueNetV2()
     warm = WARM[(sem - 1) % 3 + 1]
     red.load_state_dict(torch.load(warm, map_location="cpu",
                                    weights_only=True)["network"])
+    red0 = PolicyValueNetV2()
+    red0.load_state_dict(torch.load(warm, map_location="cpu",
+                                    weights_only=True)["network"])
+    red0.eval()
+    for q in red0.parameters():
+        q.requires_grad_(False)
     log(f"[semilla {sem}] warm start desde {os.path.basename(warm)}")
     g0, b0f = evalua_dev(red)
     _, b0 = evalua_dev(red, N_BO_SEL)
@@ -313,16 +319,30 @@ def una_semilla(sem, epocas, lr, ent_coef, log):
     for ep in range(epocas):
         rng.shuffle(idx)
         red.train()
+        ent_media, n_lotes = 0.0, 0
         for ini in range(0, len(idx), 256):
             ops, gls, mask, y = lote_tensor([train[i]
                                              for i in idx[ini:ini + 256]])
             logits, _ = red(ops, gls, mask)
             logp = F.log_softmax(logits.masked_fill(~mask, -1e9), dim=1)
             ent = -(logp.exp() * logp).masked_fill(~mask, 0.0).sum(1).mean()
-            perdida = F.cross_entropy(logits, y) - ent_coef * ent
+            # ancla: KL(p0 || p) contra la politica del warm start; le
+            # impide anular acciones que la original valoraba, que es
+            # exactamente lo que el humo vio morir (bo16 -> greedy en
+            # una epoca)
+            with torch.no_grad():
+                logits0, _ = red0(ops, gls, mask)
+                logp0 = F.log_softmax(logits0.masked_fill(~mask, -1e9),
+                                      dim=1)
+            kl = (logp0.exp() * (logp0 - logp)).masked_fill(
+                ~mask, 0.0).sum(1).mean()
+            perdida = (F.cross_entropy(logits, y) - ent_coef * ent
+                       + kl_coef * kl)
             opt.zero_grad()
             perdida.backward()
             opt.step()
+            ent_media += float(ent.detach())
+            n_lotes += 1
         red.eval()
         ce_t, ac_t = evalua_ce(red, train[:4000])
         ce_v, ac_v = evalua_ce(red, val)
@@ -334,7 +354,8 @@ def una_semilla(sem, epocas, lr, ent_coef, log):
             marca = " *"
         else:
             sin_mejora += 1
-        log(f"  ep {ep:>3}: train CE={ce_t:.4f} ac={ac_t:.3f} | "
+        log(f"  ep {ep:>3}: train CE={ce_t:.4f} ac={ac_t:.3f} "
+            f"H={ent_media / max(n_lotes, 1):.3f} | "
             f"val CE={ce_v:.4f} ac={ac_v:.3f} | dev greedy={g_e:.2f} "
             f"bo{N_BO_SEL}={b_e:.2f}{marca}")
         if sin_mejora >= 4:
@@ -343,7 +364,9 @@ def una_semilla(sem, epocas, lr, ent_coef, log):
     if mejor_estado:
         red.load_state_dict(mejor_estado)
     else:
-        log("  ninguna epoca mejoro la linea base: se conserva el "
+        red.load_state_dict(torch.load(warm, map_location="cpu",
+                                       weights_only=True)["network"])
+        log("  ninguna epoca mejoro la linea base: RESTAURADO el "
             "warm start")
     g1, b1 = evalua_dev(red)
     log(f"[semilla {sem}] DESPUES: greedy {g1:.2f}% bo{N_BO} {b1:.2f}%")
@@ -360,6 +383,7 @@ def main():
     ap.add_argument("--epocas", type=int, default=30)
     ap.add_argument("--lr", type=float, default=5e-5)
     ap.add_argument("--ent", type=float, default=0.01)
+    ap.add_argument("--kl", type=float, default=0.5)
     args = ap.parse_args()
     os.makedirs(SALIDA, exist_ok=True)
     reg = open(os.path.join(SALIDA, "log.txt"), "a", encoding="utf-8")
@@ -370,10 +394,10 @@ def main():
         reg.flush()
 
     log(f"\n=== clon v2 ({args.seeds} semillas, {args.epocas} epocas, "
-        f"lr={args.lr}, ent={args.ent}) ===")
+        f"lr={args.lr}, ent={args.ent}, kl={args.kl}) ===")
     filas = []
     for sem in range(1, args.seeds + 1):
-        filas.append(una_semilla(sem, args.epocas, args.lr, args.ent, log))
+        filas.append(una_semilla(sem, args.epocas, args.lr, args.ent, args.kl, log))
     with open(os.path.join(SALIDA, "resultados.csv"), "w",
               encoding="utf-8", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(filas[0]))

@@ -1723,20 +1723,14 @@ lower is more faithful. We use $K{=}1000$ common random numbers per
 instance---identical realizations for every method, drawn from a
 generator seeded by the instance identifier so that the draws
 reproduce across runs and machines---so every comparison below is
-paired realization by realization. The Monte Carlo is the expensive
-part, so this section uses fifteen instances rather than the full
-seventy: the six development instances and nine test instances
-covering the seven size classes (TA1, TA2, TA5, TA21, TA25, TA31,
-TA41, TA51, TA61). Both sets were fixed at earlier stages of the
-study---the former by the data split of Section~\ref{sec:instances},
-the latter as the evaluation sample of the original cross-size
-runs---so no instance is selected with this comparison in view.
+paired realization by realization. The measurement covers the full
+seventy-instance benchmark.
 
 \begin{figure}[!htb]
   \centering
   \includegraphics[width=\linewidth]{figures/fig_eps.pdf}
   \caption{Executional robustness by method:
-  $\bar\varepsilon\times10^{3}$ over the fifteen evaluation instances;
+  $\bar\varepsilon\times10^{3}$ over the seventy benchmark instances;
   lower is a more faithful prediction. Boxes span the quartiles with
   whiskers at $1.5$ IQR, every instance is overlaid as a point, and
   diamonds mark the means quoted in the text.}
@@ -1744,28 +1738,29 @@ runs---so no instance is selected with this comparison in view.
 \end{figure}
 
 The constructive methods separate into two groups
-(Figure~\ref{fig:eps}), and the policy belongs to the more faithful
-one without leading it. Its schedules deviate by
-$\bar\varepsilon\times10^{3}=6.18$ under greedy inference and $6.12$
-under best-of-64, level with EST ($6.35$; $9/15$, $p=0.30$) and with
-the evolved rule of~\citet{DiazGP2026} ($6.12$; $9/15$, $p=0.72$). The
-distance to the other group is systematic: G\&T-MWKR deviates by
-$6.86$ and MOR by $7.14$, with the policy more faithful on $13$ and
-$14$ of the fifteen instances respectively (paired Wilcoxon
-signed-rank, $p<0.001$ in both cases). Sampling does not degrade
-calibration on either side of the budget match: the policy's
-best-of-64 deviates as its greedy pass does ($6.12$ against $6.18$),
-and the rule randomized by the $\epsilon$-greedy dispatching of its
-study deviates as its deterministic pass does ($6.34$ against $6.12$;
-$9/15$, $p=0.31$).
+(Figure~\ref{fig:eps}). MOR and G\&T-MWKR deviate by
+$\bar\varepsilon\times10^{3}=6.48$ and $6.27$; every remaining
+method lies between $5.2$ and $5.7$, and the distance is
+systematic---the policy at best-of-64 is more faithful than MOR on 63
+of the seventy instances and than G\&T-MWKR on 65 (paired Wilcoxon
+signed-rank, $p<10^{-10}$ in both cases). Within the faithful group
+the policy's best-of-64 ($5.48$) is more faithful than EST ($5.71$;
+$45/70$, $p=0.011$) and level with the evolved rule
+of~\citet{DiazGP2026} at both of its budgets ($5.66$ at one pass,
+$p=0.069$; $5.56$ at $64$ samples, $p=0.38$). Sampling degrades
+calibration for neither learner: the policy's best-of-64 deviates as
+its greedy pass does ($5.48$ against $5.59$, $p=0.29$), and the rule
+under the $\epsilon$-greedy dispatching of its study as its
+deterministic pass does ($5.56$ against $5.66$, $p=0.54$).
 
 The composition of the leading group explains the ranking. It holds a
 hand-crafted rule and both learners at their two inference budgets,
 and the presence of EST---the weakest method of this paper
 in solution quality, at $42.3\%$ mean RE
-(Table~\ref{tab:seventy})---shows that faithfulness and quality are
-separate properties: a method can predict reliably while scheduling
-poorly, and optimizing the makespan secures no reliability in return.
+(Table~\ref{tab:seventy}), yet well clear of MOR and G\&T-MWKR in
+faithfulness---shows that faithfulness and quality are separate
+properties: a method can predict reliably while scheduling poorly,
+and optimizing the makespan secures no reliability in return.
 The mechanism is the interval itself. Every realization's makespan
 lies within the predicted interval (Section~\ref{sec:problem}), so
 the width of that interval bounds the deviation any execution can
@@ -1781,15 +1776,14 @@ penalizes width is introduced~\citep{DiazGP2026}.
 
 The robust arm of Section~\ref{sec:ablations-interval} is the direct
 test of that reading: it is the one method in the comparison whose
-objective charges for the width, and it attains the lowest deviation,
-$\bar\varepsilon\times10^{3}=5.83$, with the narrowest predictions
-($11.5\%$ of the expected makespan against $12.3\%$ for the default
-arm). The improvement over the default policy is not significant on
-fifteen instances ($-0.29$, more faithful on $9/15$, $p=0.23$), so
-this is a direction and not a demonstration. But it is the direction
-the argument predicts, and it comes at the price
-Section~\ref{sec:ablations-interval} measured: about two points of
-expected makespan. The result completes the chain begun there: the
+objective charges for the width, and it attains the lowest deviation
+of the pool, $\bar\varepsilon\times10^{3}=5.23$ against $5.48$ for
+the default arm, more faithful on 49 of the seventy instances
+($p<0.001$) and with the narrowest predictions ($11.2\%$ of the
+expected makespan against $11.8\%$). This is the direction the
+argument predicts, demonstrated at benchmark scale, and it comes at
+the price Section~\ref{sec:ablations-interval} measured: about two
+points of expected makespan. The result completes the chain begun there: the
 narrowing that Section~\ref{sec:ablations-interval} traced to sample
 selection is not confined to the predicted interval but carries
 through to execution, as schedules whose realized makespans stay
@@ -1877,12 +1871,12 @@ held fixed the robust weights and the default ones are
 indistinguishable, and ranking the default policy's own samples by
 $f_\lambda$ retraces the frontier without any retraining---what
 narrows the interval is which sample is kept, not which network
-produced it. At execution time the policy's schedules sit in the most
-dependable group of the constructive pool, level with EST and with the
-evolved rule at both inference budgets---methods that share one trait:
-none charges for the width of its prediction---while the
-width-charging arm attains the lowest deviation of the comparison,
-carrying the selection-time narrowing through to execution. And a
+produced it. At execution time the policy's schedules are among the
+most dependable of the constructive pool---more faithful than every
+hand-crafted rule over the seventy instances, level with the evolved
+rule---while the width-charging arm attains the lowest deviation of
+the comparison, significantly ahead of the default arm, carrying the
+selection-time narrowing through to execution. And a
 permutation audit shows the network leaning on slack, remaining
 operations and worst-case remaining work---the attributes
 hand-crafted and evolved rules exploit---with the width features at
