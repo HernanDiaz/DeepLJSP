@@ -343,3 +343,33 @@ la politica actual) cada ronda. Aceptaciones sostenidas ~23/ronda y
 reparaciones siempre de las soluciones de la politica ACTUAL.
 Lanzada 07:34, salida benchmarks/clon_v5p4/.
 **Resultado**: (pendiente)
+
+**Resultado v5.4 (3 semillas)**: la unica variante del denoiser con
+mejoras reales: reparacion 13.45 -> 13.15 de media, 2/3 semillas
+positivas (13.68->13.13, 14.04->13.69; la semilla 1 nulo protegido
+con mejor ronda 12.85 sobre base 12.63). Entrenamiento estable
+(H ~0.9-1.3), flujo de datos sostenido (~20 aceptaciones/ronda),
+construccion intacta. PERO no cruza el liston prerregistrado: 13.15
+queda por encima del bo64 de los clones (12.76).
+
+## 2026-08-11 · Cierre de campaña: el techo del 11-12%
+
+Cuatro medidas independientes convergen en un techo de esta familia
+(construccion en una pasada, con o sin reparacion por re-despacho):
+elite v3 en train 11.0-11.4; asintota v3 en dev 12.75-12.76; curva
+de presupuesto del paper (retornos decrecientes por duplicacion);
+cinco variantes de reparacion aterrizando en 13-14. El techo es de
+la TECNICA, no del problema (TSN2: 3.66): decisiones irrevocables +
+diversidad solo por ruido por decision. La reparacion con politica
+de despacho sigue siendo construccion — por eso hereda su techo.
+
+Mapa de lineas siguientes (analisis 2026-08-11, discutido con el
+autor): (1) PRINCIPAL: operador de destruccion/seleccion aprendido
+DENTRO de busqueda local fuerte (TSN2 como anfitrion), en el JSP
+intervalar, con la Eq. (9) extendida a reparacion como teoria y la
+matriz v4 como motivacion — fusiona el hueco metodologico con el
+nicho propio; (2) paralela barata: perdida de preferencias entre
+trayectorias para optimizar el best-of-N directamente (el gap
+"masa vs entropia" documentado en v2/v3); (3) curva ganancia vs
+diversidad de instancias (cuello de botella medido de la v3);
+(descartadas: mas v3.x, CE hacia experto externo, benchmark crisp).
