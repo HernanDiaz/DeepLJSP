@@ -1,0 +1,38 @@
+Total de problemas registrados: 167
+
+=== clon v5.3 self-repair (3 semillas, 12 rondas x 3 epocas, iter=48, lr=5e-05, ent=0.01, kl=0.5, paciencia=6, eval=64xT, salida=benchmarks/clon_v5p3) ===
+[semilla 1] warm start desde clon_v3_seed1.pt
+[semilla 1] antes: reparacion 12.63% bo16 14.87% (153 s)
+  [linea base a batir: reparacion=12.63; listones prerregistrados: 12.76 y 13.73/13.89]
+    int__tai20_15_01: 6/48 aceptadas, 682 decisiones (incumbente 12.93%)
+    int__tai20_15_02: 7/48 aceptadas, 871 decisiones (incumbente 12.58%)
+    int__tai20_15_03: 4/48 aceptadas, 395 decisiones (incumbente 15.20%)
+    int__tai20_15_04: 6/48 aceptadas, 768 decisiones (incumbente 9.52%)
+  ronda  0: 23 acept. 2716 dec. H=0.900 | dev reparacion=14.28 bo16=14.81 (208 s)
+    int__tai20_15_01: 0/48 aceptadas, 0 decisiones (incumbente 12.93%)
+    int__tai20_15_02: 0/48 aceptadas, 0 decisiones (incumbente 12.58%)
+    int__tai20_15_03: 4/48 aceptadas, 417 decisiones (incumbente 12.93%)
+    int__tai20_15_04: 1/48 aceptadas, 109 decisiones (incumbente 9.14%)
+  ronda  1: 5 acept. 526 dec. H=0.849 | dev reparacion=14.02 bo16=14.95 (205 s)
+    int__tai20_15_01: 3/48 aceptadas, 345 decisiones (incumbente 12.38%)
+    int__tai20_15_02: 1/48 aceptadas, 293 decisiones (incumbente 9.99%)
+    int__tai20_15_03: 0/48 aceptadas, 0 decisiones (incumbente 12.93%)
+    int__tai20_15_04: 0/48 aceptadas, 0 decisiones (incumbente 9.14%)
+  ronda  2: 4 acept. 638 dec. H=0.913 | dev reparacion=13.71 bo16=14.97 (205 s)
+    int__tai20_15_01: 2/48 aceptadas, 411 decisiones (incumbente 10.21%)
+    int__tai20_15_02: 1/48 aceptadas, 120 decisiones (incumbente 9.58%)
+    int__tai20_15_03: 1/48 aceptadas, 54 decisiones (incumbente 12.37%)
+    int__tai20_15_04: 0/48 aceptadas, 0 decisiones (incumbente 9.14%)
+  ronda  3: 4 acept. 585 dec. H=0.917 | dev reparacion=13.61 bo16=14.88 (208 s)
+    int__tai20_15_01: 1/48 aceptadas, 95 decisiones (incumbente 10.13%)
+    int__tai20_15_02: 1/48 aceptadas, 210 decisiones (incumbente 9.22%)
+    int__tai20_15_03: 0/48 aceptadas, 0 decisiones (incumbente 12.37%)
+    int__tai20_15_04: 0/48 aceptadas, 0 decisiones (incumbente 9.14%)
+  ronda  4: 2 acept. 305 dec. H=0.957 | dev reparacion=13.50 bo16=15.14 (200 s)
+    int__tai20_15_01: 0/48 aceptadas, 0 decisiones (incumbente 10.13%)
+    int__tai20_15_02: 0/48 aceptadas, 0 decisiones (incumbente 9.22%)
+    int__tai20_15_03: 0/48 aceptadas, 0 decisiones (incumbente 12.37%)
+    int__tai20_15_04: 0/48 aceptadas, 0 decisiones (incumbente 9.14%)
+  ronda  5: sin aceptaciones, sin entrenamiento (54 s)
+  parada temprana en la ronda 5
+  ninguna ronda mejoro la linea base: RESTAURADO el warm start

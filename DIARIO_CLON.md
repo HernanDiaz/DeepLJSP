@@ -325,3 +325,21 @@ instancia y ronda, 12 rondas, paciencia 6, lr 5e-5, kl 0.5 (los
 valores v3). Script scripts/clon_v5_selfrepair.py, salida
 benchmarks/clon_v5p3/. Lanzada 07:12.
 **Resultado**: (pendiente)
+
+**Resultado v5.3 (semilla 1, terminacion anticipada)**: NULO
+PROTEGIDO con la textura mas informativa de la sub-linea: mejora
+MONOTONA de la reparacion (14.28 -> 14.02 -> 13.71 -> 13.61 ->
+13.50) con H estable (~0.9) y construccion intacta — y muerte por
+INANICION de datos: el incumbente persistente se vuelve imbatible
+(aceptaciones 23 -> 5 -> 4 -> 2 -> 0) y seca el flujo antes de
+cruzar la base (12.63). El mecanismo por fin es estable; falla la
+fuente de datos. Cortada tras la semilla 1 (la inanicion es
+mecanica, no estocastica).
+
+## 2026-08-11 · v5.4: incumbentes frescos por ronda (en curso)
+
+Un cambio: sin persistencia — incumbente nuevo (greedy + muestras de
+la politica actual) cada ronda. Aceptaciones sostenidas ~23/ronda y
+reparaciones siempre de las soluciones de la politica ACTUAL.
+Lanzada 07:34, salida benchmarks/clon_v5p4/.
+**Resultado**: (pendiente)

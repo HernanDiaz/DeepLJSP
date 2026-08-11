@@ -238,7 +238,13 @@ def una_semilla(sem, rondas, epocas, n_iter, lr, ent_coef, kl_coef,
         f"bo16 {bo16_0:.2f}% ({time.time() - t0:.0f} s)")
 
     opt = torch.optim.Adam(red.parameters(), lr=lr)
-    incumbentes = {pid: None for pid in TRAIN}
+    # v5.4: SIN persistencia de incumbentes entre rondas. La v5.3
+    # murio de inanicion: el incumbente persistente se vuelve
+    # imbatible para su politica (aceptaciones 23->5->4->2->0) y el
+    # flujo de datos se seca antes de cruzar la base, con la mejora
+    # aun monotona. Incumbente fresco por ronda = aceptaciones
+    # sostenidas y reparaciones de las soluciones de la politica
+    # ACTUAL en cada ronda.
     mejor_rep, mejor_estado, sin_mejora = rep0, None, 0
     log(f"  [linea base a batir: reparacion={rep0:.2f}; listones "
         f"prerregistrados: 12.76 y 13.73/13.89]")
@@ -247,8 +253,8 @@ def una_semilla(sem, rondas, epocas, n_iter, lr, ent_coef, kl_coef,
         red.eval()
         train, acept_tot = [], 0
         for pid in TRAIN:
-            m, incumbentes[pid], ac = reparaciones_propias(
-                red, pid, incumbentes[pid], sem, ronda, n_iter, rng, log)
+            m, _, ac = reparaciones_propias(
+                red, pid, None, sem, ronda, n_iter, rng, log)
             train.extend(m)
             acept_tot += ac
         if not train:
