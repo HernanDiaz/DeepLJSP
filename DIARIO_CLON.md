@@ -394,3 +394,24 @@ Celda pendiente para completar el cuadro: Taillard SINTETICAS
 (mismo generador U[1,99] + F.15_01, sin contaminacion) — ¿generaliza
 dentro de familia a instancias no vistas, o solo a las de dev que
 seleccionaron rondas? Comparacion pareada, sin necesidad de LB.
+
+## 2026-08-11 · Sinteticas: la ganancia v3 tampoco es de familia — es SELECCION
+
+Taillard sinteticas (generador U[1,99] + F.15_01, 10 instancias
+nuevas), comparacion pareada congelada: v3 mejor en 14/30 pares,
+dif media +0.27%, Wilcoxon p=0.40. EMPATE tambien dentro de familia.
+
+Diagnostico: la seleccion de ronda se hizo por el bo64 de las MISMAS
+6 instancias donde se reporto. Con ~8 rondas evaluadas y sd entre
+rondas ~0.7, el minimo de 8 tiradas ruidosas cae ~1 punto bajo la
+media — el tamaño exacto de la "mejora" (-1.10). El trinquete
+protegia el entrenamiento; nada protegia la seleccion. CORRECCION
+FORMAL: el "positivo 3/3" de la v3 (2026-08-10) es con toda
+probabilidad sesgo de seleccion, no mejora de la politica.
+
+Lo que sigue en pie (protocolos sin seleccion): matriz v4 completa,
+techo de la familia, diagnosticos v2/v5. La historia publicable se
+REFUERZA: "self-improvement gains on the selection set do not
+survive clean tests" — oportuna (metodos SLIM proliferando), con el
+experimento de atribucion definitivo: v3 con seleccion (TA15-17) y
+reporte (TA18-20 + sinteticas) SEPARADOS. Lanzado como v3-split.
