@@ -297,3 +297,31 @@ el denoising con curriculo de la idea original. Paciencia 8 para que
 las rondas someras no maten la tirada antes de llegar a las
 profundas. Lanzada 06:45, salida benchmarks/clon_v5p2/.
 **Resultado**: (pendiente)
+
+**Resultado v5.2 (semilla 1, terminacion anticipada)**: el curriculo
+CAMBIA el modo de fallo pero no lo evita. Rondas someras (d<=39-63):
+construccion intacta e incluso mejor (bo16 14.43 < 14.87), reparacion
+casi estable (13.85). Al profundizar (d>=111): el daño reaparece y
+crece con la profundidad (17.4 -> 18.7). Nulo protegido en la ronda
+7; tirada CORTADA tras la semilla 1 — el modo de fallo fue
+identicamente reproducible entre semillas en v5.0 y v5.1, y esos ~70
+minutos valen mas en la v5.3.
+
+**Cierre de la sub-linea "completacion experta"**: tres variantes
+(pura / mezclada+ancla / curriculo) fallan en el mismo punto — los
+pares PROFUNDOS con etiquetas de TSN2. Coherente con la v1: el orden
+del TS es aprendible en acierto local pero su distribucion de
+trayectoria es incompatible con la de la politica; en profundidad, la
+completacion experta es una trayectoria ajena casi entera.
+
+## 2026-08-11 · v5.3: auto-imitacion de reparaciones propias (en curso)
+
+La receta v3 (etiquetas propias seleccionadas: la unica que ha
+mejorado despliegue, 3/3) aplicada a los estados de reparacion: el
+arnes R&R con incumbente PERSISTENTE por instancia genera
+reconstrucciones; las ACEPTADAS (mejoran la Eq. (3)) son las
+etiquetas — on-distribution por construccion. 48 iteraciones por
+instancia y ronda, 12 rondas, paciencia 6, lr 5e-5, kl 0.5 (los
+valores v3). Script scripts/clon_v5_selfrepair.py, salida
+benchmarks/clon_v5p3/. Lanzada 07:12.
+**Resultado**: (pendiente)
