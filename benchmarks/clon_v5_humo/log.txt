@@ -1,0 +1,24 @@
+
+=== clon v5 denoiser (1 semillas, 2 rondas x 3 epocas, pares=6, lr=5e-05, ent=0.01, kl=0.5, paciencia=4, eval=24xT, salida=benchmarks/clon_v5_humo) ===
+[semilla 1] warm start desde clon_v3_seed1.pt
+[semilla 1] antes: reparacion 14.36% bo16 14.87% (85 s)
+  [linea base a batir: reparacion=14.36; listones prerregistrados: 12.76 (bo64 clones) y 13.73 (R&R ciego)]
+    int__tai20_15_01: 1255 decisiones de reparacion
+    int__tai20_15_02: 859 decisiones de reparacion
+    int__tai20_15_03: 1032 decisiones de reparacion
+    int__tai20_15_04: 764 decisiones de reparacion
+  ronda  0: 3910 dec. H=0.833 | dev reparacion=18.90 bo16=19.70 (95 s)
+    int__tai20_15_01: 1112 decisiones de reparacion
+    int__tai20_15_02: 702 decisiones de reparacion
+    int__tai20_15_03: 540 decisiones de reparacion
+    int__tai20_15_04: 1165 decisiones de reparacion
+  ronda  1: 3519 dec. H=2.062 | dev reparacion=19.21 bo16=19.17 (96 s)
+  ninguna ronda mejoro la linea base: RESTAURADO el warm start
+[semilla 1] DESPUES: reparacion 14.36% bo16 14.87%
+
+=== RESUMEN ===
+      rep_antes: 14.36%
+    rep_despues: 14.36%
+     bo16_antes: 14.87%
+   bo16_despues: 14.87%
+  listones: bo64 clones 12.76; R&R ciego (PPO, d completo) 13.73; bo64 PPO 13.86; experto TS ~3.66

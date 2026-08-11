@@ -238,3 +238,23 @@ empata al muestreo PPO con ~la mitad de forwards; una politica
 entrenada sobre los estados de reparacion (prefijo de incumbente +
 completacion experta via resto_experto, d ~ U[15,T] espejando el
 arnes) deberia convertir ese empate en ventaja y cruzar 12.76.
+
+## 2026-08-11 · v5: el denoiser, tirada real (en curso)
+
+Script scripts/clon_v5_denoiser.py. Pares (incumbente propio ->
+prefijo tras d ~ U[15,T] -> completacion TSN2 via resto_experto),
+warm start desde los clones v3, ancla KL 0.5, seleccion de ronda por
+la REPARACION en dev con el arnes v4 (greedy + R&R a 64xT, semillas
+fijas; bo16 como control de construccion, fuera del presupuesto).
+
+Humo (benchmarks/clon_v5_humo/): ciclo y guarda validados; linea
+base medida — reparacion del clon 14.36 (consistente con la matriz);
+y advertencia de estabilidad: 3 epocas de CE experta por ronda dañan
+reparacion y construccion a la vez (14.36->18.90, H 0.83->2.06), el
+colapso de la v2 en miniatura pese al ancla. Etiquetas 100% expertas
+mueven mucha mas masa que el dataset mixto.
+
+Tirada real ajustada a pasos suaves: 1 epoca/ronda, lr 2e-5, 12
+rondas, paciencia 4, 3 semillas (~4 h desde las 05:06).
+Exito prerregistrado: reparacion dev < 12.76 y < 13.73/13.89.
+**Resultado**: (pendiente)
