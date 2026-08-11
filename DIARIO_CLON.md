@@ -373,3 +373,24 @@ trayectorias para optimizar el best-of-N directamente (el gap
 "masa vs entropia" documentado en v2/v3); (3) curva ganancia vs
 diversidad de instancias (cuello de botella medido de la v3);
 (descartadas: mas v3.x, CE hacia experto externo, benchmark crisp).
+
+## 2026-08-11 · Test DMU: la ganancia v3 es especifica de familia
+
+Diez DMU 20x15 ensanchadas con el protocolo F.15_01 (seis con optimo
+crisp exacto; cotas de literatura en cotas.csv), jamas vistas por
+ningun modelo ni protocolo de seleccion. Checkpoints congelados:
+
+  bo64 medio    PPO 17.14 (16.54/17.07/17.81)
+                v3  17.21 (17.25/17.16/17.23)   -> EMPATE, 1/3 pares
+
+En dev (TA15-20) la v3 ganaba -1.10 con 3/3. La ganancia de la
+auto-mejora NO sobrevive el cambio de familia: es adaptacion a la
+distribucion Taillard (entrenamiento TA11-14), no mejora general de
+la politica. Notese ademas el salto de nivel (13-14 -> 17): dominio
+mas duro para todos los modelos entrenados en Taillard, con parte
+del salto explicada por cotas exactas (RE = gap verdadero en 6/10).
+
+Celda pendiente para completar el cuadro: Taillard SINTETICAS
+(mismo generador U[1,99] + F.15_01, sin contaminacion) — ¿generaliza
+dentro de familia a instancias no vistas, o solo a las de dev que
+seleccionaron rondas? Comparacion pareada, sin necesidad de LB.
