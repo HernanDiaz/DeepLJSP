@@ -59,7 +59,7 @@ DEV = [f"int__tai20_15_{i:02d}" for i in range(5, 11)]       # TA15-20
 POLITICAS = {1: "models/v2_final_deepsets_1000ep_seed2.pt",
              2: "models/v2_final_deepsets_1000ep_seed3.pt",
              3: "models/v2_final_deepsets_1000ep_seed4.pt"}
-SALIDA = "benchmarks/clon_v4_rr"
+SALIDA = "benchmarks/clon_v4_rr"    # sobreescribible con --salida
 
 
 def _paso(env, state, a):
@@ -172,6 +172,7 @@ def un_par(polsem, red, pid, inst_idx, presupuesto, n_bo, dmin, dmax,
 
 
 def main():
+    global SALIDA
     ap = argparse.ArgumentParser()
     ap.add_argument("--seeds", type=int, default=3)
     ap.add_argument("--instancias", type=int, default=len(DEV))
@@ -180,7 +181,18 @@ def main():
     ap.add_argument("--bo", type=int, default=64)
     ap.add_argument("--dmin", type=int, default=15)
     ap.add_argument("--dmax", type=int, default=150)
+    ap.add_argument("--salida", type=str, default=SALIDA)
+    ap.add_argument("--modelos", type=str, default="",
+                    help="tres rutas .pt separadas por coma; por defecto "
+                         "las politicas PPO desplegadas")
     args = ap.parse_args()
+    SALIDA = args.salida
+    if args.modelos:
+        rutas = args.modelos.split(",")
+        assert len(rutas) == args.seeds, "una ruta por politica"
+        for i, r in enumerate(rutas, 1):
+            assert os.path.exists(r), f"no existe {r}"
+            POLITICAS[i] = r
     os.makedirs(SALIDA, exist_ok=True)
     reg = open(os.path.join(SALIDA, "log.txt"), "a", encoding="utf-8")
 

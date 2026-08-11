@@ -172,5 +172,29 @@ entrenar sobre ella. La linea base queda medida y es batible.
 
 30 rondas, paciencia 8, 3 semillas, salida benchmarks/clon_v3_ext/
 (--salida nuevo; nada se sobreescribe). Mide donde aplana la
-configuracion que a 10 rondas dio 12.76 de media. **Resultado**:
-(pendiente, ~6 h desde el cierre de la v4)
+configuracion que a 10 rondas dio 12.76 de media.
+
+**Resultado**: LA ASINTOTA ERA LA TIRADA CORTA. 11.95 / 13.07 / 13.25,
+media 12.75 contra 12.76 — una centesima en 3x mas computo. Las dos
+hipotesis de margen quedaron refutadas por sus propios casos de
+prueba: la semilla 1 no siguio acelerando (paro en la ronda 14 sin
+batir su ronda 6) y la semilla 2 no tenia despegue podado (paro en la
+8 sin batir su ronda 0). Un reinicio del equipo a mitad de tirada
+verifico ademas la reproducibilidad: 24 rondas de replay identicas
+numero a numero.
+
+**Conclusion**: las ganancias del bucle llegan en las primeras ~6
+rondas o no llegan. La elite de train siguio mejorando (11.36->11.04)
+con dev plano: la restriccion activa es la DIVERSIDAD DE DATOS (4
+instancias), no el presupuesto de optimizacion. Esto redirige el
+esfuerzo a la escala de instancias (opcion D) y a la v5, y cierra la
+v3 con numeros finales: bo64 13.86 -> 12.76 de media, tres de tres.
+
+## 2026-08-11 · v4b/v4c: dos brazos baratos antes de la v5
+
+(a) v4b: el arnes R&R con los CLONES v3 reconstruyendo — ¿una
+distribucion mejor repara mejor, o la paralisis de aceptacion es
+independiente de la calidad del muestreador? (b) v4c: R&R original
+con d ~ U[15, T] — ¿cuanto del deficit era no poder tocar el primer
+medio horario? Ambos con --salida propia; nada se sobreescribe.
+**Resultado**: (pendiente)
