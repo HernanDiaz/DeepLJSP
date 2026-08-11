@@ -224,4 +224,17 @@ con el cruce v4d (clones + d completo), lanzado a las 4:41.
 El cruce que falta: la mejor distribucion (bo64 12.76) con el
 vecindario correcto. Si ya baja de 12.76, la reparacion ciega bate
 al mejor despliegue conocido y la v5 tiene que superar ESO.
-**Resultado**: (pendiente)
+
+**Resultado**: R&R 13.89 contra el bo64 de los clones 12.76 (5/18,
+p=0.034): pierde. La matriz 2x2 queda completa y dice tres cosas:
+(1) el vecindario es la palanca grande (cola->completa: 16.2->13.7 y
+16.8->13.9); (2) la calidad de la reparacion es CASI INDEPENDIENTE
+de la politica (13.73 ~ 13.89) — la ganancia v3 no transfiere a
+estados de reparacion; (3) el mejor despliegue conocido sigue siendo
+el bo64 de los clones: 12.76, el liston prerregistrado de la v5.
+
+**Hipotesis v5 afilada por la matriz**: la reparacion ciega ya
+empata al muestreo PPO con ~la mitad de forwards; una politica
+entrenada sobre los estados de reparacion (prefijo de incumbente +
+completacion experta via resto_experto, d ~ U[15,T] espejando el
+arnes) deberia convertir ese empate en ventaja y cruzar 12.76.
