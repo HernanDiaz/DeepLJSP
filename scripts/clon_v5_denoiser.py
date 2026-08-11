@@ -143,7 +143,8 @@ def lote_tensor(lote):
 
 
 # ------------------------------------------------- datos de reparacion
-def pares_reparacion(red, ts_sols, pid, sem, ronda, n_pares, rng, log):
+def pares_reparacion(red, ts_sols, pid, sem, ronda, n_pares, rng, log,
+                     curriculo=0):
     """Estados del arnes de reparacion etiquetados por el experto.
 
     Incumbentes propios frescos de la politica ACTUAL (la distribucion
@@ -163,9 +164,17 @@ def pares_reparacion(red, ts_sols, pid, sem, ronda, n_pares, rng, log):
     T = len(incumbentes[0])
     muestras = 0
     out = []
+    # v5.2: curriculo de ruido. El colapso de v5.0/v5.1 ocurre en la
+    # primera epoca con CE alta: las completaciones expertas desde
+    # destrucciones profundas son masivamente off-distribution. Con
+    # curriculo, las primeras rondas solo corrompen poco (estados casi
+    # propios, gradientes suaves) y el techo de destruccion crece
+    # ronda a ronda hasta el horizonte completo.
+    dmax_ronda = (min(T, DMIN + curriculo * (ronda + 1)) if curriculo
+                  else T)
     for p in range(n_pares):
         inc = incumbentes[int(rng.integers(len(incumbentes)))]
-        d = int(rng.integers(DMIN, T + 1))
+        d = int(rng.integers(DMIN, dmax_ronda + 1))
         prefijo = inc[:T - d]
         # v5.1: completaciones mixtas 50/50. La CE experta pura movio
         # demasiada masa (colapso de H en un solo paso de ronda, 3/3
@@ -275,7 +284,7 @@ def eval_reparacion(red, presupuesto, dmax=299):
 
 
 def una_semilla(sem, rondas, epocas, n_pares, lr, ent_coef, kl_coef,
-                paciencia, presupuesto_eval, log):
+                paciencia, presupuesto_eval, log, curriculo=0):
     torch.manual_seed(sem)
     rng = np.random.default_rng(sem)
     red = PolicyValueNetV2()
@@ -305,7 +314,8 @@ def una_semilla(sem, rondas, epocas, n_pares, lr, ent_coef, kl_coef,
         train = []
         for pid in TRAIN:
             train.extend(pares_reparacion(red, ts[pid], pid, sem, ronda,
-                                          n_pares, rng, log))
+                                          n_pares, rng, log,
+                                          curriculo=curriculo))
         idx = np.arange(len(train))
         red.train()
         ent_media, n_lotes = 0.0, 0
@@ -378,6 +388,9 @@ def main():
     ap.add_argument("--paciencia", type=int, default=4)
     ap.add_argument("--presupuesto-eval", type=int, default=64)
     ap.add_argument("--salida", type=str, default=SALIDA)
+    ap.add_argument("--curriculo", type=int, default=0,
+                    help="incremento del techo de d por ronda; 0 = sin "
+                         "curriculo (d hasta T desde la ronda 0)")
     args = ap.parse_args()
     SALIDA = args.salida
     os.makedirs(SALIDA, exist_ok=True)
@@ -392,13 +405,13 @@ def main():
         f"rondas x {args.epocas} epocas, pares={args.pares}, "
         f"lr={args.lr}, ent={args.ent}, kl={args.kl}, "
         f"paciencia={args.paciencia}, eval={args.presupuesto_eval}xT, "
-        f"salida={SALIDA}) ===")
+        f"curriculo={args.curriculo}, salida={SALIDA}) ===")
     filas = []
     for sem in range(1, args.seeds + 1):
         filas.append(una_semilla(sem, args.rondas, args.epocas,
                                  args.pares, args.lr, args.ent, args.kl,
                                  args.paciencia, args.presupuesto_eval,
-                                 log))
+                                 log, curriculo=args.curriculo))
     with open(os.path.join(SALIDA, "resultados.csv"), "w",
               encoding="utf-8", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(filas[0]))

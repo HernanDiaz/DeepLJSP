@@ -277,3 +277,23 @@ la otra mitad conserva la señal experta; (b) KL a 2.0. Resto igual
 (1 epoca/ronda, lr 2e-5, 12 rondas, paciencia 4, seleccion por
 reparacion dev). Lanzada 05:55, salida benchmarks/clon_v5p1/.
 **Resultado**: (pendiente)
+
+**Resultado v5.1**: NULO PROTEGIDO 3/3, mismo modo de fallo con
+amplitud algo menor (H de ronda 0: 0.71-1.15 frente a 0.56-0.83; los
+picos de divergencia desaparecen pero la reparacion cae igual en la
+primera epoca). La mezcla y el ancla 2.0 amortiguan, no arreglan.
+Diagnostico afinado: con Adam, los coeficientes de la perdida apenas
+cambian el tamaño efectivo del paso cuando la CE es alta — y las
+completaciones expertas desde destrucciones PROFUNDAS son las de CE
+alta. El daño viene de los pares profundos.
+
+## 2026-08-11 · v5.2: curriculo de ruido (en curso)
+
+Un solo cambio sobre la v5.1: el techo de destruccion crece 24 por
+ronda (ronda 0: d<=39; ronda 11: horizonte completo). Las primeras
+rondas entrenan completaciones cortas desde estados casi propios
+(CE baja, gradientes suaves) y la profundidad llega gradualmente —
+el denoising con curriculo de la idea original. Paciencia 8 para que
+las rondas someras no maten la tirada antes de llegar a las
+profundas. Lanzada 06:45, salida benchmarks/clon_v5p2/.
+**Resultado**: (pendiente)

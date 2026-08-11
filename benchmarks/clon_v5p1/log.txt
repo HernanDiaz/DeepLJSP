@@ -1,0 +1,87 @@
+
+=== clon v5 denoiser (3 semillas, 12 rondas x 1 epocas, pares=24, lr=2e-05, ent=0.01, kl=2.0, paciencia=4, eval=64xT, salida=benchmarks/clon_v5p1) ===
+[semilla 1] warm start desde clon_v3_seed1.pt
+[semilla 1] antes: reparacion 12.63% bo16 14.87% (155 s)
+  [linea base a batir: reparacion=12.63; listones prerregistrados: 12.76 (bo64 clones) y 13.73 (R&R ciego)]
+    int__tai20_15_01: 4052 decisiones de reparacion
+    int__tai20_15_02: 3624 decisiones de reparacion
+    int__tai20_15_03: 4786 decisiones de reparacion
+    int__tai20_15_04: 3749 decisiones de reparacion
+  ronda  0: 16211 dec. H=0.709 | dev reparacion=16.12 bo16=17.70 (170 s)
+    int__tai20_15_01: 3818 decisiones de reparacion
+    int__tai20_15_02: 3590 decisiones de reparacion
+    int__tai20_15_03: 3431 decisiones de reparacion
+    int__tai20_15_04: 4001 decisiones de reparacion
+  ronda  1: 14840 dec. H=1.464 | dev reparacion=18.40 bo16=18.41 (171 s)
+    int__tai20_15_01: 3917 decisiones de reparacion
+    int__tai20_15_02: 3470 decisiones de reparacion
+    int__tai20_15_03: 3990 decisiones de reparacion
+    int__tai20_15_04: 4654 decisiones de reparacion
+  ronda  2: 16031 dec. H=1.572 | dev reparacion=16.20 bo16=18.42 (171 s)
+    int__tai20_15_01: 4090 decisiones de reparacion
+    int__tai20_15_02: 2593 decisiones de reparacion
+    int__tai20_15_03: 3552 decisiones de reparacion
+    int__tai20_15_04: 3560 decisiones de reparacion
+  ronda  3: 13795 dec. H=1.617 | dev reparacion=16.61 bo16=17.28 (170 s)
+  parada temprana en la ronda 3
+  ninguna ronda mejoro la linea base: RESTAURADO el warm start
+[semilla 1] DESPUES: reparacion 12.63% bo16 14.87%
+[semilla 2] warm start desde clon_v3_seed2.pt
+[semilla 2] antes: reparacion 13.68% bo16 15.07% (155 s)
+  [linea base a batir: reparacion=13.68; listones prerregistrados: 12.76 (bo64 clones) y 13.73 (R&R ciego)]
+    int__tai20_15_01: 4396 decisiones de reparacion
+    int__tai20_15_02: 4134 decisiones de reparacion
+    int__tai20_15_03: 2969 decisiones de reparacion
+    int__tai20_15_04: 3351 decisiones de reparacion
+  ronda  0: 14850 dec. H=1.153 | dev reparacion=17.41 bo16=17.98 (171 s)
+    int__tai20_15_01: 3946 decisiones de reparacion
+    int__tai20_15_02: 3727 decisiones de reparacion
+    int__tai20_15_03: 2812 decisiones de reparacion
+    int__tai20_15_04: 4164 decisiones de reparacion
+  ronda  1: 14649 dec. H=1.760 | dev reparacion=16.89 bo16=18.41 (171 s)
+    int__tai20_15_01: 4000 decisiones de reparacion
+    int__tai20_15_02: 3046 decisiones de reparacion
+    int__tai20_15_03: 3486 decisiones de reparacion
+    int__tai20_15_04: 3819 decisiones de reparacion
+  ronda  2: 14351 dec. H=1.772 | dev reparacion=16.31 bo16=17.21 (171 s)
+    int__tai20_15_01: 3547 decisiones de reparacion
+    int__tai20_15_02: 3669 decisiones de reparacion
+    int__tai20_15_03: 3549 decisiones de reparacion
+    int__tai20_15_04: 3742 decisiones de reparacion
+  ronda  3: 14507 dec. H=1.767 | dev reparacion=15.45 bo16=17.24 (172 s)
+  parada temprana en la ronda 3
+  ninguna ronda mejoro la linea base: RESTAURADO el warm start
+[semilla 2] DESPUES: reparacion 13.68% bo16 15.07%
+[semilla 3] warm start desde clon_v3_seed3.pt
+[semilla 3] antes: reparacion 14.04% bo16 14.78% (153 s)
+  [linea base a batir: reparacion=14.04; listones prerregistrados: 12.76 (bo64 clones) y 13.73 (R&R ciego)]
+    int__tai20_15_01: 3367 decisiones de reparacion
+    int__tai20_15_02: 3557 decisiones de reparacion
+    int__tai20_15_03: 3902 decisiones de reparacion
+    int__tai20_15_04: 4380 decisiones de reparacion
+  ronda  0: 15206 dec. H=0.964 | dev reparacion=18.04 bo16=20.25 (171 s)
+    int__tai20_15_01: 3777 decisiones de reparacion
+    int__tai20_15_02: 2932 decisiones de reparacion
+    int__tai20_15_03: 3979 decisiones de reparacion
+    int__tai20_15_04: 3901 decisiones de reparacion
+  ronda  1: 14589 dec. H=1.581 | dev reparacion=19.64 bo16=20.02 (170 s)
+    int__tai20_15_01: 3636 decisiones de reparacion
+    int__tai20_15_02: 3666 decisiones de reparacion
+    int__tai20_15_03: 3452 decisiones de reparacion
+    int__tai20_15_04: 3420 decisiones de reparacion
+  ronda  2: 14174 dec. H=1.648 | dev reparacion=17.06 bo16=18.38 (169 s)
+    int__tai20_15_01: 3514 decisiones de reparacion
+    int__tai20_15_02: 3558 decisiones de reparacion
+    int__tai20_15_03: 3174 decisiones de reparacion
+    int__tai20_15_04: 4130 decisiones de reparacion
+  ronda  3: 14376 dec. H=1.679 | dev reparacion=17.39 bo16=18.45 (170 s)
+  parada temprana en la ronda 3
+  ninguna ronda mejoro la linea base: RESTAURADO el warm start
+[semilla 3] DESPUES: reparacion 14.04% bo16 14.78%
+
+=== RESUMEN ===
+      rep_antes: 13.45%
+    rep_despues: 13.45%
+     bo16_antes: 14.91%
+   bo16_despues: 14.91%
+  listones: bo64 clones 12.76; R&R ciego (PPO, d completo) 13.73; bo64 PPO 13.86; experto TS ~3.66
