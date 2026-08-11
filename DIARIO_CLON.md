@@ -197,4 +197,31 @@ distribucion mejor repara mejor, o la paralisis de aceptacion es
 independiente de la calidad del muestreador? (b) v4c: R&R original
 con d ~ U[15, T] — ¿cuanto del deficit era no poder tocar el primer
 medio horario? Ambos con --salida propia; nada se sobreescribe.
+
+**Resultado v4b (clones, cola corta)**: los clones reparan PEOR en
+relativo: R&R 16.79 contra su bo64 12.76 (+4.03, 1/18, p=0.0004),
+frente al +2.30 de las politicas originales. El muestreador no es la
+palanca. De regalo, validacion independiente de la v3: el bo64
+recalculado de los tres clones da 11.95 / 13.07 / 13.26 — identico
+al entrenamiento, media 12.76 exacta.
+
+**Resultado v4c (originales, d hasta T)**: EMPATE ESTADISTICO con el
+bo64: R&R 13.73 contra 13.86 (10/18, p=0.67), cero paralisis (5.5
+aceptaciones de media, ningun cero) y valles que el bo64 no
+encuentra (10.55, 10.83, 11.22, 11.45). De perder por +2.30 con
+p=0.001 a empatar, solo ampliando d de U[15,150] a U[15,299]. La
+gama de destruccion era el grueso del deficit; ademas R&R sigue
+usando ~la mitad de forwards de red a presupuesto igual de pasos.
+
+**Lectura conjunta**: reparar exige (i) el vecindario correcto
+(destruccion profunda incluida — los reinicios completos forman
+parte del operador) y (ii) probablemente entrenamiento sobre estados
+de reparacion, que es lo que la v5 mide. El listón de la v5 se fija
+con el cruce v4d (clones + d completo), lanzado a las 4:41.
+
+## 2026-08-11 · v4d: clones v3 + destruccion completa (en curso)
+
+El cruce que falta: la mejor distribucion (bo64 12.76) con el
+vecindario correcto. Si ya baja de 12.76, la reparacion ciega bate
+al mejor despliegue conocido y la v5 tiene que superar ESO.
 **Resultado**: (pendiente)
