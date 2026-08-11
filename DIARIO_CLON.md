@@ -427,3 +427,13 @@ completa: dev contaminado -1.10 (3/3) -> DMU empate -> sinteticas
 empate -> split: la ganancia integra es sesgo de seleccion. Las
 curvas por ronda (curvas.csv) muestran ademas la anticorrelacion
 SEL/REP ronda a ronda — la figura central del paper metodologico.
+
+## 2026-08-11 · TSN2 sobre el test DMU: la referencia queda fijada
+
+30 runs x 10 instancias con el setup exacto de la fase B (binario
+verificado bit a bit contra el deposito). RE contra cotas de
+literatura: mejor-de-30 3.59% de media (1.5-2.2% en las cinco rcmax
+cerradas; 3.7-7.4% en las cscmax), media-de-30 5.31%. Cuadro final
+del test DMU: TSN2 3.6/5.3 - politicas neuronales bo64 ~17.1-17.2 -
+la brecha de un orden se mantiene en la familia nueva. Resumen en
+benchmarks/dmu_test/tsn2_resumen.csv; crudos en tsn2/.
