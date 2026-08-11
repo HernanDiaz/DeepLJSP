@@ -152,20 +152,31 @@ def pares_reparacion(red, ts_sols, pid, sem, ronda, n_pares, rng, log):
     env = EnvironmentFactory.create_from_problem_id(pid, "adaptive",
                                                     seed=1)
     enc = AgentV2(env, seed=1, attention_layers=0).encoder
-    incumbentes = []
+    incumbentes, claves = [], []
     for i in range(4):
-        _, seq = rollout(env, red, enc, i > 0,
-                         400000 * sem + 2000 * ronda + i,
-                         devolver_seq=True)
+        (mid, up, lo), seq = rollout(env, red, enc, i > 0,
+                                     400000 * sem + 2000 * ronda + i,
+                                     devolver_seq=True)
         incumbentes.append(seq)
+        claves.append((up, lo))
+    mejor_inc = incumbentes[claves.index(min(claves))]
     T = len(incumbentes[0])
     muestras = 0
     out = []
-    for _ in range(n_pares):
+    for p in range(n_pares):
         inc = incumbentes[int(rng.integers(len(incumbentes)))]
         d = int(rng.integers(DMIN, T + 1))
         prefijo = inc[:T - d]
-        experto = ts_sols[int(rng.integers(len(ts_sols)))]
+        # v5.1: completaciones mixtas 50/50. La CE experta pura movio
+        # demasiada masa (colapso de H en un solo paso de ronda, 3/3
+        # semillas); la mitad de los pares completa ahora con el MEJOR
+        # incumbente PROPIO — el ancla en distribucion que el dataset
+        # mixto de la v2 demostro estabilizadora — y la otra mitad
+        # conserva la señal de denoising del experto TSN2.
+        if p % 2 == 0:
+            experto = ts_sols[int(rng.integers(len(ts_sols)))]
+        else:
+            experto = mejor_inc
         state = env.reset()
         hechas = Counter()
         ok = True

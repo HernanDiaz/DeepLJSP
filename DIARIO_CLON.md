@@ -258,3 +258,22 @@ Tirada real ajustada a pasos suaves: 1 epoca/ronda, lr 2e-5, 12
 rondas, paciencia 4, 3 semillas (~4 h desde las 05:06).
 Exito prerregistrado: reparacion dev < 12.76 y < 13.73/13.89.
 **Resultado**: (pendiente)
+
+**Resultado v5.0**: NULO PROTEGIDO 3/3, con diagnostico identico en
+las tres semillas: una sola epoca de CE experta a lr 2e-5 colapsa H
+(0.96->0.55-0.83) y hunde reparacion y construccion a la vez; las
+rondas siguientes oscilan sin recuperar (peor pico: 30.28). Las
+guardas devolvieron los tres warm starts intactos (12.63 / 13.68 /
+14.04 de reparacion base). El ancla KL 0.5 que basto en v2/v3 no
+basta cuando el 100% de las etiquetas son completaciones expertas:
+mueven mucha mas masa que un dataset mixto.
+
+## 2026-08-11 · v5.1: completaciones mixtas 50/50 + ancla 2.0
+
+Dos correcciones dictadas por el triple colapso: (a) la mitad de los
+pares completa con el MEJOR incumbente propio (ancla en
+distribucion, el papel estabilizador del dataset mixto de la v2) y
+la otra mitad conserva la señal experta; (b) KL a 2.0. Resto igual
+(1 epoca/ronda, lr 2e-5, 12 rondas, paciencia 4, seleccion por
+reparacion dev). Lanzada 05:55, salida benchmarks/clon_v5p1/.
+**Resultado**: (pendiente)
