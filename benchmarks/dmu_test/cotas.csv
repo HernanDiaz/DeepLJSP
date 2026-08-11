@@ -1,0 +1,11 @@
+instance,lb,ub,status
+dmu01,2563,2563,closed
+dmu02,2706,2706,closed
+dmu03,2731,2731,closed
+dmu04,2669,2669,closed
+dmu05,2749,2749,closed
+dmu41,3176,3248,open
+dmu42,3339,3390,open
+dmu43,3441,3441,closed
+dmu44,3414,3475,open
+dmu45,3217,3266,open

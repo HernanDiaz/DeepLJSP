@@ -1,0 +1,69 @@
+# Experiment 4 — N2 with irace-tuned config (ABCPSO + TabuSearch + LEX2)
+# Config from irace Experiment 3
+
+# GENERIC
+algorithm = ABCPSO
+seed = 1
+runs = 1
+
+# PROBLEM
+problem.hasbounds = no
+
+# OBJECTIVE
+objective = ijsp.makespan
+evaluation.interval.comparison = LEX2
+evaluation.interval.maximum = Component
+evaluation.lamarckism = yes
+
+# CODIFICATION
+codification = ijsp.job-order
+decodification = ijsp.job-order
+decode.sgs = insertion
+sgs.interval.comparison = LEX2
+
+# CREATION
+creation = ijsp.random
+creation.sgs = insertion
+
+# CROSSOVER
+crossover = ijsp.jox
+crossover.probability = 0.9
+
+# MUTATION
+mutation = insertion
+mutation.probability = 0.10
+
+# SELECTION / REPLACEMENT
+selection = shuffle
+replacement = parents
+replacement.allow-repeated = no
+
+# STOPPING CRITERION
+noimprovement = 20
+timelimit = 900
+
+# POPULATION
+population.size = 250
+maxnumtrials = 24
+elite.selection = 6
+elite.size = 50
+
+# STATISTICS
+statistics.1.metric = best
+statistics.1.value = ijsp.makespan
+statistics.2.metric = average
+statistics.2.value = ijsp.makespan
+
+# LOCAL SEARCH
+localsearch = tabu-search
+localsearch.estimation-guide = no
+localsearch.filter = yes
+localsearch.max-time = 2
+localsearch.neighbourhood = ijsp.makespan.n2
+neighbourhood.estimator = heads&tails
+localsearch.frequency = period
+localsearch.period = 1
+localsearch.target = 1.0
+localsearch.lamarckism = yes
+localsearch.bad-iterations = 20
+localsearch.tabu-size.min = 3
