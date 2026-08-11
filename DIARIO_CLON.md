@@ -415,3 +415,15 @@ REFUERZA: "self-improvement gains on the selection set do not
 survive clean tests" — oportuna (metodos SLIM proliferando), con el
 experimento de atribucion definitivo: v3 con seleccion (TA15-17) y
 reporte (TA18-20 + sinteticas) SEPARADOS. Lanzado como v3-split.
+
+**Resultado v3-split (3 semillas)**: ATRIBUCION DEMOSTRADA. La ronda
+elegida por la metrica de seleccion "gana" -1.18% de makespan medio
+en las 3 instancias que la eligieron (98.82) y -0.06% en las 13 que
+no votaron (99.94). Por semillas: -2.19/-0.28, -1.36/+0.12, nulo
+protegido. El tamaño del efecto en el conjunto de seleccion coincide
+con la "mejora" original de la v3 (~1.3 puntos de RE equivalentes);
+en el conjunto de reporte no queda nada. Con esto, la cadena queda
+completa: dev contaminado -1.10 (3/3) -> DMU empate -> sinteticas
+empate -> split: la ganancia integra es sesgo de seleccion. Las
+curvas por ronda (curvas.csv) muestran ademas la anticorrelacion
+SEL/REP ronda a ronda — la figura central del paper metodologico.

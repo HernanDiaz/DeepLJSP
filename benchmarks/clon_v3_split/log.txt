@@ -1,0 +1,38 @@
+
+=== clon v3-split (3 semillas, 10 rondas, sel=TA15-17, rep=TA18-20+sint01-10, salida=benchmarks/clon_v3_split) ===
+[semilla 1] warm start desde v2_final_deepsets_1000ep_seed2.pt
+[semilla 1] linea base medida (622 s)
+  ronda  0: SEL=100.06 REP=99.93 (785 s)
+  ronda  1: SEL=100.48 REP=99.44 (772 s)
+  ronda  2: SEL=101.17 REP=100.08 (816 s)
+  ronda  3: SEL=99.57 REP=99.91 * (750 s)
+  ronda  4: SEL=98.88 REP=99.55 * (745 s)
+  ronda  5: SEL=99.30 REP=99.37 (747 s)
+  ronda  6: SEL=97.81 REP=99.72 * (772 s)
+  ronda  7: SEL=99.99 REP=99.21 (770 s)
+  ronda  8: SEL=99.03 REP=100.13 (881 s)
+  ronda  9: SEL=100.07 REP=99.85 (839 s)
+[semilla 1] DESPUES (ronda 6): SEL=97.81 REP=99.72  (100 = warm start)
+[semilla 2] warm start desde v2_final_deepsets_1000ep_seed3.pt
+[semilla 2] linea base medida (651 s)
+  ronda  0: SEL=98.64 REP=100.12 * (823 s)
+  ronda  1: SEL=100.25 REP=99.35 (793 s)
+  ronda  2: SEL=100.15 REP=99.71 (807 s)
+  ronda  3: SEL=99.20 REP=99.96 (918 s)
+  ronda  4: SEL=99.56 REP=99.49 (965 s)
+  parada temprana en la ronda 4
+[semilla 2] DESPUES (ronda 0): SEL=98.64 REP=100.12  (100 = warm start)
+[semilla 3] warm start desde v2_final_deepsets_1000ep_seed4.pt
+[semilla 3] linea base medida (749 s)
+  ronda  0: SEL=101.48 REP=100.22 (910 s)
+  ronda  1: SEL=100.72 REP=99.82 (970 s)
+  ronda  2: SEL=101.63 REP=100.25 (1056 s)
+  ronda  3: SEL=101.36 REP=99.81 (990 s)
+  parada temprana en la ronda 3
+  ninguna ronda mejoro SEL: RESTAURADO el warm start
+[semilla 3] DESPUES (ronda -1): SEL=100.00 REP=100.00  (100 = warm start)
+
+=== RESUMEN (indice bo64, 100 = warm start) ===
+  sel_final: 98.82
+  rep_final: 99.94
+  atribucion: si SEL<100 y REP~100, la ganancia es seleccion; si ambos <100, la auto-mejora es real
