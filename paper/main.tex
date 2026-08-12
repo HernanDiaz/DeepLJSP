@@ -785,13 +785,13 @@ audit of Section~\ref{sec:results-importance}.
 \subsection{Size-invariant architecture}
 \label{sec:arch}
 
-The remaining obstacle is that the number of candidates changes at
-every step and from instance to instance, while a neural network
-requires inputs of fixed dimension. The architecture resolves this with
-two elements: the \emph{same} network reads every candidate, so any
-number of them can be processed, and the resulting embeddings are
-\emph{pooled} into fixed-size summaries, so the scoring stage
-receives a representation of the whole decision. Formally, let
+The second component of size invariance is architectural. The number
+of candidates changes at every step and from instance to instance,
+while a neural network requires inputs of fixed dimension. Two
+elements resolve this: the \emph{same} network reads every
+candidate, so any number of them can be processed, and the resulting
+embeddings are \emph{pooled} into fixed-size summaries, so the
+scoring stage receives a representation of the whole decision. Let
 $x_i\in\mathbb{R}^{16}$ be the features of eligible operation $i$ and
 $g_0\in\mathbb{R}^{12}$ the global state; the construction has
 three stages (Figure~\ref{fig:arch}).
@@ -799,11 +799,10 @@ three stages (Figure~\ref{fig:arch}).
 \emph{Embed.} The shared two-layer MLP $\phi$ (width $h{=}128$,
 LayerNorm, ReLU, orthogonal initialization) maps each candidate to an
 embedding $\phi_i=\phi(x_i)$. The whole eligible set is processed in
-one forward pass, as the $|\mathcal{E}|\times16$ matrix of its rows;
-sharing the weights across rows is what lets the layer accept any
-number of candidates, and makes this stage invariant to the number of
-jobs. Candidates do not interact here: $\phi_i$ depends on $x_i$
-alone.
+one forward pass, as the $|\mathcal{E}|\times16$ matrix of its rows.
+Sharing the weights across rows allows the stage to accept any number
+of candidates and makes it equivariant to their order. Candidates do
+not interact at this stage: $\phi_i$ depends on $x_i$ alone.
 
 \emph{Pool into a context.} The variable-size set
 $\{\phi_1,\dots,\phi_{|\mathcal{E}|}\}$ must be reduced to a
@@ -815,12 +814,12 @@ state $g_0$, are mixed into the context:
 g=\mathrm{MLP}_{ctx}\big(\big[\textstyle\frac1{|\mathcal{E}|}\sum_i\phi_i;\;
 \max_i\phi_i;\;g_0\big]\big)\in\mathbb{R}^{h}.
 \end{equation}
-The stage has no parameters of its own: it maps the
+Pooling introduces no parameters: it maps the
 $|\mathcal{E}|\times h$ embeddings to the $2h$ summaries the context
-MLP consumes. Both statistics are
-taken over the real candidates only: in batched training the sets
-are padded to the batch maximum, and the mean divides by the true
-count while the max ignores the padded rows.
+MLP consumes. Both statistics are taken over the non-padded
+candidates only, since in batched training the sets are padded to the
+batch maximum: the mean divides by the true count and the max ignores
+the padded rows.
 This embed-then-pool pattern is the \emph{Deep Sets} construction
 of~\citet{Zaheer2017}, whose central result is that any
 permutation-invariant function of a set admits this form, so the
@@ -829,11 +828,12 @@ invariance itself. The result tables refer to the base model by this
 name, in contrast to its attention variant
 (Section~\ref{sec:attention}).
 
-\emph{Score.} The \emph{policy head} rates each pair (candidate
-embedding, context) according to how well operation $i$ fits the
-current decision state; the \emph{value head} computes the $V(s)$ of the
-advantage estimation, reading the context alone, since expectations
-concern the situation, not any one candidate:
+\emph{Score.} The \emph{policy head} scores each pair (candidate
+embedding, context), and a masked softmax over the scores yields the
+distribution over eligible operations. The \emph{value head}
+computes the state value $V(s)$ used in the advantage estimation,
+reading the context alone, since that expectation concerns the state
+rather than any one candidate:
 \begin{equation}
 \pi(i\,|\,s)=\mathrm{softmax}_i\,\mathrm{MLP}_{\pi}([\phi_i;g]),
 \qquad
@@ -877,14 +877,15 @@ Attention block (each) & $128$, $4$ heads of $32$;
 \subsection{The attention variant}
 \label{sec:attention}
 
-Pooling summarizes the candidate set by two statistics, and every
-candidate is then scored against that same summary. What this cannot express is a comparison between two
-\emph{particular} candidates: whether operation $i$ should take the
-machine now may depend on which other eligible operation would occupy
-it next, and the mean embedding does not identify that candidate.
-The embeddings of all $|\mathcal{E}|$ candidates are available at the
-decision step, so what the architecture lacks is not the information
-but a path along which one candidate can condition another.
+Pooling summarizes the candidate set by two statistics, against which
+every candidate is then scored. This construction cannot express a
+comparison between two \emph{particular} candidates: whether
+operation $i$ should take the machine now may depend on which other
+eligible operation would occupy it next, and the mean embedding does
+not identify that candidate. The embeddings of all
+$|\mathcal{E}|$ candidates are available at the decision step, so
+what the architecture lacks is not the information but a path along
+which one candidate can condition another.
 \emph{Self-attention}~\citep{Vaswani2017} supplies such a path and
 is the component most commonly adopted for this purpose in the
 neural combinatorial optimization literature
@@ -896,11 +897,10 @@ candidate is thereby rewritten as a content-weighted reading of all the
 others, with the weights computed from the embeddings themselves rather
 than fixed in advance.
 
-It is implemented here as a variant to be tested rather than as part
-of the proposed model. A stack of $B$ pre-layer-normalization (pre-LN) transformer
-blocks transforms the embeddings after the shared encoder and before
-pooling, that is, between the embedding and pooling stages of
-Figure~\ref{fig:arch}. Writing $\Phi\in\mathbb{R}^{|\mathcal{E}|\times
+Self-attention is evaluated here as a variant rather than adopted as
+part of the proposed model. A stack of $B$ pre-layer-normalization
+(pre-LN) transformer blocks transforms the embeddings between the
+embedding and pooling stages of Figure~\ref{fig:arch}. Writing $\Phi\in\mathbb{R}^{|\mathcal{E}|\times
 h}$ for the stacked embeddings, each block computes
 \begin{equation}
 \label{eq:attnblock}
@@ -910,16 +910,14 @@ Z=\Phi+\mathrm{MHA}\big(\mathrm{LN}(\Phi)\big),\qquad
 where $\mathrm{MHA}$ is multi-head scaled dot-product attention ($4$
 heads of dimension $32$, no dropout), $\mathrm{FFN}$ is a two-layer
 perceptron ($128\to256\to128$, ReLU) applied to each row, and
-$\mathrm{LN}$ is LayerNorm. Both additions are \emph{residual}, meaning that the block adds to
-its input instead of replacing it, so an untrained
-block is close to the identity and the stack starts near the base
-model, the property for which the pre-LN arrangement is preferred
-over the original post-LN one~\citep{Xiong2020}. No positional
-encoding is used: without one, self-attention is
-permutation-\emph{equivariant} (reordering the candidates reorders
-the outputs correspondingly), so the pooled context remains
-permutation-invariant and the guarantees of Section~\ref{sec:arch}
-are preserved. Padding slots are masked out of the attention weights.
+$\mathrm{LN}$ is LayerNorm. Both additions are \emph{residual}, that is, each block adds to its
+input rather than replacing it, so an untrained block is close to the
+identity and the stack starts near the base model; the pre-LN
+arrangement is preferred over the original post-LN one for this
+property~\citep{Xiong2020}. No positional encoding is used, which keeps self-attention
+permutation-equivariant, so the pooled context remains
+permutation-invariant and the size invariance of
+Section~\ref{sec:arch} is preserved. Padding slots are masked out of the attention weights.
 
 The variant is a configuration option on the same code path, and
 $B{=}0$ reproduces the base network exactly, so the comparison of
