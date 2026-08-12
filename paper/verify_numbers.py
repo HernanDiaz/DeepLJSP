@@ -777,7 +777,11 @@ try:
     _filas = {}
     for _lab, _tab in (("op", "tab:opfeatures"),
                        ("glob", "tab:globalfeatures")):
-        _bloque = TEX.split(_tab)[1].split(r"\end{tabular")[0]
+        # partir por la ETIQUETA, no por la primera mencion: desde que
+        # las tablas van tras el parrafo que las referencia, la primera
+        # aparicion de la cadena es un \ref y no el \label
+        _bloque = TEX.split("\\label{" + _tab + "}")[1] \
+                     .split(r"\end{tabular")[0]
         _n = 0
         for _l in _bloque.splitlines():
             _m = re.match(r"\s*(\d+)(?:--(\d+))?\s*&", _l)
