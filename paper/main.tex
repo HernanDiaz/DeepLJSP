@@ -388,48 +388,71 @@ as well is beyond the scope of either paper.
 \label{sec:problem}
 
 \begin{definition}[IJSP]
-An IJSP instance comprises $n$ jobs $J_1,\dots,J_n$ and $m$ machines.
+An IJSP instance comprises $n$ jobs $J_1,\dots,J_n$ and $m$ machines,
+indexed $1,\dots,m$.
 Job $J_j$ is a fixed sequence of $m$ operations
-$(o_{j1},\dots,o_{jm})$, where $o_{jk}$ requires a specific machine
-$\nu_{jk}$ and an uncertain processing time known to lie in the interval
-$\mathbf{p}_{jk}=[p^{L}_{jk},\,p^{U}_{jk}]$, $0\le p^L_{jk}\le
-p^U_{jk}$. Each machine processes at most one operation at a time and
-preemption is not allowed.
+$(o_{j1},\dots,o_{jm})$, where operation $o_{jk}$ requires machine
+$\nu_{jk}\in\{1,\dots,m\}$ and an uncertain processing time known
+only to lie in the interval
+$\mathbf{p}_{jk}=[p^{L}_{jk},\,p^{U}_{jk}]$, with $0\le p^L_{jk}\le
+p^U_{jk}$. Each job visits each machine exactly once, so
+$(\nu_{j1},\dots,\nu_{jm})$ is a permutation of the machine indices.
+Each machine processes at most one operation at a time, operations of
+the same job cannot overlap, and preemption is not allowed.
 \end{definition}
 
-A solution is a processing order of all $nm$ operations compatible with
-job precedences; we encode it as a \emph{permutation with repetition} of
-job indices, where the $k$-th occurrence of $j$ denotes $o_{jk}$. Given
-an order, its \emph{semiactive schedule} starts every operation as early
-as its job and machine predecessors permit. With component-wise interval
+A solution is a processing order of all $nm$ operations, that is, a
+sequence in which $o_{jk}$ appears before $o_{j,k+1}$ for every job
+$j$ and every $k<m$. We encode it as a \emph{permutation with
+repetition} of job indices, where the $k$-th occurrence of $j$
+denotes $o_{jk}$. The order induces, on each machine, a sequence over
+the operations that require it, and its \emph{semiactive schedule}
+starts every operation as early as those sequences permit: no
+operation can start before its job predecessor $JP(o_{jk})=o_{j,k-1}$
+or its machine predecessor $MP(o_{jk})$, the operation immediately
+preceding $o_{jk}$ on machine $\nu_{jk}$ in the induced sequence,
+have completed. With component-wise interval
 addition $[a,b]+[c,d]=[a+c,\,b+d]$ and join
-$\max([a,b],[c,d])=[\max(a,c),\max(b,d)]$, starts and completions are
-intervals:
+$\max([a,b],[c,d])=[\max(a,c),\max(b,d)]$, the start and completion
+times of every operation are themselves intervals, given by the
+recursion
 \begin{equation}
 \mathbf{s}_{o}=\max\!\big(\mathbf{c}_{JP(o)},\,\mathbf{c}_{MP(o)}\big),
 \qquad
 \mathbf{c}_{o}=\mathbf{s}_{o}+\mathbf{p}_{o},
 \label{eq:semiactive}
 \end{equation}
-where $JP(o)$ and $MP(o)$ are the job and machine predecessors of $o$.
+When a predecessor does not exist (the job predecessor of a job's
+first operation, or the machine predecessor of the first operation
+scheduled on a machine), its completion is taken as $[0,0]$, so that
+the corresponding argument is neutral in the $\max$ and the start is
+decided by the predecessor that does exist.
 The interval makespan collects the job completions component-wise,
 \begin{equation}
-\Cmax=\Big[\max_{j} c^{L}_{o_{jm}},\;\max_{j} c^{U}_{o_{jm}}\Big],
+\Cmax=\Big[\max_{j} c^{L}_{o_{jm}},\;\max_{j} c^{U}_{o_{jm}}\Big]
+=:\big[C^{L}_{\max},\,C^{U}_{\max}\big].
 \label{eq:cmax}
 \end{equation}
-and, because Eq.~\eqref{eq:semiactive} is monotone in the durations, the
-executed makespan of \emph{any} realization of the processing times
-falls inside $\Cmax$. Intervals carry no canonical total order, so
+A \emph{realization} of the instance assigns to each operation a
+crisp duration $p_{jk}\in\mathbf{p}_{jk}$; \emph{executing} a
+processing order under a realization means evaluating the recursion
+of Eq.~\eqref{eq:semiactive} with those crisp durations, which yields
+a crisp makespan. Because the recursion is monotone in the durations,
+the executed makespan of \emph{every} realization falls inside
+$\Cmax$. Intervals carry no canonical total order, so
 schedule comparison requires a ranking choice; during construction and
 search we use the lexicographic order
 \begin{equation}
 \mathbf{a}\prec_{lex}\mathbf{b}
 \iff
-a^{U}<b^{U} \;\vee\; \big(a^{U}=b^{U}\wedge a^{L}<b^{L}\big),
+a^{U}<b^{U} \;\vee\; \big(a^{U}=b^{U}\wedge a^{L}<b^{L}\big)
 \label{eq:lex}
 \end{equation}
+for intervals $\mathbf{a}=[a^L,a^U]$ and $\mathbf{b}=[b^L,b^U]$,
 which prioritizes the worst case, in line with min--max robust
-optimization~\citep{Bertsimas2004,Kasperski2016}. This modeling
+optimization~\citep{Bertsimas2004,Kasperski2016}. The optimization
+problem is then to find a processing order whose interval makespan is
+minimal under this order. This modeling
 choice is not reopened here: a systematic study of the alternative
 ranking criteria found the lexicographic order the most robust for
 this problem~\citep{DiazGA2020}, and it is kept fixed throughout so
@@ -521,11 +544,15 @@ however, discards by design which candidate is which, so the context
 alone cannot rank them. The policy head therefore
 receives two inputs, the shared context $g$ and each candidate's own
 embedding, carried past the pooling stage by the \emph{skip
-connection} visible in Figure~\ref{fig:arch}; it scores every such
-pair, and a
-\emph{softmax} turns the scores (the \emph{logits}, in network
-terms) into the probabilities $\pi(i\,|\,s)$ (\emph{masked} means
-that unused padding slots are excluded). The
+connection} visible in Figure~\ref{fig:arch}. The head is applied
+once per candidate: for eligible operation $i$ it reads the pair
+(embedding of $i$, context) and outputs a single scalar score, so
+$|\mathcal{E}|$ candidates yield $|\mathcal{E}|$ scores, each tied to
+its operation by construction because it was computed from that
+operation's embedding. A \emph{softmax} over these scores (the
+\emph{logits}, in network terms) turns them into the probabilities
+$\pi(i\,|\,s)$, one per eligible operation, however many there are
+(\emph{masked} means that unused padding slots are excluded). The
 value head estimates the situation rather than any one candidate, so
 it reads $g$ alone and outputs $V(s)$. In total, four two-layer
 MLPs (the candidate encoder $\phi$, the context combiner, and the
@@ -568,37 +595,73 @@ r_t \;=\; w_{\mathrm{mk}}\,r^{\mathrm{mk}}_t
       + w_{\mathrm{cr}}\,r^{\mathrm{cr}}_t
       + w_{\mathrm{ba}}\,r^{\mathrm{ba}}_t,
 \end{equation}
-each component collapsing intervals by the upper endpoint, the
-primary key of the ranking of Eq.~\eqref{eq:lex}, and scaled by the
-instance's lower bound, so that no weight depends
-on the instance's magnitude. The weights were fixed by hand during
-development and afterwards submitted to a racing campaign of their
-own, over all six free in $[0,1]$, which did not improve on them
-(Section~\ref{sec:hyperconfig}):
+where each $r^{\bullet}_t$ is one shaping component and
+$w_{\bullet}\in[0,1]$ its fixed weight: terminal makespan
+($\mathrm{mk}$), job progress ($\mathrm{pr}$), machine idleness
+($\mathrm{id}$), local improvement ($\mathrm{li}$), operation
+criticality ($\mathrm{cr}$) and load balance ($\mathrm{ba}$), each
+defined below. Every component collapses intervals by the upper
+endpoint, the primary key of the ranking of Eq.~\eqref{eq:lex}, and
+is divided by a scale derived from the instance's own magnitudes,
+listed with each component. The division makes every component a
+quantity of order one on any instance, so the weights compare like
+with like and the gradient scale does not grow with the instance:
+the training signal is dimensionless for the same reason, and with
+the same role in size invariance, as the features of
+Section~\ref{sec:features}. The floors inside the scales below
+($\max(100,\cdot)$ and its analogues) guard against small-magnitude
+instances and are inactive on every instance trained on in this
+paper. Write
+$c^{U}_{\mu}$ for the worst-case completion time of machine $\mu$
+over the operations scheduled so far, and
+$M^{U}_{t}=\max_{\mu}c^{U}_{\mu}$ for the projected worst-case
+makespan after $t$ decisions; the step $t$ schedules operation
+$o_{jk}$ on machine $\mu=\nu_{jk}$. The weights were fixed by hand
+during development and afterwards submitted to a racing campaign of
+their own, over all six free in $[0,1]$, which did not improve on
+them (Section~\ref{sec:hyperconfig}):
 \begin{itemize}
 \item \emph{terminal makespan} ($r^{\mathrm{mk}}_t$,
-  $w_{\mathrm{mk}}{=}1.0$): the negative scaled makespan at episode
-  end, plus a bonus when the schedule finishes within $5\%$ of the
-  instance bound; this is the quantity actually being minimized;
+  $w_{\mathrm{mk}}{=}1.0$): zero until the final step, where it is
+  $-C^{U}_{\max}/s_{\mathrm{mk}}$ with
+  $s_{\mathrm{mk}}=\max(100,\mathrm{LB}/10)$, plus a bonus when the
+  schedule finishes within $5\%$ of the instance bound: writing
+  $g=(C^{U}_{\max}-\mathrm{LB})/\mathrm{LB}$ for the relative gap,
+  the bonus is $10\,(1-10g)$ for $g\le0.05$, a ramp that decreases
+  linearly from $10$ at the bound to $5$ at the edge of the band, and
+  is absent beyond it;
+  this is the quantity actually being minimized (the robust arms of
+  Section~\ref{sec:ablations-interval} replace $C^{U}_{\max}$ here by
+  $f_\lambda$);
 \item \emph{job progress} ($r^{\mathrm{pr}}_t$,
-  $w_{\mathrm{pr}}{=}0.26$): favors the completion of started jobs;
-  its base weight $0.2$ is raised by a fixed factor $1.3$
-  whenever durations are intervals;
+  $w_{\mathrm{pr}}{=}0.26$): a constant $1/(nm)$ for every operation
+  scheduled, a uniform progress signal; its base weight $0.2$ is
+  raised by a fixed factor $1.3$ whenever durations are intervals;
 \item \emph{machine idleness} ($r^{\mathrm{id}}_t$,
-  $w_{\mathrm{id}}{\approx}0.24$): discourages gaps on machines;
-  grows with the prominence of the instance's bottleneck machine,
-  from a base of $0.2$;
+  $w_{\mathrm{id}}{\approx}0.24$):
+  $-\max(0,\,s^{U}_{o_{jk}}-c^{U}_{\mu})/s_{\mathrm{id}}$, the
+  worst-case idle gap the new operation opens on its machine, with
+  $s_{\mathrm{id}}=\max(10,\,2\bar p)$ and $\bar p$ the mean midpoint
+  duration of the instance; its weight grows with the prominence of
+  the instance's bottleneck machine, from a base of $0.2$;
 \item \emph{local improvement} ($r^{\mathrm{li}}_t$,
   $w_{\mathrm{li}}{=}0.15$): the step change of the projected
-  makespan, penalizing deteriorations twice as much as it rewards
-  improvements, a dense signal so that early decisions are not
-  credited only $nm$ steps later;
+  makespan, $(M^{U}_{t-1}-M^{U}_{t})/(s_{\mathrm{mk}}/10)$, doubled
+  when the change is a deterioration; a dense signal so that early
+  decisions are not credited only $nm$ steps later;
 \item \emph{operation criticality} ($r^{\mathrm{cr}}_t$,
-  $w_{\mathrm{cr}}{=}0.1$): favors operations on the emerging
-  critical path, a standard proxy for a compact schedule;
+  $w_{\mathrm{cr}}{=}0.1$): the worst-case work remaining in the
+  operation's job after it,
+  $\big(\sum_{k'>k}p^{U}_{jk'}\big)/s_{\mathrm{cr}}$ with
+  $s_{\mathrm{cr}}=\max(50,\,W^{U}/2n)$ and $W^{U}$ the instance's
+  total worst-case work: favoring jobs with much work remaining is a
+  standard proxy for the emerging critical path;
 \item \emph{load balance} ($r^{\mathrm{ba}}_t$,
   $w_{\mathrm{ba}}{=}0.1$, its cap, reached whenever machine loads
-  vary as much as here): discourages lopsided machine loads.
+  vary as much as here): minus the standard deviation of the machine
+  completions $c^{U}_{\mu}$ after the step, over a scale set to the
+  dispersion expected for the instance; it discourages lopsided
+  machine loads.
 \end{itemize}
 The reward shapes training only; every reported result is measured
 by the RE of Eq.~\eqref{eq:re}.

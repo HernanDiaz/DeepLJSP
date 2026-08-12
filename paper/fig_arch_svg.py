@@ -66,7 +66,7 @@ FS_T  = 6.8    # title bar font size
 FS_B  = 6.2    # body (ops / out lines)
 FS_IO = 6.4    # I/O box text
 FS_N  = 5.4    # dim annotations
-FS_L  = 5.4    # legend labels
+FS_L  = 6.6    # legend labels
 
 # ── Colour palette ───────────────────────────────────────────────────────────
 C_MLP  = "#D6EAF8"; C_MLPT = "#C5D9E8"    # learned blocks + their title bar

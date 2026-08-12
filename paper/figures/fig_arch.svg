@@ -79,13 +79,13 @@
 <text x="133.0" y="85.0" text-anchor="end" dominant-baseline="middle" font-size="5.4" font-weight="normal" fill="#555555" font-family="Times New Roman">skip connection: each φi</text>
 <line x1="2" y1="178.0" x2="270.0" y2="178.0" stroke="#BBBBBB" stroke-width="0.5"/>
 <rect x="4.1" y="185.0" width="8.0" height="8.0" fill="#D6EAF8" stroke="#888888" stroke-width="0.4"/>
-<text x="15.1" y="189.0" text-anchor="start" dominant-baseline="middle" font-size="5.4" font-weight="normal" fill="#333333" font-family="Times New Roman">learned MLP</text>
+<text x="15.1" y="189.0" text-anchor="start" dominant-baseline="middle" font-size="6.6" font-weight="normal" fill="#333333" font-family="Times New Roman">learned MLP</text>
 <rect x="57.7" y="185.0" width="8.0" height="8.0" fill="#FADBD8" stroke="#888888" stroke-width="0.4"/>
-<text x="68.7" y="189.0" text-anchor="start" dominant-baseline="middle" font-size="5.4" font-weight="normal" fill="#333333" font-family="Times New Roman">output heads</text>
+<text x="68.7" y="189.0" text-anchor="start" dominant-baseline="middle" font-size="6.6" font-weight="normal" fill="#333333" font-family="Times New Roman">output heads</text>
 <rect x="111.3" y="185.0" width="8.0" height="8.0" fill="#D5F5E3" stroke="#888888" stroke-width="0.4"/>
-<text x="122.3" y="189.0" text-anchor="start" dominant-baseline="middle" font-size="5.4" font-weight="normal" fill="#333333" font-family="Times New Roman">non-trainable</text>
+<text x="122.3" y="189.0" text-anchor="start" dominant-baseline="middle" font-size="6.6" font-weight="normal" fill="#333333" font-family="Times New Roman">non-trainable</text>
 <rect x="164.9" y="185.0" width="8.0" height="8.0" fill="#F2F3F4" stroke="#888888" stroke-width="0.4"/>
-<text x="175.9" y="189.0" text-anchor="start" dominant-baseline="middle" font-size="5.4" font-weight="normal" fill="#333333" font-family="Times New Roman">tensor / input</text>
+<text x="175.9" y="189.0" text-anchor="start" dominant-baseline="middle" font-size="6.6" font-weight="normal" fill="#333333" font-family="Times New Roman">tensor / input</text>
 <rect x="218.5" y="185.0" width="8.0" height="8.0" fill="#FDF3E3" stroke="#8B6F3D" stroke-width="0.5" stroke-dasharray="2,1.5"/>
-<text x="229.5" y="189.0" text-anchor="start" dominant-baseline="middle" font-size="5.4" font-weight="normal" fill="#333333" font-family="Times New Roman">attn. variant</text>
+<text x="229.5" y="189.0" text-anchor="start" dominant-baseline="middle" font-size="6.6" font-weight="normal" fill="#333333" font-family="Times New Roman">attn. variant</text>
 </svg>
