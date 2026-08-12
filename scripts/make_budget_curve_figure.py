@@ -157,7 +157,7 @@ def main():
     ax.fill_between(PRESUPUESTOS, p10, p90, color="#1f77b4", alpha=0.18,
                     linewidth=0)
     ax.plot(PRESUPUESTOS, media, color="#1f77b4", linewidth=1.6,
-            label="policy, best of $B$")
+            label="policy, best of $B$ per instance")
     # EST queda en el 42 por ciento: dibujarla aplastaria todo lo demas,
     # asi que el pie la nombra y el eje se reserva para la zona util.
     ax.axhline(gp, color="#d62728", linestyle="--", linewidth=1.1,
@@ -166,7 +166,7 @@ def main():
     # tres checkpoints; el 19.4 de 6.4 es la MEDIA de las tres semillas,
     # otra cosa, y la etiqueta lo dice para que no se confundan
     ax.axhline(greedy, color="#2ca02c", linestyle=":", linewidth=1.1,
-               label=f"greedy, best of 3 seeds ({greedy:.1f}%)")
+               label=f"greedy, best seed per instance ({greedy:.1f}%)")
     ax.set_xscale("log", base=2)
     ax.set_xlabel("inference budget $B$ (rollouts)")
     ax.set_ylabel("mean RE (%)")
