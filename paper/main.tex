@@ -199,10 +199,9 @@ yield a measurable benefit at practical training budgets?
   (Appendix~\ref{sec:appendix}). The hand-crafted side comprises the
   traditional dispatching rules: SPT, LPT, MOR, MWKR and EST, plus
   two Giffler--Thompson variants. The learned-symbolic side is a rule evolved by
-  genetic programming (GP) for this same benchmark~\citep{DiazGP2026}, a
-  comparison \citet{Xu2025} single out as missing from the literature:
-  the two paradigms are rarely measured against each other under a
-  common protocol.
+  genetic programming (GP) for this same benchmark~\citep{DiazGP2026},
+  a comparison whose absence from the literature the survey
+  of~\citet{Xu2025} highlights.
 \item \emph{An analysis of what justifies its cost}
   (Section~\ref{sec:analysis}): a permutation audit of which inputs
   the network consults; five controlled ablations (inference budget,
@@ -369,21 +368,17 @@ Two further components of the toolbox matter here. Sampling several
 rollouts at inference and keeping the best is a standard quality
 lever whose returns grow with the diversity of the learned
 distribution~\citep{Kool2019,Kwon2020}. Permutation-invariant set
-encoders were formalized as Deep Sets~\citep{Zaheer2017}: each
-element is embedded independently and the embeddings are pooled, so
-the parameter count is independent of the set size; self-attention is
-the natural strict generalization, letting elements condition on one
-another before pooling. Our architecture starts from the simpler
-construction and evaluates attention as a controlled ablation.
+encoders were formalized as Deep Sets~\citep{Zaheer2017}, of which
+self-attention is the natural strict generalization; the architecture
+of Section~ef{sec:arch} builds on the former and evaluates the
+latter as a controlled ablation.
 
 The survey by \citet{Xu2025} compares the GP and RL families for job
 shop scheduling and notes the scarcity of comparisons under a common
 protocol. The availability of the evolved rule of
 Section~\ref{sec:related-gp} on the very benchmark studied here lets
 Section~\ref{sec:positioning} put the two learned artifacts on the
-same instances at matched \emph{inference} budgets. A controlled
-comparison of the two paradigms with \emph{training} budgets matched
-as well is beyond the scope of either paper.
+same instances at matched \emph{inference} budgets.
 
 \section{Problem Statement}
 \label{sec:problem}
@@ -601,10 +596,7 @@ $w_{\bullet}\in[0,1]$ its fixed weight: terminal makespan
 ($\mathrm{mk}$), job progress ($\mathrm{pr}$), machine idleness
 ($\mathrm{id}$), local improvement ($\mathrm{li}$), operation
 criticality ($\mathrm{cr}$) and load balance ($\mathrm{ba}$), each
-defined below. The weights were fixed by hand during development
-and afterwards submitted to a racing campaign of their own, over all
-six free in $[0,1]$, which did not improve on them
-(Section~\ref{sec:hyperconfig}).
+defined below.
 
 Two conventions are shared by all six components. First, intervals
 are collapsed by their upper endpoint, the primary key of the
@@ -699,18 +691,18 @@ the step and $s_{\mathrm{ba}}$ a scale set to the dispersion expected
 for the instance: it discourages lopsided machine loads.
 \end{itemize}
 
-The internal constants of these components (the amplification of
-$s_{\mathrm{mk}}$ by the factor $10$, which places the terminal term
-an order of magnitude above the dense shaping components while the
-weights stay in $[0,1]$; the $5\%$ band and the size of its bonus,
-set commensurate with the terminal term itself; the asymmetry
-$\kappa$; and the interval factor $1.3$) were fixed by hand during
-early development and carried unchanged into every experiment of
-this paper. No claim of optimality is attached to them: what the
-configuration campaign of Section~\ref{sec:hyperconfig} establishes
-is that racing the six \emph{weights} over $[0,1]$ does not improve
-on the hand-set vector within the protocol's resolution; the
-internal constants were not raced. The reward shapes training only;
+The weights above and the internal constants of the components (the
+amplification of $s_{\mathrm{mk}}$ by the factor $10$, which places
+the terminal term an order of magnitude above the dense shaping
+components while the weights stay in $[0,1]$; the $5\%$ band and the
+size of its bonus, set commensurate with the terminal term itself;
+the asymmetry $\kappa$; and the interval factor $1.3$) were all
+fixed by hand during early development and carried unchanged into
+every experiment of this paper. No claim of optimality is attached
+to them. The configuration campaign of
+Section~\ref{sec:hyperconfig} later raced the six weights, each free
+in $[0,1]$, and did not improve on the hand-set vector within the
+protocol's resolution; the internal constants were not raced. The reward shapes training only;
 every reported result is measured by the RE of Eq.~\eqref{eq:re}.
 
 \subsection{Dimensionless, uncertainty-aware features}
@@ -1235,7 +1227,7 @@ one; (iii) the gap to the strongest constructive baseline is a factor
 ${\approx}2.0$. Figure~\ref{fig:scaling} places the curve between two
 dotted references measured on the same six instances: G\&T-MWKR
 above, at $27.9\%$, and fEABC below, at $9.6\%$, the latter a
-yardstick from a different computational class.
+reference from per-instance search.
 
 Figure~\ref{fig:training} shows the dynamics behind those endpoints
 at the operating budget. Within each block the episode RE falls
@@ -1807,8 +1799,9 @@ of three thousand seeds.
 \paragraph{Intervals as training data.} The second ablation removes
 the uncertainty from training altogether. The benchmark perturbs each
 crisp duration symmetrically, so the original crisp instances
-\emph{are} the midpoint scenario of their interval counterparts: the
-policy is trained on them and evaluated, unchanged, on the interval
+\emph{are} the midpoint scenario of their interval counterparts
+(the coincidence noted after Eq.~\eqref{eq:re}): the policy is
+trained on them and evaluated, unchanged, on the interval
 instances. This is the case Eq.~\eqref{eq:upperclosed} leaves
 open, since midpoint training replaces the upper endpoints
 themselves, and both arms extend to ten seeds: the gap is
