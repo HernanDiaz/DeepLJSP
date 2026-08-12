@@ -59,30 +59,32 @@ Shop Scheduling Problem}
 \orgname{University of Oviedo}, \orgaddress{\city{Gij\'on},
 \country{Spain}}}
 
-\abstract{Task durations on a shop floor are seldom known exactly
-when schedules must be committed. The interval job shop
-scheduling problem (IJSP) models each processing time as a closed
-interval; published solvers search each instance with metaheuristics. This paper studies the complementary regime: a
-constructive policy, trained once by deep reinforcement learning,
-that returns a schedule in seconds. Dimensionless features and a permutation-invariant
-encoder make its parameter count independent of the numbers of jobs
-and machines. Trained by proximal policy optimization on four
-interval Taillard $20{\times}15$ instances, it reaches $13.8\%$ mean
-relative error against crisp lower bounds on the development
-instances of that size, where the best dispatching rule reaches
-${\approx}46\%$, and outperforms it zero-shot on every instance of all
-seven size classes; the same weights transfer to a second benchmark of classical
-instances. Against a dispatching rule evolved by genetic programming
-for the same benchmark, the ordering depends
-on the inference budget: pass for pass the rule leads, and at $1024$
-samples each the policy is better on 46 of the 70. Two ablations are
-negative: self-attention does not improve on pooling, and the
-interval-width features can be removed at no cost, as the closed form
-of the objective predicts. Training on crisp midpoints does
-cost $0.63$ points: the interval model contributes through the data
-rather than the features. A width-penalizing reward traces a
-tunable width--makespan frontier---yet sample selection from the
-default policy reproduces all of it without retraining.}
+\abstract{The interval job shop scheduling problem (IJSP) models
+uncertain processing times as closed intervals and is solved in the
+literature by per-instance metaheuristic search. This paper studies
+the complementary regime: a constructive policy, trained once by deep
+reinforcement learning, that returns a schedule in seconds. The policy
+combines dimensionless state features with a permutation-invariant
+encoder, so one parameter set covers any instance size. Trained
+with proximal policy optimization on four interval Taillard
+$20{\times}15$ instances, it attains $13.8\%$ mean relative
+error against crisp lower bounds on the development instances of that
+size, compared with ${\approx}46\%$ for the best hand-crafted
+dispatching rule, and surpasses every such rule zero-shot on all
+seven size classes of the 70-instance benchmark. A comparison with a
+dispatching rule evolved by genetic programming for the same
+benchmark shows the ranking of the two learning paradigms to be
+governed by the inference budget: the evolved rule prevails at a
+single pass, whereas the policy prevails on 46 of 70 instances when
+both draw $1024$ samples. Ablation attributes the policy's
+performance to the interval training data rather than to
+interval-specific features, in agreement with the closed form of the
+objective: width features are removable at no cost, whereas training
+on crisp midpoints costs $0.63$ points. Under Monte Carlo execution,
+its schedules track their predicted makespans more faithfully than
+those of every hand-crafted rule, and a width-penalizing variant
+carries its narrower predictions through to execution, supporting
+deployment where schedules must be fast and dependable.}
 
 \keywords{job shop scheduling, interval uncertainty, deep reinforcement
 learning, neural combinatorial optimization, genetic programming
@@ -93,67 +95,90 @@ hyper-heuristics, size invariance, dispatching}
 \section{Introduction}
 \label{sec:intro}
 
-A production schedule is committed before the work it plans has
-been done, and the durations it assumes are estimates: tool wear,
-operator variability and material differences all move them. The job
-shop scheduling problem, NP-hard~\citep{GareyJohnson1976} and
-industrially ubiquitous, is nonetheless posed in its textbook form as
-if every processing time were known exactly. Of the formalisms proposed for this
-uncertainty, stochastic and fuzzy models~\citep{GonzalezRodriguez2010}
-demand distributions or membership functions from the decision maker;
-the \emph{interval} model asks only for bounds. In the resulting
+The job shop scheduling problem (JSP) asks for a sequencing of a set
+of jobs, each of which visits the machines of a shop in its own
+prescribed order, that minimizes the overall completion time. The
+problem lies at the core of manufacturing operations planning:
+NP-hard~\citep{GareyJohnson1976}
+and industrially ubiquitous, it is studied predominantly under the
+assumption that every processing time is known exactly. Real
+production environments seldom satisfy that assumption: schedules are
+committed before the work they plan is executed, and the processing
+times they assume are no more than estimates, displaced in practice
+by tool wear, operator variability and material differences. Among
+the formalisms proposed for this uncertainty, stochastic and fuzzy
+models~\citep{GonzalezRodriguez2010} require the decision maker to
+supply probability distributions or membership functions; the
+\emph{interval} model requires only bounds. In the resulting
 interval JSP (IJSP), each duration is a closed interval, schedule
 evaluation propagates those intervals, and the makespan is itself an
 interval, compared through a ranking criterion~\citep{Lei2011,
 DiazICAE2023}.
 
-Makespan minimization in the IJSP is currently the territory of
-per-instance metaheuristic search: elitist artificial bee colony
+The state of the art in IJSP makespan minimization is currently
+held by per-instance metaheuristic search: elitist artificial bee colony
 algorithms~\citep{DiazFEABC2023,DiazICAE2023} reach mean relative
 errors (RE, measured against crisp Taillard lower bounds) between
-roughly $6\%$ and $16\%$ depending on the size class. The price
-is structural: every new instance restarts the search from scratch, for
-seconds to minutes per run on dedicated hardware.
+roughly $6\%$ and $16\%$ depending on the size class. This cost is structural: the search must
+be repeated for every new instance, at seconds to minutes per run on
+dedicated hardware.
 
-The deterministic scheduling literature has developed a complementary
-paradigm, \emph{learning to dispatch}: a deep reinforcement learning
-(DRL) agent builds the schedule constructively, choosing one eligible
-operation at a time~\citep{Zhang2020L2D,Park2021GNN,Tassel2021}. The
-training cost is paid once; afterwards the policy returns a schedule
-for a new instance in seconds, which makes it attractive both as a standalone solver
-under tight time budgets and as an initializer for search. Yet this
-paradigm has not crossed over to interval durations: a recent survey of
+At the opposite end of the computational spectrum lie
+\emph{constructive} methods, which build a schedule in a single pass
+without search. The classical representatives are priority dispatching
+rules, myopic functions such as shortest processing time or most
+operations remaining~\citep{Panwalkar1977,Haupt1989}, which are fast
+and interpretable but leave a wide quality gap on the IJSP. Genetic
+programming (GP) hyper-heuristics narrow that gap by evolving
+dispatching rules offline from a training
+set~\citep{Branke2016,Nguyen2017}; a rule recently evolved for the
+interval benchmark studied here~\citep{DiazGP2026} constitutes the
+strongest constructive baseline available. Both families deliver
+schedules at negligible per-instance cost, which makes them the
+natural referents and competitors for a learned policy.
+
+The deterministic scheduling literature has developed a third
+constructive approach, \emph{learning to dispatch}: a deep
+reinforcement learning (DRL) agent builds the schedule constructively,
+choosing one eligible operation at a
+time~\citep{Zhang2020L2D,Park2021GNN,Tassel2021}. The
+training cost is incurred once; thereafter the policy returns a
+schedule for a new instance in seconds, which makes it attractive both
+as a standalone solver under tight time budgets and as an initializer
+for search. This paradigm has not, however, been extended to interval
+durations: a recent survey of
 learning-based job shop scheduling~\citep{Xu2025} lists no method
 addressing interval-valued processing times.
 
-Two obstacles stand between standard JSP-DRL designs and the IJSP.
-The first is representational: uncertainty must be visible to the agent,
-which should treat an operation lasting $[10,11]$ differently from one
-lasting $[5,16]$ even though both share the same midpoint. The second is
-architectural: common designs tie network dimensions to the instance
-size, so a policy trained on one size class cannot be
-\emph{evaluated} on another---at odds with the amortization argument
-that motivates learning.
-
-We do not reopen the choice of interval ranking. Intervals admit no natural total
-order, so any comparison of interval makespans embeds a modeling
-choice; we adopt the lexicographic ranking that a systematic study of
-the alternatives found most robust for this
-problem~\citep{DiazGA2020}, and keep it fixed throughout so that
-every method in this paper is judged by the same criterion.
+Two obstacles separate standard JSP-DRL designs from the IJSP.
+The first is representational: the uncertainty must be observable to
+the agent, which should treat an operation with duration $[10,11]$
+differently from one with duration $[5,16]$ even though both share
+the same midpoint. The second is
+architectural: the amortization argument that motivates learning
+requires one network to serve instances of any size. Designs that
+encode the instance as a fixed-dimension tensor are tied to the size
+class they were trained on, and graph-based encoders achieve size
+transfer~\citep{Zhang2020L2D,Park2021GNN} through message passing
+over the full disjunctive graph; whether the same invariance can be
+obtained with a substantially simpler encoder is a design question
+this paper answers in the affirmative.
 
 This paper addresses both obstacles and asks three questions.
-\emph{Q1:} can a constructive policy trained on a handful of interval
-instances compete with strong hand-crafted constructive baselines?
+\emph{Q1:} can a constructive policy trained on a small number of
+interval instances compete with the strongest constructive
+alternatives (hand-crafted dispatching rules and a rule evolved by
+genetic programming), and where does it stand relative to the
+per-instance metaheuristic state of the art?
 \emph{Q2:} can a single network, trained on one size class, remain
 useful across the whole benchmark without retraining? \emph{Q3:} which
-standard ingredients of the JSP-DRL toolbox---attention encoders,
-automatic hyperparameter configuration---actually
-earn their cost at practical training budgets?
+standard components of JSP-DRL practice (best-of-$N$ inference,
+attention-based encoders and automatic algorithm configuration)
+yield a measurable benefit at practical training budgets?
 
 \paragraph{Contributions.}
 \begin{enumerate}
-\item \textbf{A size-invariant, uncertainty-aware policy for the IJSP}
+\item \emph{A size-invariant, uncertainty-aware policy for the IJSP}
   (Section~\ref{sec:method}). All features are dimensionless: temporal
   quantities are scaled by a per-instance lower bound and interval
   uncertainty enters as relative widths. A Deep Sets~\citep{Zaheer2017}
@@ -161,35 +186,29 @@ earn their cost at practical training budgets?
   context, yields policy \emph{and} value networks of
   ${\approx}1.2\times10^{5}$ parameters, independent of the numbers of
   jobs and machines.
-\item \textbf{An empirical characterization}
-  (Section~\ref{sec:results}) answering Q1--Q3: budget scaling on the
-  training class, zero-shot dominance over the best dispatching rule
-  on all seven Taillard size classes from a single network, and
-  transfer to a second benchmark of classical instances.
-\item \textbf{A comparison against both families of constructive
+\item \emph{An empirical characterization}
+  (Section~\ref{sec:results}) answering Q1--Q3: the scaling of
+  solution quality with the inference budget on the training class,
+  the zero-shot evaluation of a single network across all seven
+  Taillard size classes, and its transfer to a second benchmark of
+  classical instances.
+\item \emph{A comparison against both families of constructive
   heuristic} (Section~\ref{sec:positioning}), on the 70 benchmark
   instances and with per-instance results reported in full
-  (Appendix~\ref{sec:appendix}). The hand-crafted side is the
-  traditional dispatching rules---SPT, LPT, MOR, MWKR and EST, plus two
-  Giffler--Thompson variants---which a single greedy pass improves on
-  instance by instance. The learned-symbolic side is a rule evolved by
+  (Appendix~\ref{sec:appendix}). The hand-crafted side comprises the
+  traditional dispatching rules: SPT, LPT, MOR, MWKR and EST, plus
+  two Giffler--Thompson variants. The learned-symbolic side is a rule evolved by
   genetic programming (GP) for this same benchmark~\citep{DiazGP2026}, a
   comparison \citet{Xu2025} single out as missing from the literature:
   the two paradigms are rarely measured against each other under a
-  common protocol. Here the answer is budget-dependent rather than a
-  verdict: pass for pass the evolved rule leads, and at $1024$ samples
-  each the policy does.
-\item \textbf{An analysis of what earns its cost}
+  common protocol.
+\item \emph{An analysis of what justifies its cost}
   (Section~\ref{sec:analysis}): a permutation audit of which inputs
-  the network consults, five controlled ablations (inference budget,
-  the attention variant, and
-  three that delimit what interval awareness contributes) of which
-  three are negative results, a $\lambda$-sweep that traces a
-  width--makespan frontier and locates all of it in sample selection
-  rather than in the learned weights, a Monte Carlo comparison of how
-  faithfully the schedules execute, and a two-campaign
-  automatic-configuration study whose racing optima repeatedly failed
-  to transfer to the operating budget.
+  the network consults; five controlled ablations (inference budget,
+  the attention variant, and three that delimit what interval
+  awareness contributes); a $\lambda$-sweep of a width-penalizing
+  training objective; and a Monte Carlo comparison of how faithfully
+  the schedules execute.
 \end{enumerate}
 
 Section~\ref{sec:related} reviews related work and
@@ -206,23 +225,41 @@ and Section~\ref{sec:conclusions} concludes.
 \subsection{Job shop scheduling under interval uncertainty}
 
 Uncertain processing times have been modeled with probability
-distributions, fuzzy numbers and intervals. The fuzzy JSP line is
-mature~\citep{Abdullah2014,GonzalezRodriguez2010,Palacios2015}; the
-interval model can
-be read as its minimal-commitment limit, retaining only support
-bounds, and is the standard minimal representation of uncertainty in
-robust discrete optimization at large~\citep{Kasperski2016}.
-\citet{Lei2011} opened the interval line with population-based
-neighborhood search; genetic algorithms with interval
-rankings~\citep{DiazGA2020}, robustness-oriented tardiness
-models~\citep{DiazTardiness2022}, and analytical treatments of special
-cases~\citep{Sotskov2020} followed, and interval durations now appear in
-richer shop variants as well~\citep{Zheng2024}. On the Taillard-derived
-benchmark used here, the strongest published results belong to elitist
-artificial bee colony algorithms~\citep{DiazFEABC2023,DiazICAE2023};
-these works also fixed the evaluation conventions this paper adopts (interval
-arithmetic, lexicographic ranking during construction, expected makespan
-for reporting).
+distributions, fuzzy numbers and intervals. The fuzzy line is the most
+mature: durations are represented as fuzzy numbers, schedules are
+compared through the expected value of their fuzzy makespan, and two
+decades of population-based solvers have consolidated both the model
+and its evaluation
+conventions~\citep{GonzalezRodriguez2010,Abdullah2014,Palacios2015}.
+The interval model can be read as the minimal-commitment limit of
+that representation: it retains only the support bounds, asks the
+decision maker for no shape information inside them, and is the
+standard minimal description of uncertainty in robust discrete
+optimization at large, where it underpins min--max and
+min--max-regret formulations~\citep{Kouvelis1997,Kasperski2016}.
+\citet{Lei2011} opened the interval JSP line, propagating interval
+durations through the schedule with interval arithmetic and steering
+a population-based neighborhood search by direct comparison of
+interval makespans. Later work broadened both the model and its
+toolkit. \citet{DiazGA2020} compared the candidate interval rankings
+systematically within a genetic algorithm and identified the
+lexicographic criterion adopted in this paper as the most robust
+choice for the problem; \citet{DiazTardiness2022} shifted the
+objective to total tardiness and paired it with explicit robustness
+measures; \citet{Sotskov2020} delimited analytically solvable special
+cases; and \citet{Zheng2024} carried interval durations into richer
+shop variants. On the Taillard-derived benchmark used here, the
+strongest published makespan results belong to the elitist artificial
+bee colony family~\citep{DiazICAE2023,DiazFEABC2023}, whose
+successive refinements, elitist replacement and neighborhood
+filtering among them, progressively reduced the mean relative error
+to the single digits on most size classes; these works also
+fixed the evaluation conventions this paper adopts (interval
+arithmetic, lexicographic ranking during construction, expected
+makespan for reporting). Common to the whole line is per-instance
+search; fast constructive alternatives for the IJSP have begun to be
+explored only recently, through the evolved rule discussed in
+Section~\ref{sec:related-gp}.
 
 \subsection{Priority dispatching rules}
 \label{sec:related-rules}
@@ -253,55 +290,99 @@ active-schedule generator of \citet{GifflerThompson1960}, which at
 each step restricts the candidates to the conflict set of the machine
 that would finish earliest, and applies a priority rule only to break
 ties within that set. The restriction guarantees \emph{active}
-schedules---no operation can be started earlier without delaying
-another---and improves markedly on the plain rules: on the benchmark
+schedules, in which no operation can be started earlier without
+delaying another, and improves markedly on the plain rules: on the benchmark
 used here it takes MWKR from $64.7\%$ to $29.5\%$ of RE. We write
 G\&T-SPT and G\&T-MWKR for the two combinations used here.
 
 These rules require one pass and no search, which makes them the
 cheapest constructive option available. Their limitation is that a fixed formula cannot suit
 every shop and objective~\citep{Haupt1989}, which motivates the
-learned rules of Section~\ref{sec:related-learning}, and is also why
+learned alternatives of Sections~\ref{sec:related-gp}
+and~\ref{sec:related-learning}, and is also why
 a constructive policy is compared against these rules and not against
 per-instance metaheuristics, which belong to a different
 computational class.
 
-\subsection{Learning constructive heuristics for scheduling}
+\subsection{Genetic programming hyper-heuristics}
+\label{sec:related-gp}
+
+Learning constructive heuristics is older than its neural
+incarnation. Genetic programming hyper-heuristics evolve priority
+expressions, trees over hand-crafted attributes such as processing
+time or work remaining, offline on a training set, and deploy the
+best expression as an ordinary dispatching rule: the artifact is
+interpretable and its inference cost is that of evaluating a formula.
+Design choices (attribute sets, fitness, generalization across
+instances) are reviewed by \citet{Branke2016}, and \citet{Nguyen2017}
+organize the broader family under a unified framework. For the job
+shop specifically, \citet{Nguyen2013} showed that the choice of rule
+representation materially shapes the quality of the evolved
+dispatchers, and \citet{Karunakaran2016} evolved rules for dynamic
+job shops with uncertain processing times, exposing duration
+deviations to the rules as attributes, under an uncertainty model
+that is, once again, distributional rather than interval-valued. A recent
+study~\citep{DiazGP2026} develops the GP side for the interval
+benchmark used here, evolving interval-aware rules under the same
+ranking and evaluation conventions, with both a deterministic pass
+and a sampling variant.
+
+\subsection{Neural constructive policies for scheduling}
 \label{sec:related-learning}
 
 Neural combinatorial optimization began with pointer
-networks~\citep{Vinyals2015} and their RL training~\citep{Bello2016};
-attention encoders became standard for routing~\citep{Kool2019,
-Nazari2018}. Reinforcement learning for job-shop dispatching predates
-the deep era~\citep{Gabel2008}, and its applications to machine
+networks~\citep{Vinyals2015}, sequence models that emit a permutation
+of their input and can therefore represent tours and schedules;
+\citet{Bello2016} trained them with policy gradients, removing the
+need for supervised targets, and attention-based
+encoder--decoders trained against greedy-rollout baselines then
+became the standard for routing~\citep{Kool2019,Nazari2018}.
+Reinforcement learning for job-shop dispatching predates the deep
+era: \citet{Gabel2008} already learned decentralized dispatching
+policies by gradient ascent. Its modern applications to machine
 scheduling are surveyed by \citet{Kayhan2023}. For the deterministic
-JSP, \citet{Zhang2020L2D} learn dispatching policies over
-disjunctive-graph GNN embeddings, \citet{Park2021GNN} refine
-such representations and report cross-size generalization, and \citet{Tassel2021} contribute an efficient environment formulation;
-the paradigm has since been extended to richer variants such as the
-flexible job shop~\citep{Song2023FJSP}, from construction to
-DRL-guided improvement over complete schedules~\citep{Zhang2024L2S},
-and toward robustness under dynamic disruptions, where
-\citet{Grumbach2024} size slack buffers in stochastic flow shops---an
-uncertainty model that is distributional and event-driven rather than
-interval-valued.
-Sampling several rollouts and keeping the best is a standard
-inference-time lever~\citep{Kool2019,Kwon2020}. Permutation-invariant set encoders
-were formalized as Deep Sets~\citep{Zaheer2017}, of which attention is
-the natural strict generalization; our architecture starts from the
-simpler construction and evaluates attention as a controlled ablation.
+JSP the reference design is that of \citet{Zhang2020L2D}: the partial
+schedule is encoded as a disjunctive graph, a graph neural network
+embeds it, and the policy trained by PPO on small synthetic instances
+generalizes zero-shot to larger ones while surpassing the classical
+priority rules. \citet{Park2021GNN} refine that representation and
+document the cross-size generalization explicitly, and
+\citet{Tassel2021} show that the environment formulation
+itself (state design and reward shaping) accounts for a substantial
+share of the attainable performance. The paradigm has since expanded
+along three axes: to richer shops, with heterogeneous-graph policies
+for the flexible JSP~\citep{Song2023FJSP}; from construction to
+improvement, with DRL-guided local search over complete
+schedules~\citep{Zhang2024L2S}; and toward uncertainty. On that third
+axis, \citet{Grumbach2024} size slack buffers in stochastic flow
+shops under a distributional, event-driven model;
+\citet{Smit2024Stochastic} extend constructive policies to stochastic
+processing times by processing sampled duration scenarios with an
+attention module; and \citet{Wang2025FuzzyAR} train an autoregressive
+generative model for the fuzzy job shop. The interval
+representation, the minimal of these uncertainty models, remains
+unaddressed by this literature, which is the gap the present paper
+fills.
 
-Learning constructive heuristics is older than its neural incarnation:
-GP hyper-heuristics evolve interpretable priority
-expressions over hand-crafted attributes~\citep{Branke2016,Nguyen2017}.
-The survey by \citet{Xu2025} compares the GP and RL families
-for job shop scheduling and notes the scarcity of comparisons under a
-common protocol. A recent study~\citep{DiazGP2026} develops the GP
-side for the interval benchmark used here, which lets
-Section~\ref{sec:positioning} put the two artifacts on the same
-instances at matched \emph{inference} budgets. A controlled comparison
-of the two paradigms with \emph{training} budgets matched as well is
-beyond the scope of either paper.
+Two further components of the toolbox matter here. Sampling several
+rollouts at inference and keeping the best is a standard quality
+lever whose returns grow with the diversity of the learned
+distribution~\citep{Kool2019,Kwon2020}. Permutation-invariant set
+encoders were formalized as Deep Sets~\citep{Zaheer2017}: each
+element is embedded independently and the embeddings are pooled, so
+the parameter count is independent of the set size; self-attention is
+the natural strict generalization, letting elements condition on one
+another before pooling. Our architecture starts from the simpler
+construction and evaluates attention as a controlled ablation.
+
+The survey by \citet{Xu2025} compares the GP and RL families for job
+shop scheduling and notes the scarcity of comparisons under a common
+protocol. The availability of the evolved rule of
+Section~\ref{sec:related-gp} on the very benchmark studied here lets
+Section~\ref{sec:positioning} put the two learned artifacts on the
+same instances at matched \emph{inference} budgets. A controlled
+comparison of the two paradigms with \emph{training} budgets matched
+as well is beyond the scope of either paper.
 
 \section{Problem Statement}
 \label{sec:problem}
@@ -348,9 +429,12 @@ a^{U}<b^{U} \;\vee\; \big(a^{U}=b^{U}\wedge a^{L}<b^{L}\big),
 \label{eq:lex}
 \end{equation}
 which prioritizes the worst case, in line with min--max robust
-optimization~\citep{Bertsimas2004,Kasperski2016} and with the IJSP
-literature~\citep{DiazGA2020,
-DiazICAE2023}. For reporting we follow the field
+optimization~\citep{Bertsimas2004,Kasperski2016}. This modeling
+choice is not reopened here: a systematic study of the alternative
+ranking criteria found the lexicographic order the most robust for
+this problem~\citep{DiazGA2020}, and it is kept fixed throughout so
+that every method in this paper is judged by the same
+criterion. For reporting we follow the field
 convention~\citep{DiazGA2020,DiazICAE2023}:
 \begin{equation}
 \mathrm{RE}(\%)=\frac{\ECmax-\mathrm{LB}}{\mathrm{LB}}\times100,
@@ -358,8 +442,8 @@ convention~\citep{DiazGA2020,DiazICAE2023}:
 \label{eq:re}
 \end{equation}
 with LB the published lower bound of the crisp Taillard
-counterpart~\citep{Taillard1993}---an indicative, hardware-independent
-yardstick rather than a strict optimality gap, since the crisp JSP and
+counterpart~\citep{Taillard1993}, an indicative,
+hardware-independent yardstick rather than a strict optimality gap, since the crisp JSP and
 the IJSP are different problems.
 
 \begin{remark}
@@ -386,7 +470,7 @@ high cumulative reward (the \emph{return}).
 Policy-gradient methods such as PPO~\citep{Schulman2017} judge an
 action not by its return alone but by comparing that return with what
 was \emph{expected} from the state where the action was taken; only
-the surplus---the \emph{advantage}---moves the policy. The
+the surplus, the \emph{advantage}, moves the policy. The
 expectation is itself learned: a \emph{value function} $V(s)$
 estimates the return attainable from state $s$. In practice both
 functions share one network with two outputs, a \emph{policy head}
@@ -396,8 +480,8 @@ paper has two heads.
 
 Instantiated on scheduling, the agent is a dispatcher. The state is
 the partial schedule; the available actions are the \emph{eligible}
-operations---the next unscheduled operation of each job---so the
-generic $\pi(a\,|\,s)$ specializes to $\pi(i\,|\,s)$, a distribution
+operations, that is, the next unscheduled operation of each job, so
+the generic $\pi(a\,|\,s)$ specializes to $\pi(i\,|\,s)$, a distribution
 over which eligible operation $i$ to schedule next; an
 \emph{episode} is the construction of one complete schedule, and the
 reward is a function of the makespan achieved. The trained policy is then a
@@ -420,7 +504,7 @@ top down to the two outputs. Each
 eligible operation enters as a row of $16$ numbers that describe it:
 how long it may take, how much work its job still carries, how soon it
 could start (Section~\ref{sec:features}). A multilayer
-perceptron (MLP)---the \emph{same} one for every candidate---turns
+perceptron (MLP), the \emph{same} one for every candidate, turns
 each row into an \emph{embedding}: a vector of $h$ learned quantities
 that re-describe the candidate.
 
@@ -432,20 +516,20 @@ describing the shop as a whole
 MLP into a single \emph{context} vector $g$, a fixed-size summary of
 the current decision state.
 
-The two heads introduced above read
-from here---but pooling, by design, discards which candidate is which,
-so the context alone cannot rank them. The policy head therefore
+The two heads introduced above read from this context. Pooling,
+however, discards by design which candidate is which, so the context
+alone cannot rank them. The policy head therefore
 receives two inputs, the shared context $g$ and each candidate's own
 embedding, carried past the pooling stage by the \emph{skip
 connection} visible in Figure~\ref{fig:arch}; it scores every such
 pair, and a
-\emph{softmax} turns the scores---the \emph{logits}, in network
-terms---into the probabilities $\pi(i\,|\,s)$ (\emph{masked} means
+\emph{softmax} turns the scores (the \emph{logits}, in network
+terms) into the probabilities $\pi(i\,|\,s)$ (\emph{masked} means
 that unused padding slots are excluded). The
 value head estimates the situation rather than any one candidate, so
 it reads $g$ alone and outputs $V(s)$. In total, four two-layer
-MLPs---the candidate encoder $\phi$, the context combiner, and the two
-heads---are composed into a single network and trained jointly end to
+MLPs (the candidate encoder $\phi$, the context combiner, and the
+two heads) are composed into a single network and trained jointly end to
 end.
 
 The dashed detour between the embeddings and the pooling is an
@@ -466,8 +550,8 @@ Schedule construction is a finite-horizon \emph{Markov decision
 process}: the state is a sufficient statistic for the remaining
 decisions, so the optimal continuation depends on the history only
 through it, and the horizon is exactly $nm$ steps, one per operation. The state
-after $t$ steps is the partial schedule---each job's next-operation
-pointer, the job and machine completion intervals---and the eligible
+after $t$ steps is the partial schedule (each job's next-operation
+pointer, the job and machine completion intervals) and the eligible
 set $\mathcal{E}_t$, written $\mathcal{E}$ when the step is
 immaterial, with $1\le|\mathcal{E}_t|\le n$; the action
 selects one element of $\mathcal{E}_t$, and the transition applies
@@ -484,8 +568,8 @@ r_t \;=\; w_{\mathrm{mk}}\,r^{\mathrm{mk}}_t
       + w_{\mathrm{cr}}\,r^{\mathrm{cr}}_t
       + w_{\mathrm{ba}}\,r^{\mathrm{ba}}_t,
 \end{equation}
-each component collapsing intervals by the upper endpoint---the
-primary key of the ranking of Eq.~\eqref{eq:lex}---and scaled by the
+each component collapsing intervals by the upper endpoint, the
+primary key of the ranking of Eq.~\eqref{eq:lex}, and scaled by the
 instance's lower bound, so that no weight depends
 on the instance's magnitude. The weights were fixed by hand during
 development and afterwards submitted to a racing campaign of their
@@ -495,7 +579,7 @@ own, over all six free in $[0,1]$, which did not improve on them
 \item \emph{terminal makespan} ($r^{\mathrm{mk}}_t$,
   $w_{\mathrm{mk}}{=}1.0$): the negative scaled makespan at episode
   end, plus a bonus when the schedule finishes within $5\%$ of the
-  instance bound---the quantity actually being minimized;
+  instance bound; this is the quantity actually being minimized;
 \item \emph{job progress} ($r^{\mathrm{pr}}_t$,
   $w_{\mathrm{pr}}{=}0.26$): favors the completion of started jobs;
   its base weight $0.2$ is raised by a fixed factor $1.3$
@@ -507,8 +591,8 @@ own, over all six free in $[0,1]$, which did not improve on them
 \item \emph{local improvement} ($r^{\mathrm{li}}_t$,
   $w_{\mathrm{li}}{=}0.15$): the step change of the projected
   makespan, penalizing deteriorations twice as much as it rewards
-  improvements---a dense signal so early decisions are not credited
-  only $nm$ steps later;
+  improvements, a dense signal so that early decisions are not
+  credited only $nm$ steps later;
 \item \emph{operation criticality} ($r^{\mathrm{cr}}_t$,
   $w_{\mathrm{cr}}{=}0.1$): favors operations on the emerging
   critical path, a standard proxy for a compact schedule;
@@ -584,8 +668,8 @@ instances, since their magnitude reflects the time scale of the
 instance at hand; a policy trained on them would be tied to the scale
 of its training set. Under the dimensionless representation, what the
 policy observes is comparable across instances and across sizes,
-which is one of the two components of size invariance---the other
-being the architecture of Section~\ref{sec:arch}. Each
+which is one of the two components of size invariance; the other is
+the architecture of Section~\ref{sec:arch}. Each
 eligible operation $o=o_{jk}$ on machine $\mu=\nu_{jk}$ is described by
 the 16 dimensionless quantities of Table~\ref{tab:opfeatures}; the
 global state is the 12-dimensional aggregate of
@@ -593,8 +677,8 @@ Table~\ref{tab:globalfeatures}.
 
 Every
 quantity consulted by the dispatching rules of
-Section~\ref{sec:related-rules}---processing times, remaining work,
-earliest start times, slack, machine load---appears among the
+Section~\ref{sec:related-rules} (processing times, remaining work,
+earliest start times, slack, machine load) appears among the
 per-operation features, so that no advantage over those rules follows
 from a wider per-operation vocabulary. Two groups of features extend this
 shared vocabulary: the interval dimension (bounds and relative
@@ -645,20 +729,20 @@ g=\mathrm{MLP}_{ctx}\big(\big[\textstyle\frac1{|\mathcal{E}|}\sum_i\phi_i;\;
 The stage has no parameters of its own: it maps the
 $|\mathcal{E}|\times h$ embeddings to the $2h$ summaries the context
 MLP consumes. Both statistics are
-taken over the real candidates only---in batched training the sets
+taken over the real candidates only: in batched training the sets
 are padded to the batch maximum, and the mean divides by the true
 count while the max ignores the padded rows.
 This embed-then-pool pattern is the \emph{Deep Sets} construction
 of~\citet{Zaheer2017}, whose central result is that \emph{any}
 function invariant to the order of a set can be written in this
-form---so this construction entails no loss of expressiveness in
+form, so the construction entails no loss of expressiveness in
 principle. The
 result tables refer to the base model by this name, in contrast to
 its attention variant (Section~\ref{sec:attention}).
 
 \emph{Score.} The \emph{policy head} rates each pair (candidate
-embedding, context)---``how good is operation $i$ given the decision
-as a whole''; the \emph{value head} computes the $V(s)$ of the
+embedding, context), answering how good operation $i$ is given the
+decision as a whole; the \emph{value head} computes the $V(s)$ of the
 advantage estimation, reading the context alone, since expectations
 concern the situation, not any one candidate:
 \begin{equation}
@@ -737,24 +821,24 @@ Z=\Phi+\mathrm{MHA}\big(\mathrm{LN}(\Phi)\big),\qquad
 where $\mathrm{MHA}$ is multi-head scaled dot-product attention ($4$
 heads of dimension $32$, no dropout), $\mathrm{FFN}$ is a two-layer
 perceptron ($128\to256\to128$, ReLU) applied to each row, and
-$\mathrm{LN}$ is LayerNorm. Both additions are \emph{residual}---the
-block adds to its input instead of replacing it---so an untrained
+$\mathrm{LN}$ is LayerNorm. Both additions are \emph{residual}, meaning that the block adds to
+its input instead of replacing it, so an untrained
 block is close to the identity and the stack starts near the base
 model, the property for which the pre-LN arrangement is preferred
 over the original post-LN one~\citep{Xiong2020}. No positional
 encoding is used: without one, self-attention is
-permutation-\emph{equivariant}---reordering the candidates reorders
-the outputs correspondingly---so the pooled context remains
+permutation-\emph{equivariant} (reordering the candidates reorders
+the outputs correspondingly), so the pooled context remains
 permutation-invariant and the guarantees of Section~\ref{sec:arch}
 are preserved. Padding slots are masked out of the attention weights.
 
 Attention is a flag on the same code path, and $B{=}0$ reproduces the
-base network exactly---which is what makes the comparison of
+base network exactly, which is what makes the comparison of
 Section~\ref{sec:ablations-attn} a controlled one, differing in this
 component and nothing else. A single block
-carries $132{,}480$ parameters---the query, key and
-value projections, the output projection, two layer normalizations and
-the feed-forward network (Table~\ref{tab:layers})---so the $B{=}2$
+carries $132{,}480$ parameters in the query, key and
+value projections, the output projection, two layer normalizations
+and the feed-forward network (Table~\ref{tab:layers}), so the $B{=}2$
 variant we evaluate grows the
 network from $1.2\times10^{5}$ to $3.9\times10^{5}$ parameters, a
 factor of $3.2$, and multiplies the wall-clock cost of an episode by
@@ -781,14 +865,14 @@ value~\citep{DiazGA2020}. The benchmark is openly
 available~\citep{DiazDataset2026}. Of the 70 instances, four carry
 gradients: the final model trains on TA11--TA14
 ($20{\times}15$) only. Six more of the same class,
-TA15--TA20, form the \emph{development set}---never used for
+TA15--TA20, form the \emph{development set}: never used for
 gradients, but every design and configuration decision was judged on
 their performance, so they are reported separately and excluded from
 claims about unseen data. The remaining 60 instances were touched by
-neither training nor development. A second benchmark---interval
+neither training nor development. A second benchmark, consisting of interval
 versions of twelve classical instances (FT10, FT20, La21, La24, La25,
-La27, La29, La38, La40 and ABZ7--9), generated
-with the same symmetric scheme~\citep{DiazGA2020}---is reserved for
+La27, La29, La38, La40 and ABZ7--9) generated
+with the same symmetric scheme~\citep{DiazGA2020}, is reserved for
 the cross-family evaluation of Section~\ref{sec:results-classics},
 and plays no part in training or development either.
 
@@ -797,8 +881,8 @@ and plays no part in training or development either.
 
 Table~\ref{tab:environment} lists the machine and the software stack.
 One remark matters for reading the costs reported later: every
-number in this paper---training, evaluation, the dispatching-rule
-baselines and the ablations---was produced on the CPU. The network is
+number in this paper (training, evaluation, the dispatching-rule
+baselines and the ablations) was produced on the CPU. The network is
 small enough (Section~\ref{sec:arch}) that a forward pass is
 negligible next to the environment step that follows it, so the GPU
 yields no speedup for a single rollout; it was used only for the vectorized
@@ -902,8 +986,8 @@ budget the best of them scored $14.5\%$ mean RE against $13.4\%$ for
 the defaults: the low-fidelity optimum did not transfer.
 
 The second campaign raced $295$
-experiments at operating fidelity---$1000$ episodes on two instances
-per evaluation---over the reduced $6$-parameter space of
+experiments at operating fidelity, with $1000$ episodes on two
+instances per evaluation, over the reduced $6$-parameter space of
 Table~\ref{tab:irace}, seeded with the defaults and the first
 campaign's elites. It converged to a region distinct from the
 defaults and eliminated the seeded default during racing; yet its
@@ -926,7 +1010,7 @@ the noise between training runs.
 Automatic configuration therefore does not beat the defaults of
 Table~\ref{tab:hyper} for this problem \emph{even at the operating
 budget}, nor do raced reward weights improve on the hand-set
-ones---within the resolution of the protocol. With a standard
+ones, within the resolution of the protocol. With a standard
 deviation of $0.47$ points across seed means at $1000$ episodes
 (Section~\ref{sec:results-insize}) and three seeds per arm, a paired
 confirmation resolves about one point of RE, so what the three
@@ -957,7 +1041,7 @@ weights that produced it are stored; the stored weights are the
 The discount factor is $\gamma=1$ rather than the $0.99$ customary in
 deep RL~\citep{Schulman2017}. The horizon here is finite and known,
 so future rewards can be credited in full; at $\gamma=0.99$ the
-terminal makespan---the quantity being minimized---would reach the
+terminal makespan, the quantity being minimized, would reach the
 earliest decisions of a $20{\times}15$ instance attenuated to
 $0.99^{nm}\approx0.05$ of itself. Updates are likewise applied over
 transitions pooled from four consecutive episodes rather than from
@@ -978,7 +1062,7 @@ and~\ref{sec:positioning}, for $N{=}1024$. This
 choice is motivated empirically in Section~\ref{sec:ablations-bon}:
 sampling overtakes the greedy pass at twelve rollouts and continues to
 improve to the largest budget measured, so the policy is more valuable
-as a \emph{distribution} than as its argmax---consistent with
+as a \emph{distribution} than as its argmax, consistent with
 sampling-based decoding in neural combinatorial
 optimization~\citep{Kool2019}.
 
@@ -1001,10 +1085,10 @@ optimization~\citep{Kool2019}.
 \label{sec:baselines}
 
 Constructive baselines are the dispatching rules of
-Section~\ref{sec:related-rules}---SPT, LPT, MOR, MWKR and EST---and
+Section~\ref{sec:related-rules} (SPT, LPT, MOR, MWKR and EST) and
 the two Giffler--Thompson combinations. The results of
-Section~\ref{sec:results} carry the strongest of each family---MOR,
-EST and G\&T-MWKR---while SPT, LPT, MWKR and the SPT tie-break of
+Section~\ref{sec:results} carry the strongest of each family, namely
+MOR, EST and G\&T-MWKR, while SPT, LPT, MWKR and the SPT tie-break of
 Giffler--Thompson are dominated by a wide margin in every size class
 and are not reported further. The
 learned-symbolic baseline is the dispatching rule evolved by genetic
@@ -1036,7 +1120,7 @@ instance), with the return per tripling of the budget falling from
 $10.0$ points to $3.6$; (ii) the spread between
 training runs collapses as the budget grows, the standard deviation
 across the ten seed means falling from $4.69$ points at $100$ episodes
-to $1.30$ at $300$ and $0.47$ at $1000$---a factor of ten---so what
+to $1.30$ at $300$ and $0.47$ at $1000$, a factor of ten, so what
 the extra budget buys is not only a better mean but a reproducible
 one; (iii) the gap to the strongest constructive baseline is a factor
 ${\approx}2.0$. Figure~\ref{fig:scaling} places the curve between two
@@ -1102,8 +1186,8 @@ distributions within each class at the paired budgets.
 
 Read zero-shot, every seed's network at $64$ samples
 outperforms G\&T-MWKR, the strongest constructive baseline, on
-\emph{every} one of the seventy---$210$ instance--seed pairs without
-an exception---with graceful degradation
+\emph{every} one of the seventy ($210$ instance--seed pairs without
+an exception), with graceful degradation
 (class means from $11.0\%$ on $15{\times}15$ to $22.0\%$ on the
 hardest transfer, $30{\times}20$) and no failure mode up to
 $1000$-operation episodes. Degradation is not monotone in instance
@@ -1161,9 +1245,9 @@ selected on these same 70 instances, while the $19.4\%$ is a mean
 over the policy's three seeds. Against the mean of the 30 evolutions,
 $18.99\%$, the deficit at one pass is $0.4$ points. The selected rule
 is nonetheless kept as the comparison, because it is the published
-artifact and the harder test. With $1024$ samples each---the GP rule
+artifact and the harder test. With $1024$ samples each, the GP rule
 randomized by the $\epsilon$-greedy dispatching its study provides
-for this purpose---the ordering reverses: $13.0\%$ against $14.1\%$,
+for this purpose, the ordering reverses: $13.0\%$ against $14.1\%$,
 with the policy better on 46 of the 70 (median advantage $1.3$
 points, $p=1.4\times10^{-3}$).
 
@@ -1176,11 +1260,11 @@ standalone RE ($13.8\%$ in-size, $11$--$22\%$ zero-shot class means)
 places it between the dispatching rules ($42.3\%$ for EST, the
 strongest) and the per-instance metaheuristics ($9.4\%$ for fEABC).
 This is the ordering that \citet{Zhang2020L2D} established for the
-deterministic JSP---a learned constructive policy improves on the
-hand-crafted rules but does not reach the methods that search each
-instance anew, trading some solution quality for a cost paid once at
-training rather than at every instance---and it had not been
-established for the interval variant.
+deterministic JSP, in which a learned constructive policy improves on
+the hand-crafted rules but does not reach the methods that search
+each instance anew, trading some solution quality for a cost
+incurred once at training rather than at every instance; it had not
+been established for the interval variant.
 
 \begin{figure}[t]
   \centering
@@ -1268,9 +1352,9 @@ are the 30 evolutions themselves, the full set being available only
 on this family, whereas the single featured rule of
 Section~\ref{sec:positioning} represents GP on the Taillard set. The
 policy improves on EST and G\&T-MWKR on all twelve instances and lands
-at $12.4\%$ mean RE---between the hand-crafted constructive baselines
-($30.1\%$ for G\&T-MWKR) and the per-instance searchers (GA at
-$9.8\%$, ESABC at $5.5\%$). On La29, La40, ABZ7 and ABZ8 the
+at $12.4\%$ mean RE, between the hand-crafted constructive
+baselines ($30.1\%$ for G\&T-MWKR) and the per-instance searchers
+(GA at $9.8\%$, ESABC at $5.5\%$). On La29, La40, ABZ7 and ABZ8 the
 policy's best seed reaches a lower RE than the 30-run average of GA,
 a method that searches each of these instances from scratch, whereas
 the policy has never seen them.
@@ -1290,24 +1374,24 @@ arranged that way. Given one pass each, the policy's $17.2\%$ leads
 the $19.0\%$ a single evolution should be expected to yield, and
 trails the featured rule's $17.9\%$ on 5 of the 12 instances
 (Wilcoxon signed-rank against the featured rule, $p=0.73$: the two are
-indistinguishable). Given $64$ samples each---the rules randomized by
-the $\epsilon$-greedy dispatching their own study provides---the
+indistinguishable). Given $64$ samples each, with the rules randomized by
+the $\epsilon$-greedy dispatching their own study provides, the
 policy leads on both readings, $12.4\%$ against $14.6\%$ for the mean
 of 30 and $14.2\%$ for the featured rule, better than the latter on 9
 of 12, though on twelve instances even that is only marginal
 ($p=0.077$). At $1024$ samples per run the gap is both the widest and
 the only one that separates: $10.3\%$ against $12.2\%$, better on 10
 of the 12 instances ($p=0.009$). Reading these three rows in order,
-the policy is level with the rules at one pass and pulls away as both
-are allowed to sample---which is what
+the policy is level with the rules at one pass and pulls away as
+both are allowed to sample, which is what
 Section~\ref{sec:positioning} finds on the Taillard set, arrived at
 here on a family neither method was tuned for.
 
 One feature of the table needs explaining: the two readings order the
 learners oppositely. The policy has the better mean at all three
 budgets, and GP the better bracket at all three. The cause is the
-number of runs each bracket selects over---30 evolutions for GP
-against three training seeds for the policy---compounded by the wider
+number of runs each bracket selects over, 30 evolutions for GP
+against three training seeds for the policy, compounded by the wider
 dispersion of the evolved rules: their standard deviation across the
 30 averages $4.3$, $2.3$ and $2.0$ points at the three budgets, against
 $2.2$, $1.4$ and $0.7$ across the policy's seeds. A per-instance
@@ -1364,8 +1448,8 @@ reorders the lower half, though not the leading three. Three features
 carry the policy: the relative slack
 (whose permutation adds $56.5\pm2.4$ points of RE), the number of
 remaining operations in the job ($+33.6\pm1.4$), and the job's
-worst-case remaining work ($+9.6\pm1.0$)---the attribute families
-behind MOR and MWKR, and the very attributes the
+worst-case remaining work ($+9.6\pm1.0$). These are the attribute
+families behind MOR and MWKR, and the very attributes the
 evolved expressions of~\citet{DiazGP2026} select. Below a second tier of
 three features costing between $1.8$ and $2.9$ points, the remaining
 ten fall into a floor between $+0.3$ and $+1.0$ points that no
@@ -1374,22 +1458,22 @@ features sit inside it, one of them last of the sixteen
 ($+0.3\pm0.3$ for the duration width, $+0.9\pm0.5$ for the start
 width). That the widths land on the floor is what the objective
 entails rather than a surprise: the primary key of the criterion of
-Eq.~\eqref{eq:lex}---the worst-case makespan, on which the reward also
-trains---is a function of the upper endpoints alone
+Eq.~\eqref{eq:lex}, the worst-case makespan, on which the reward
+also trains, is a function of the upper endpoints alone
 (Section~\ref{sec:ablations-interval}), so a width cannot inform a
 decision judged by that criterion. The same asymmetry appears within the features
 themselves. Three quantities enter as a pair of interval endpoints,
 and in the two pairs that rise above the floor the upper endpoint
-costs several times its lower counterpart---$9.6$ against $1.8$ for
-the job's remaining work, $2.1$ against $1.0$ for the duration---as a
+costs several times its lower counterpart ($9.6$ against $1.8$ for
+the job's remaining work, $2.1$ against $1.0$ for the duration), as a
 criterion written in upper endpoints alone should induce. That the floor is not exactly zero is
 expected too, since permuting any column perturbs an input
 distribution the network was trained against, whether or not that
 column informs the decision.
 
-The audit is therefore conditional on what the policy was trained to
-optimize---this objective and the reward weights of
-Section~\ref{sec:mdp}---and a different one need not produce the same
+The audit is therefore conditional on what the policy was trained
+to optimize, namely this objective and the reward weights of
+Section~\ref{sec:mdp}, and a different one need not produce the same
 ranking. The natural test is an objective that does contain the
 width, and Section~\ref{sec:ablations-interval} runs it: retraining
 under $f_\lambda$ leaves the weights indistinguishable from the
@@ -1411,8 +1495,8 @@ was not repeated on those arms.
   \label{fig:budget}
 \end{figure}
 
-The policy is reported at three inference budgets---one greedy pass,
-$64$ samples and $1024$---which leaves its behaviour between them
+The policy is reported at three inference budgets (one greedy pass,
+$64$ samples and $1024$), which leaves its behaviour between them
 unspecified. To characterize it, all $342$ rollouts per checkpoint
 were retained on each of the 70 instances ($71{,}820$ schedules), so
 that best-of-$B$ is reconstructible for arbitrary $B$ without further
@@ -1449,8 +1533,8 @@ inefficient route to the residual gap against fEABC's $9.4\%$, which
 a per-instance metaheuristic attains in minutes. One qualification
 bounds this extrapolation: budgets above $1023$ lie outside the
 measured range, and within it the marginal return is itself
-contracting---each octave yields approximately a tenth less than its
-predecessor---so a constant rate is the optimistic reading.
+contracting, with each octave yielding approximately a tenth less
+than its predecessor, so a constant rate is the optimistic reading.
 
 \begin{table}[!htb]
 \centering\small
@@ -1543,11 +1627,11 @@ lower endpoints do not appear in it. $C^U_{\max}$ is also the primary
 key of the lexicographic criterion of Eq.~\eqref{eq:lex} under which
 every schedule in this paper is compared. Its secondary key, the lower
 endpoint, is consulted only on exact ties of the upper one, and on the
-rollout pools of this section such ties do not arise---the upper-bound
+rollout pools of this section such ties do not arise (the upper-bound
 minimizer is unique in every one of the 90 (arm, instance, seed)
-pools---so in practice the criterion reduces to its primary key. The reward of
-Section~\ref{sec:mdp} trains on that primary key---across its six
-components not one reads a lower bound---so there is no channel
+pools), so in practice the criterion reduces to its primary key. The reward of
+Section~\ref{sec:mdp} trains on that primary key, and across its six
+components not one reads a lower bound, so there is no channel
 through which knowing an interval's width could reduce what the policy
 is being trained to reduce. A width feature can at best be an
 auxiliary signal for learning; it cannot be information about the
@@ -1558,7 +1642,7 @@ both width features at the floor of its ranking, consistent with this
 entailment. Three training-time ablations ask the causal questions the
 audit cannot: whether the policy would be any worse had it never seen
 the uncertainty at all; whether the upper bounds shown during training
-must be the true ones---which Eq.~\eqref{eq:upperclosed} does not
+must be the true ones, which Eq.~\eqref{eq:upperclosed} does not
 settle, since midpoint training changes the upper endpoints
 themselves; and whether the policy would come to consult the widths
 under an objective that pays for them. Each ablation is paired against
@@ -1592,13 +1676,13 @@ crisp duration symmetrically, so the original crisp instances
 \emph{are} the midpoint scenario of their interval counterparts: the
 policy is trained on them and evaluated, unchanged, on the interval
 instances. This is the case Eq.~\eqref{eq:upperclosed} leaves
-open---midpoint training replaces the upper endpoints themselves---and
-both arms extend to ten seeds: the gap is
+open, since midpoint training replaces the upper endpoints
+themselves, and both arms extend to ten seeds: the gap is
 $0.63$ points, from $13.82\%$ to $14.45\%$, worse on 36 of the 60
 instance--seed pairs and positive for eight of the ten seeds
 ($p=0.045$). Training on the true upper bounds is slightly better than
-training on their midpoints---a detected effect rather than a measured
-one, at a power of about $0.7$. The delimitation is therefore sharper
+training on their midpoints, a detected effect rather than a
+measured one, at a power of about $0.7$. The delimitation is therefore sharper
 than a blanket statement about interval awareness. As \emph{input
 features} the widths are inert, and Eq.~\eqref{eq:upperclosed} says
 why in a way that generalizes past this network: any method that ranks
@@ -1646,14 +1730,14 @@ instance, seed), with three further arms retrained from scratch at
 $\lambda=0.5$, $2$ and $4$ (three seeds each); every selection is
 recomputed on these common deposits, which is why the $\lambda{=}1$
 figures differ slightly from the training-run schedules just quoted.
-Deployed---each arm's samples ranked by its own
-$f_\lambda$---the five arms trace a monotone frontier, from $12.80\%$
+When deployed, with each arm's samples ranked by its own
+$f_\lambda$, the five arms trace a monotone frontier, from $12.80\%$
 relative width at the default end to $10.99\%$ at $\lambda=4$, with
 the expected makespan climbing by $3.49$ points ($p=0.0002$). Under a
 common selection criterion the frontier vanishes: no retrained arm
-proposes narrower rollouts than the default one---at $\lambda=1$ the
-widths are $12.80\%$ against $12.69\%$ ($p=0.93$), and three of the
-four arms are marginally wider---with no paired width difference
+proposes narrower rollouts than the default one (at $\lambda=1$ the
+widths are $12.80\%$ against $12.69\%$, $p=0.93$, and three of the
+four arms are marginally wider), with no paired width difference
 approaching significance (smallest $p=0.37$). Conversely, re-ranking
 the \emph{default} policy's own deposit by each $f_\lambda$ in turn
 retraces the frontier almost point for point, ending at $11.09\%$
@@ -1662,7 +1746,7 @@ at $10.99\%$ and $17.75\%$. What narrows the interval is which sample
 is kept, not which weights produced it: the network is not merely
 indifferent to the width features in its input; its proposal
 distribution does not become narrower when the objective penalizes
-width---the retrained weights propose samples as wide as the
+width, and the retrained weights propose samples as wide as the
 default's. The
 predictability--performance trade is real, tunable and monotone, and
 it arises entirely at selection time.
@@ -1681,8 +1765,8 @@ not move at any $\lambda$; what moves is the ranking among its
 samples. The same reward therefore reaches the decision function of an
 evolved rule and does not reach the decision function of a trained
 policy, at least at this training scale. The rate of the trade is
-comparable on the two sides---about $2.5$ points of RE per point of
-width across that study's sweep, about $1.9$ across ours---so what
+comparable on the two sides, about $2.5$ points of RE per point of
+width across that study's sweep and about $1.9$ across ours, so what
 separates the paradigms is not the magnitude of the cost but the stage
 at which it is incurred. In GP that stage is the decision function:
 the evolved rule becomes width-averse, and every schedule it
@@ -1718,11 +1802,11 @@ where $C^{\mathrm{ex},k}_{\max}$ is the crisp makespan of executing
 the order under the $k$-th realization, durations drawn independently
 and uniformly within their intervals. $\bar\varepsilon$ is thus the
 mean relative distance between the executed makespan and the reported
-value---a measure of the calibration of the prediction, in which
+value, a measure of the calibration of the prediction, in which
 lower is more faithful. We use $K{=}1000$ common random numbers per
-instance---identical realizations for every method, drawn from a
+instance (identical realizations for every method, drawn from a
 generator seeded by the instance identifier so that the draws
-reproduce across runs and machines---so every comparison below is
+reproduce across runs and machines), so every comparison below is
 paired realization by realization. The measurement covers the full
 seventy-instance benchmark.
 
@@ -1741,7 +1825,7 @@ The constructive methods separate into two groups
 (Figure~\ref{fig:eps}). MOR and G\&T-MWKR deviate by
 $\bar\varepsilon\times10^{3}=6.48$ and $6.27$; every remaining
 method lies between $5.2$ and $5.7$, and the distance is
-systematic---the policy at best-of-64 is more faithful than MOR on 63
+systematic: the policy at best-of-64 is more faithful than MOR on 63
 of the seventy instances and than G\&T-MWKR on 65 (paired Wilcoxon
 signed-rank, $p<10^{-10}$ in both cases). Within the faithful group
 the policy's best-of-64 ($5.48$) is more faithful than EST ($5.71$;
@@ -1755,10 +1839,10 @@ deterministic pass does ($5.56$ against $5.66$, $p=0.54$).
 
 The composition of the leading group explains the ranking. It holds a
 hand-crafted rule and both learners at their two inference budgets,
-and the presence of EST---the weakest method of this paper
-in solution quality, at $42.3\%$ mean RE
-(Table~\ref{tab:seventy}), yet well clear of MOR and G\&T-MWKR in
-faithfulness---shows that faithfulness and quality are separate
+and the presence of EST, the weakest method of this paper
+in solution quality at $42.3\%$ mean RE
+(Table~\ref{tab:seventy}) yet well clear of MOR and G\&T-MWKR in
+faithfulness, shows that faithfulness and quality are separate
 properties: a method can predict reliably while scheduling poorly,
 and optimizing the makespan secures no reliability in return.
 The mechanism is the interval itself. Every realization's makespan
@@ -1769,7 +1853,7 @@ deviation it admits. None of the methods in the leading group optimizes
 the width of the interval it predicts, so their faithfulness is
 bounded by whatever widths their makespan-directed construction
 happens to produce. Faithfulness must therefore be pursued
-deliberately rather than inherited from a makespan objective---the GP
+deliberately rather than inherited from a makespan objective; the GP
 study reaches the same conclusion from its side, where its rule
 likewise improves on G\&T-MWKR but not on EST until an objective that
 penalizes width is introduced~\citep{DiazGP2026}.
@@ -1816,9 +1900,9 @@ seeds calibrate what a three-seed comparison can miss: the midpoint
 control turned a null into a detected effect, the attention deficit
 shrank from $1.76$ to $1.06$ points, and the no-width null sharpened
 from $0.18$ to $0.04$ points. Finally, the comparison with the rule evolved by
-genetic programming shares the evaluation protocol end to end---the
+genetic programming shares the evaluation protocol end to end (the
 same instances, interval arithmetic, ranking criterion, inference
-budgets and execution realizations, run in a single harness---but not
+budgets and execution realizations, run in a single harness) but not
 the training side: each learner was trained as its own study
 prescribes, with budgets that no common currency equalizes, and the
 featured rule was selected over the full benchmark while the policy's
@@ -1832,25 +1916,30 @@ matched as well, which \citet{Xu2025} call for, remains open.
 The three questions posed in the introduction now have answers. A
 constructive policy trained by PPO on four interval instances beats the
 best hand-crafted constructive baselines by a wide margin on its
-training class (Q1: $13.8\%$ versus $27.9\%$ for G\&T-MWKR and
-${\approx}46\%$ for the best plain rule). Because the representation is
+training class ($13.8\%$ versus $27.9\%$ for G\&T-MWKR and
+${\approx}46\%$ for the best plain rule). Against the rule evolved by
+genetic programming the answer is not one-sided but budget-dependent:
+the rule is better at a single pass, and the policy overtakes it when
+both draw $1024$ samples (Section~\ref{sec:positioning}), so what the
+network contributes over a compact formula is its sampling
+distribution rather than its argmax. The per-instance metaheuristics
+retain the lead in solution quality ($9.4\%$ mean RE for fEABC against
+$13.0\%$ for the policy at its largest budget), at the cost of a
+search on every new instance: the policy occupies the ground between
+the constructive baselines it dominates and the search algorithms it
+does not attempt to replace (Q1). Because the representation is
 dimensionless and the encoder permutation-invariant, one network serves
 the entire benchmark: evaluated zero-shot at its deployed budget, it
 outperforms the best
 dispatching rule on every tested instance of all seven size classes,
 and the same weights improve on every rule on all twelve classical
-instances of the FT, La and ABZ families (Q2). Against a rule evolved
-by genetic programming the answer is not one-sided but
-budget-dependent: pass for pass the rule is better, and the policy
-overtakes it only when both are given $1024$ samples
-(Section~\ref{sec:positioning}), so what the network contributes over a
-compact formula is its sampling distribution rather than its argmax.
+instances of the FT, La and ABZ families (Q2).
 Of the standard techniques evaluated, only best-of-$N$ inference
 improved results at practical budgets: self-attention blocks added to
 the pooled encoder brought no improvement,
 and three automatic-configuration
-campaigns---two over the optimizer, one over the reward
-weights---failed to beat the hand-set values by more than the
+campaigns (two over the optimizer, one over the reward
+weights) failed to beat the hand-set values by more than the
 resolution of the confirmation protocol (Q3). Three more delimit the interval representation that
 motivated the design, and they separate two things the design had
 conflated. As inputs the widths are inert: permuting them costs the
@@ -1869,17 +1958,17 @@ from $12.80\%$ to $10.99\%$ of the expected makespan, at about $1.9$
 points of RE per point of width), but with the selection criterion
 held fixed the robust weights and the default ones are
 indistinguishable, and ranking the default policy's own samples by
-$f_\lambda$ retraces the frontier without any retraining---what
+$f_\lambda$ retraces the frontier without any retraining: what
 narrows the interval is which sample is kept, not which network
 produced it. At execution time the policy's schedules are among the
-most dependable of the constructive pool---more faithful than every
-hand-crafted rule over the seventy instances, level with the evolved
-rule---while the width-charging arm attains the lowest deviation of
+most dependable of the constructive pool, more faithful than every
+hand-crafted rule over the seventy instances and level with the
+evolved rule, while the width-charging arm attains the lowest deviation of
 the comparison, significantly ahead of the default arm, carrying the
 selection-time narrowing through to execution. And a
 permutation audit shows the network leaning on slack, remaining
-operations and worst-case remaining work---the attributes
-hand-crafted and evolved rules exploit---with the width features at
+operations and worst-case remaining work, the attributes that
+hand-crafted and evolved rules exploit, with the width features at
 the floor of its ranking.
 
 Three directions follow. The first concerns the representation, and
@@ -1891,7 +1980,7 @@ objective penalizes width as when it does not. Whether the gradient simply
 never reaches them, or whether a semiactive constructive decision
 determines the width before the policy has any say in it, separates
 two very different diagnoses and calls for a different experiment than
-any run here---a reward defined on the width alone would tell them
+any run here: a reward defined on the width alone would tell them
 apart. The second is deployment: a policy that
 schedules an instance in seconds is a natural generator of initial
 solutions for population-based search, and the quality of its sampling
@@ -1901,13 +1990,13 @@ Section~\ref{sec:ablations-bon} inward. The policy commits to a
 schedule worth $17.0\%$ while its own thousand samples reach
 $12.9\%$: four points separate the decision the network makes from
 the best one it produces, and finding that one costs a thousand
-rollouts. The evolved rule shows the same separation---$17.7\%$ for
-its single pass against $14.1\%$ randomized to a thousand---so the
+rollouts. The evolved rule shows the same separation, $17.7\%$ for
+its single pass against $14.1\%$ randomized to a thousand, so the
 gap belongs to randomized constructive search rather than to learning
 as such; what differs is the remedy, since the weights of a network
 can be moved onto its own best rollouts by retraining on them and
-iterating---the self-labeling strategy that \citet{Corsini2024}
-demonstrate on the crisp JSP---where a formula would have to be
+iterating, the self-labeling strategy that \citet{Corsini2024}
+demonstrate on the crisp JSP, where a formula would have to be
 evolved anew. How much of
 the gap is learnable is open, and its shape is measurable: the
 sampled distribution has a standard deviation of $3.2$ points per

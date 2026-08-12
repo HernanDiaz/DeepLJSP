@@ -588,6 +588,39 @@ Haupt, R.%
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
+Karunakaran%
+, Mei%
+, Chen%
+\BCBL {}\ \BBA {} Zhang%
+}{%
+Karunakaran%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2016}}%
+}]{%
+Karunakaran2016}
+\APACinsertmetastar {%
+Karunakaran2016}%
+\begin{APACrefauthors}%
+Karunakaran, D.%
+, Mei, Y.%
+, Chen, G.%
+\BCBL {} Zhang, M.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2016}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Dynamic job shop scheduling under uncertainty using
+  genetic programming} {Dynamic job shop scheduling under uncertainty using
+  genetic programming}.{\BBCQ}
+\newblock
+ \APACrefbtitle {Intelligent and Evolutionary Systems} {Intelligent and
+  evolutionary systems}\ (\BPGS\ 195--210).
+\newblock
+\APACaddressPublisher{}{Springer}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
 Kasperski%
 \ \BBA {} Zieli{\'n}ski%
 }{%
@@ -678,6 +711,32 @@ Kool, W.%
 \newblock
  \APACrefbtitle {International Conference on Learning Representations
   ({ICLR}).} {International conference on learning representations ({ICLR}).}
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Kouvelis%
+\ \BBA {} Yu%
+}{%
+Kouvelis%
+\ \BBA {} Yu%
+}{%
+{\protect \APACyear {1997}}%
+}]{%
+Kouvelis1997}
+\APACinsertmetastar {%
+Kouvelis1997}%
+\begin{APACrefauthors}%
+Kouvelis, P.%
+\BCBT {}\ \BBA {} Yu, G.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYear{1997}.
+\newblock
+\APACrefbtitle {Robust Discrete Optimization and Its Applications} {Robust
+  discrete optimization and its applications}.
+\newblock
+\APACaddressPublisher{Dordrecht}{Kluwer Academic Publishers}.
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
@@ -879,6 +938,42 @@ Nguyen, S.%
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
+Nguyen%
+, Zhang%
+, Johnston%
+\BCBL {}\ \BBA {} Tan%
+}{%
+Nguyen%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2013}}%
+}]{%
+Nguyen2013}
+\APACinsertmetastar {%
+Nguyen2013}%
+\begin{APACrefauthors}%
+Nguyen, S.%
+, Zhang, M.%
+, Johnston, M.%
+\BCBL {} Tan, K.C.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2013}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {A computational study of representations in genetic
+  programming to evolve dispatching rules for the job shop scheduling problem}
+  {A computational study of representations in genetic programming to evolve
+  dispatching rules for the job shop scheduling problem}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{IEEE Transactions on Evolutionary
+  Computation}{17}{5}{621--639,}
+\newblock
+
+\newblock
+
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
 Palacios%
 , Gonz{\'a}lez-Rodr{\'i}guez%
 , Vela%
@@ -1016,6 +1111,38 @@ Schulman, J.%
   optimization algorithms.}
 \newblock
 \APACrefnote{arXiv:1707.06347}
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Smit%
+, Wu%
+, Troubil%
+, Zhang%
+\BCBL {}\ \BBA {} Nuijten%
+}{%
+Smit%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2024}}%
+}]{%
+Smit2024Stochastic}
+\APACinsertmetastar {%
+Smit2024Stochastic}%
+\begin{APACrefauthors}%
+Smit, I.G.%
+, Wu, Y.%
+, Troubil, P.%
+, Zhang, Y.%
+\BCBL {} Nuijten, W.P.M.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2024}{}{}.
+\newblock
+\APACrefbtitle {Neural combinatorial optimization for stochastic flexible job
+  shop scheduling problems.} {Neural combinatorial optimization for stochastic
+  flexible job shop scheduling problems.}
+\newblock
+\APACrefnote{arXiv:2412.14052}
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
@@ -1236,6 +1363,35 @@ Vinyals, O.%
  \APACrefbtitle {Advances in Neural Information Processing Systems
   ({NeurIPS}).} {Advances in neural information processing systems
   ({NeurIPS}).}
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Wang%
+, Guo%
+\BCBL {}\ \BBA {} Liu%
+}{%
+Wang%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2025}}%
+}]{%
+Wang2025FuzzyAR}
+\APACinsertmetastar {%
+Wang2025FuzzyAR}%
+\begin{APACrefauthors}%
+Wang, Y.%
+, Guo, T.%
+\BCBL {} Liu, Z.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2025}{}{}.
+\newblock
+\APACrefbtitle {An expectation-maximization algorithm-based autoregressive
+  model for the fuzzy job shop scheduling problem.} {An
+  expectation-maximization algorithm-based autoregressive model for the fuzzy
+  job shop scheduling problem.}
+\newblock
+\APACrefnote{arXiv:2502.00018}
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
