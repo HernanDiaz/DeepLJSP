@@ -36,6 +36,7 @@
 
 \newcommand{\ECmax}{E[\mathbf{C}_{\max}]}
 \newcommand{\Cmax}{\mathbf{C}_{\max}}
+\newcommand{\LBi}{\widehat{\mathrm{LB}}}
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
 
 \theoremstyle{thmstylethree}%
@@ -600,71 +601,117 @@ $w_{\bullet}\in[0,1]$ its fixed weight: terminal makespan
 ($\mathrm{mk}$), job progress ($\mathrm{pr}$), machine idleness
 ($\mathrm{id}$), local improvement ($\mathrm{li}$), operation
 criticality ($\mathrm{cr}$) and load balance ($\mathrm{ba}$), each
-defined below. Every component collapses intervals by the upper
-endpoint, the primary key of the ranking of Eq.~\eqref{eq:lex}, and
-is divided by a scale derived from the instance's own magnitudes,
-listed with each component. The division makes every component a
-quantity of order one on any instance, so the weights compare like
-with like and the gradient scale does not grow with the instance:
-the training signal is dimensionless for the same reason, and with
-the same role in size invariance, as the features of
-Section~\ref{sec:features}. The floors inside the scales below
-($\max(100,\cdot)$ and its analogues) guard against small-magnitude
-instances and are inactive on every instance trained on in this
-paper. Write
-$c^{U}_{\mu}$ for the worst-case completion time of machine $\mu$
-over the operations scheduled so far, and
-$M^{U}_{t}=\max_{\mu}c^{U}_{\mu}$ for the projected worst-case
-makespan after $t$ decisions; the step $t$ schedules operation
-$o_{jk}$ on machine $\mu=\nu_{jk}$. The weights were fixed by hand
-during development and afterwards submitted to a racing campaign of
-their own, over all six free in $[0,1]$, which did not improve on
-them (Section~\ref{sec:hyperconfig}):
+defined below. The weights were fixed by hand during development
+and afterwards submitted to a racing campaign of their own, over all
+six free in $[0,1]$, which did not improve on them
+(Section~\ref{sec:hyperconfig}).
+
+Two conventions are shared by all six components. First, intervals
+are collapsed by their upper endpoint, the primary key of the
+ranking of Eq.~\eqref{eq:lex}. Second, each component is divided by
+a scale of its own natural magnitude on the instance, which makes it
+a dimensionless quantity of comparable size on any instance: the
+weights then compare like with like, and the gradient does not grow
+with the instance, for the same reason and with the same role in
+size invariance as the features of Section~\ref{sec:features}. (In
+the implementation each scale carries a small constant floor against
+degenerate instances; the floors never activate on the instances
+trained on here and are omitted below.)
+
+Some scales refer to $\LBi$, a lower bound on the makespan that the
+method computes from the instance itself as the maximum of the
+classical machine-capacity, critical-path and one-machine
+bounds, collapsed by its upper endpoint under interval durations. It
+is an internal estimate, so the method does not depend on externally
+supplied references; the published bounds enter only the reporting
+metric of Eq.~\eqref{eq:re}. Finally, write $c^{U}_{\mu}$ for the
+worst-case completion time of machine $\mu$ over the operations
+scheduled so far, $M^{U}_{t}=\max_{\mu}c^{U}_{\mu}$ for the
+projected worst-case makespan after $t$ decisions, and let step $t$
+schedule operation $o_{jk}$ on machine $\mu=\nu_{jk}$. The six
+components are:
 \begin{itemize}
-\item \emph{terminal makespan} ($r^{\mathrm{mk}}_t$,
-  $w_{\mathrm{mk}}{=}1.0$): zero until the final step, where it is
-  $-C^{U}_{\max}/s_{\mathrm{mk}}$ with
-  $s_{\mathrm{mk}}=\max(100,\mathrm{LB}/10)$, plus a bonus when the
-  schedule finishes within $5\%$ of the instance bound: writing
-  $g=(C^{U}_{\max}-\mathrm{LB})/\mathrm{LB}$ for the relative gap,
-  the bonus is $10\,(1-10g)$ for $g\le0.05$, a ramp that decreases
-  linearly from $10$ at the bound to $5$ at the edge of the band, and
-  is absent beyond it;
-  this is the quantity actually being minimized (the robust arms of
-  Section~\ref{sec:ablations-interval} replace $C^{U}_{\max}$ here by
-  $f_\lambda$);
-\item \emph{job progress} ($r^{\mathrm{pr}}_t$,
-  $w_{\mathrm{pr}}{=}0.26$): a constant $1/(nm)$ for every operation
-  scheduled, a uniform progress signal; its base weight $0.2$ is
-  raised by a fixed factor $1.3$ whenever durations are intervals;
-\item \emph{machine idleness} ($r^{\mathrm{id}}_t$,
-  $w_{\mathrm{id}}{\approx}0.24$):
-  $-\max(0,\,s^{U}_{o_{jk}}-c^{U}_{\mu})/s_{\mathrm{id}}$, the
-  worst-case idle gap the new operation opens on its machine, with
-  $s_{\mathrm{id}}=\max(10,\,2\bar p)$ and $\bar p$ the mean midpoint
-  duration of the instance; its weight grows with the prominence of
-  the instance's bottleneck machine, from a base of $0.2$;
-\item \emph{local improvement} ($r^{\mathrm{li}}_t$,
-  $w_{\mathrm{li}}{=}0.15$): the step change of the projected
-  makespan, $(M^{U}_{t-1}-M^{U}_{t})/(s_{\mathrm{mk}}/10)$, doubled
-  when the change is a deterioration; a dense signal so that early
-  decisions are not credited only $nm$ steps later;
-\item \emph{operation criticality} ($r^{\mathrm{cr}}_t$,
-  $w_{\mathrm{cr}}{=}0.1$): the worst-case work remaining in the
-  operation's job after it,
-  $\big(\sum_{k'>k}p^{U}_{jk'}\big)/s_{\mathrm{cr}}$ with
-  $s_{\mathrm{cr}}=\max(50,\,W^{U}/2n)$ and $W^{U}$ the instance's
-  total worst-case work: favoring jobs with much work remaining is a
-  standard proxy for the emerging critical path;
-\item \emph{load balance} ($r^{\mathrm{ba}}_t$,
-  $w_{\mathrm{ba}}{=}0.1$, its cap, reached whenever machine loads
-  vary as much as here): minus the standard deviation of the machine
-  completions $c^{U}_{\mu}$ after the step, over a scale set to the
-  dispersion expected for the instance; it discourages lopsided
-  machine loads.
+\item \emph{Terminal makespan} ($w_{\mathrm{mk}}{=}1.0$): zero at
+every step except the last, where
+\begin{equation*}
+r^{\mathrm{mk}}_{nm}=-\frac{C^{U}_{\max}}{s_{\mathrm{mk}}}+b,
+\qquad
+b=\begin{cases}10\,(1-10g)& g\le 0.05,\\ 0 & g>0.05,\end{cases}
+\end{equation*}
+with $s_{\mathrm{mk}}=\LBi/10$ and
+$g=(C^{U}_{\max}-\LBi)/\LBi$ the relative gap to the
+instance bound. The first term is the quantity actually being
+minimized, and dividing by $s_{\mathrm{mk}}$ makes it equal to
+$-10\,(1+g)$: a function of the relative gap alone, so its magnitude
+is independent of the instance's size and time scale, and a schedule
+of the same relative quality receives the same reward on any
+instance. The bonus $b$ rewards finishing within $5\%$ of the
+bound, as a ramp decreasing linearly from $10$ at the bound to $5$
+at the edge of the band and absent beyond it. The robust arms of
+Section~\ref{sec:ablations-interval} replace $C^{U}_{\max}$ here by
+$f_\lambda$.
+\item \emph{Job progress} ($w_{\mathrm{pr}}{=}0.26$):
+\begin{equation*}
+r^{\mathrm{pr}}_t=\frac{1}{nm}.
+\end{equation*}
+A constant per operation scheduled, a uniform progress signal; its
+base weight $0.2$ is raised by a fixed factor $1.3$ whenever
+durations are intervals.
+\item \emph{Machine idleness} ($w_{\mathrm{id}}{\approx}0.24$):
+\begin{equation*}
+r^{\mathrm{id}}_t=
+-\frac{\max\big(0,\,s^{U}_{o_{jk}}-c^{U}_{\mu}\big)}{s_{\mathrm{id}}},
+\qquad s_{\mathrm{id}}=2\bar p,
+\end{equation*}
+with $\bar p$ the mean midpoint duration of the instance: the
+worst-case idle gap that scheduling $o_{jk}$ opens on its machine,
+measured in units of typical operations. The weight grows with the
+prominence of the instance's bottleneck machine, from a base of
+$0.2$.
+\item \emph{Local improvement} ($w_{\mathrm{li}}{=}0.15$):
+\begin{equation*}
+r^{\mathrm{li}}_t=
+\kappa_t\,\frac{M^{U}_{t-1}-M^{U}_{t}}{s_{\mathrm{mk}}/10},
+\qquad
+\kappa_t=\begin{cases}2 & M^{U}_{t}>M^{U}_{t-1},\\ 1 &
+\text{otherwise},\end{cases}
+\end{equation*}
+the step change of the projected makespan, with deteriorations
+penalized twice as strongly: a dense signal so that early decisions
+are not credited only $nm$ steps later.
+\item \emph{Operation criticality} ($w_{\mathrm{cr}}{=}0.1$):
+\begin{equation*}
+r^{\mathrm{cr}}_t=\frac{\sum_{k'>k}p^{U}_{jk'}}{s_{\mathrm{cr}}},
+\qquad s_{\mathrm{cr}}=\frac{W^{U}}{2n},
+\end{equation*}
+with $W^{U}$ the instance's total worst-case work: the worst-case
+work remaining in the scheduled operation's job. Favoring jobs with
+much work remaining is a standard proxy for the emerging critical
+path.
+\item \emph{Load balance} ($w_{\mathrm{ba}}{=}0.1$, its cap, reached
+whenever machine loads vary as much as here):
+\begin{equation*}
+r^{\mathrm{ba}}_t=
+-\frac{\sigma_{\mu}\big(c^{U}_{\mu}\big)}{s_{\mathrm{ba}}},
+\end{equation*}
+where $\sigma_{\mu}$ is the standard deviation across machines after
+the step and $s_{\mathrm{ba}}$ a scale set to the dispersion expected
+for the instance: it discourages lopsided machine loads.
 \end{itemize}
-The reward shapes training only; every reported result is measured
-by the RE of Eq.~\eqref{eq:re}.
+
+The internal constants of these components (the amplification of
+$s_{\mathrm{mk}}$ by the factor $10$, which places the terminal term
+an order of magnitude above the dense shaping components while the
+weights stay in $[0,1]$; the $5\%$ band and the size of its bonus,
+set commensurate with the terminal term itself; the asymmetry
+$\kappa$; and the interval factor $1.3$) were fixed by hand during
+early development and carried unchanged into every experiment of
+this paper. No claim of optimality is attached to them: what the
+configuration campaign of Section~\ref{sec:hyperconfig} establishes
+is that racing the six \emph{weights} over $[0,1]$ does not improve
+on the hand-set vector within the protocol's resolution; the
+internal constants were not raced. The reward shapes training only;
+every reported result is measured by the RE of Eq.~\eqref{eq:re}.
 
 \subsection{Dimensionless, uncertainty-aware features}
 \label{sec:features}
@@ -683,17 +730,17 @@ and machine over what is scheduled so far.}
 \toprule
 \# & Feature & Definition \\
 \midrule
-1--2 & duration bounds & $d^L/\mathrm{LB}$, $d^U/\mathrm{LB}$ \\
+1--2 & duration bounds & $d^L/\LBi$, $d^U/\LBi$ \\
 3 & duration uncertainty & $(d^U-d^L)/\mathrm{mid}(d)$ \\
-4--5 & earliest start bounds & $est^L/\mathrm{LB}$, $est^U/\mathrm{LB}$ \\
+4--5 & earliest start bounds & $est^L/\LBi$, $est^U/\LBi$ \\
 6 & start uncertainty & $(est^U-est^L)/\mathrm{mid}(\mathbf{est})$ \\
-7--8 & remaining job work & $rem^L/\mathrm{LB}$, $rem^U/\mathrm{LB}$ \\
+7--8 & remaining job work & $rem^L/\LBi$, $rem^U/\LBi$ \\
 9--10 & job position & $(m-k-1)/m$, $k/m$ \\
-11 & machine load & $L(\mu)/\mathrm{LB}$ \\
-12 & potential idle gap & $\max(0,\,c^U_{J}-c^U_{\mu})/\mathrm{LB}$ \\
+11 & machine load & $L(\mu)/\LBi$ \\
+12 & potential idle gap & $\max(0,\,c^U_{J}-c^U_{\mu})/\LBi$ \\
 13 & machine congestion & $L(\mu)/\bar L$ \\
-14 & slack & $(est^U-\min_{o'\in\mathcal{E}}est^U_{o'})/\mathrm{LB}$ \\
-15--16 & completions & $c^U_{\mu}/\mathrm{LB}$, $c^U_{J}/\mathrm{LB}$ \\
+14 & slack & $(est^U-\min_{o'\in\mathcal{E}}est^U_{o'})/\LBi$ \\
+15--16 & completions & $c^U_{\mu}/\LBi$, $c^U_{J}/\LBi$ \\
 \bottomrule
 \end{tabular*}
 \end{table}
@@ -710,23 +757,22 @@ each, for $12$ in total.}
 \# & Feature & Definition \\
 \midrule
 1 & progress & scheduled operations $/\,nm$ \\
-2 & partial makespan & $\max_\mu c^U_\mu / \mathrm{LB}$ \\
-3--4 & machine completions & mean and std of $c^U_\mu/\mathrm{LB}$ \\
-5--7 & remaining loads & mean, max and std of $L(\mu)/\mathrm{LB}$ \\
-8--9 & remaining job work & mean and max of job remaining $/\mathrm{LB}$ \\
+2 & partial makespan & $\max_\mu c^U_\mu / \LBi$ \\
+3--4 & machine completions & mean and std of $c^U_\mu/\LBi$ \\
+5--7 & remaining loads & mean, max and std of $L(\mu)/\LBi$ \\
+8--9 & remaining job work & mean and max of job remaining $/\LBi$ \\
 10 & eligibility & $|\mathcal{E}|/n$ \\
 11 & pending uncertainty & $\sum(\text{widths})/\sum(\text{midpoints})$ of
 unscheduled ops \\
-12 & total load & $\sum_\mu L(\mu)/(\mathrm{LB}\cdot m)$ \\
+12 & total load & $\sum_\mu L(\mu)/(\LBi\cdot m)$ \\
 \bottomrule
 \end{tabular*}
 \end{table}
 
 
 The representation expresses every temporal quantity as a fraction of
-the instance's lower bound $\mathrm{LB}$ (its worst case if the bound
-is itself an interval), and every uncertainty as a ratio of interval
-width to magnitude. Absolute times are not comparable across
+the computed bound $\LBi$ of Section~\ref{sec:mdp}, and every
+uncertainty as a ratio of interval width to magnitude. Absolute times are not comparable across
 instances, since their magnitude reflects the time scale of the
 instance at hand; a policy trained on them would be tied to the scale
 of its training set. Under the dimensionless representation, what the
@@ -1190,6 +1236,30 @@ ${\approx}2.0$. Figure~\ref{fig:scaling} places the curve between two
 dotted references measured on the same six instances: G\&T-MWKR
 above, at $27.9\%$, and fEABC below, at $9.6\%$, the latter a
 yardstick from a different computational class.
+
+Figure~\ref{fig:training} shows the dynamics behind those endpoints
+at the operating budget. Within each block the episode RE falls
+steeply over the first ${\sim}200$ episodes and stabilizes, with no
+divergence in any seed; across blocks, each instance starts better
+than its predecessor did, the visible effect of carrying the weights
+over, and the spread between seeds narrows as training advances, the
+dynamic counterpart of the $0.47$-point deviation of
+Table~\ref{tab:insize}. The levels in this figure are higher than
+the deployed ones because training episodes are \emph{sampled}, with
+exploration active, rather than greedy.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=.92\linewidth]{figures/fig_training.pdf}
+  \caption{Training dynamics of the deployed arm: RE of the sampled
+  training episodes (smoothed over $25$ episodes; the band spans the
+  seeds) and of the best schedule found so far, over the four
+  training blocks TA11--TA14 with weights carried from block to
+  block. Curves aggregate the seven seeds of the ten whose runs
+  recorded per-episode logs; the remaining three predate that
+  logging.}
+  \label{fig:training}
+\end{figure}
 
 \begin{table}[t]
 \centering\small
