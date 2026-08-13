@@ -361,7 +361,7 @@ D{\'i}az~Rodr{\'i}guez, H.%
 \newblock
 \APAChowpublished {Zenodo}.
 \newblock
-\APACrefnote{[dataset]}
+\APACrefnote{[dataset]. \doi{10.5281/zenodo.21716972}}
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
@@ -387,7 +387,9 @@ D{\'i}az~Rodr{\'i}guez, H.%
   hyper-heuristics for the job shop scheduling problem with interval durations:
   robustness-aware interpretable rules that generalize across instance sizes.}
 \newblock
-\APACrefnote{Preprint. \todo{identificador del preprint}}
+\APAChowpublished {SSRN}.
+\newblock
+\APACrefnote{Preprint. \doi{10.2139/ssrn.7214286}}
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%

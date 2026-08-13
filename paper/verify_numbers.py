@@ -1692,6 +1692,13 @@ check_exacto("tex: sin caracteres de control anomalos",
 check_exacto("tex: sin comandos LaTeX rotos (ef{, egin{, rac{)",
              not re.search(r"(?<![\\A-Za-z])(ef|egin|rac|ext)\{",
                            open("paper/main.tex", encoding="utf-8").read()))
+# Marcadores \todo pendientes: se imprimen en rojo en el PDF (uno de
+# ellos llego a salir dentro de la bibliografia), asi que ninguno puede
+# sobrevivir al envio. Se listan en cada pasada hasta que desaparezcan.
+for _f in ("paper/main.tex", "paper/refs.bib"):
+    for _t in re.findall(r"(?<!newcommand\{)\\todo\{([^}]*)\}",
+                         open(_f, encoding="utf-8").read()):
+        pendiente(f"{_f}: marcador \\todo sin resolver", _t)
 # La tabla de posicionamiento del estado del arte (menor 17 de la
 # revision r1) se escribio y se retiro el mismo dia por decision del
 # autor: se repondra solo si un revisor la pide. El .log no debe traer
