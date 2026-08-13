@@ -106,6 +106,9 @@ def main():
                     help="p.ej. 12,13,14")
     ap.add_argument("--clases", type=str, default="",
                     help="filtro de clases, p.ej. tai15_15,tai20_15")
+    ap.add_argument("--pids", type=str, default="",
+                    help="lista explicita de instancias, para trocear a "
+                         "mano un bo grande equilibrando coste")
     ap.add_argument("--salida", type=str, default="")
     args = ap.parse_args()
     sel = [int(x) for x in args.semillas.split(",")]
@@ -123,7 +126,8 @@ def main():
     if nuevo:
         w.writerow(["seed", "instance", "cls", "re_greedy", "re_bo"])
         f.flush()
-    pids = instancias(args.conjunto, filtro)
+    pids = instancias(args.conjunto, filtro,
+                      args.pids.split(",") if args.pids else None)
     for sem in sel:
         red = PolicyValueNetV2()
         ck = torch.load(ruta_semilla(sem), map_location="cpu",

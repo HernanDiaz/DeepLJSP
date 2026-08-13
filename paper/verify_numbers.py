@@ -1719,6 +1719,44 @@ else:
     check_exacto("5.4: el campeon se elige en validacion, no en las 70",
                  "TA15-TA20" in _cj["criterio"], _cj["criterio"])
 
+# Las 30 semillas sobre las 70: las dos lecturas simetricas frente al
+# estudio del GP. Lo escribe scripts/resume_70_treinta.py fusionando el
+# greedy de las tres procedencias (comparable entre si porque el greedy
+# es determinista) y los carriles del campeon.
+_r70 = "benchmarks/ext30/resumen70_una_pasada.json"
+if not os.path.exists(_r70):
+    pendiente("las 30 sobre las 70", "sin resumen70_una_pasada.json")
+else:
+    import json as _json70
+    _j70 = _json70.load(open(_r70, encoding="utf-8"))
+    check_exacto("6.2: treinta semillas completas sobre las 70",
+                 _j70["n"] == 30, str(_j70["n"]))
+    check("6.2: media de las 30 a una pasada (texto 19.82)", 19.82,
+          _j70["media_30"], tol=0.006)
+    check("6.2: sd de las 30 sobre las 70 (texto 1.29)", 1.29,
+          _j70["sd_30"], tol=0.006)
+    check("6.2: el campeon a una pasada (texto 18.49)", 18.49,
+          _j70["campeon_re"], tol=0.006)
+    check("6.2: la mejor sobre test seria 18.06", 18.06,
+          _j70["mejor_en_test"], tol=0.006)
+    check_exacto("6.2: el campeon queda 5o de 30 sobre test",
+                 _j70["puesto_campeon_en_test"] == 5,
+                 str(_j70["puesto_campeon_en_test"]))
+    # el precio de elegir en validacion en vez de en test, que es el
+    # sesgo que el protocolo del GP se concede y el nuestro no
+    check("6.2: elegir en test regalaria 0.43 puntos", 0.43,
+          _j70["campeon_re"] - _j70["mejor_en_test"], tol=0.006)
+    if "bo64" in _j70.get("campeon_muestreado", {}):
+        check("6.2: el campeon a 64 muestras (texto 15.02)", 15.02,
+              _j70["campeon_muestreado"]["bo64"]["global"], tol=0.006)
+    else:
+        pendiente("campeon a 64 muestras", "carriles sin terminar")
+    if "bo1024" in _j70.get("campeon_muestreado", {}):
+        check_exacto("6.2: el campeon a 1024 muestras existe", True,
+                     f"{_j70['campeon_muestreado']['bo1024']['global']:.2f}")
+    else:
+        pendiente("campeon a 1024 muestras", "carriles en curso")
+
 # Marcadores \todo pendientes: se imprimen en rojo en el PDF (uno de
 # ellos llego a salir dentro de la bibliografia), asi que ninguno puede
 # sobrevivir al envio. Se listan en cada pasada hasta que desaparezcan.
