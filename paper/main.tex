@@ -152,26 +152,6 @@ durations: a recent survey of
 learning-based job shop scheduling~\citep{Xu2025} lists no method
 addressing interval-valued processing times.
 
-What recommends that regime is operational rather than
-methodological. Interval bounds are the description a shop can
-produce from what it already records, the observed spread of an
-operation's processing times or the range an operator or supplier
-will commit to, whereas a distribution or a membership function
-requires an estimate that is harder to defend and seldom validated.
-The schedules such a shop needs divide in the same way. One kind is
-planned, computed once per shift or per order release, where minutes
-of search are affordable and per-instance metaheuristics are the
-appropriate tool. The other is unplanned: a breakdown, a rush order
-or a late arrival invalidates the current plan, and a replacement is
-wanted before the floor idles, which leaves seconds rather than
-minutes. A policy trained once and evaluated in a single pass
-addresses the second case, and the choice between the two objectives
-studied here is likewise a shop's to make, since the default
-objective returns the shorter expected makespan while the
-width-penalizing variant of Section~\ref{sec:ablations-interval}
-returns completion times that are more predictable, which is what a
-delivery commitment rests on.
-
 Two obstacles separate standard JSP-DRL designs from the IJSP.
 The first is representational: the uncertainty must be observable to
 the agent, which should treat an operation with duration $[10,11]$
