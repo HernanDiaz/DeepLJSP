@@ -1,0 +1,7 @@
+comparacion,semillas,instancias,dif_media,ic95_lo,ic95_hi,d_cohen,peor_en,n_pares,p_pares,p_instancia,sd_entre_instancias,sd_entre_semillas
+"atencion, 300 episodios",3,6,1.035,0.006,2.063,1.056,5,18,0.06654,0.0625,1.318,1.095
+"atencion, 1000 episodios",10,6,1.058,0.465,1.651,1.872,6,60,0.00043,0.03125,1.448,1.31
+"sin anchuras, 1000 episodios",10,6,0.04,-0.792,0.872,0.051,2,60,0.92483,1.0,1.448,1.31
+"punto medio, 1000 episodios",10,6,0.627,0.083,1.17,1.21,6,60,0.04467,0.03125,1.448,1.31
+"robusto lambda=1, RE",3,6,1.939,0.942,2.936,2.041,6,18,0.00748,0.03125,1.331,1.178
+"anchura predicha, lambda=1",3,6,-0.948,-1.528,-0.368,-1.716,0,18,0.01041,0.03125,,

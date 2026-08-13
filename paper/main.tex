@@ -956,6 +956,18 @@ with the same symmetric scheme~\citep{DiazGA2020}, is reserved for
 the cross-family evaluation of Section~\ref{sec:results-classics},
 and plays no part in training or validation either.
 
+One convention governs every significance test reported below. The
+independent unit is the instance, not the pair (instance, seed):
+policies trained under different seeds are evaluated on the same
+instances, so their results are averaged over seeds before any
+instance is entered into a paired test. Treating the pairs as
+independent would multiply the apparent sample size without adding
+information about generalization. Tests are two-sided exact Wilcoxon
+signed-rank tests over the instances of the set in question, reported
+with the mean difference and its $95\%$ confidence interval, and the
+smallest attainable $p$-value is $0.031$ on the six validation
+instances and below $10^{-3}$ on the seventy.
+
 \subsection{Computational environment}
 \label{sec:environment}
 
@@ -1689,13 +1701,13 @@ employed in this study: over three seeds at $300$ episodes and over
 ten at $1000$, the operating budget.
 
 The variant yields no improvement at either budget and a significant
-degradation at the operating one. Across the eighteen instance--seed
-pairs it is $1.03$ points of RE inferior at $300$ episodes, degraded
-on 12 of the 18 pairs and on 5 of the 6 instances, a difference that
-does not reach significance (Wilcoxon signed-rank, $p=0.067$); at
-$1000$ episodes the deficit is $1.06$ points over the sixty
-instance--seed pairs, degraded on 41 of the 60, on all six
-instances and in every one of the ten seeds ($p<0.001$).
+degradation at the operating one. At $300$ episodes it is $1.03$
+points of RE inferior (95\% CI $0.01$ to $2.06$), degraded on 5 of
+the 6 instances, a difference that does not reach significance
+(Wilcoxon signed-rank, $p=0.063$); at $1000$ episodes the deficit is
+$1.06$ points ($0.46$ to $1.65$), degraded on all six instances and
+in every one of the ten seeds ($p=0.031$, the smallest value six
+instances admit).
 Table~\ref{tab:insize-attn} reports the corresponding means and best
 seeds. The variant carries $3.2$ times the parameters of the base
 network and $2.2$ times its wall-clock cost per episode, the latter
@@ -1777,16 +1789,16 @@ identically zero and the bounds coincide, while the architecture, the
 hyperparameters and the schedule builder remain untouched and the
 environment still executes interval semantics. Ten seeds retrained
 from scratch reach $13.86\%$ mean RE against the ten-seed baseline's
-$13.82\%$: a difference of $0.04$ points, worse on 31 of the sixty
-instance--seed pairs, not significant (Wilcoxon signed-rank,
-$p=0.93$). The measurement is not redundant with the prediction,
-because Eq.~\eqref{eq:upperclosed} concerns the objective while the
-widths could in principle have shaped the value function or the
-exploration as an auxiliary signal. They do not, and the effect size
-bounds what room remains: the paired differences have a standard
-deviation of $1.86$ points, so $0.04$ is $0.02$ of one, and detecting
-an effect that small at conventional power would require on the order
-of three thousand seeds.
+$13.82\%$: a difference of $0.04$ points, worse on 2 of the 6
+instances, not significant (Wilcoxon signed-rank, $p=1.00$). The
+measurement is not redundant with the prediction, because
+Eq.~\eqref{eq:upperclosed} concerns the objective while the widths
+could in principle have shaped the value function or the exploration
+as an auxiliary signal. They do not, and the interval estimate bounds
+what room remains: the difference lies between $-0.79$ and $+0.87$
+points with $95\%$ confidence, so any effect these data leave open is
+smaller than the one the next ablation attributes to the training
+distribution.
 
 \paragraph{Intervals as training data.} The second ablation removes
 the uncertainty from training altogether. The benchmark perturbs each
@@ -1797,9 +1809,9 @@ trained on them and evaluated, unchanged, on the interval
 instances. This is the case Eq.~\eqref{eq:upperclosed} leaves
 open, since midpoint training replaces the upper endpoints
 themselves, and both arms extend to ten seeds: the gap is
-$0.63$ points, from $13.82\%$ to $14.45\%$, worse on 36 of the 60
-instance--seed pairs and positive for eight of the ten seeds
-($p=0.045$). Training on the true upper bounds is slightly better than
+$0.63$ points, from $13.82\%$ to $14.45\%$ ($95\%$ CI $0.08$ to
+$1.17$), worse on all six instances and positive for eight of the ten
+seeds ($p=0.031$). Training on the true upper bounds is slightly better than
 training on their midpoints, a detected effect rather than a
 measured one, at a power of about $0.7$. The delimitation is therefore sharper
 than a blanket statement about interval awareness. As \emph{input
@@ -1824,10 +1836,11 @@ and is the analogue of the robust objective of the GP study~\citep{DiazGP2026};
 since optimizing one quantity and selecting by another would be
 incoherent, the best-of-$N$ inference of this arm ranks its samples by
 $f_\lambda$ as well. Deployed as that package, the objective delivers
-what it promises: over the same eighteen instance--seed pairs the
-predicted interval narrows from $12.85\%$ to $11.90\%$ of the expected
-makespan (narrower on 13 of 18, $p=0.010$) while the expected makespan
-rises by $1.94$ points, to $15.38\%$ ($p=0.007$). Unlike the two
+what it promises: over the same three seeds the predicted interval
+narrows from $12.85\%$ to $11.90\%$ of the expected makespan
+(narrower on all six instances, $p=0.031$) while the expected makespan
+rises by $1.94$ points, to $15.38\%$ (higher on all six, $p=0.031$).
+Unlike the two
 ablations above, both effects are significant: a width-rewarding
 objective is available, at a price of about two points of RE.
 
@@ -2012,9 +2025,9 @@ baseline of this paper exploits the first of those and the policy
 still leads it, but the ceiling is real. Third, the
 $\lambda$-sweep arms and the rollout-deposit controls of
 Section~\ref{sec:ablations-interval} are run over three training
-seeds and compared pairwise on them, so those differences are stated
-as paired effects over eighteen instance--seed pairs rather than as
-claims about the population of seeds. The three arms extended to ten
+seeds, so their instance means rest on three runs each and the
+differences are paired effects on six instances rather than claims
+about the population of seeds. The three arms extended to ten
 seeds calibrate what a three-seed comparison can miss: the midpoint
 control turned a null into a detected effect, the attention deficit
 shrank from $1.76$ to $1.06$ points, and the no-width null sharpened

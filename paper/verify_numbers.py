@@ -392,9 +392,19 @@ for tag_a, tag_b, delta_tex in [("v2-full-300ep", "v2-attn-300ep", 0.9),
 # (instancia, semilla), delta en puntos de RE, cuentas y Wilcoxon
 from scipy.stats import wilcoxon as _wilc  # noqa: E402
 
+def _p_instancia(dif_por_ta):
+    """Wilcoxon exacto con la instancia como unidad (revision r1).
+
+    Los pares (instancia, semilla) no son independientes: diez redes
+    sobre las mismas seis instancias aportan seis observaciones, no
+    sesenta. Se promedia por instancia antes del test.
+    """
+    return float(_wilc(dif_por_ta, method="exact").pvalue)
+
+
 for _tb, _d_tex, _pares_tex, _inst_tex, _p_tex, _cent in [
-        ("300ep", 1.03, 12, 5, 0.067, False),
-        ("1000ep", 1.76, 16, 6, None, True)]:
+        ("300ep", 1.03, 12, 5, 0.063, False),
+        ("1000ep", 1.76, 16, 6, 0.031, True)]:
     _da = bench_por_instancia("v2-full-" + _tb)
     _db = bench_por_instancia("v2-attn-" + _tb)
     if not (_da and _db):
@@ -415,11 +425,12 @@ for _tb, _d_tex, _pares_tex, _inst_tex, _p_tex, _cent in [
               > sum(re_pct(v, ta) for v in _da[ta]["mids"]))
     check_exacto(f"{_pref}{_tb}: peor en {_inst_tex} de las 6 instancias",
                  _pi == _inst_tex, str(_pi))
-    _p = _wilc(_dif).pvalue
-    if _p_tex is None:
-        check_exacto(f"{_pref}{_tb}: p<0.001", _p < 0.001, f"p={_p:.5f}")
-    else:
-        check(f"{_pref}{_tb}: Wilcoxon p={_p_tex}", _p_tex, _p, tol=0.0011)
+    _dif_i = [sum(re_pct(v, ta) for v in _db[ta]["mids"])
+              / len(_db[ta]["mids"])
+              - sum(re_pct(v, ta) for v in _da[ta]["mids"])
+              / len(_da[ta]["mids"]) for ta in sorted(_da)]
+    check(f"{_pref}{_tb}: Wilcoxon por instancia p={_p_tex}", _p_tex,
+          _p_instancia(_dif_i), tol=0.0011)
 
 # 7.3 a diez semillas: 60 pares contra las diez del brazo principal
 _da10 = bench_por_instancia_multi("v2-full-1000ep", "v2-full-1000ep-ext-c")
@@ -449,9 +460,18 @@ if _da10 and _db10:
     check_exacto("7.3 1000ep: peor en las 10 semillas de 10",
                  len(_sems10) == 10 and _peor_sem == 10,
                  f"{_peor_sem}/{len(_sems10)}")
-    check_exacto("7.3 1000ep: p<0.001",
-                 _wilc(_dif10).pvalue < 0.001,
-                 f"p={_wilc(_dif10).pvalue:.2e}")
+    _dif10_i = [sum(re_pct(v, ta) for v in _db10[ta]["mids"]) / 10
+                - sum(re_pct(v, ta) for v in _da10[ta]["mids"]) / 10
+                for ta in sorted(_da10)]
+    check("7.3 1000ep: Wilcoxon por instancia (texto 0.031)", 0.031,
+          _p_instancia(_dif10_i), tol=0.0011)
+    _md10 = sum(_dif10_i) / 6
+    _sd10 = (sum((x - _md10) ** 2 for x in _dif10_i) / 5) ** 0.5
+    _semi10 = 2.5706 * _sd10 / 6 ** 0.5
+    check("7.3 1000ep: IC95 inferior (texto 0.46)", 0.46, _md10 - _semi10,
+          tol=0.011)
+    check("7.3 1000ep: IC95 superior (texto 1.65)", 1.65, _md10 + _semi10,
+          tol=0.011)
     # y que ninguna cuarentena contamina los globs
     import glob as _gl
     check_exacto("7.3: la extension tiene 7 semillas exactas (run 80226df)",
@@ -478,16 +498,20 @@ if _da10 and _nw10:
                  sum(1 for d in _difnw if d > 0) == 31,
                  str(sum(1 for d in _difnw if d > 0)))
     import statistics as _st74
-    _sdnw = _st74.stdev(_difnw)
-    check("7.4 no-width: sd 1.86", 1.86, _sdnw, tol=0.006)
-    check("7.4 no-width: d de Cohen 0.02", 0.02,
-          abs(sum(_difnw) / len(_difnw)) / _sdnw, tol=0.006)
-    _n74 = (2.8 / (abs(sum(_difnw) / len(_difnw)) / _sdnw)) ** 2 / 6
-    check_exacto("7.4 no-width: ~tres mil semillas para detectarlo",
-                 2300 <= _n74 <= 3300, f"{_n74:.0f}")
-    _pnw = _wilc(_difnw).pvalue
-    check_exacto("7.4 no-width: p=0.93", 0.90 <= _pnw <= 0.96,
-                 f"p={_pnw:.3f}")
+    _difnw_i = [sum(re_pct(v, ta) for v in _nw10[ta]["mids"]) / 10
+                - sum(re_pct(v, ta) for v in _da10[ta]["mids"]) / 10
+                for ta in sorted(_da10)]
+    check_exacto("7.4 no-width: peor en 2 de las 6 instancias",
+                 sum(1 for d in _difnw_i if d > 0) == 2,
+                 str(sum(1 for d in _difnw_i if d > 0)))
+    check("7.4 no-width: Wilcoxon por instancia (texto 1.00)", 1.0,
+          _p_instancia(_difnw_i), tol=0.0011)
+    _mdnw = sum(_difnw_i) / 6
+    _seminw = 2.5706 * _st74.stdev(_difnw_i) / 6 ** 0.5
+    check("7.4 no-width: IC95 inferior (texto -0.79)", -0.79,
+          _mdnw - _seminw, tol=0.011)
+    check("7.4 no-width: IC95 superior (texto 0.87)", 0.87,
+          _mdnw + _seminw, tol=0.011)
     check_exacto("7.4: la extension no-width tiene 7 semillas exactas",
                  len(_gl.glob(
                      "outputs/bench_v2-nowidth-1000ep-ext__*_seed*")) == 7,
@@ -1713,9 +1737,22 @@ check_exacto("punto medio: positivo en 8 de las 10 semillas",
              _pos == 8, f"{_pos}/10")
 try:
     from scipy import stats as _stmp
-    _pmp = _stmp.wilcoxon(_d10)[1]
-    check_exacto("punto medio a diez semillas: significativo (texto 0.045)",
-                 0.040 <= _pmp <= 0.050, f"p={_pmp:.4f}")
+    _tas_mp = sorted({t for t, _ in _c10}, key=lambda x: int(x[2:]))
+    _sem_mp = sorted({s for _, s in _c10}, key=int)
+    _d10_i = [sum(_mp10[(t, s)] - _full10[(t, s)] for s in _sem_mp)
+              / len(_sem_mp) for t in _tas_mp]
+    check_exacto("punto medio: peor en las 6 instancias",
+                 sum(x > 0 for x in _d10_i) == 6,
+                 f"{sum(x > 0 for x in _d10_i)}/6")
+    check("punto medio por instancia: significativo (texto 0.031)", 0.031,
+          float(_stmp.wilcoxon(_d10_i, method="exact").pvalue), tol=0.0011)
+    _mdmp = sum(_d10_i) / 6
+    import statistics as _stmpd
+    _semimp = 2.5706 * _stmpd.stdev(_d10_i) / 6 ** 0.5
+    check("punto medio: IC95 inferior (texto 0.08)", 0.08, _mdmp - _semimp,
+          tol=0.011)
+    check("punto medio: IC95 superior (texto 1.17)", 1.17, _mdmp + _semimp,
+          tol=0.011)
 except ImportError:
     pendiente("Wilcoxon del punto medio a diez", "sin scipy")
 # el punto medio a 3 semillas ya no se imprime (7.4 reporta solo las
@@ -1829,16 +1866,24 @@ else:
     _dan = [_lam[k][1] - _base_a[k][1] for k in _com]
     check("lambda=1: RE sube 1.94 puntos (texto)", 1.94,
           sum(_dre) / len(_dre), tol=0.02)
-    check_exacto("lambda=1: mas estrecho en 13 de 18",
-                 sum(x < 0 for x in _dan) == 13,
-                 f"{sum(x < 0 for x in _dan)}/18")
     try:
         from scipy import stats as _st
-        _p_re, _p_an = _st.wilcoxon(_dre)[1], _st.wilcoxon(_dan)[1]
-        check_exacto("lambda=1: RE significativa (texto p=0.007)",
-                     0.006 <= _p_re <= 0.009, f"p={_p_re:.4f}")
-        check_exacto("lambda=1: ancho significativo (texto p=0.010)",
-                     0.009 <= _p_an <= 0.012, f"p={_p_an:.4f}")
+        _tas_l = sorted({t for t, _ in _com}, key=lambda x: int(x[2:]))
+        _sem_l = sorted({s for _, s in _com}, key=int)
+        _dre_i = [sum(_lam[(t, s)][0] - _base_a[(t, s)][0] for s in _sem_l)
+                  / len(_sem_l) for t in _tas_l]
+        _dan_i = [sum(_lam[(t, s)][1] - _base_a[(t, s)][1] for s in _sem_l)
+                  / len(_sem_l) for t in _tas_l]
+        check_exacto("lambda=1: mas estrecho en las 6 instancias",
+                     sum(x < 0 for x in _dan_i) == 6,
+                     f"{sum(x < 0 for x in _dan_i)}/6")
+        check_exacto("lambda=1: peor RE en las 6 instancias",
+                     sum(x > 0 for x in _dre_i) == 6,
+                     f"{sum(x > 0 for x in _dre_i)}/6")
+        check("lambda=1: RE por instancia (texto 0.031)", 0.031,
+              float(_st.wilcoxon(_dre_i, method="exact").pvalue), tol=0.0011)
+        check("lambda=1: ancho por instancia (texto 0.031)", 0.031,
+              float(_st.wilcoxon(_dan_i, method="exact").pvalue), tol=0.0011)
     except ImportError:
         pendiente("Wilcoxon lambda=1", "sin scipy")
 
