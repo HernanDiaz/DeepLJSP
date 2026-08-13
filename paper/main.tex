@@ -66,14 +66,14 @@ literature by per-instance metaheuristic search. This paper studies
 the complementary regime: a constructive policy, trained once by deep
 reinforcement learning, that returns a schedule in seconds. The policy
 combines dimensionless state features with a permutation-invariant
-encoder, so one parameter set covers any instance size. Trained
+encoder, so one parameter set applies to any instance size. Trained
 with proximal policy optimization on four interval Taillard
 $20{\times}15$ instances, it attains $13.8\%$ mean relative
 error against crisp lower bounds on the validation instances of that
 size, compared with $27.9\%$ for the strongest hand-crafted rule, and
 outperforms every such rule on all seventy instances, including six
 size classes never trained on. A comparison with a
-dispatching rule evolved by genetic programming for the same
+rule evolved by genetic programming for the same
 benchmark shows the ranking of the two learning paradigms to be
 governed by the inference budget: the evolved rule prevails at a
 single pass, whereas the policy prevails on 46 of 70 instances when
@@ -191,9 +191,9 @@ yield a measurable benefit at practical training budgets?
 \item \emph{An empirical characterization}
   (Section~\ref{sec:results}) answering Q1--Q3: the scaling of
   solution quality with the inference budget on the training class,
-  the zero-shot evaluation of a single network across all seven
-  Taillard size classes, and its transfer to a second benchmark of
-  classical instances.
+  the evaluation of a single network across all seven Taillard size
+  classes, six of them unseen, and its transfer to a second benchmark
+  of classical instances.
 \item \emph{A comparison against both families of constructive
   heuristic} (Section~\ref{sec:positioning}), on the 70 benchmark
   instances and with per-instance results reported in full
@@ -966,7 +966,11 @@ information about generalization. Tests are two-sided exact Wilcoxon
 signed-rank tests over the instances of the set in question, reported
 with the mean difference and its $95\%$ confidence interval, and the
 smallest attainable $p$-value is $0.031$ on the six validation
-instances and below $10^{-3}$ on the seventy.
+instances and below $10^{-3}$ on the seventy. No correction for
+multiple comparisons is applied: the tests answer separate questions
+posed in advance, one per ablation, so the $p$-values are reported as
+evidence about each contrast on its own and not as a family-wise
+claim.
 
 \subsection{Computational environment}
 \label{sec:environment}
@@ -994,6 +998,7 @@ carries no dependence on specialized hardware.
 Component & Specification \\
 \midrule
 CPU & AMD Ryzen 5 3400G, 4 cores / 8 threads, $3.7$ GHz \\
+Thread limit & 2 per process (\texttt{OMP} and \texttt{MKL}) \\
 Memory & $32$ GB \\
 GPU & NVIDIA GeForce RTX 5060 Ti, $16$ GB (tuning only) \\
 Operating system & Windows 10 Pro 22H2 (64-bit) \\
@@ -1123,7 +1128,15 @@ The policy is trained with PPO~\citep{Schulman2017} under the
 hyperparameters of Table~\ref{tab:hyper}. Training on a set of
 instances proceeds in blocks, one
 instance at a time, with the weights carried over from each block to
-the next. A \emph{rollout} is one complete construction episode
+the next. Every block receives the same number of episodes, and the
+instances are presented in their benchmark order, TA11 to TA14, which
+the seed does not permute: the seed governs network initialization,
+action sampling and minibatch composition, so the experiments here
+measure variability under a fixed curriculum and not over the
+orderings of it. Each training budget is a separate run from
+scratch rather than a checkpoint of a longer one, so the arms at
+$100$, $300$ and $1000$ episodes per instance share no trajectory.
+A \emph{rollout} is one complete construction episode
 played by the current policy: \emph{sampled} when each operation is
 drawn from $\pi$, as during training, and \emph{greedy} when every
 step takes the most probable operation. Every tenth episode
@@ -1188,7 +1201,13 @@ Giffler--Thompson are dominated by a wide margin in every size class
 and are not reported further. The
 learned-symbolic baseline is the dispatching rule evolved by genetic
 programming for this same benchmark by~\citet{DiazGP2026}, compared budget by budget in
-Section~\ref{sec:positioning}.
+Section~\ref{sec:positioning}. The budget that is matched there is the
+number of schedules each method constructs, not the wall-clock time it
+spends: both run the same schedule builder once per sample and differ
+in what scores a candidate, a forward pass of the network against the
+evaluation of an evolved expression, which is the cheaper of the two.
+Matched sample counts therefore favour the policy in computational
+terms, and the comparison should be read as one of sample efficiency.
 
 Three published IJSP metaheuristics are included as reference
 yardsticks rather than as direct competitors, since each searches
@@ -1257,8 +1276,11 @@ per-instance search.
 \centering\small
 \caption{RE (\%) per validation instance, mean [best] over ten
 training runs differing only in their random seed, Deep Sets model,
-best-of-64 inference. The rightmost column is the standard deviation
-across the ten per-seed means over the six instances; the last row is
+best-of-64 inference. Here and throughout, \emph{best} is the best
+training run, never the best rollout within a run: sampling is
+already aggregated by the best-of-$N$ rule. Each seed contributes one
+mean over the six instances, and the rightmost column is the standard
+deviation of those ten numbers; the last row is
 the strongest constructive baseline, a single deterministic pass.}
 \label{tab:insize}
 \footnotesize
@@ -1425,7 +1447,11 @@ classical instances (FT10 and FT20, seven of the La family, and
 ABZ7--9), generated from their crisp counterparts with the same
 symmetric scheme as the Taillard set~\citep{DiazGA2020}. None of these
 families was seen during training or validation, so they double as a
-cross-family generalization test. Following the literature, RE is
+cross-family generalization test. What changes is the family of
+underlying scheduling instances, not the way uncertainty is
+generated, which is the same construction in both benchmarks; the
+test therefore speaks to transfer across shop structures and leaves
+transfer across uncertainty regimes open. Following the literature, RE is
 measured here against the best-known expected-makespan
 values~\citep{DiazFEABC2023}.
 
@@ -1655,7 +1681,11 @@ $4$ and $8$ samples to $0.42$ between $512$ and $1023$, a log-linear
 rate of $0.46$ points per doubling over the last three octaves;
 wall-clock cost, by contrast, scales linearly in $B$. On the machine
 of Table~\ref{tab:environment} a sampled rollout requires $1.03$ s on
-a $20{\times}15$ instance and $6.4$ s on a $50{\times}20$ one, so
+a $20{\times}15$ instance and $6.4$ s on a $50{\times}20$ one, timed
+end to end over the episode, so that the figure covers the forward
+passes, the environment transitions and the interval arithmetic of
+the schedule builder, and excludes only the one-off loading of the
+model. Accordingly
 $B{=}1023$ amounts to $18$ minutes and $1.8$ hours per instance, and
 the four additional doublings needed to reach $11\%$ at the measured
 rate would amount to $4.7$ and $29$ hours. Sampling is therefore an
@@ -2012,12 +2042,17 @@ width.
 \subsection{Limitations}
 \label{sec:limitations}
 
-Four limitations bound the scope of these conclusions. First, the
+Five limitations bound the scope of these conclusions. First, the
 benchmark follows the symmetric $\pm15\%$ generation scheme standard
 in the IJSP literature; asymmetric intervals, and distributions in
 which the uncertainty varies sharply from one operation to another,
 would separate the worst-case and expected-value criteria far more
-than they do here, and no policy was trained under them. Second, the
+than they do here, and no policy was trained under them. The second
+benchmark changes the family of scheduling instances but not this
+scheme, so no result here speaks to a different uncertainty regime,
+and the finding that widths are inert as inputs is a statement about
+this objective on this construction rather than about interval
+scheduling at large. Second, the
 policy builds semiactive schedules, so the space it searches excludes
 the active schedules that the conflict-set restriction reaches and
 the insertion-based ones beyond them; the strongest constructive
@@ -2031,7 +2066,10 @@ about the population of seeds. The three arms extended to ten
 seeds calibrate what a three-seed comparison can miss: the midpoint
 control turned a null into a detected effect, the attention deficit
 shrank from $1.76$ to $1.06$ points, and the no-width null sharpened
-from $0.18$ to $0.04$ points. Finally, the comparison with the rule evolved by
+from $0.18$ to $0.04$ points. Fourth, the four training instances are
+always presented in the same order, so the variability the seeds
+measure is that of a fixed curriculum; whether a different order
+would move the arm was not tested. Finally, the comparison with the rule evolved by
 genetic programming shares the evaluation protocol end to end (the
 same instances, interval arithmetic, ranking criterion, inference
 budgets and execution realizations, run in a single harness) but not
