@@ -1693,18 +1693,9 @@ check_exacto("tex: sin comandos LaTeX rotos (ef{, egin{, rac{)",
              not re.search(r"(?<![\\A-Za-z])(ef|egin|rac|ext)\{",
                            open("paper/main.tex", encoding="utf-8").read()))
 # La tabla de posicionamiento del estado del arte (menor 17 de la
-# revision r1): cada estudio que enumera debe estar citado y resuelto
-_pos = re.search(r"\\label\{tab:positioning\}(.*?)\\end\{table\}", TEX,
-                 re.S).group(1)
-_pos_cites = set(re.findall(r"\\citet\{([^}]+)\}", _pos))
-_bib = open("paper/refs.bib", encoding="utf-8").read()
-check_exacto("2: la tabla de posicionamiento cita 7 estudios",
-             len(_pos_cites) == 7, f"{len(_pos_cites)}")
-check_exacto("2: todos sus estudios existen en refs.bib",
-             all(f"{{{c}," in _bib for c in _pos_cites),
-             ",".join(sorted(c for c in _pos_cites
-                             if f"{{{c}," not in _bib)) or "todos")
-# y el .log no debe traer citas ni referencias sin resolver
+# revision r1) se escribio y se retiro el mismo dia por decision del
+# autor: se repondra solo si un revisor la pide. El .log no debe traer
+# citas ni referencias sin resolver
 _log = open("paper/main.log", encoding="utf-8", errors="replace").read()
 check_exacto("tex: sin citas ni referencias sin resolver",
              "undefined" not in _log.lower().replace("undefined control", ""))

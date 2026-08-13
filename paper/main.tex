@@ -381,49 +381,6 @@ Section~\ref{sec:related-gp} on the very benchmark studied here lets
 Section~\ref{sec:positioning} put the two learned artifacts on the
 same instances at matched \emph{inference} budgets.
 
-Table~\ref{tab:positioning} places the present work among
-representatives of the families reviewed above. Two axes separate it
-from the neural literature: the uncertainty model, interval rather
-than absent, stochastic or fuzzy, and the encoder, which is a set
-model over the eligible operations rather than a graph model over the
-disjunctive representation. Two others separate it from the interval
-literature: an artifact learned once and reused, rather than a search
-repeated per instance, and an inference cost measured in rollouts
-rather than in minutes.
-
-\begin{table}[!htb]
-\centering\small
-\caption{The present work among representatives of the families
-reviewed in this section, summarized as discussed above. The last
-column is the cost of solving one new instance once the artifact, if
-any, exists.}
-\label{tab:positioning}
-\footnotesize
-\setlength{\tabcolsep}{3.5pt}
-\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lllll@{}}
-\toprule
-Study & Uncertainty & Artifact & Trained & Inference \\
-\midrule
-\citet{Zhang2020L2D} & none & graph policy & once, offline &
-one pass \\
-\citet{Park2021GNN} & none & graph policy & once, offline &
-one pass \\
-\citet{Smit2024Stochastic} & stochastic & attention policy &
-once, offline & one pass \\
-\citet{Wang2025FuzzyAR} & fuzzy & generative model & once, offline &
-one pass \\
-\citet{Karunakaran2016} & stochastic & evolved rule & once, offline &
-one pass \\
-\citet{DiazGP2026} & interval & evolved rule & once, offline &
-one pass; samples \\
-\citet{DiazFEABC2023} & interval & none & none &
-search per instance \\
-\textbf{This paper} & interval & set policy & once, offline &
-one pass; samples \\
-\bottomrule
-\end{tabular*}
-\end{table}
-
 \section{Problem Statement}
 \label{sec:problem}
 
