@@ -69,7 +69,7 @@ combines dimensionless state features with a permutation-invariant
 encoder, so one parameter set covers any instance size. Trained
 with proximal policy optimization on four interval Taillard
 $20{\times}15$ instances, it attains $13.8\%$ mean relative
-error against crisp lower bounds on the development instances of that
+error against crisp lower bounds on the validation instances of that
 size, compared with ${\approx}46\%$ for the best hand-crafted
 dispatching rule, and surpasses every such rule zero-shot on all
 seven size classes of the 70-instance benchmark. A comparison with a
@@ -949,27 +949,26 @@ $15{\times}15$ to $50{\times}20$,
 each crisp duration replaced by an integer interval symmetric around
 it, with half-width drawn uniformly up to $15\%$ of the original
 value~\citep{DiazGA2020}. The benchmark is openly
-available~\citep{DiazDataset2026}. Of the 70 instances, four carry
-gradients: the final model trains on TA11--TA14
-($20{\times}15$) only. Six more of the same class,
-TA15--TA20, form the \emph{development set}: never used for
+available~\citep{DiazDataset2026}. Of the 70 instances, the final model is trained on four,
+TA11--TA14 of the $20{\times}15$ class. Six more of the same class,
+TA15--TA20, form the \emph{validation set}: never used for
 gradients, but every design and configuration decision was judged on
 their performance, so they are reported separately and excluded from
-claims about unseen data. The remaining 60 instances were touched by
-neither training nor development. A second benchmark, consisting of interval
+claims about unseen data. The remaining 60 instances entered neither training nor
+validation. A second benchmark, consisting of interval
 versions of twelve classical instances (FT10, FT20, La21, La24, La25,
 La27, La29, La38, La40 and ABZ7--9) generated
 with the same symmetric scheme~\citep{DiazGA2020}, is reserved for
 the cross-family evaluation of Section~\ref{sec:results-classics},
-and plays no part in training or development either.
+and plays no part in training or validation either.
 
 \subsection{Computational environment}
 \label{sec:environment}
 
-Table~\ref{tab:environment} lists the machine and the software stack.
-One remark matters for reading the costs reported later: every
-number in this paper (training, evaluation, the dispatching-rule
-baselines and the ablations) was produced on the CPU. The network is
+Table~\ref{tab:environment} lists the machine and the software
+stack. One aspect bears on the costs reported later: every number in
+this paper (training, evaluation, the dispatching-rule baselines and
+the ablations) was produced on the CPU. The network is
 small enough (Section~\ref{sec:arch}) that a forward pass is
 negligible next to the environment step that follows it, so the GPU
 yields no speedup for a single rollout; it was used only for the vectorized
@@ -1059,11 +1058,12 @@ update period & $4$ ep. & $2,\ 4,\ 8$ ep. & fixed \\
 \end{tabular}
 \end{table}
 
-All reported results use the hyperparameters of Table~\ref{tab:hyper}
-\emph{without problem-specific tuning}, and none of its values was
-tuned for this problem. To assess
-whether tuning would improve on them, two automatic configuration
-studies were run with irace~\citep{LopezIbanez2016}. The first
+All reported results use the hyperparameters of
+Table~\ref{tab:hyper}. Their values were fixed by hand during
+development, most of them at the defaults customary in the PPO
+literature. To assess whether automatic tuning would improve on
+them, two configuration studies were run with
+irace~\citep{LopezIbanez2016}. The first
 raced $330$ experiments ($309$ used) over the 8-parameter
 space of Table~\ref{tab:irace} at reduced fidelity: one training
 instance, $300$ episodes, ${\sim}8$ minutes per evaluation. Its elites agreed on a
@@ -1080,29 +1080,30 @@ campaign's elites. It converged to a region distinct from the
 defaults and eliminated the seeded default during racing; yet its
 winner, retrained on the four training instances over three seeds,
 again failed to improve: $14.73\%$ against $13.52\%$ over the six
-development instances.
+validation instances.
 A third campaign raced the reward instead of the optimizer: the six
 weights of Eq.~\eqref{eq:reward}, each free in $[0,1]$, over $299$
 experiments at operating fidelity. Its winner did not improve the
 deployed weights either, $14.04\%$ against $13.55\%$ under the same
-confirmation protocol (Wilcoxon signed-rank, $p=0.21$). Two
-by-products matter more than the verdict. A seeded terminal-only
-vector $(1,0,0,0,0,0)$ was eliminated in the first round, so the dense
+confirmation protocol (Wilcoxon signed-rank, $p=0.21$). Two by-products of that campaign are more
+informative than its verdict. A seeded terminal-only vector
+$(1,0,0,0,0,0)$ was eliminated in the first round, so the dense
 shaping is not dispensable; and four elites survived the full race
 differing by as much as $0.48$ in a single weight, with a Kendall
 agreement across seeds of $W=0.02$--$0.05$ on which is better, so at
 this budget the objective is flat in the reward weights relative to
 the noise between training runs.
 
-Automatic configuration therefore does not beat the defaults of
-Table~\ref{tab:hyper} for this problem \emph{even at the operating
-budget}, nor do raced reward weights improve on the hand-set
-ones, within the resolution of the protocol. With a standard
-deviation of $0.47$ points across seed means at $1000$ episodes
-(Section~\ref{sec:results-insize}) and three seeds per arm, a paired
-confirmation resolves about one point of RE, so what the three
-campaigns exclude is an improvement larger than that rather than any
-improvement at all. The same arithmetic explains their common
+Automatic configuration therefore does not improve on the values of
+Table~\ref{tab:hyper} for this problem, even at the operating
+budget, nor do raced reward weights improve on the hand-set ones,
+within the resolution of the protocol. That resolution can be
+quantified: with a standard deviation of $0.47$ points across seed
+means at $1000$ episodes (Section~\ref{sec:results-insize}) and three
+seeds per arm, the minimum difference a paired confirmation detects
+at conventional power is approximately one point of RE. The three
+campaigns therefore exclude improvements larger than that magnitude,
+not the existence of smaller ones. The same arithmetic explains their common
 signature, the racing optimum never matching the confirmation
 optimum: single-run outcomes are too noisy to separate near-equivalent
 configurations, and raising the resolution by repeating each evaluation
@@ -1112,8 +1113,8 @@ reduces the number of configurations a fixed budget can race.
 \label{sec:training}
 
 The policy is trained with PPO~\citep{Schulman2017} under the
-hyperparameters of Table~\ref{tab:hyper}, most of which are standard
-PPO values. Training on a set of instances proceeds in blocks, one
+hyperparameters of Table~\ref{tab:hyper}. Training on a set of
+instances proceeds in blocks, one
 instance at a time, with the weights carried over from each block to
 the next. A \emph{rollout} is one complete construction episode
 played by the current policy: \emph{sampled} when each operation is
@@ -1197,7 +1198,7 @@ figures are quoted from those papers, not re-run here.
 \subsection{In-size performance and budget scaling}
 \label{sec:results-insize}
 
-Table~\ref{tab:insize} reports per-instance RE on the development set
+Table~\ref{tab:insize} reports per-instance RE on the validation set
 for increasing training budgets over ten independent training runs,
 and Figure~\ref{fig:scaling} their means against the budget. Three
 observations:
@@ -1241,7 +1242,7 @@ exploration active, rather than greedy.
 
 \begin{table}[t]
 \centering\small
-\caption{RE (\%) per development instance, mean [best] over ten
+\caption{RE (\%) per validation instance, mean [best] over ten
 training runs differing only in their random seed, Deep Sets model,
 best-of-64 inference. The rightmost column is the standard deviation
 across the ten per-seed means over the six instances; the last row is
@@ -1269,11 +1270,12 @@ G\&T-MWKR & 30.6 & 34.0 & 17.7 & 31.8 & 29.3 & 24.1 & 27.9 & --- \\
 \begin{figure}[t]
   \centering
   \includegraphics[width=.7\linewidth]{figures/fig_scaling.pdf}
-  \caption{Mean RE on the development set against the \emph{training}
-  budget, the episodes spent once per instance before deployment, on
-  a logarithmic axis and over ten training runs. The band spans the
-  best and worst of them; the dotted lines are G\&T-MWKR and fEABC on
-  the same six instances.}
+  \caption{Mean RE on the six validation instances TA15--TA20
+  ($20{\times}15$) against the \emph{training} budget, the episodes
+  spent once per instance before deployment, on a logarithmic axis
+  and over ten training runs. The band spans the best and worst of
+  them; the dotted lines are G\&T-MWKR and fEABC on the same six
+  instances.}
   \label{fig:scaling}
 \end{figure}
 
@@ -1311,7 +1313,7 @@ of the transfer.
 \centering\small
 \caption{Mean RE (\%) per size class over the 70 interval Taillard
 instances, ten per class. The $20{\times}15$ column ($\dagger$) is the
-training and development class.}
+training and validation class.}
 \label{tab:seventy}
 \setlength{\tabcolsep}{3.5pt}
 \begin{tabular}{lcccccccc}
@@ -1394,7 +1396,7 @@ been established for the interval variant.
   the two learners paired at one pass and at $1024$ samples. Boxes
   span the quartiles with whiskers at $1.5$ IQR; every instance is
   overlaid as a point. The shaded $20{\times}15$ class holds the
-  training and development instances.}
+  training and validation instances.}
   \label{fig:byclass}
 \end{figure}
 
@@ -1405,7 +1407,7 @@ The IJSP literature also reports on interval versions of twelve
 classical instances (FT10 and FT20, seven of the La family, and
 ABZ7--9), generated from their crisp counterparts with the same
 symmetric scheme as the Taillard set~\citep{DiazGA2020}. None of these
-families was seen during training or development, so they double as a
+families was seen during training or validation, so they double as a
 cross-family generalization test. Following the literature, RE is
 measured here against the best-known expected-makespan
 values~\citep{DiazFEABC2023}.
@@ -1537,14 +1539,14 @@ its inputs can be audited. Figure~\ref{fig:importance} reports a
 permutation test~\citep{Breiman2001}: at every decision of a greedy
 rollout, one feature
 column is shuffled across the eligible operations, and the resulting
-mean RE over the development set and the three seeds is compared with
+mean RE over the validation set and the three seeds is compared with
 the intact rollouts ($18.2\%$).
 
 \begin{figure}[!htb]
   \centering
   \includegraphics[width=.72\linewidth]{figures/fig_importance.pdf}
   \caption{Permutation importance of the 16 operation features: change
-  in mean development-set RE when the feature's column is shuffled
+  in mean validation-set RE when the feature's column is shuffled
   across the eligible operations at every decision (greedy rollouts,
   three seeds; intact baseline $18.2\%$). Bars are the mean of five
   independent permutation draws and whiskers their standard deviation.
@@ -1674,7 +1676,7 @@ The variant of Section~\ref{sec:attention} inserts two residual
 attention blocks between the shared per-operation encoder and the
 masked pooling of Section~\ref{sec:arch}, which it leaves in place;
 everything else is held fixed, including the training and evaluation
-protocols, the same four training instances, the same six development
+protocols, the same four training instances, the same six validation
 instances, the same seeds and the hyperparameters of
 Table~\ref{tab:hyper}. The comparison is therefore paired at the level
 of (instance, seed), and was conducted at both training budgets
@@ -1698,7 +1700,7 @@ arm agree to within $4\%$.
 \begin{table}[!htb]
 \centering\small
 \caption{Attention ablation: mean [best seed] RE (\%) on the
-development set, over three seeds at $300$ episodes and ten at
+validation set, over three seeds at $300$ episodes and ten at
 $1000$.}
 \label{tab:insize-attn}
 \begin{tabular}{lcc}
@@ -2129,7 +2131,7 @@ rule, of Giffler--Thompson with MWKR tie-breaking, of the evolved rule
 of~\citet{DiazGP2026}, and of the policy at its two
 inference budgets: greedy, averaged over the three training seeds, and
 best-of-1024. The ten $20{\times}15$ instances TA11--TA20 are the
-training and development set.
+training and validation set.
 
 \begin{table}[h]
 \centering\scriptsize
