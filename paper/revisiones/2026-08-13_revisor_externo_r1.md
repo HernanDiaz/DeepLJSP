@@ -9,6 +9,39 @@
   Intelligent Manufacturing*
 - **Recomendación emitida:** Major revision. Confianza 5/5.
 
+## Estado de las respuestas (13 de agosto de 2026)
+
+Resueltas en el texto, cada una verificada antes contra los datos o el
+código: mayores 3, 4, 5 (en lo que no exige medir), 6, 8, 9, 10 y 11;
+menores 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 15 y 16.
+
+La mayor 2, la pseudorreplicación, se resolvió rehaciendo el análisis
+con la instancia como unidad (`scripts/reanalisis_por_instancia.py`,
+commit b522a24). Las cuatro conclusiones sobreviven; los p-valores
+suben y tres de ellos aterrizan en 0.031, que es el mínimo que admiten
+seis instancias, y el texto lo dice.
+
+Un hallazgo colateral que la revisión no vio y que apareció al
+comprobar sus objeciones: un retorno de carro dentro de un `\ref` en la
+sección 2 imprimía `ef{sec:arch}` en el PDF. Corregido, con
+comprobación añadida al verificador.
+
+Pendientes y su motivo:
+
+- **Mayor 1 (simetría de la comparación con GP).** En curso: campaña de
+  30 semillas del brazo principal, para comparar mejor de 30 contra
+  mejor de 30. Su exigencia de que GP no se seleccione sobre las 70 no
+  puede cumplirse, porque esa selección pertenece a un estudio ya
+  publicado; se declara y se contrapone nuestra selección en
+  validación.
+- **Mayor 5 (coste en tiempo del brazo GP).** Requiere medir con la
+  máquina libre, que ahora entrena. Encolado.
+- **Mayor 7 y 12 (esquema de incertidumbre estrecho, relevancia
+  industrial).** Atendidas parcialmente acotando afirmaciones; lo que
+  queda son decisiones de alcance del trabajo.
+- **Menores 10, 14, 17, 18, 19 y 20.** Editoriales o dependientes del
+  DOI del preprint.
+
 ---
 
 ## 1. Summary of the submission

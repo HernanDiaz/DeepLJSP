@@ -713,6 +713,10 @@ Section~\ref{sec:arch}.
 \caption{Per-operation features (all dimensionless). $d=\mathbf{p}_{jk}$,
 $\mathbf{est}$ = earliest start interval, $\mathbf{rem}$ = remaining work
 interval of the job strictly after $o$, excluding $o$ itself;
+$\mathrm{mid}(\cdot)$ is the interval midpoint, a ratio whose
+denominator is floored at a small positive constant and whose
+uncertainty feature is set to zero when the start interval is
+$[0,0]$, the case of the operations eligible at the first decision;
 $\mathrm{mid}(\cdot)$ is the interval
 midpoint; $L(\mu)$ the remaining worst-case load of machine $\mu$;
 $\bar L$ its average over machines; $\mathbf{c}_{J}$ and
