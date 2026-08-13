@@ -81,11 +81,12 @@ both draw $1024$ samples. Ablation attributes the policy's
 performance to the interval training data rather than to
 interval-specific features, in agreement with the closed form of the
 objective: width features are removable at no cost, whereas training
-on crisp midpoints costs $0.63$ points. Under Monte Carlo execution,
-its schedules track their predicted makespans more faithfully than
-those of every hand-crafted rule, and a width-penalizing variant
-carries its narrower predictions through to execution, supporting
-deployment where schedules must be fast and dependable.}
+on crisp midpoints costs $0.63$ points. Under Monte Carlo execution
+with durations drawn independently and uniformly within their
+intervals, its schedules track their predicted makespans more
+faithfully than those of every hand-crafted rule, and a
+width-penalizing variant carries its narrower predictions through to
+execution.}
 
 \keywords{job shop scheduling, interval uncertainty, deep reinforcement
 learning, neural combinatorial optimization, genetic programming
@@ -2042,8 +2043,9 @@ the rule is better at a single pass, and the policy overtakes it when
 both draw $1024$ samples (Section~\ref{sec:positioning}), so what the
 network contributes over a compact formula is its sampling
 distribution rather than its argmax. The per-instance metaheuristics
-retain the lead in solution quality ($9.4\%$ mean RE for fEABC against
-$13.0\%$ for the policy at its largest budget), at the cost of a
+retain the lead in solution quality, on their published figures rather
+than on a rerun under a common protocol ($9.4\%$ mean RE for fEABC
+against $13.0\%$ for the policy at its largest budget), at the cost of a
 search on every new instance: the policy occupies the ground between
 the constructive baselines it dominates and the search algorithms it
 does not attempt to replace (Q1). Because the representation is
