@@ -1692,6 +1692,33 @@ check_exacto("tex: sin caracteres de control anomalos",
 check_exacto("tex: sin comandos LaTeX rotos (ef{, egin{, rac{)",
              not re.search(r"(?<![\\A-Za-z])(ef|egin|rac|ext)\{",
                            open("paper/main.tex", encoding="utf-8").read()))
+# La campana de treinta semillas y la eleccion del campeon SOBRE
+# VALIDACION (5.4). El json lo escribe scripts/elige_campeon.py desde
+# los CSV de benchmarks/ext30/, evaluados todos con el mismo evaluador
+# y las mismas semillas de evaluacion.
+_camp_j = "benchmarks/ext30/campeon.json"
+if not os.path.exists(_camp_j):
+    pendiente("campeon de las 30 semillas", "sin campeon.json")
+else:
+    import json as _json
+    import statistics as _stc
+    _cj = _json.load(open(_camp_j, encoding="utf-8"))
+    _cv = [r["bo64"] for r in _cj["ranking"]]
+    check_exacto("5.4: treinta semillas en el ranking", len(_cv) == 30,
+                 f"{len(_cv)}")
+    check_exacto("5.4: el campeon es la semilla 5", _cj["campeon"] == 5,
+                 f"semilla {_cj['campeon']}")
+    check("5.4: mejor de las 30 (texto 12.77)", 12.77, min(_cv), tol=0.006)
+    check("5.4: peor de las 30 (texto 15.25)", 15.25, max(_cv), tol=0.006)
+    check("5.4: sd de las 30 (texto 0.60)", 0.60, _stc.stdev(_cv),
+          tol=0.006)
+    check("5.4: recorrido de las 30 (texto 2.48)", 2.48,
+          max(_cv) - min(_cv), tol=0.006)
+    check("5.4: el campeon bajo la mediana (texto 1.12)", 1.12,
+          _stc.median(_cv) - min(_cv), tol=0.006)
+    check_exacto("5.4: el campeon se elige en validacion, no en las 70",
+                 "TA15-TA20" in _cj["criterio"], _cj["criterio"])
+
 # Marcadores \todo pendientes: se imprimen en rojo en el PDF (uno de
 # ellos llego a salir dentro de la bibliografia), asi que ninguno puede
 # sobrevivir al envio. Se listan en cada pasada hasta que desaparezcan.

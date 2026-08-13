@@ -1,0 +1,189 @@
+{
+  "campeon": 5,
+  "criterio": "RE medio best-of-64 sobre TA15-TA20",
+  "n_semillas": 30,
+  "media": 13.9181,
+  "sd": 0.6,
+  "ranking": [
+    {
+      "puesto": 1,
+      "semilla": 5,
+      "bo64": 12.7668,
+      "greedy": 17.3079
+    },
+    {
+      "puesto": 2,
+      "semilla": 9,
+      "bo64": 12.8155,
+      "greedy": 18.0632
+    },
+    {
+      "puesto": 3,
+      "semilla": 14,
+      "bo64": 13.1797,
+      "greedy": 19.5196
+    },
+    {
+      "puesto": 4,
+      "semilla": 8,
+      "bo64": 13.262,
+      "greedy": 17.3618
+    },
+    {
+      "puesto": 5,
+      "semilla": 23,
+      "bo64": 13.2781,
+      "greedy": 17.4389
+    },
+    {
+      "puesto": 6,
+      "semilla": 29,
+      "bo64": 13.4299,
+      "greedy": 16.1645
+    },
+    {
+      "puesto": 7,
+      "semilla": 21,
+      "bo64": 13.4769,
+      "greedy": 18.1645
+    },
+    {
+      "puesto": 8,
+      "semilla": 18,
+      "bo64": 13.5111,
+      "greedy": 18.9062
+    },
+    {
+      "puesto": 9,
+      "semilla": 30,
+      "bo64": 13.5459,
+      "greedy": 17.5386
+    },
+    {
+      "puesto": 10,
+      "semilla": 7,
+      "bo64": 13.5707,
+      "greedy": 19.6776
+    },
+    {
+      "puesto": 11,
+      "semilla": 25,
+      "bo64": 13.6772,
+      "greedy": 18.3744
+    },
+    {
+      "puesto": 12,
+      "semilla": 11,
+      "bo64": 13.7771,
+      "greedy": 16.8053
+    },
+    {
+      "puesto": 13,
+      "semilla": 3,
+      "bo64": 13.833,
+      "greedy": 18.7869
+    },
+    {
+      "puesto": 14,
+      "semilla": 4,
+      "bo64": 13.835,
+      "greedy": 18.2348
+    },
+    {
+      "puesto": 15,
+      "semilla": 31,
+      "bo64": 13.8705,
+      "greedy": 18.4257
+    },
+    {
+      "puesto": 16,
+      "semilla": 2,
+      "bo64": 13.9017,
+      "greedy": 17.723
+    },
+    {
+      "puesto": 17,
+      "semilla": 19,
+      "bo64": 13.9085,
+      "greedy": 16.8323
+    },
+    {
+      "puesto": 18,
+      "semilla": 6,
+      "bo64": 13.9173,
+      "greedy": 19.0421
+    },
+    {
+      "puesto": 19,
+      "semilla": 10,
+      "bo64": 13.9797,
+      "greedy": 17.6408
+    },
+    {
+      "puesto": 20,
+      "semilla": 16,
+      "bo64": 14.0518,
+      "greedy": 19.2965
+    },
+    {
+      "puesto": 21,
+      "semilla": 20,
+      "bo64": 14.148,
+      "greedy": 17.7881
+    },
+    {
+      "puesto": 22,
+      "semilla": 12,
+      "bo64": 14.266,
+      "greedy": 18.9108
+    },
+    {
+      "puesto": 23,
+      "semilla": 13,
+      "bo64": 14.4157,
+      "greedy": 17.7318
+    },
+    {
+      "puesto": 24,
+      "semilla": 15,
+      "bo64": 14.4267,
+      "greedy": 18.1367
+    },
+    {
+      "puesto": 25,
+      "semilla": 22,
+      "bo64": 14.4783,
+      "greedy": 17.5439
+    },
+    {
+      "puesto": 26,
+      "semilla": 26,
+      "bo64": 14.5738,
+      "greedy": 18.7433
+    },
+    {
+      "puesto": 27,
+      "semilla": 27,
+      "bo64": 14.7057,
+      "greedy": 18.5469
+    },
+    {
+      "puesto": 28,
+      "semilla": 17,
+      "bo64": 14.8058,
+      "greedy": 20.3247
+    },
+    {
+      "puesto": 29,
+      "semilla": 28,
+      "bo64": 14.8833,
+      "greedy": 20.0768
+    },
+    {
+      "puesto": 30,
+      "semilla": 24,
+      "bo64": 15.2501,
+      "greedy": 21.3877
+    }
+  ]
+}
