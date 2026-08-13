@@ -1319,7 +1319,7 @@ G\&T-MWKR & 30.6 & 34.0 & 17.7 & 31.8 & 29.3 & 24.1 & 27.9 & --- \\
 \end{figure}
 
 \FloatBarrier
-\subsection{Zero-shot cross-size generalization and position among
+\subsection{Cross-size generalization and position among
 constructive methods}
 \label{sec:results-crosssize}
 \label{sec:positioning}
@@ -1574,9 +1574,9 @@ same risk from the run obtained.
 \section{Analysis}
 \label{sec:analysis}
 
-This section reports which inputs the network consults, which of the
-design choices earn their cost, and how far executed makespans
-deviate from the predicted values.
+Three questions remain about the policy itself: which of its inputs
+it consults, which of its design choices earn their cost, and how far
+the makespans it predicts survive execution.
 
 \subsection{What the policy attends to}
 \label{sec:results-importance}
@@ -1613,21 +1613,25 @@ families behind MOR and MWKR, and the very attributes the
 evolved expressions of~\citet{DiazGP2026} select. Below a second tier of
 three features costing between $1.8$ and $2.9$ points, the remaining
 ten fall into a floor between $+0.3$ and $+1.0$ points that no
-measurement of this precision separates, and the two interval-width
-features sit inside it, one of them last of the sixteen
-($+0.3\pm0.3$ for the duration width, $+0.9\pm0.5$ for the start
-width). That the widths lie on that floor follows from the objective: the primary key of the criterion of
+measurement of this precision separates. The floor is not exactly
+zero because permuting any column perturbs an input distribution the
+network was trained against, whether or not that column informs the
+decision.
+
+The two interval-width features sit inside that floor, one of them
+last of the sixteen ($+0.3\pm0.3$ for the duration width,
+$+0.9\pm0.5$ for the start width), and their position follows from
+the objective. The primary key of the criterion of
 Eq.~\eqref{eq:lex}, the worst-case makespan, on which the reward
 also trains, is a function of the upper endpoints alone
 (Section~\ref{sec:ablations-interval}), so a width cannot inform a
-decision judged by that criterion. The same asymmetry appears within the features
-themselves. Three quantities enter as a pair of interval endpoints,
-and in the two pairs that rise above the floor the upper endpoint
-costs several times its lower counterpart ($9.6$ against $1.8$ for
-the job's remaining work, $2.1$ against $1.0$ for the duration), as a
-criterion written in upper endpoints alone should induce. The floor is not exactly zero because permuting any column perturbs
-an input distribution the network was trained against, whether or
-not that column informs the decision.
+decision judged by that criterion. The same asymmetry appears within
+the features themselves: three quantities enter as a pair of interval
+endpoints, and in the two pairs that rise above the floor the upper
+endpoint costs several times its lower counterpart ($9.6$ against
+$1.8$ for the job's remaining work, $2.1$ against $1.0$ for the
+duration), as a criterion written in upper endpoints alone should
+induce.
 
 The audit is therefore conditional on what the policy was trained
 to optimize, namely this objective and the reward weights of
@@ -1670,8 +1674,8 @@ A single \emph{sampled} rollout is substantially worse than the greedy
 one, $21.4\%$ against $17.0\%$: the argmax is a high-quality sequence
 within a broadly dispersed distribution. The curve overtakes the
 evolved rule at $B{=}6$ and the greedy pass at $B{=}12$, so sampling
-becomes profitable at budgets far below the $64$ used throughout. And
-the returns are near-logarithmic over three orders of magnitude,
+becomes profitable at budgets far below the $64$ used throughout. The
+returns are near-logarithmic over three orders of magnitude,
 $14.9\%$ at $64$ and $12.9\%$ at $1023$ ($341$ per checkpoint, the
 reconstruction's closest point to the nominal $1024$), without an
 inflection: no budget within the tested range saturates.
@@ -1694,7 +1698,8 @@ $B{=}1023$ amounts to $18$ minutes and $1.8$ hours per instance, and
 the four additional doublings needed to reach $11\%$ at the measured
 rate would amount to $4.7$ and $29$ hours. Sampling is therefore an
 inefficient route to the residual gap against fEABC's $9.4\%$, which
-a per-instance metaheuristic attains in minutes. One qualification
+its own study reports attaining in minutes per instance on the
+hardware of that study. One qualification
 bounds this extrapolation: budgets above $1023$ lie outside the
 measured range, and within it the marginal return is itself
 contracting, with each octave yielding approximately a tenth less
@@ -1729,10 +1734,11 @@ masked pooling of Section~\ref{sec:arch}, which it leaves in place;
 everything else is held fixed, including the training and evaluation
 protocols, the same four training instances, the same six validation
 instances, the same seeds and the hyperparameters of
-Table~\ref{tab:hyper}. The comparison is therefore paired at the level
-of (instance, seed), and was conducted at both training budgets
-employed in this study: over three seeds at $300$ episodes and over
-ten at $1000$, the operating budget.
+Table~\ref{tab:hyper}. The two arms are therefore matched instance by
+instance and seed by seed, and analysed under the convention of
+Section~\ref{sec:instances}, at both training budgets employed in
+this study: over three seeds at $300$ episodes and over ten at
+$1000$, the operating budget.
 
 The variant yields no improvement at either budget and a significant
 degradation at the operating one. At $300$ episodes it is $1.03$
@@ -1845,9 +1851,12 @@ open, since midpoint training replaces the upper endpoints
 themselves, and both arms extend to ten seeds: the gap is
 $0.63$ points, from $13.82\%$ to $14.45\%$ ($95\%$ CI $0.08$ to
 $1.17$), worse on all six instances and positive for eight of the ten
-seeds ($p=0.031$). Training on the true upper bounds is slightly better than
-training on their midpoints, a detected effect rather than a
-measured one, at a power of about $0.7$. The delimitation is therefore sharper
+seeds ($p=0.031$). Training on the true upper bounds is slightly
+better than training on their midpoints. Six instances give this
+comparison about a $0.7$ chance of detecting an effect of the size
+observed, so the finding establishes the direction of the gap more
+firmly than its magnitude, which the confidence interval leaves loose.
+The delimitation is therefore sharper
 than a blanket statement about interval awareness. As \emph{input
 features} the widths are inert, and Eq.~\eqref{eq:upperclosed} says
 why in a way that generalizes past this network: any method that ranks
@@ -1899,12 +1908,12 @@ figures differ slightly from the training-run schedules quoted above.
 When deployed, with each arm's samples ranked by its own
 $f_\lambda$, the five arms trace a monotone frontier, from $12.80\%$
 relative width at the default end to $10.99\%$ at $\lambda=4$, with
-the expected makespan climbing by $3.49$ points ($p=0.0002$). Under a
+the expected makespan climbing by $3.49$ points ($p=0.031$). Under a
 common selection criterion the frontier vanishes: no retrained arm
 proposes narrower rollouts than the default one (at $\lambda=1$ the
-widths are $12.80\%$ against $12.69\%$, $p=0.93$, and three of the
-four arms are marginally wider), with no paired width difference
-approaching significance (smallest $p=0.37$). Conversely, re-ranking
+widths are $12.80\%$ against $12.69\%$, $p=0.69$, and three of the
+four arms are marginally wider), with no width difference
+approaching significance (smallest $p=0.31$). Conversely, re-ranking
 the \emph{default} policy's own deposit by each $f_\lambda$ in turn
 retraces the frontier almost point for point, ending at $11.09\%$
 width and $17.05\%$ RE where the arm trained on $f_4$ lands
@@ -1951,8 +1960,8 @@ decisions.
 \subsection{Executional robustness}
 \label{sec:results-eps}
 
-The evaluations so far concern the quality of a predicted schedule;
-this section concerns its reliability. A schedule is committed as a
+The evaluations so far concern the quality of a predicted schedule
+rather than its reliability. A schedule is committed as a
 processing order before the durations are known and is eventually
 executed under one realization of them, and its prediction is useful
 insofar as the realized makespan stays close to the expected
@@ -2103,30 +2112,36 @@ than on a rerun under a common protocol ($9.4\%$ mean RE for fEABC
 against $13.0\%$ for the policy at its largest budget), at the cost of a
 search on every new instance: the policy occupies the ground between
 the constructive baselines it dominates and the search algorithms it
-does not attempt to replace (Q1). Because the representation is
+does not attempt to replace (Q1).
+
+Because the representation is
 dimensionless and the encoder permutation-invariant, one network serves
-the entire benchmark: evaluated zero-shot at its deployed budget, it
-outperforms the best
-dispatching rule on every tested instance of all seven size classes,
+the entire benchmark: at its deployed budget it
+outperforms the strongest
+dispatching rule on every one of the seventy instances, six of the
+seven size classes never having been trained on,
 and the same weights improve on every rule on all twelve classical
 instances of the FT, La and ABZ families (Q2).
+
 Of the standard techniques evaluated, only best-of-$N$ inference
 improved results at practical budgets: self-attention blocks added to
 the pooled encoder brought no improvement,
 and three automatic-configuration
 campaigns (two over the optimizer, one over the reward
 weights) failed to beat the hand-set values by more than the
-resolution of the confirmation protocol (Q3). Three more delimit the interval representation that
+resolution of the confirmation protocol (Q3).
+
+Three more ablations delimit the interval representation that
 motivated the design, and they separate two things the design had
 conflated. As inputs the widths are inert: permuting them costs the
 policy $0.3$ and $0.9$ points, the floor of a ranking whose top
 feature costs $56.5$, and removing them from training costs nothing
 measurable over ten seeds ($13.86$ against $13.82\%$,
-$p=0.93$), which the closed recursion for the worst-case makespan
+$p=1.00$), which the closed recursion for the worst-case makespan
 predicts, since that quantity does not contain a lower bound. As
 training data the intervals are not inert: fitting the policy to the
 crisp midpoints instead costs $0.63$ points over ten seeds
-($14.45$ against $13.82\%$, $p=0.045$). Retraining under an
+($14.45$ against $13.82\%$, $p=0.031$). Retraining under an
 objective that charges for the width does not overturn this
 delimitation: swept from $\lambda=0$ to $4$, the deployed arms trace a
 monotone width--makespan frontier (the predicted interval narrows
@@ -2136,12 +2151,14 @@ held fixed the robust weights and the default ones are
 indistinguishable, and ranking the default policy's own samples by
 $f_\lambda$ retraces the frontier without any retraining: what
 narrows the interval is which sample is kept, not which network
-produced it. At execution time the policy's schedules are among the
+produced it.
+
+At execution time the policy's schedules are among the
 most dependable of the constructive pool, more faithful than every
 hand-crafted rule over the seventy instances and level with the
 evolved rule, while the width-charging arm attains the lowest deviation of
 the comparison, significantly ahead of the default arm, carrying the
-selection-time narrowing through to execution. And a
+selection-time narrowing through to execution. A
 permutation audit shows the network leaning on slack, remaining
 operations and worst-case remaining work, the attributes that
 hand-crafted and evolved rules exploit, with the width features at

@@ -1753,6 +1753,12 @@ try:
           tol=0.011)
     check("punto medio: IC95 superior (texto 1.17)", 1.17, _mdmp + _semimp,
           tol=0.011)
+    # la potencia que cita 7.4, recomputada con la instancia como unidad
+    _dmp = _mdmp / _stmpd.stdev(_d10_i)
+    _ncp = _dmp * 6 ** 0.5
+    _tc = _stmp.t.ppf(0.975, 5)
+    _pot = (1 - _stmp.nct.cdf(_tc, 5, _ncp) + _stmp.nct.cdf(-_tc, 5, _ncp))
+    check("punto medio: potencia ~0.7 (texto)", 0.7, _pot, tol=0.05)
 except ImportError:
     pendiente("Wilcoxon del punto medio a diez", "sin scipy")
 # el punto medio a 3 semillas ya no se imprime (7.4 reporta solo las
@@ -1954,7 +1960,7 @@ else:
             return min(v, key=lambda t: t[1] + lam * (t[1] - t[0]))
 
         def _re_anc(brazo, lam):
-            re, anc = [], []
+            re, anc, inst = [], [], []
             for k, v in sorted(_pool.items()):
                 if k[0] != brazo:
                     continue
@@ -1962,8 +1968,16 @@ else:
                 mid = (lo + up) / 2
                 re.append((mid - _lbs2[k[2]]) / _lbs2[k[2]] * 100)
                 anc.append((up - lo) / mid * 100)
+                inst.append(k[2])
             return (sum(re) / len(re), sum(anc) / len(anc),
-                    re, anc)
+                    re, anc, inst)
+
+        def _por_inst(vals, inst):
+            """Promedia sobre las semillas: la instancia es la unidad."""
+            agg = {}
+            for v, i in zip(vals, inst):
+                agg.setdefault(i, []).append(v)
+            return [sum(agg[i]) / len(agg[i]) for i in sorted(agg)]
 
         _BRAZOS = [("base", 0.0, 12.80), ("lam0p5", 0.5, 12.38),
                    ("lam1", 1.0, 12.20), ("lam2", 2.0, 11.88),
@@ -1989,23 +2003,34 @@ else:
                      _mas_anchos == 3, f"{_mas_anchos}/4")
         try:
             from scipy import stats as _st2
-            _p4 = _st2.wilcoxon([a - b for a, b in
-                                 zip(_prop["lam4"][2],
-                                     _prop["base"][2])])[1]
-            check_exacto("barrido: RE lam4 significativa (texto p=0.0002)",
-                         0.0001 <= _p4 <= 0.0003, f"p={_p4:.5f}")
-            _pmin = min(_st2.wilcoxon([a - b for a, b in
-                                       zip(_fija[br][3],
-                                           _fija["base"][3])])[1]
-                        for br in ("lam0p5", "lam1", "lam2", "lam4"))
-            check_exacto("barrido fijado: ancho nunca significativo "
-                         "(texto: smallest p=0.37)",
-                         0.365 <= _pmin <= 0.375, f"p_min={_pmin:.3f}")
+            _re4_i = _por_inst(_prop["lam4"][2], _prop["lam4"][4])
+            _reb_i = _por_inst(_prop["base"][2], _prop["base"][4])
+            _p4 = float(_st2.wilcoxon([a - b for a, b in
+                                       zip(_re4_i, _reb_i)],
+                                      method="exact").pvalue)
+            check("barrido: RE lam4 por instancia (texto 0.031)", 0.031,
+                  _p4, tol=0.0011)
+            _ancb_i = _por_inst(_fija["base"][3], _fija["base"][4])
+            _pmin = min(
+                float(_st2.wilcoxon(
+                    [a - b for a, b in
+                     zip(_por_inst(_fija[br][3], _fija[br][4]), _ancb_i)],
+                    method="exact").pvalue)
+                for br in ("lam0p5", "lam1", "lam2", "lam4"))
+            check_exacto("barrido fijado: ancho nunca significativo por "
+                         "instancia (texto: smallest p=0.31)",
+                         0.30 <= _pmin <= 0.32, f"p_min={_pmin:.3f}")
+            _p_l1 = float(_st2.wilcoxon(
+                [a - b for a, b in
+                 zip(_por_inst(_fija["lam1"][3], _fija["lam1"][4]),
+                     _ancb_i)], method="exact").pvalue)
+            check("barrido fijado: lam1 por instancia (texto 0.69)", 0.69,
+                  _p_l1, tol=0.0051)
         except ImportError:
             pendiente("Wilcoxon del barrido", "sin scipy")
 
         # la frontera gratis: el deposito del base bajo f_4
-        _re_g, _anc_g, _, _ = _re_anc("base", 4.0)
+        _re_g, _anc_g, _, _, _ = _re_anc("base", 4.0)
         check("frontera gratis: base bajo f_4, ancho (texto 11.09)",
               11.09, _anc_g, tol=0.02)
         check("frontera gratis: base bajo f_4, RE (texto 17.05)",
