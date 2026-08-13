@@ -70,9 +70,9 @@ encoder, so one parameter set covers any instance size. Trained
 with proximal policy optimization on four interval Taillard
 $20{\times}15$ instances, it attains $13.8\%$ mean relative
 error against crisp lower bounds on the validation instances of that
-size, compared with ${\approx}46\%$ for the best hand-crafted
-dispatching rule, and surpasses every such rule zero-shot on all
-seven size classes of the 70-instance benchmark. A comparison with a
+size, compared with $27.9\%$ for the strongest hand-crafted rule, and
+outperforms every such rule on all seventy instances, including six
+size classes never trained on. A comparison with a
 dispatching rule evolved by genetic programming for the same
 benchmark shows the ranking of the two learning paradigms to be
 governed by the inference budget: the evolved rule prevails at a
@@ -370,8 +370,7 @@ lever whose returns grow with the diversity of the learned
 distribution~\citep{Kool2019,Kwon2020}. Permutation-invariant set
 encoders were formalized as Deep Sets~\citep{Zaheer2017}, of which
 self-attention is the natural strict generalization; the architecture
-of Section~
-ef{sec:arch} builds on the former and evaluates the
+of Section~\ref{sec:arch} builds on the former and evaluates the
 latter as a controlled ablation.
 
 The survey by \citet{Xu2025} compares the GP and RL families for job
@@ -595,23 +594,19 @@ $w_{\bullet}\in[0,1]$ its fixed weight: terminal makespan
 criticality ($\mathrm{cr}$) and load balance ($\mathrm{ba}$), each
 defined below.
 
-Two conventions are shared by all six components. First, every
-interval they read is reduced to its upper endpoint, the worst case,
-so the reward is expressed in the primary key of the ranking of
-Eq.~\eqref{eq:lex}. Second, each component is divided by a magnitude
-of the instance, listed with it, which makes the reward
-dimensionless and comparable across instances and sizes. Several
-scales use $\LBi$, a lower bound on the makespan that the method
-computes from the instance itself as the larger of the two classical
-relaxations, the most loaded machine and the longest job, in
-worst-case durations:
+Each component is divided by a magnitude of the instance, listed
+with it, which makes the reward dimensionless and comparable across
+instances and sizes. Several scales use $\LBi$, a lower bound on the
+makespan that the method computes from the instance itself as the
+larger of the two classical relaxations, the most loaded machine and
+the longest job, in worst-case durations:
 \begin{equation*}
 \LBi=\max\Big(\;\max_{\mu}\sum_{(j,k)\,:\,\nu_{jk}=\mu} p^{U}_{jk},
 \;\;\max_{j}\sum_{k=1}^{m} p^{U}_{jk}\Big).
 \end{equation*}
 It is an internal estimate, so the method does not depend on
-externally supplied references; the published bounds enter only the
-reporting metric of Eq.~\eqref{eq:re}. Finally, write $c^{U}_{\mu}$ for the
+externally supplied references. In the definitions below, write
+$c^{U}_{\mu}$ for the
 worst-case completion time of machine $\mu$ over the operations
 scheduled so far, $M^{U}_{t}=\max_{\mu}c^{U}_{\mu}$ for the
 projected worst-case makespan after $t$ decisions, and let step $t$
@@ -621,29 +616,23 @@ components are:
 \item \emph{Terminal makespan} ($w_{\mathrm{mk}}{=}1.0$): zero at
 every step except the last, where
 \begin{equation*}
-r^{\mathrm{mk}}_{nm}=-\frac{C^{U}_{\max}}{s_{\mathrm{mk}}}+b,
-\qquad
-b=\begin{cases}10\,(1-10g)& g\le 0.05,\\ 0 & g>0.05,\end{cases}
+r^{\mathrm{mk}}_{nm}=-\frac{C^{U}_{\max}}{s_{\mathrm{mk}}},
+\qquad s_{\mathrm{mk}}=\frac{\LBi}{10},
 \end{equation*}
-with $s_{\mathrm{mk}}=\LBi/10$ and
-$g=(C^{U}_{\max}-\LBi)/\LBi$ the relative gap to the
-instance bound. The first term is the quantity actually being
-minimized, and dividing by $s_{\mathrm{mk}}$ makes it equal to
-$-10\,(1+g)$: a function of the relative gap alone, so its magnitude
-is independent of the instance's size and time scale, and a schedule
-of the same relative quality receives the same reward on any
-instance. The bonus $b$ rewards finishing within $5\%$ of the
-bound, as a ramp decreasing linearly from $10$ at the bound to $5$
-at the edge of the band and absent beyond it. The robust arms of
-Section~\ref{sec:ablations-interval} replace $C^{U}_{\max}$ here by
-$f_\lambda$.
+Substituting the scale gives
+$r^{\mathrm{mk}}_{nm}=-10\,(1+g)$, with
+$g=(C^{U}_{\max}-\LBi)/\LBi$ the relative gap to the instance bound:
+a function of the relative gap alone, so its magnitude is
+independent of the instance's size and time scale, and a schedule of
+the same relative quality receives the same reward on any instance.
+The robust arms of Section~\ref{sec:ablations-interval} replace
+$C^{U}_{\max}$ here by $f_\lambda$.
 \item \emph{Job progress} ($w_{\mathrm{pr}}{=}0.26$):
 \begin{equation*}
 r^{\mathrm{pr}}_t=\frac{1}{nm}.
 \end{equation*}
-A constant per operation scheduled, a uniform progress signal; its
-base weight $0.2$ is raised by a fixed factor $1.3$ whenever
-durations are intervals.
+A constant per operation scheduled, a uniform progress signal that
+sums to one over any episode.
 \item \emph{Machine idleness} ($w_{\mathrm{id}}{\approx}0.24$):
 \begin{equation*}
 r^{\mathrm{id}}_t=
@@ -652,9 +641,7 @@ r^{\mathrm{id}}_t=
 \end{equation*}
 with $\bar p$ the mean midpoint duration of the instance: the
 worst-case idle gap that scheduling $o_{jk}$ opens on its machine,
-measured in units of typical operations. The weight grows with the
-prominence of the instance's bottleneck machine, from a base of
-$0.2$.
+measured in units of typical operations.
 \item \emph{Local improvement} ($w_{\mathrm{li}}{=}0.15$):
 \begin{equation*}
 r^{\mathrm{li}}_t=
@@ -675,15 +662,19 @@ with $W^{U}$ the instance's total worst-case work: the worst-case
 work remaining in the scheduled operation's job. Favoring jobs with
 much work remaining is a standard proxy for the emerging critical
 path.
-\item \emph{Load balance} ($w_{\mathrm{ba}}{=}0.1$, its cap, reached
-whenever machine loads vary as much as here):
+\item \emph{Load balance} ($w_{\mathrm{ba}}{=}0.1$):
 \begin{equation*}
 r^{\mathrm{ba}}_t=
 -\frac{\sigma_{\mu}\big(c^{U}_{\mu}\big)}{s_{\mathrm{ba}}},
+\qquad s_{\mathrm{ba}}=1.5\,\sigma_{\mu}\big(L^{U}_{\mu}\big),
 \end{equation*}
-where $\sigma_{\mu}$ is the standard deviation across machines after
-the step and $s_{\mathrm{ba}}$ a scale set to the dispersion expected
-for the instance: it discourages lopsided machine loads.
+where $\sigma_{\mu}$ denotes the standard deviation across the $m$
+machines, taken after the step over the worst-case completion times
+and, in the scale, over the total worst-case loads
+$L^{U}_{\mu}=\sum_{(j,k)\,:\,\nu_{jk}=\mu}p^{U}_{jk}$ of the
+instance. Referring the observed dispersion to the dispersion the
+instance's own loads exhibit discourages lopsided machine loads
+without penalizing an instance for being intrinsically unbalanced.
 \end{itemize}
 
 The weights above and the internal constants of the components were
@@ -720,7 +711,8 @@ Section~\ref{sec:arch}.
 \centering\small
 \caption{Per-operation features (all dimensionless). $d=\mathbf{p}_{jk}$,
 $\mathbf{est}$ = earliest start interval, $\mathbf{rem}$ = remaining work
-interval of the job after $o$; $\mathrm{mid}(\cdot)$ is the interval
+interval of the job strictly after $o$, excluding $o$ itself;
+$\mathrm{mid}(\cdot)$ is the interval
 midpoint; $L(\mu)$ the remaining worst-case load of machine $\mu$;
 $\bar L$ its average over machines; $\mathbf{c}_{J}$ and
 $\mathbf{c}_{\mu}$ the completion intervals of the operation's job
@@ -821,10 +813,11 @@ candidates only, since in batched training the sets are padded to the
 batch maximum: the mean divides by the true count and the max ignores
 the padded rows.
 This embed-then-pool pattern is the \emph{Deep Sets} construction
-of~\citet{Zaheer2017}, whose central result is that any
-permutation-invariant function of a set admits this form, so the
-construction imposes no representational restriction beyond the
-invariance itself. The result tables refer to the base model by this
+of~\citet{Zaheer2017}, whose central result is that, for suitable
+choices of the two maps, any permutation-invariant function of a set
+admits this form. What the pattern restricts is therefore the
+invariance and not the class of functions; what the finite network
+used here represents remains bounded by its width. The result tables refer to the base model by this
 name, in contrast to its attention variant
 (Section~\ref{sec:attention}).
 
@@ -968,7 +961,8 @@ and plays no part in training or validation either.
 Table~\ref{tab:environment} lists the machine and the software
 stack. One aspect bears on the costs reported later: every number in
 this paper (training, evaluation, the dispatching-rule baselines and
-the ablations) was produced on the CPU. The network is
+the ablations) was produced on the CPU, with the single exception of
+the tuning campaign of Section~\ref{sec:hyperconfig}. The network is
 small enough (Section~\ref{sec:arch}) that a forward pass is
 negligible next to the environment step that follows it, so the GPU
 yields no speedup for a single rollout; it was used only for the vectorized
@@ -1198,34 +1192,40 @@ figures are quoted from those papers, not re-run here.
 \subsection{In-size performance and budget scaling}
 \label{sec:results-insize}
 
-Table~\ref{tab:insize} reports per-instance RE on the validation set
-for increasing training budgets over ten independent training runs,
-and Figure~\ref{fig:scaling} their means against the budget. Three
-observations:
-(i) the policy scales monotonically with budget
+This section reports what the policy achieves on the class it is
+trained on, first during training and then at deployment on the
+validation instances.
+
+Figure~\ref{fig:training} shows the training dynamics at the
+operating budget. Within each block the episode RE falls steeply over
+the first ${\sim}200$ episodes and stabilizes, with no divergence in
+any seed; across blocks, each instance starts better than its
+predecessor did, the visible effect of carrying the weights over, and
+the spread between seeds narrows as training advances. The levels in
+this figure are higher than the deployed ones because training
+episodes are \emph{sampled}, with exploration active, rather than
+greedy.
+
+Deployment on the validation instances is reported in
+Table~\ref{tab:insize}, per instance and for increasing training
+budgets over ten independent training runs, with
+Figure~\ref{fig:scaling} showing their means against the budget.
+Three observations follow.
+(i) The policy scales monotonically with budget
 ($27.4\%\to17.4\%\to13.8\%$ mean RE at $100/300/1000$ episodes per
 instance), with the return per tripling of the budget falling from
-$10.0$ points to $3.6$; (ii) the spread between
-training runs collapses as the budget grows, the standard deviation
-across the ten seed means falling from $4.69$ points at $100$ episodes
-to $1.30$ at $300$ and $0.47$ at $1000$, a factor of ten, so what
-the extra budget yields is not only a better mean but a more
-reproducible one; (iii) the gap to the strongest constructive baseline is a factor
-${\approx}2.0$. Figure~\ref{fig:scaling} places the curve between two
-dotted references measured on the same six instances: G\&T-MWKR
-above, at $27.9\%$, and fEABC below, at $9.6\%$, the latter a
-reference from per-instance search.
-
-Figure~\ref{fig:training} shows the dynamics behind those endpoints
-at the operating budget. Within each block the episode RE falls
-steeply over the first ${\sim}200$ episodes and stabilizes, with no
-divergence in any seed; across blocks, each instance starts better
-than its predecessor did, the visible effect of carrying the weights
-over, and the spread between seeds narrows as training advances, the
-dynamic counterpart of the $0.47$-point deviation of
-Table~\ref{tab:insize}. The levels in this figure are higher than
-the deployed ones because training episodes are \emph{sampled}, with
-exploration active, rather than greedy.
+$10.0$ points to $3.6$. (ii) The spread between training runs
+contracts as the budget grows, the standard deviation across the ten
+seed means falling from $4.69$ points at $100$ episodes to $1.30$ at
+$300$ and $0.47$ at $1000$, a factor of ten, so what the extra budget
+yields is not only a better mean but a more reproducible one; this is
+the deployed counterpart of the narrowing seed band of
+Figure~\ref{fig:training}. (iii) The gap to the strongest
+constructive baseline is a factor ${\approx}2.0$.
+Figure~\ref{fig:scaling} places the curve between two dotted
+references measured on the same six instances: G\&T-MWKR above, at
+$27.9\%$, and fEABC below, at $9.6\%$, the latter a reference from
+per-instance search.
 
 \begin{figure}[t]
   \centering
@@ -1279,15 +1279,19 @@ G\&T-MWKR & 30.6 & 34.0 & 17.7 & 31.8 & 29.3 & 24.1 & 27.9 & --- \\
   \label{fig:scaling}
 \end{figure}
 
+\FloatBarrier
 \subsection{Zero-shot cross-size generalization and position among
 constructive methods}
 \label{sec:results-crosssize}
 \label{sec:positioning}
 
 The size-invariant design allows direct evaluation of the
-$20{\times}15$-trained network on any class. Evaluation is
-\emph{zero-shot}: the trained weights are applied to sizes they never
-saw, with no additional training or fine-tuning of any kind.
+$20{\times}15$-trained network on any class. For the six classes
+other than $20{\times}15$ the evaluation is \emph{zero-shot}: the
+trained weights are applied to sizes they never saw, with no
+additional training or fine-tuning of any kind. The $20{\times}15$
+class is the exception, since it contains the four training and the
+six validation instances, and is marked accordingly in the table.
 Table~\ref{tab:seventy} reports RE over all seventy instances by size
 class, with its per-instance values in the appendix; the evolved rule
 of~\citet{DiazGP2026} appears beside the policy at each
@@ -1297,8 +1301,8 @@ table as a 30-run average from a different computational class.
 Figure~\ref{fig:byclass} shows the two learners' per-instance
 distributions within each class at the paired budgets.
 
-Read zero-shot, every seed's network at $64$ samples
-outperforms G\&T-MWKR, the strongest constructive baseline, on
+Every seed's network at $64$ samples outperforms G\&T-MWKR, the
+strongest of the hand-crafted baselines considered here, on
 \emph{every} one of the seventy ($210$ instance--seed pairs without
 an exception), with graceful degradation
 (class means from $11.0\%$ on $15{\times}15$ to $22.0\%$ on the

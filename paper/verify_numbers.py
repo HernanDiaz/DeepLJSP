@@ -164,14 +164,16 @@ _n_ab = len([w for w in _ab.split() if any(ch.isalnum() for ch in w)])
 check_exacto("el resumen cabe en las 150-250 palabras de JIM",
              150 <= _n_ab <= 250, f"{_n_ab} palabras")
 
-# EST en desarrollo es PEOR que MOR: el ~46 del abstract (MOR) sigue siendo
-# la mejor regla en la clase de entrenamiento
+# EST en desarrollo es PEOR que MOR: el ~46 de las conclusiones (MOR)
+# sigue siendo la mejor regla simple en la clase de entrenamiento. El
+# abstract ya no cita esa cifra: desde la revision externa r1 compara
+# contra G&T-MWKR (27.9), la linea base fuerte, y no contra la simple
 est_pi = {r.split(",")[0]: float(r.split(",")[3])
           for r in open("benchmarks/est_per_instance.csv",
                         encoding="utf-8").read().splitlines()[1:]}
 est_dev = sum(est_pi[f"TA{k}"] for k in range(15, 21)) / 6
-check_exacto("en desarrollo MOR < EST (sostiene el ~46 del abstract)",
-             est_dev > 46.0, f"EST dev {est_dev:.1f}")
+check_exacto("en desarrollo MOR < EST (sostiene el ~46 de las "
+             "conclusiones)", est_dev > 46.0, f"EST dev {est_dev:.1f}")
 
 # centinela (el texto ya no lo imprime): greedy gana a MOR, EST y G&T
 gre = {}
@@ -187,7 +189,12 @@ for nombre, otro in [("MOR", MOR_RE), ("G&T", GT_RE), ("EST", est_pi)]:
 
 DEV = [f"TA{k}" for k in range(15, 21)]
 mor_dev = sum(MOR_RE[t] for t in DEV) / len(DEV)
-check("MOR medio en desarrollo (abstract ~46)", 46.0, mor_dev, tol=0.55)
+check("MOR medio en desarrollo (conclusiones ~46)", 46.0, mor_dev,
+      tol=0.55)
+# El abstract cita ahora la linea base fuerte, no la simple
+_abs_tex = re.search(r"\\abstract\{(.*?)\n\n", TEX, re.S).group(1)
+check_exacto("abstract: compara contra G&T-MWKR (27.9), no contra el ~46",
+             "27.9" in _abs_tex and "46\\%" not in _abs_tex)
 
 # =========================================================================
 print("\n== tab:insize: recomputo desde schedules (componentwise) ==")
@@ -1595,18 +1602,72 @@ try:
     check_exacto("4.1: idle_weight efectivo ~0.24 (texto)",
                  all(0.23 <= v <= 0.25 for v in _idle),
                  f"{min(_idle):.3f}..{max(_idle):.3f}")
-    check_exacto("4.1: progreso = 0.2 x 1.3 por intervalos (texto)",
-                 '"progress_weight"] *= 1.3' in
-                 open("jobshop_rl/utils/problem_analyzer.py",
-                      encoding="utf-8").read())
+    # La descomposicion 0.2 x 1.3 del peso de progreso se retiro del
+    # texto el 2026-08-13 (constante sin justificacion propia): el 0.26
+    # efectivo queda verificado arriba recomputando con el generador.
 except Exception as _e:
     pendiente("pesos efectivos del reward", f"{type(_e).__name__}: {_e}")
-check_exacto("4.1: bonus dentro del 5% del limite (codigo)",
-             "gap <= 0.05" in _ms_cod)
+# El bonus terminal (rampa bajo el 5% de gap) existe en el codigo pero
+# se omite del texto porque nunca se activo: el mejor episodio de todo
+# el entrenamiento quedo al 19.5% de LBi (medido el 2026-08-13 sobre
+# los logs de las siete semillas ext-c). Se comprueba que sigue asi.
+try:
+    import csv as _csv
+    _g_min = 1e9
+    for _k in range(1, 5):
+        _pd = _REG[f"int__tai20_15_{_k:02d}"]()
+        _cg, _durs, _seqs = {}, _pd["durations"], _pd["sequences"]
+        for _j, _fila in enumerate(_durs):
+            for _kk, _d in enumerate(_fila):
+                _mu = _seqs[_j][_kk]
+                _cg[_mu] = _cg.get(_mu, 0) + float(_d.upper)
+        _lbi = max(max(_cg.values()),
+                   max(sum(float(_d.upper) for _d in _fila)
+                       for _fila in _durs))
+        for _f in glob.glob(
+                "outputs/bench_v2-full-1000ep-ext-c__*_seed*/"
+                f"INT__TAI20_15_{_k:02d}.F.15_01_INTERVAL_training_log.csv"):
+            for _r in _csv.DictReader(open(_f)):
+                _v = (float(_r["best_makespan_upper"]) - _lbi) / _lbi
+                if _v < _g_min:
+                    _g_min = _v
+    check_exacto("4.1: bonus terminal omitido por inactivo "
+                 "(gap minimo entrenado > 5%)", _g_min > 0.05,
+                 f"gap minimo {_g_min * 100:.1f}%")
+except Exception as _e:
+    pendiente("bonus terminal inactivo", f"{type(_e).__name__}: {_e}")
 _li = open("jobshop_rl/rewards/components/local_improvement.py",
            encoding="utf-8").read()
 check_exacto("4.1: deterioros penalizados x2 (codigo)",
              "* 2.0" in _li)
+# Escala del balance: el texto la da como 1.5 x desviacion tipica de
+# las cargas en caso peor (se explicito el 2026-08-13 tras la revision
+# externa r1, que la senalo como irreproducible)
+_ba = open("jobshop_rl/rewards/components/balance.py",
+           encoding="utf-8").read()
+check_exacto("4.1: escala de balance = 1.5 x sd de cargas (codigo)",
+             "np.std(load_values) * 1.5" in _ba)
+check_exacto("4.1: la carga de balance usa el extremo superior",
+             "load_values.append(load.upper)" in _ba)
+# Parametros de un bloque de atencion: h=128, 4 cabezas de 32,
+# feed-forward 128->256->128, dos LayerNorm. La cifra del texto debe
+# salir de esas dimensiones y no de una medida suelta.
+_h, _ff = 128, 256
+_qkv = 3 * (_h * _h + _h)
+_out = _h * _h + _h
+_ffn = (_h * _ff + _ff) + (_ff * _h + _h)
+_ln = 2 * 2 * _h
+check("4.4: parametros por bloque de atencion (texto 132480)",
+      132480, _qkv + _out + _ffn + _ln, tol=0.5)
+# El .tex no debe contener caracteres de control colados por escapes
+# de Python: un \r dentro de \ref rompio una referencia de la seccion 2
+# sin que LaTeX diera error (revision externa r1, arreglado)
+_tex_b = open("paper/main.tex", "rb").read()
+check_exacto("tex: sin caracteres de control anomalos",
+             not any(c < 32 and c not in (9, 10, 13) for c in _tex_b))
+check_exacto("tex: sin comandos LaTeX rotos (ef{, egin{, rac{)",
+             not re.search(r"(?<![\\A-Za-z])(ef|egin|rac|ext)\{",
+                           open("paper/main.tex", encoding="utf-8").read()))
 
 
 def _por_par(*tags):
