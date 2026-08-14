@@ -1349,12 +1349,13 @@ class, ten to a class, with its per-instance values in the appendix.
 Each learned family trains thirty artifacts, thirty evolutions and
 thirty runs, and appears as the one its study selects: the rule
 \citet{DiazGP2026} features and the policy of
-Section~\ref{sec:training}. The rule is
+Section~\ref{sec:training}. Both were fitted on the $20{\times}15$
+instances, so the other six classes lie outside the training
+distribution of either and the transfer the table asks for is the
+same on both sides. The GP rule is
 deterministic at one pass and randomized by $\epsilon$-greedy
 dispatching when sampled; fEABC closes the table as a 30-run average
 from a different computational class.
-Figure~\ref{fig:byclass} shows the two learners' per-instance
-distributions within each class at the paired budgets.
 
 At every budget the policy improves on G\&T-MWKR, the strongest of
 the hand-crafted baselines considered here, on \emph{every} one of the
@@ -1406,7 +1407,7 @@ fEABC (30 runs) & 5.9 & 8.7 & 10.3 & 9.8 & 16.4 & 5.7 & 9.0 & 9.4 \\
 
 Against the GP rule the comparison is not one-sided: its outcome
 depends on the inference budget both methods receive
-(Figure~\ref{fig:headtohead}). With one pass each the rule is better,
+(Figure~\ref{fig:byclass}). With one pass each the rule is better,
 $17.71\%$ against the policy's $18.49\%$, which is ahead on only
 26 of the 70; with $64$ samples each the ordering reverses, $15.02\%$
 against $15.88\%$ and ahead on 42 of the 70, and $1024$ samples widen
@@ -1455,18 +1456,6 @@ the hand-crafted rules but does not reach the methods that search
 each instance anew, trading some solution quality for a cost
 incurred once at training rather than at every instance; it had not
 been established for the interval variant.
-
-\begin{figure}[!htb]
-  \centering
-  \includegraphics[width=\linewidth]{figures/fig_headtohead.pdf}
-  \caption{The DRL policy against the GP rule~\citep{DiazGP2026} at
-  matched inference budgets, one point per
-  instance over the 70 interval Taillard instances. Points below the
-  diagonal are instances on which the policy is better. Left: one constructive
-  pass each. Right: 1024 samples each, the rule randomized with
-  $\epsilon$-greedy dispatching.}
-  \label{fig:headtohead}
-\end{figure}
 
 \begin{figure}[!htb]
   \centering
