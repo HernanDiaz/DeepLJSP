@@ -193,8 +193,11 @@ check("MOR medio en desarrollo (conclusiones ~46)", 46.0, mor_dev,
       tol=0.55)
 # El abstract cita ahora la linea base fuerte, no la simple
 _abs_tex = re.search(r"\\abstract\{(.*?)\n\n", TEX, re.S).group(1)
-check_exacto("abstract: compara contra G&T-MWKR (27.9), no contra el ~46",
-             "27.9" in _abs_tex and "46\\%" not in _abs_tex)
+# Desde el reencuadre del 2026-08-14 el abstract abre con la
+# delimitacion y no lleva cifras de linea base; si conserva el 0.63 del
+# punto medio y sigue sin citar el ~46 de la regla simple
+check_exacto("abstract: delimitacion primero (0.63 presente, sin ~46)",
+             "0.63" in _abs_tex and "46\\%" not in _abs_tex)
 
 # =========================================================================
 print("\n== tab:insize: recomputo desde schedules (componentwise) ==")
@@ -310,7 +313,7 @@ datos1000 = bench_por_instancia("v2-full-1000ep")
 if datos1000:
     mejor_media = sum(re_pct(min(d["mids"]), ta)
                       for ta, d in datos1000.items()) / len(datos1000)
-    check("mejor semilla a 1000 eps (abstract 12.3)", 12.3, mejor_media)
+    check("centinela: mejor semilla a 1000 eps (12.3)", 12.3, mejor_media)
     # el factor de 6.1 va contra la media de las DIEZ semillas (13.82),
     # no contra la de las tres con que van pareadas las ablaciones. Y la
     # referencia es G&T-MWKR, la mejor constructiva, no MOR
@@ -603,7 +606,9 @@ for r in __import__("csv").DictReader(
 _bo = {ta: min(v) for ta, v in _bo.items()}
 check_exacto("bo1024: 70 instancias, 3 checkpoints", len(_bo) == 70,
              f"{len(_bo)}")
-check("bo1024 media sobre las 70 (texto 13.0)", 13.0,
+# el 13.0 (bo1024 repartido entre 3 checkpoints) salio del texto con el
+# protocolo del campeon; queda como centinela del deposito antiguo
+check("centinela: bo1024 de 3 checkpoints (13.0)", 13.0,
       sum(_bo.values()) / 70)
 gana_bo = {n: sum(_bo[ta] < d[ta] for ta in _bo)
            for n, d in [("MOR", MOR_RE), ("G&T", GT_RE), ("EST", est_pi)]}
@@ -1571,6 +1576,12 @@ if os.path.exists(_r70_tab):
           _j["por_clase_campeon"]["tai50_15"] - _gp_clases[5], tol=0.06)
     check("6.2: campeon pierde 2.5 en 50x20 (texto)", 2.5,
           _j["por_clase_campeon"]["tai50_20"] - _gp_clases[6], tol=0.06)
+    # las conclusiones y la tabla citan el mayor presupuesto (13.2; el
+    # 13.3 que estuvo un dia en la tabla era un redondeo mal hecho de
+    # 13.248 que este check descubrio)
+    if "bo1024" in _j.get("campeon_muestreado", {}):
+        check("8 y tab:seventy: la politica a 1024 (texto 13.2)", 13.2,
+              _j["campeon_muestreado"]["bo1024"]["global"], tol=0.051)
     _cm = _j["campeon_muestreado"]
     for _etq, _fila in (("bo64", [10.7, 12.8, 14.1, 17.6, 22.3, 12.8, 14.8]),
                         ("bo1024", [9.3, 11.2, 12.2, 15.6, 19.9, 10.9,

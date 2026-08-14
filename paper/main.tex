@@ -60,33 +60,31 @@ Shop Scheduling Problem}
 \orgname{University of Oviedo}, \orgaddress{\city{Gij\'on},
 \country{Spain}}}
 
-\abstract{The interval job shop scheduling problem (IJSP) models
-uncertain processing times as closed intervals and is solved in the
-literature by per-instance metaheuristic search. This paper studies
-the complementary regime: a constructive policy, trained once by deep
-reinforcement learning, that returns a schedule in seconds. The policy
-combines dimensionless state features with a permutation-invariant
-encoder, so one parameter set applies to any instance size. Trained
-with proximal policy optimization on four interval Taillard
-$20{\times}15$ instances, it attains $13.8\%$ mean relative
-error against crisp lower bounds on the validation instances of that
-size, compared with $27.9\%$ for the strongest hand-crafted rule, and
-outperforms every such rule on all seventy instances, including six
-size classes never trained on. A comparison with a
-rule evolved by genetic programming for the same
-benchmark shows the ranking of the two learning paradigms to be
-governed by the inference budget: the evolved rule prevails at a
-single pass, whereas the policy prevails on 46 of 70 instances when
-both draw $1024$ samples. Ablation attributes the policy's
-performance to the interval training data rather than to
-interval-specific features, in agreement with the closed form of the
-objective: width features are removable at no cost, whereas training
-on crisp midpoints costs $0.63$ points. Under Monte Carlo execution
-with durations drawn independently and uniformly within their
-intervals, its schedules track their predicted makespans more
-faithfully than those of every hand-crafted rule, and a
-width-penalizing variant carries its narrower predictions through to
-execution.}
+\abstract{The interval job shop scheduling problem (IJSP) retains
+only the support bounds of uncertain processing times and is solved
+in the literature by per-instance metaheuristic search. This paper
+trains the first constructive deep reinforcement learning policy for
+the problem, and uses it to ask what awareness of the uncertainty
+contributes to a learned scheduler. The answer is a delimitation.
+Under the lexicographic ranking standard in the field, the worst-case
+makespan depends on the upper duration endpoints alone, so interval
+widths cannot inform any decision judged by that criterion;
+accordingly, permuting or removing the width inputs costs the trained
+policy nothing measurable. The intervals themselves are not inert:
+training the same policy on crisp midpoint durations instead costs
+$0.63$ points of relative error. When the objective is made to charge
+for the width of the predicted interval, the policy narrows its
+schedules by re-ranking its own samples while its weights remain
+indistinguishable, whereas the same objective acts through the
+representation in the companion genetic programming study. The policy
+carrying these findings is size-invariant, one parameter set for any
+instance size, and competitive: trained on four $20{\times}15$
+instances, it improves on every hand-crafted dispatching rule on all
+seventy benchmark instances, six of the seven size classes unseen,
+and against the strongest published constructive baseline, a rule
+evolved by genetic programming, the ordering is set by the inference
+budget, the rule ahead at one pass and the policy ahead once both
+sample.}
 
 \keywords{job shop scheduling, interval uncertainty, deep reinforcement
 learning, neural combinatorial optimization, genetic programming
@@ -153,10 +151,11 @@ learning-based job shop scheduling~\citep{Xu2025} lists no method
 addressing interval-valued processing times.
 
 Two obstacles separate standard JSP-DRL designs from the IJSP.
-The first is representational: the uncertainty must be observable to
-the agent, which should treat an operation with duration $[10,11]$
-differently from one with duration $[5,16]$ even though both share
-the same midpoint. The second is
+The first is representational: the natural assumption, and the one
+this line of work has operated under, is that the uncertainty must be
+observable to the agent, which should treat an operation with
+duration $[10,11]$ differently from one with duration $[5,16]$ even
+though both share the same midpoint. The second is
 architectural: the amortization argument that motivates learning
 requires one network to serve instances of any size. Designs that
 encode the instance as a fixed-dimension tensor are tied to the size
@@ -166,50 +165,55 @@ over the full disjunctive graph; whether the same invariance can be
 obtained with a substantially simpler encoder is a design question
 this paper answers in the affirmative.
 
-This paper addresses both obstacles and asks three questions.
-\emph{Q1:} can a constructive policy trained on a small number of
-interval instances compete with the strongest constructive
-alternatives (hand-crafted dispatching rules and a rule evolved by
-genetic programming), and where does it stand relative to the
-per-instance metaheuristic state of the art?
-\emph{Q2:} can a single network, trained on one size class, remain
-useful across the whole benchmark without retraining? \emph{Q3:} which
-standard components of JSP-DRL practice (best-of-$N$ inference,
-attention-based encoders and automatic algorithm configuration)
-yield a measurable benefit at practical training budgets?
+This paper builds the policy those obstacles call for and asks three
+questions of it. \emph{Q1:} what does awareness of the interval
+uncertainty actually contribute, that is, which of its uses are
+load-bearing and which turn out to be inert, and at what stage of the
+method does an objective that values robustness act? \emph{Q2:} can
+such a policy compete with the strongest constructive alternatives
+(hand-crafted dispatching rules and a rule evolved by genetic
+programming), and where does it stand relative to the per-instance
+metaheuristic state of the art? \emph{Q3:} can a single network,
+trained on one size class, remain useful across the whole benchmark
+without retraining?
 
 \paragraph{Contributions.}
 \begin{enumerate}
-\item \emph{A size-invariant, uncertainty-aware policy for the IJSP}
-  (Section~\ref{sec:method}). All features are dimensionless: temporal
-  quantities are scaled by a per-instance lower bound and interval
-  uncertainty enters as relative widths. A Deep Sets~\citep{Zaheer2017}
-  encoder over the eligible-operation set, combined with a pooled global
-  context, yields policy \emph{and} value networks of
-  ${\approx}1.2\times10^{5}$ parameters, independent of the numbers of
-  jobs and machines.
-\item \emph{An empirical characterization}
-  (Section~\ref{sec:results}) answering Q1--Q3: the scaling of
-  solution quality with the inference budget on the training class,
-  the evaluation of a single network across all seven Taillard size
-  classes, six of them unseen, and its transfer to a second benchmark
-  of classical instances.
+\item \emph{A delimitation of what interval awareness contributes to
+  a learned constructive scheduler}
+  (Section~\ref{sec:ablations-interval}), in three parts. An analytic
+  argument: under the lexicographic criterion the worst-case makespan
+  is a function of the upper duration endpoints alone, so interval
+  widths cannot inform the decisions of any method ranked by it,
+  whatever the model class. Its causal verification on the trained
+  policy: a permutation audit and two retraining ablations that
+  separate the widths as inputs, which are inert, from the intervals
+  as training data, which are not. And the localization of where a
+  width-penalizing objective acts: through sample selection in the
+  policy, with the weights unmoved, against through the evolved
+  representation in the companion GP study~\citep{DiazGP2026}.
+\item \emph{The first size-invariant constructive DRL policy for the
+  IJSP} (Section~\ref{sec:method}), the instrument these findings are
+  measured on. All features are dimensionless, and a Deep
+  Sets~\citep{Zaheer2017} encoder over the eligible-operation set,
+  combined with a pooled global context, yields policy \emph{and}
+  value networks of ${\approx}1.2\times10^{5}$ parameters, independent
+  of the numbers of jobs and machines.
 \item \emph{A comparison against both families of constructive
-  heuristic} (Section~\ref{sec:positioning}), on the 70 benchmark
-  instances and with per-instance results reported in full
-  (Appendix~\ref{sec:appendix}). The hand-crafted side comprises the
-  traditional dispatching rules: SPT, LPT, MOR, MWKR and EST, plus
-  two Giffler--Thompson variants. The learned-symbolic side is a rule evolved by
-  genetic programming (GP) for this same benchmark~\citep{DiazGP2026},
-  a comparison whose absence from the literature the survey
-  of~\citet{Xu2025} highlights.
-\item \emph{An analysis of what justifies its cost}
-  (Section~\ref{sec:analysis}): a permutation audit of which inputs
-  the network consults; five controlled ablations (inference budget,
-  the attention variant, and three that delimit what interval
-  awareness contributes); a $\lambda$-sweep of a width-penalizing
-  training objective; and a Monte Carlo comparison of how faithfully
-  the schedules execute.
+  heuristic under a shared evaluation protocol}
+  (Section~\ref{sec:positioning}), on the 70 benchmark instances and
+  with per-instance results reported in full
+  (Appendix~\ref{sec:appendix}): the traditional dispatching rules,
+  and the rule evolved by genetic programming for this same
+  benchmark, thirty trained artifacts against thirty, a comparison
+  whose absence from the literature the survey of~\citet{Xu2025}
+  highlights.
+\item \emph{An account of which standard components earn their cost}
+  (Section~\ref{sec:analysis}): best-of-$N$ inference does,
+  self-attention and three automatic-configuration campaigns do not,
+  and under Monte Carlo execution the learned schedules track their
+  predicted makespans more faithfully than those of every
+  hand-crafted rule.
 \end{enumerate}
 
 Section~\ref{sec:related} reviews related work and
@@ -1397,7 +1401,7 @@ GP rule, 64 & 12.6 & 15.9 & 16.8 & 17.4 & 23.4 & 11.7 & 13.4 &
 GP rule, 1024 & 10.2 & 14.0 & 15.1 & 15.5 & 21.0 & 10.6 &
 12.1 & 14.1 \\
 \textbf{Policy}, 1024 & 9.3 & 11.2 & 12.2 & 15.6 & 19.9 &
-10.9 & 13.7 & 13.3 \\
+10.9 & 13.7 & 13.2 \\
 \midrule
 fEABC (30 runs) & 5.9 & 8.7 & 10.3 & 9.8 & 16.4 & 5.7 & 9.0 & 9.4 \\
 \bottomrule
@@ -2109,23 +2113,49 @@ comparison of the two paradigms with training matched as well, which
 \section{Conclusions and Future Work}
 \label{sec:conclusions}
 
-The three questions posed in the introduction now have answers. A
-constructive policy trained by PPO on four interval instances
-improves on the best hand-crafted constructive baselines by a wide
-margin on its
-training class ($13.8\%$ versus $27.9\%$ for G\&T-MWKR and
+The three questions posed in the introduction now have answers, and
+the first is the delimitation the title of this section owes. What
+interval awareness contributes divides in two, and the design had
+conflated the halves. As inputs the widths are inert: permuting them
+costs the policy $0.3$ and $0.9$ points, the floor of a ranking whose
+top feature costs $56.5$, and removing them from training costs
+nothing measurable over ten seeds ($13.86$ against $13.82\%$,
+$p=1.00$), which the closed recursion for the worst-case makespan
+predicts, since that quantity contains no lower endpoint. As training
+data the intervals are not inert: fitting the policy to the crisp
+midpoints instead costs $0.63$ points over ten seeds ($14.45$ against
+$13.82\%$, $p=0.031$). An objective that charges for the width does
+not overturn this delimitation but locates where such an objective
+acts: swept from $\lambda=0$ to $4$, the deployed arms trace a
+monotone width--makespan frontier (the predicted interval narrows
+from $12.80\%$ to $10.99\%$ of the expected makespan, at about $1.9$
+points of RE per point of width), yet with the selection criterion
+held fixed the robust weights and the default ones are
+indistinguishable, and ranking the default policy's own samples by
+$f_\lambda$ retraces the frontier without any retraining. What
+narrows the interval is which sample is kept, not which network
+produced it; in the companion GP study the same objective acts
+through the evolved representation instead. A permutation audit
+completes the picture: the network leans on slack, remaining
+operations and worst-case remaining work, the attributes that
+hand-crafted and evolved rules exploit, with the width features at
+the floor of its ranking (Q1).
+
+The policy carrying these findings is competitive. On its training
+class it improves on the best hand-crafted constructive baselines by
+a wide margin ($13.8\%$ versus $27.9\%$ for G\&T-MWKR and
 ${\approx}46\%$ for the best plain rule). Against the rule evolved by
 genetic programming the answer is not one-sided but budget-dependent:
-the rule is better at a single pass, and the policy overtakes it when
-both draw $1024$ samples (Section~\ref{sec:positioning}), so what the
-network contributes over a compact formula is its sampling
-distribution rather than its argmax. The per-instance metaheuristics
-retain the lead in solution quality, on their published figures rather
-than on a rerun under a common protocol ($9.4\%$ mean RE for fEABC
-against $13.0\%$ for the policy at its largest budget), at the cost of a
+the rule is better at a single pass, and the policy overtakes it once
+both sample (Section~\ref{sec:positioning}), so what the network
+contributes over a compact formula is its sampling distribution
+rather than its argmax. The per-instance metaheuristics retain the
+lead in solution quality, on their published figures rather than on a
+rerun under a common protocol ($9.4\%$ mean RE for fEABC against
+$13.2\%$ for the policy at its largest budget), at the cost of a
 search on every new instance: the policy occupies the ground between
 the constructive baselines it dominates and the search algorithms it
-does not attempt to replace (Q1).
+does not attempt to replace (Q2).
 
 Because the representation is
 dimensionless and the encoder permutation-invariant, one network serves
@@ -2134,7 +2164,7 @@ outperforms the strongest
 dispatching rule on every one of the seventy instances, six of the
 seven size classes never having been trained on,
 and the same weights improve on every rule on all twelve classical
-instances of the FT, La and ABZ families (Q2).
+instances of the FT, La and ABZ families (Q3).
 
 Of the standard techniques evaluated, only best-of-$N$ inference
 improved results at practical budgets: self-attention blocks added to
@@ -2142,40 +2172,12 @@ the pooled encoder brought no improvement,
 and three automatic-configuration
 campaigns (two over the optimizer, one over the reward
 weights) failed to beat the hand-set values by more than the
-resolution of the confirmation protocol (Q3).
-
-Three more ablations delimit the interval representation that
-motivated the design, and they separate two things the design had
-conflated. As inputs the widths are inert: permuting them costs the
-policy $0.3$ and $0.9$ points, the floor of a ranking whose top
-feature costs $56.5$, and removing them from training costs nothing
-measurable over ten seeds ($13.86$ against $13.82\%$,
-$p=1.00$), which the closed recursion for the worst-case makespan
-predicts, since that quantity does not contain a lower bound. As
-training data the intervals are not inert: fitting the policy to the
-crisp midpoints instead costs $0.63$ points over ten seeds
-($14.45$ against $13.82\%$, $p=0.031$). Retraining under an
-objective that charges for the width does not overturn this
-delimitation: swept from $\lambda=0$ to $4$, the deployed arms trace a
-monotone width--makespan frontier (the predicted interval narrows
-from $12.80\%$ to $10.99\%$ of the expected makespan, at about $1.9$
-points of RE per point of width), but with the selection criterion
-held fixed the robust weights and the default ones are
-indistinguishable, and ranking the default policy's own samples by
-$f_\lambda$ retraces the frontier without any retraining: what
-narrows the interval is which sample is kept, not which network
-produced it.
-
-At execution time the policy's schedules are among the
-most dependable of the constructive pool, more faithful than every
-hand-crafted rule over the seventy instances and level with the
-evolved rule, while the width-charging arm attains the lowest deviation of
-the comparison, significantly ahead of the default arm, carrying the
-selection-time narrowing through to execution. A
-permutation audit shows the network leaning on slack, remaining
-operations and worst-case remaining work, the attributes that
-hand-crafted and evolved rules exploit, with the width features at
-the floor of its ranking.
+resolution of the confirmation protocol. At execution time the
+policy's schedules are among the most dependable of the constructive
+pool, more faithful than every hand-crafted rule over the seventy
+instances and level with the evolved rule, while the width-charging
+arm attains the lowest deviation of the comparison, carrying the
+selection-time narrowing through to execution.
 
 Three directions follow. The first concerns the representation, and
 the robust arm of Section~\ref{sec:ablations-interval} sharpens rather
