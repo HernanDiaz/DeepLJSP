@@ -1343,12 +1343,11 @@ constructive methods}
 \label{sec:positioning}
 
 The size-invariant design allows direct evaluation of the
-$20{\times}15$-trained network on any class. For the six classes
-other than $20{\times}15$ the evaluation is \emph{zero-shot}: the
-trained weights are applied to sizes they never saw, with no
-additional training or fine-tuning of any kind. The $20{\times}15$
-class is the exception, since it contains the four training and the
-six validation instances, and is marked accordingly in the table.
+$20{\times}15$-trained network on any class. Six of the seven are
+\emph{zero-shot}: the trained weights are applied to sizes they never
+saw, with no additional training or fine-tuning of any kind. The
+seventh, marked in the table, is the class the network trained on and
+was validated against.
 Table~\ref{tab:seventy} reports RE over all seventy instances by size
 class, ten to a class, with its per-instance values in the appendix.
 Each learned family trains thirty artifacts, thirty evolutions and
