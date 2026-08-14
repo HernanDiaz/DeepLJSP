@@ -1350,12 +1350,23 @@ additional training or fine-tuning of any kind. The $20{\times}15$
 class is the exception, since it contains the four training and the
 six validation instances, and is marked accordingly in the table.
 Table~\ref{tab:seventy} reports RE over all seventy instances by size
-class, with its per-instance values in the appendix; the evolved rule
-of~\citet{DiazGP2026} appears beside the policy at each
-budget, deterministic at one pass and randomized by
+class, ten to a class, with its per-instance values in the appendix.
+The evolved rule of~\citet{DiazGP2026} appears beside the policy at
+each budget, deterministic at one pass and randomized by
 $\epsilon$-greedy dispatching when sampled, and fEABC closes the
 table as a 30-run average from a different computational class.
-Figure~\ref{fig:byclass} shows the two learners' per-instance
+
+Each learned family contributes thirty artifacts, thirty evolutions
+and thirty training runs, so the one-pass row of each is given as
+their mean with the artifact its own study selects in brackets: for
+the rule, the one \citet{DiazGP2026} features, selected over these
+seventy instances; for the policy, the champion, selected over the
+six validation instances. The brackets stop there because the data
+does. The published material of that study at the sampled budgets is
+the featured rule alone, and this study evaluated only the champion at
+those budgets, so both families are represented by a single artifact
+from 64 samples onwards and a bracket would repeat the number beside
+it. Figure~\ref{fig:byclass} shows the two learners' per-instance
 distributions within each class at the paired budgets.
 
 At $64$ samples the champion improves on G\&T-MWKR, the strongest of
@@ -1378,15 +1389,8 @@ universal is drawing more than one schedule.
 \begin{table}[t]
 \centering\small
 \caption{Mean RE (\%) per size class over the 70 interval Taillard
-instances, ten per class. The $20{\times}15$ column ($\dagger$) is the
-training and validation class. At one pass each learned family
-contributes thirty independent artifacts, thirty evolutions and thirty
-training runs, and the entry is their mean with the artifact its own
-study selects in brackets: the rule \citet{DiazGP2026} features,
-selected over these seventy instances, and the champion policy,
-selected over the six validation instances. At the sampled budgets the
-published material of that study is the featured rule alone, so both
-families are represented there by their selected artifact.}
+instances. The $20{\times}15$ column ($\dagger$) holds the training and
+validation instances. One-pass entries read mean\,[selected artifact].}
 \label{tab:seventy}
 \footnotesize
 \setlength{\tabcolsep}{2pt}
