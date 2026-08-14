@@ -1621,9 +1621,26 @@ check_exacto("filas del apendice: 70/70", _n == 70, f"{_n}/70")
 _filas = {m[0]: m[1:] for m in re.findall(
     r"(TA\d+) & \d+ & ([\d.]+) & ([\d.]+) & ([\d.]+) & ([\d.]+) & ([\d.]+)",
     _blk)}
+# las dos columnas de politica son las del ARTEFACTO SELECCIONADO,
+# como tab:seventy, no la media de las tres desplegadas ni el bo1024
+# repartido entre sus tres puntos de control (protocolo anterior)
+_camp_ap = __import__("json").load(
+    open("benchmarks/ext30/campeon.json", encoding="utf-8"))["campeon"]
+_pol_ap, _bo_ap = {}, {}
+for _r in __import__("csv").DictReader(
+        open("benchmarks/eval70_diez_semillas.csv", encoding="utf-8")):
+    if int(_r["seed"]) == _camp_ap:
+        _pol_ap[ta_de(_r["instance"])] = float(_r["re_greedy"])
+for _f in sorted(glob.glob("benchmarks/ext30/eval70_greedy_*.csv")):
+    for _r in __import__("csv").DictReader(open(_f, encoding="utf-8")):
+        if int(_r["seed"]) == _camp_ap:
+            _pol_ap[ta_de(_r["instance"])] = float(_r["re_greedy"])
+for _f in sorted(glob.glob("benchmarks/ext30/camp_bo1024_*.csv")):
+    for _r in __import__("csv").DictReader(open(_f, encoding="utf-8")):
+        _bo_ap[ta_de(_r["instance"])] = float(_r["re_bo"])
 _mal = 0
 for ta, celdas in _filas.items():
-    reales = (est_pi[ta], GT_RE[ta], _gp[ta], gre[ta], _bo[ta])
+    reales = (est_pi[ta], GT_RE[ta], _gp[ta], _pol_ap[ta], _bo_ap[ta])
     for v_tex, v_dat in zip(celdas, reales):
         if abs(float(v_tex) - v_dat) > 0.051:
             _mal += 1
