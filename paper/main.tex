@@ -1798,23 +1798,16 @@ profitable.
 \subsection{What interval awareness contributes}
 \label{sec:ablations-interval}
 
-The makespan of a processing order is an interval, and both of its
-endpoints depend on the durations. What the componentwise arithmetic
-of Section~\ref{sec:problem} adds is that the two do not depend on
-each other: since $[a,b]+[c,d]=[a{+}c,\,b{+}d]$ and
-$\max([a,b],[c,d])=[\max(a,c),\,\max(b,d)]$, the recursion of
-Eq.~\eqref{eq:semiactive} splits into two that never interact. The
-upper one,
+Componentwise addition and join act on each endpoint separately, so
+the recursion of Eq.~\eqref{eq:semiactive} splits in two. The upper
+half,
 \begin{equation}
 c^{U}_{o}=\max\!\big(c^{U}_{JP(o)},\,c^{U}_{MP(o)}\big)+p^{U}_{o},
 \label{eq:upperclosed}
 \end{equation}
 makes $C^U_{\max}$ a deterministic function of the processing order
-and the upper endpoints alone; the lower endpoints run in parallel
-through the same recursion in $p^L$ and produce $C^L_{\max}$ without
-ever entering this one. The claim is therefore about $C^U_{\max}$ and
-not about the makespan, whose lower endpoint does depend on the lower
-durations. $C^U_{\max}$ is the primary
+and the upper endpoints alone, the lower half determining
+$C^L_{\max}$ without ever entering it. $C^U_{\max}$ is the primary
 key of the lexicographic criterion of Eq.~\eqref{eq:lex} under which
 every schedule in this paper is compared. Its secondary key, the lower
 endpoint, is consulted only on exact ties of the upper one, and on the
