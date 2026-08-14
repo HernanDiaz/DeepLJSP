@@ -1525,7 +1525,9 @@ else:
         check(f"6.2 {_k}: GP (texto {_mb})", _mb, _e["media_b"], tol=0.006)
         check_exacto(f"6.2 {_k}: gana en {_gana} de 70",
                      _e["gana_a"] == _gana, f"{_e['gana_a']}/70")
-        check(f"6.2 {_k}: mediana (texto {_med:+.2f})", _med,
+        # las medianas ya no se imprimen (sintesis de 6.2, 2026-08-14):
+        # quedan como centinela del dato
+        check(f"centinela {_k}: mediana {_med:+.2f}", _med,
               _e["mediana_dif"], tol=0.006)
         check(f"6.2 {_k}: p (texto {_p})", _p, _e["p"], tol=0.0006)
 
@@ -1538,13 +1540,14 @@ else:
     _gp30 = _jgp.load(open(_gp30_j, encoding="utf-8"))
     check_exacto("tab:seventy: 30 evoluciones en el deposito publicado",
                  _gp30["n"] == 30, str(_gp30["n"]))
+    # las medias por clase de las 30 evoluciones salieron de la tabla
+    # con la sintesis de 6.2 (2026-08-14): quedan como centinelas
     for _c, _v in zip(["tai15_15", "tai20_15", "tai20_20", "tai30_15",
                        "tai30_20", "tai50_15", "tai50_20"],
                       [18.1, 18.0, 20.9, 21.4, 25.7, 13.7, 15.1]):
-        check(f"tab:seventy GP-media30 {_c} (texto {_v})", _v,
-              _gp30["por_clase"][_c])
-    check("tab:seventy GP-media30 global (texto 19.0)", 19.0,
-          _gp30["media_global"], tol=0.051)
+        check(f"centinela GP-media30 {_c}", _v, _gp30["por_clase"][_c])
+    check("6.2: GP-media30 global (texto 18.99)", 18.99,
+          _gp30["media_global"], tol=0.006)
     # la dispersion de las dos familias, que 6.3 comparaba
     check("6.3: sd de las 30 evoluciones sobre las 70 (1.33)", 1.33,
           _gp30["sd"], tol=0.006)
@@ -1558,10 +1561,16 @@ if os.path.exists(_r70_tab):
                            "tai30_20", "tai50_15", "tai50_20"],
                           [17.4, 18.6, 19.9, 21.8, 26.6, 16.1, 18.4],
                           [15.0, 17.4, 17.7, 21.4, 24.7, 16.1, 17.1]):
-        check(f"tab:seventy POL-media30 {_c} (texto {_m})", _m,
+        check(f"centinela POL-media30 {_c}", _m,
               _j["por_clase_media_30"][_c])
         check(f"tab:seventy POL-campeon {_c} (texto {_k})", _k,
               _j["por_clase_campeon"][_c])
+    # 6.2: el deficit del campeon a una pasada vive en las dos clases
+    # grandes (texto: pierde por 2.3 y 2.5 puntos)
+    check("6.2: campeon pierde 2.3 en 50x15 (texto)", 2.3,
+          _j["por_clase_campeon"]["tai50_15"] - _gp_clases[5], tol=0.06)
+    check("6.2: campeon pierde 2.5 en 50x20 (texto)", 2.5,
+          _j["por_clase_campeon"]["tai50_20"] - _gp_clases[6], tol=0.06)
     _cm = _j["campeon_muestreado"]
     for _etq, _fila in (("bo64", [10.7, 12.8, 14.1, 17.6, 22.3, 12.8, 14.8]),
                         ("bo1024", [9.3, 11.2, 12.2, 15.6, 19.9, 10.9,
@@ -2410,9 +2419,9 @@ else:
     while "\\\\" not in _fila:             # la fila se parte en varias
         _k += 1
         _fila += " " + _lin[_k]
-    # la celda lleva "media [seleccionada]"; la seleccionada es el 17.7
-    _paso_gp = float(_fila.split("&")[8].split("[")[1]
-                     .split("]")[0].strip())
+    # la fila lleva solo la regla destacada desde que la media de las
+    # 30 salio de la tabla (peticion del autor, 2026-08-14)
+    _paso_gp = float(_fila.split("&")[8].replace("\\\\", "").strip())
     check("8: la pasada unica de la regla destacada (tab:seventy)", 17.7,
           _paso_gp)
 

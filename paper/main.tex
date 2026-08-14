@@ -1351,49 +1351,33 @@ class is the exception, since it contains the four training and the
 six validation instances, and is marked accordingly in the table.
 Table~\ref{tab:seventy} reports RE over all seventy instances by size
 class, ten to a class, with its per-instance values in the appendix.
-The evolved rule of~\citet{DiazGP2026} appears beside the policy at
-each budget, deterministic at one pass and randomized by
-$\epsilon$-greedy dispatching when sampled, and fEABC closes the
-table as a 30-run average from a different computational class.
-
-Each learned family contributes thirty artifacts, thirty evolutions
-and thirty training runs, so the one-pass row of each is given as
-their mean with the artifact its own study selects in brackets: for
-the rule, the one \citet{DiazGP2026} features, selected over these
-seventy instances; for the policy, the champion, selected over the
-six validation instances. The brackets stop there because the data
-does. The published material of that study at the sampled budgets is
-the featured rule alone, and this study evaluated only the champion at
-those budgets, so both families are represented by a single artifact
-from 64 samples onwards and a bracket would repeat the number beside
-it. Figure~\ref{fig:byclass} shows the two learners' per-instance
+Each learned family trains thirty artifacts, thirty evolutions and
+thirty runs, and appears as the one its study selects: the rule
+\citet{DiazGP2026} features, chosen over these seventy instances, and
+the champion, chosen over the six validation instances. The rule is
+deterministic at one pass and randomized by $\epsilon$-greedy
+dispatching when sampled; fEABC closes the table as a 30-run average
+from a different computational class.
+Figure~\ref{fig:byclass} shows the two learners' per-instance
 distributions within each class at the paired budgets.
 
 At $64$ samples the champion improves on G\&T-MWKR, the strongest of
 the hand-crafted baselines considered here, on \emph{every} one of the
 seventy, with class means from $10.7\%$ on $15{\times}15$ to $22.3\%$
 on the hardest transfer, $30{\times}20$, and no failure mode up to
-$1000$-operation episodes. Degradation is not monotone in instance
-size: $50{\times}15$, at $12.8\%$, transfers better than either
-$30$-job class, which the dispatching rules also find easier, so
-the difficulty the network inherits is the instances' and not a limit
-of the transfer.
-
-That domination is a property of the sampled budget rather than of the
-network. Given one pass, $64$ of the $2100$ (instance, run) pairs fail
-to improve on the same rule, three per cent of them: a single greedy
-pass of an arbitrary training run is not guaranteed to beat the
-strongest hand-crafted baseline, and what makes the improvement
-universal is drawing more than one schedule.
+$1000$-operation episodes. That domination belongs to the sampled
+budget rather than to the network: given one pass, $64$ of the $2100$
+(instance, run) pairs fail to improve on the same rule, three per
+cent of them.
 
 \begin{table}[t]
 \centering\small
 \caption{Mean RE (\%) per size class over the 70 interval Taillard
 instances. The $20{\times}15$ column ($\dagger$) holds the training and
-validation instances. One-pass entries read mean\,[selected artifact].}
+validation instances. GP and policy rows carry the artifact each study
+selects among its thirty.}
 \label{tab:seventy}
-\footnotesize
-\setlength{\tabcolsep}{2pt}
+\setlength{\tabcolsep}{3.5pt}
 \begin{tabular}{lcccccccc}
 \toprule
 Method & $15{\times}15$ & $20{\times}15^{\dagger}$ & $20{\times}20$ &
@@ -1404,12 +1388,10 @@ EST & 32.3 & 49.2 & 41.5 & 42.4 & 56.6 & 33.2 & 41.0 & 42.3 \\
 MOR & 41.4 & 46.7 & 47.3 & 44.1 & 58.8 & 34.1 & 45.9 & 45.5 \\
 G\&T-MWKR & 26.7 & 29.0 & 30.9 & 33.6 & 36.8 & 23.9 & 25.5 & 29.5 \\
 \midrule
-GP rule, 1 pass & 18.1\,[15.7] & 18.0\,[16.6] & 20.9\,[18.1] &
-21.4\,[21.1] & 25.7\,[24.1] & 13.7\,[13.8] & 15.1\,[14.6] &
-19.0\,[17.7] \\
-\textbf{Policy}, 1 pass & 17.4\,[15.0] & 18.6\,[17.4] & 19.9\,[17.7] &
-21.8\,[21.4] & 26.6\,[24.7] & 16.1\,[16.1] & 18.4\,[17.1] &
-19.8\,[18.5] \\
+GP rule, 1 pass & 15.7 & 16.6 & 18.1 & 21.1 & 24.1 & 13.8 & 14.6 &
+17.7 \\
+\textbf{Policy}, 1 pass & 15.0 & 17.4 & 17.7 & 21.4 & 24.7 & 16.1 &
+17.1 & 18.5 \\
 \midrule
 GP rule, 64 & 12.6 & 15.9 & 16.8 & 17.4 & 23.4 & 11.7 & 13.4 &
 15.9 \\
@@ -1429,48 +1411,34 @@ fEABC (30 runs) & 5.9 & 8.7 & 10.3 & 9.8 & 16.4 & 5.7 & 9.0 & 9.4 \\
 
 Against the GP rule the comparison is not one-sided: its outcome
 depends on the inference budget both methods receive
-(Figure~\ref{fig:headtohead}). Both families are read the same way at
-each budget, thirty artifacts against thirty, so that neither side is
-represented by a selected artifact while the other is represented by a
-mean.
+(Figure~\ref{fig:headtohead}). With one pass each the rule is better,
+$17.71\%$ against the champion's $18.49\%$, the policy ahead on only
+26 of the 70; with $64$ samples each the ordering reverses, $15.02\%$
+against $15.88\%$ and ahead on 42 of the 70, and $1024$ samples widen
+nothing, $13.25\%$ against $14.07\%$ and again 42. Under the
+convention of Section~\ref{sec:instances} every one of these
+differences is significant ($p=0.029$, $0.021$ and $0.011$): the two
+learners are statistically distinguishable at every budget, in
+opposite directions, and the advantage the policy gains by sampling
+is of the same size as the one it concedes at a single pass.
 
-With one pass each the rule is better, and the two readings agree on
-the size of its advantage. The mean over thirty evolutions is
-$18.99\%$ against $19.82\%$ over thirty training runs, the policy
-better on 26 of the 70 instances (median deficit $0.72$ points,
-$p=0.007$); the selected artifacts give $17.71\%$ against the
-champion's $18.49\%$, again better on 26 of the 70 (median deficit
-$1.06$, $p=0.029$). Eight tenths of a point separate the families at
-this budget on either reading.
+Two checks bound what the one-pass deficit means. It is not an
+artifact of selection: the means over the thirty artifacts, which no
+choice touches, stand $18.99\%$ against $19.82\%$ and separate with
+$p=0.007$. And part of it is protocol, since the rule was selected on
+these seventy instances and the champion on six others; chosen the
+same way, the best run averages $18.06\%$, so $0.43$ of the
+$0.78$-point gap is the selection this study denies itself.
 
-Part of that gap is protocol rather than method. The rule is the best
-of its thirty on these same seventy instances, while the champion is
-the best of thirty on six instances it was not scored on here: had it
-been chosen the way the rule was, the best of the thirty runs on the
-seventy averages $18.06\%$, so $0.43$ of the $0.78$-point deficit is
-the selection the comparison denies itself. The champion ranks fifth
-of thirty on the seventy, which is what selecting on six validation
-instances buys and what it does not.
-
-The ordering reverses as soon as both methods sample. With $64$
-samples each, the rule randomized by the $\epsilon$-greedy dispatching
-its study provides for this purpose, the champion reaches $15.02\%$
-against $15.88\%$, better on 42 of the 70 (median advantage $0.59$
-points, $p=0.021$); with $1024$ samples, $13.25\%$ against $14.07\%$,
-better on 42 of the 70 (median advantage $0.82$, $p=0.011$). The
-advantage the policy gains by sampling is of the same order as the
-advantage the rule holds at one pass.
-
-The per-class columns qualify all of this. The policy's deficit at one
-pass is not spread evenly: on $15{\times}15$ and $20{\times}20$ the
-mean over thirty runs is \emph{better} than the mean over thirty
-evolutions, and the whole of the aggregate deficit is contributed by
-$50{\times}15$ and $50{\times}20$, where the gap reaches $2.4$ and
-$3.3$ points. A rule carries no size in its parameters and transfers
-to the largest instances without loss; a network trained on
-$20{\times}15$ degrades there. Sampling recovers most of it, but the
-two largest classes remain the classes where the evolved rule is
-hardest to beat.
+The per-class columns qualify all of this. The one-pass deficit is
+not spread evenly: the champion is \emph{better} on $15{\times}15$
+and $20{\times}20$, and the whole of the aggregate gap comes from
+$50{\times}15$ and $50{\times}20$, where it loses by $2.3$ and $2.5$
+points; the means over the thirty artifacts follow the same pattern.
+A rule carries no size in its parameters and transfers to the largest
+instances without loss; a network trained on $20{\times}15$ degrades
+there. Sampling recovers most of it, but the two largest classes
+remain the classes where the evolved rule is hardest to beat.
 
 The network's advantage therefore lies in its distribution, whose
 samples improve faster with budget than those of the randomized
