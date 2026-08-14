@@ -2405,11 +2405,14 @@ else:
     # pasada seleccionada se localiza por su primera celda
     _lin = TEX.splitlines()
     _k = next(k for k, l in enumerate(_lin)
-              if l.startswith("GP rule & 15.7"))
+              if l.startswith("GP rule, 1 pass"))
     _fila = _lin[_k]
-    if len(_fila.split("&")) < 9:          # la fila puede partirse en dos
-        _fila += " " + _lin[_k + 1]
-    _paso_gp = float(_fila.split("&")[8].replace("\\\\", "").strip())
+    while "\\\\" not in _fila:             # la fila se parte en varias
+        _k += 1
+        _fila += " " + _lin[_k]
+    # la celda lleva "media [seleccionada]"; la seleccionada es el 17.7
+    _paso_gp = float(_fila.split("&")[8].split("[")[1]
+                     .split("]")[0].strip())
     check("8: la pasada unica de la regla destacada (tab:seventy)", 17.7,
           _paso_gp)
 

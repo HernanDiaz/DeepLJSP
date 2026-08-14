@@ -1379,16 +1379,17 @@ universal is drawing more than one schedule.
 \centering\small
 \caption{Mean RE (\%) per size class over the 70 interval Taillard
 instances, ten per class. The $20{\times}15$ column ($\dagger$) is the
-training and validation class. Each learned family contributes thirty
-independent artifacts, thirty evolutions and thirty training runs, and
-is read twice: as the mean over the thirty, and as the single artifact
-its own study selects. The rule was selected by \citet{DiazGP2026} over
-these seventy instances; the champion policy was selected over the six
-validation instances, which are disjoint from the sixty that carry the
-comparison.}
+training and validation class. At one pass each learned family
+contributes thirty independent artifacts, thirty evolutions and thirty
+training runs, and the entry is their mean with the artifact its own
+study selects in brackets: the rule \citet{DiazGP2026} features,
+selected over these seventy instances, and the champion policy,
+selected over the six validation instances. At the sampled budgets the
+published material of that study is the featured rule alone, so both
+families are represented there by their selected artifact.}
 \label{tab:seventy}
 \footnotesize
-\setlength{\tabcolsep}{3.5pt}
+\setlength{\tabcolsep}{2pt}
 \begin{tabular}{lcccccccc}
 \toprule
 Method & $15{\times}15$ & $20{\times}15^{\dagger}$ & $20{\times}20$ &
@@ -1399,25 +1400,22 @@ EST & 32.3 & 49.2 & 41.5 & 42.4 & 56.6 & 33.2 & 41.0 & 42.3 \\
 MOR & 41.4 & 46.7 & 47.3 & 44.1 & 58.8 & 34.1 & 45.9 & 45.5 \\
 G\&T-MWKR & 26.7 & 29.0 & 30.9 & 33.6 & 36.8 & 23.9 & 25.5 & 29.5 \\
 \midrule
-\multicolumn{9}{l}{\emph{One pass, mean over the thirty artifacts}} \\
-GP rule & 18.1 & 18.0 & 20.9 & 21.4 & 25.7 & 13.7 & 15.1 & 19.0 \\
-\textbf{Policy} & 17.4 & 18.6 & 19.9 & 21.8 & 26.6 & 16.1 & 18.4 &
-19.8 \\
+GP rule, 1 pass & 18.1\,[15.7] & 18.0\,[16.6] & 20.9\,[18.1] &
+21.4\,[21.1] & 25.7\,[24.1] & 13.7\,[13.8] & 15.1\,[14.6] &
+19.0\,[17.7] \\
+\textbf{Policy}, 1 pass & 17.4\,[15.0] & 18.6\,[17.4] & 19.9\,[17.7] &
+21.8\,[21.4] & 26.6\,[24.7] & 16.1\,[16.1] & 18.4\,[17.1] &
+19.8\,[18.5] \\
 \midrule
-\multicolumn{9}{l}{\emph{One pass, the artifact each study selects}} \\
-GP rule & 15.7 & 16.6 & 18.1 & 21.1 & 24.1 & 13.8 & 14.6 & 17.7 \\
-\textbf{Policy}, champion & 15.0 & 17.4 & 17.7 & 21.4 & 24.7 & 16.1 &
-17.1 & 18.5 \\
-\midrule
-\multicolumn{9}{l}{\emph{64 samples}} \\
-GP rule & 12.6 & 15.9 & 16.8 & 17.4 & 23.4 & 11.7 & 13.4 & 15.9 \\
-\textbf{Policy}, champion & 10.7 & 12.8 & 14.1 & 17.6 & 22.3 & 12.8 &
+GP rule, 64 & 12.6 & 15.9 & 16.8 & 17.4 & 23.4 & 11.7 & 13.4 &
+15.9 \\
+\textbf{Policy}, 64 & 10.7 & 12.8 & 14.1 & 17.6 & 22.3 & 12.8 &
 14.8 & 15.0 \\
 \midrule
-\multicolumn{9}{l}{\emph{1024 samples}} \\
-GP rule & 10.2 & 14.0 & 15.1 & 15.5 & 21.0 & 10.6 & 12.1 & 14.1 \\
-\textbf{Policy}, champion & 9.3 & 11.2 & 12.2 & 15.6 & 19.9 & 10.9 &
-13.7 & 13.3 \\
+GP rule, 1024 & 10.2 & 14.0 & 15.1 & 15.5 & 21.0 & 10.6 &
+12.1 & 14.1 \\
+\textbf{Policy}, 1024 & 9.3 & 11.2 & 12.2 & 15.6 & 19.9 &
+10.9 & 13.7 & 13.3 \\
 \midrule
 fEABC (30 runs) & 5.9 & 8.7 & 10.3 & 9.8 & 16.4 & 5.7 & 9.0 & 9.4 \\
 \bottomrule
