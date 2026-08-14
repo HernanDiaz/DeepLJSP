@@ -1501,26 +1501,77 @@ check_exacto("aviso: el 1-sample de fair_gp_eps NO es la pasada "
              "determinista (18.5 vs 17.7)",
              abs(sum(v[0] for v in _gp_bon.values()) / 70 - 17.7) > 0.5,
              f"{sum(v[0] for v in _gp_bon.values()) / 70:.1f} vs 17.7")
-check("politica greedy sobre las 70 (texto 19.4)", 19.4,
+# centinela: el greedy de las TRES semillas desplegadas, que ya no es
+# lo que reporta tab:seventy (ahora van la media de 30 y el campeon)
+check("centinela: greedy de las 3 desplegadas (era 19.4)", 19.4,
       sum(gre[ta] for ta in _gp) / 70)
 
-for etiqueta, rival, pol, gana_tex, med_tex in [
-        ("una pasada", _gp, gre, 21, -2.0),
-        ("1024 muestras", _gp1024, _bo, 46, 1.3)]:
-    gana = sum(pol[ta] < rival[ta] for ta in rival)
-    check_exacto(f"{etiqueta}: la politica gana {gana_tex} de 70",
-                 gana == gana_tex, f"{gana}/70")
-    d = sorted(rival[ta] - pol[ta] for ta in rival)
-    check(f"{etiqueta}: mediana (texto {med_tex:+.1f})", med_tex, d[35],
-          tol=0.06)
+# el enfrentamiento simetrico, treinta artefactos contra treinta, que
+# escribe scripts/enfrenta_gp_treinta.py
+_enf_j = "benchmarks/ext30/enfrentamiento70.json"
+if not os.path.exists(_enf_j):
+    pendiente("enfrentamiento simetrico", "sin enfrentamiento70.json")
+else:
+    import json as _jenf
+    _enf = _jenf.load(open(_enf_j, encoding="utf-8"))
+    for _k, _ma, _mb, _gana, _med, _p in [
+            ("1pass_media", 19.82, 18.99, 26, 0.72, 0.007),
+            ("1pass_elegido", 18.49, 17.71, 26, 1.06, 0.029),
+            ("bo64_elegido", 15.02, 15.88, 42, -0.59, 0.021),
+            ("bo1024_elegido", 13.25, 14.07, 42, -0.82, 0.011)]:
+        _e = _enf[_k]
+        check(f"6.2 {_k}: politica (texto {_ma})", _ma, _e["media_a"],
+              tol=0.006)
+        check(f"6.2 {_k}: GP (texto {_mb})", _mb, _e["media_b"], tol=0.006)
+        check_exacto(f"6.2 {_k}: gana en {_gana} de 70",
+                     _e["gana_a"] == _gana, f"{_e['gana_a']}/70")
+        check(f"6.2 {_k}: mediana (texto {_med:+.2f})", _med,
+              _e["mediana_dif"], tol=0.006)
+        check(f"6.2 {_k}: p (texto {_p})", _p, _e["p"], tol=0.0006)
+
+# las filas de la tabla: media de las 30 evoluciones por clase
+_gp30_j = "benchmarks/ext30/gp30_por_clase.json"
+if not os.path.exists(_gp30_j):
+    pendiente("media de las 30 evoluciones por clase", "sin gp30_por_clase")
+else:
+    import json as _jgp
+    _gp30 = _jgp.load(open(_gp30_j, encoding="utf-8"))
+    check_exacto("tab:seventy: 30 evoluciones en el deposito publicado",
+                 _gp30["n"] == 30, str(_gp30["n"]))
+    for _c, _v in zip(["tai15_15", "tai20_15", "tai20_20", "tai30_15",
+                       "tai30_20", "tai50_15", "tai50_20"],
+                      [18.1, 18.0, 20.9, 21.4, 25.7, 13.7, 15.1]):
+        check(f"tab:seventy GP-media30 {_c} (texto {_v})", _v,
+              _gp30["por_clase"][_c])
+    check("tab:seventy GP-media30 global (texto 19.0)", 19.0,
+          _gp30["media_global"], tol=0.051)
+    # la dispersion de las dos familias, que 6.3 comparaba
+    check("6.3: sd de las 30 evoluciones sobre las 70 (1.33)", 1.33,
+          _gp30["sd"], tol=0.006)
+
+# las filas de la politica: media de 30 y campeon a los tres presupuestos
+_r70_tab = "benchmarks/ext30/resumen70_una_pasada.json"
+if os.path.exists(_r70_tab):
+    import json as _jr70
+    _j = _jr70.load(open(_r70_tab, encoding="utf-8"))
+    for _c, _m, _k in zip(["tai15_15", "tai20_15", "tai20_20", "tai30_15",
+                           "tai30_20", "tai50_15", "tai50_20"],
+                          [17.4, 18.6, 19.9, 21.8, 26.6, 16.1, 18.4],
+                          [15.0, 17.4, 17.7, 21.4, 24.7, 16.1, 17.1]):
+        check(f"tab:seventy POL-media30 {_c} (texto {_m})", _m,
+              _j["por_clase_media_30"][_c])
+        check(f"tab:seventy POL-campeon {_c} (texto {_k})", _k,
+              _j["por_clase_campeon"][_c])
+    _cm = _j["campeon_muestreado"]
+    for _etq, _fila in (("bo64", [10.7, 12.8, 14.1, 17.6, 22.3, 12.8, 14.8]),
+                        ("bo1024", [9.3, 11.2, 12.2, 15.6, 19.9, 10.9,
+                                    13.7])):
+        for _c, _v in zip(["tai15_15", "tai20_15", "tai20_20", "tai30_15",
+                           "tai30_20", "tai50_15", "tai50_20"], _fila):
+            check(f"tab:seventy campeon {_etq} {_c} (texto {_v})", _v,
+                  _cm[_etq]["por_clase"][_c])
 try:
     from scipy import stats as _st
-    p1 = _st.wilcoxon([_gp[ta] - gre[ta] for ta in _gp])[1]
-    p2 = _st.wilcoxon([_gp1024[ta] - _bo[ta] for ta in _gp1024])[1]
-    check_exacto("una pasada: p ~4.6e-4", 4.0e-4 <= p1 <= 5.2e-4,
-                 f"{p1:.2e}")
-    check_exacto("1024 muestras: p ~1.4e-3", 1.1e-3 <= p2 <= 1.7e-3,
-                 f"{p2:.2e}")
 except ImportError:
     pendiente("Wilcoxon frente al GP", "sin scipy")
 
@@ -2176,10 +2227,35 @@ else:
             _malM += _re64 >= MOR_RE[_ta]
     check_exacto("6.2: 210 pares (instancia, semilla)", _pares == 210,
                  f"{_pares}")
-    check_exacto("6.2: cada semilla bate a G&T-MWKR en las 70",
+    check_exacto("centinela: cada semilla bate a G&T-MWKR a 64 muestras",
                  _malG == 0, f"{_malG} pares sin batirla")
-    check_exacto("6.2: y tambien a MOR (afirmacion mas debil)",
+    check_exacto("centinela: y tambien a MOR (afirmacion mas debil)",
                  _malM == 0, f"{_malM} pares sin batirla")
+    # 6.2 dice ahora que esa dominacion es del presupuesto muestreado y
+    # NO de la red: a una pasada, 64 de los 2100 pares fallan contra G&T
+    _pol30 = _col.defaultdict(dict)
+    for _r in __import__("csv").DictReader(
+            open("benchmarks/fair_v2_greedy.csv", encoding="utf-8")):
+        _pol30[ta_de(_r["instance"])][
+            int(_r["checkpoint"].split("seed")[1].split(".")[0])] = float(
+                _r["re_mid"])
+    for _r in __import__("csv").DictReader(
+            open("benchmarks/eval70_diez_semillas.csv", encoding="utf-8")):
+        _pol30[ta_de(_r["instance"])][int(_r["seed"])] = float(
+            _r["re_greedy"])
+    for _f in sorted(glob.glob("benchmarks/ext30/eval70_greedy_*.csv")):
+        for _r in __import__("csv").DictReader(open(_f, encoding="utf-8")):
+            _pol30[ta_de(_r["instance"])][int(_r["seed"])] = float(
+                _r["re_greedy"])
+    _tot30 = sum(len(v) for v in _pol30.values())
+    _fallos30 = sum(1 for _t, _v in _pol30.items() for _s, _x in _v.items()
+                    if _x >= GT_RE[_t])
+    check_exacto("6.2: 2100 pares (instancia, tirada) a una pasada",
+                 _tot30 == 2100, f"{_tot30}")
+    check_exacto("6.2: 64 de ellos no baten a G&T-MWKR (texto)",
+                 _fallos30 == 64, f"{_fallos30}")
+    check("6.2: es el tres por ciento (texto)", 3.0,
+          _fallos30 / _tot30 * 100, tol=0.06)
     # y que 50x15 transfiere mejor que las de 30 maquinas, como dice 6.2
     check_exacto("6.2: 50x15 transfiere mejor que 30x15 y 30x20",
                  sum(a for a, _ in _pc["50x15"]) / 10
@@ -2324,12 +2400,18 @@ else:
           sum(float(r["best_at_1024"]) for r in _gp) / 70, tol=0.051)
     check("8: y a 64, para identificar que es la destacada (15.9)", 15.9,
           sum(float(r["best_at_64"]) for r in _gp) / 70, tol=0.051)
-    # la fila parte en dos lineas del .tex, asi que se une antes de cortar
+    # la tabla lleva ahora cuatro filas "GP rule": la media de las 30 a
+    # una pasada y la regla destacada a los tres presupuestos. La de una
+    # pasada seleccionada se localiza por su primera celda
     _lin = TEX.splitlines()
-    _k = next(k for k, l in enumerate(_lin) if l.startswith("GP rule, one pass"))
-    _paso_gp = float((_lin[_k] + " " + _lin[_k + 1]).split("&")[8]
-                     .replace("\\\\", "").strip())
-    check("8: la pasada unica de la regla (tab:seventy)", 17.7, _paso_gp)
+    _k = next(k for k, l in enumerate(_lin)
+              if l.startswith("GP rule & 15.7"))
+    _fila = _lin[_k]
+    if len(_fila.split("&")) < 9:          # la fila puede partirse en dos
+        _fila += " " + _lin[_k + 1]
+    _paso_gp = float(_fila.split("&")[8].replace("\\\\", "").strip())
+    check("8: la pasada unica de la regla destacada (tab:seventy)", 17.7,
+          _paso_gp)
 
 # 7.3 explica el nulo de la atencion diciendo que dos features ya son
 # relacionales (holgura contra el minimo de las elegibles, congestion
