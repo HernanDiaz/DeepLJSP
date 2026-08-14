@@ -1456,7 +1456,7 @@ each instance anew, trading some solution quality for a cost
 incurred once at training rather than at every instance; it had not
 been established for the interval variant.
 
-\begin{figure}[t]
+\begin{figure}[!htb]
   \centering
   \includegraphics[width=\linewidth]{figures/fig_headtohead.pdf}
   \caption{The DRL policy against the GP rule~\citep{DiazGP2026} at
@@ -1466,8 +1466,10 @@ been established for the interval variant.
   pass each. Right: 1024 samples each, the rule randomized with
   $\epsilon$-greedy dispatching.}
   \label{fig:headtohead}
+\end{figure}
 
-  \vspace{1.1em}
+\begin{figure}[!htb]
+  \centering
   \includegraphics[width=\linewidth]{figures/fig_byclass.pdf}
   \caption{RE by size class over the 70 interval Taillard instances,
   the two learners paired at one pass and at $1024$ samples. Boxes
@@ -1477,6 +1479,7 @@ been established for the interval variant.
   \label{fig:byclass}
 \end{figure}
 
+\FloatBarrier
 \subsection{Cross-family generalization: the classical instances}
 \label{sec:results-classics}
 

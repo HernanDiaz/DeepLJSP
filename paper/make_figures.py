@@ -397,8 +397,11 @@ def fig_byclass():
 
     # emparejadas por presupuesto: los dos aprendices a una pasada y a
     # 1024 muestras (G&T-MWKR salio de la figura: su sitio es la tabla)
-    series = [("GP rule, one pass", gp, "#b39ddb"),
-              ("Policy, greedy", gre, "sandybrown"),
+    # los rotulos son los de tab:seventy: GP rule y Policy, un pase o
+    # 1024 muestras. Decir "greedy" aqui y "1 pass" en la tabla
+    # obligaba al lector a traducir entre figura y tabla
+    series = [("GP rule, 1 pass", gp, "#b39ddb"),
+              ("Policy, 1 pass", gre, "sandybrown"),
               ("GP rule, 1024 samples", gp1024, "mediumpurple"),
               ("Policy, 1024 samples", bo, "seagreen")]
     # Caja con los puntos superpuestos: los cuartiles y bigotes resumen,
@@ -423,9 +426,9 @@ def fig_byclass():
     ax.set_xlim(-0.6, len(CL) - 0.4)
     ax.set_xticks(range(len(CL)))
     ax.set_xticklabels([c.replace("_", r"$\times$") for c in CL])
-    # la clase de entrenamiento y desarrollo, marcada
+    # la clase de entrenamiento y validacion, marcada
     ax.axvspan(0.5, 1.5, color="gray", alpha=0.10, zorder=0)
-    ax.text(1, ax.get_ylim()[1] * 0.97, "train + dev", ha="center",
+    ax.text(1, ax.get_ylim()[1] * 0.97, "train + validation", ha="center",
             va="top", fontsize=8, color="dimgray")
     ax.set_xlabel("Instance size class")
     ax.set_ylabel("RE (%)")
@@ -502,7 +505,7 @@ def fig_ladder():
         ("G&T-MWKR", media([float(c["gt"]) for c in clas.values()]),
          "constructive"),
         ("GP rules (mean of 30)", gp_media(0), "learned1"),
-        ("Policy, greedy", media([media(v) for v in gre.values()]),
+        ("Policy, 1 pass", media([media(v) for v in gre.values()]),
          "learned1"),
         ("GP rules, $\\epsilon$-greedy@64", gp_media(1), "learned64"),
         ("Policy, best-of-64", media([media(v) for v in pol.values()]),
