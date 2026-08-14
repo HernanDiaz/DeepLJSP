@@ -1360,14 +1360,14 @@ from a different computational class.
 Figure~\ref{fig:byclass} shows the two learners' per-instance
 distributions within each class at the paired budgets.
 
-At $64$ samples the champion improves on G\&T-MWKR, the strongest of
+At every budget the champion improves on G\&T-MWKR, the strongest of
 the hand-crafted baselines considered here, on \emph{every} one of the
-seventy, with class means from $10.7\%$ on $15{\times}15$ to $22.3\%$
-on the hardest transfer, $30{\times}20$, and no failure mode up to
-$1000$-operation episodes. That domination belongs to the sampled
-budget rather than to the network: given one pass, $64$ of the $2100$
-(instance, run) pairs fail to improve on the same rule, three per
-cent of them.
+seventy, with class means at $64$ samples from $10.7\%$ on
+$15{\times}15$ to $22.3\%$ on the hardest transfer, $30{\times}20$,
+and no failure mode up to $1000$-operation episodes. That is a
+property of the selected run rather than of the arm: across the thirty
+runs at one pass, $64$ of the $2100$ (instance, run) pairs fail to
+improve on the same rule, three per cent of them.
 
 \begin{table}[t]
 \centering\small

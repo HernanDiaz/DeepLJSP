@@ -2259,6 +2259,21 @@ else:
     _tot30 = sum(len(v) for v in _pol30.values())
     _fallos30 = sum(1 for _t, _v in _pol30.items() for _s, _x in _v.items()
                     if _x >= GT_RE[_t])
+    # y que el CAMPEON si las bate todas, a los tres presupuestos, que
+    # es lo que 6.2 afirma (el 3% que falla es de la poblacion, no suyo)
+    _camp_pres = {"1 pasada": {t: v[5] for t, v in _pol30.items()}}
+    for _etq in ("bo64", "bo1024"):
+        _d = {}
+        for _f in sorted(glob.glob(f"benchmarks/ext30/camp_{_etq}_*.csv")):
+            for _r in __import__("csv").DictReader(
+                    open(_f, encoding="utf-8")):
+                _d[ta_de(_r["instance"])] = float(_r["re_bo"])
+        if len(_d) == 70:
+            _camp_pres[_etq] = _d
+    for _etq, _d in _camp_pres.items():
+        _mal = sum(1 for _t, _x in _d.items() if _x >= GT_RE[_t])
+        check_exacto(f"6.2: el campeon bate a G&T-MWKR en las 70 ({_etq})",
+                     _mal == 0, f"{_mal} sin batirla")
     check_exacto("6.2: 2100 pares (instancia, tirada) a una pasada",
                  _tot30 == 2100, f"{_tot30}")
     check_exacto("6.2: 64 de ellos no baten a G&T-MWKR (texto)",
