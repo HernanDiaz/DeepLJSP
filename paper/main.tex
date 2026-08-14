@@ -1163,23 +1163,21 @@ strongly correlated: pooling widens the sample the advantage estimate
 is computed from, and normalizing keeps the gradient scale
 comparable across instances of different size.
 
-\paragraph{Seeds and the choice of a network.} Thirty policies were
+\paragraph{Seeds and the choice of a network.} Thirty networks were
 trained under this protocol, differing from one another only in their
-random seed. Reporting a single network requires choosing one, and the
+random seed. Reporting a single one requires choosing it, and the
 choice is made on the validation instances: every run is evaluated at
 the deployed budget on TA15--TA20 and the one with the lowest mean RE
-is designated the \emph{champion}. The seventy benchmark instances
-take no part in that decision, which matters for
+becomes \emph{the policy} this paper reports. The seventy benchmark
+instances take no part in that decision, which matters for
 Section~\ref{sec:positioning}, where the evolved rule this paper
 compares against was selected by its own study over the whole
 benchmark. The choice is not immaterial: across the thirty runs the
 validation mean spans $2.48$ points, from $12.77\%$ to $15.25\%$ with
-a standard deviation of $0.60$, and the champion lies $1.12$ points
-below the median run. Results are therefore reported in two ways
-throughout, as a mean over the thirty runs, which is what training
-once and deploying whatever comes out delivers in expectation, and as
-the champion, which is what a practitioner who can afford thirty runs
-and a validation set would ship.
+a standard deviation of $0.60$, and the selected run lies $1.12$
+points below the median one. Where the distinction matters the mean
+over the thirty is given as well, since that is what training once
+and deploying whatever comes out delivers in expectation.
 
 \paragraph{Best-of-$N$ inference.} At evaluation time the stochastic
 policy is exploited by drawing one greedy rollout and $N-1$ sampled
@@ -1353,14 +1351,14 @@ class, ten to a class, with its per-instance values in the appendix.
 Each learned family trains thirty artifacts, thirty evolutions and
 thirty runs, and appears as the one its study selects: the rule
 \citet{DiazGP2026} features, chosen over these seventy instances, and
-the champion, chosen over the six validation instances. The rule is
+the policy, chosen over the six validation instances. The rule is
 deterministic at one pass and randomized by $\epsilon$-greedy
 dispatching when sampled; fEABC closes the table as a 30-run average
 from a different computational class.
 Figure~\ref{fig:byclass} shows the two learners' per-instance
 distributions within each class at the paired budgets.
 
-At every budget the champion improves on G\&T-MWKR, the strongest of
+At every budget the policy improves on G\&T-MWKR, the strongest of
 the hand-crafted baselines considered here, on \emph{every} one of the
 seventy, with class means at $64$ samples from $10.7\%$ on
 $15{\times}15$ to $22.3\%$ on the hardest transfer, $30{\times}20$,
@@ -1411,7 +1409,7 @@ fEABC (30 runs) & 5.9 & 8.7 & 10.3 & 9.8 & 16.4 & 5.7 & 9.0 & 9.4 \\
 Against the GP rule the comparison is not one-sided: its outcome
 depends on the inference budget both methods receive
 (Figure~\ref{fig:headtohead}). With one pass each the rule is better,
-$17.71\%$ against the champion's $18.49\%$, the policy ahead on only
+$17.71\%$ against the policy's $18.49\%$, which is ahead on only
 26 of the 70; with $64$ samples each the ordering reverses, $15.02\%$
 against $15.88\%$ and ahead on 42 of the 70, and $1024$ samples widen
 nothing, $13.25\%$ against $14.07\%$ and again 42. Under the
@@ -1425,12 +1423,12 @@ Two checks bound what the one-pass deficit means. It is not an
 artifact of selection: the means over the thirty artifacts, which no
 choice touches, stand $18.99\%$ against $19.82\%$ and separate with
 $p=0.007$. And part of it is protocol, since the rule was selected on
-these seventy instances and the champion on six others; chosen the
+these seventy instances and the policy on six others; chosen the
 same way, the best run averages $18.06\%$, so $0.43$ of the
 $0.78$-point gap is the selection this study denies itself.
 
 The per-class columns qualify all of this. The one-pass deficit is
-not spread evenly: the champion is \emph{better} on $15{\times}15$
+not spread evenly: the policy is \emph{better} on $15{\times}15$
 and $20{\times}20$, and the whole of the aggregate gap comes from
 $50{\times}15$ and $50{\times}20$, where it loses by $2.3$ and $2.5$
 points; the means over the thirty artifacts follow the same pattern.
