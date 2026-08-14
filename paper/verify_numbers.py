@@ -1797,15 +1797,18 @@ else:
           _j70["sd_30"], tol=0.006)
     check("6.2: el campeon a una pasada (texto 18.49)", 18.49,
           _j70["campeon_re"], tol=0.006)
-    check("6.2: la mejor sobre test seria 18.06", 18.06,
+    # El paper NO argumenta ya sobre el conjunto en que cada estudio
+    # selecciona su artefacto: el autor confirma que en el estudio del
+    # GP seleccionar sobre las 70 devuelve la misma regla, de modo que
+    # no hay sesgo que cuantificar. Estas dos cifras quedan como
+    # centinelas del dato, sin aparecer en el texto.
+    check("centinela: la mejor tirada sobre test da 18.06", 18.06,
           _j70["mejor_en_test"], tol=0.006)
-    check_exacto("6.2: el campeon queda 5o de 30 sobre test",
+    check_exacto("centinela: la tirada elegida queda 5a de 30 sobre test",
                  _j70["puesto_campeon_en_test"] == 5,
                  str(_j70["puesto_campeon_en_test"]))
-    # el precio de elegir en validacion en vez de en test, que es el
-    # sesgo que el protocolo del GP se concede y el nuestro no
-    check("6.2: elegir en test regalaria 0.43 puntos", 0.43,
-          _j70["campeon_re"] - _j70["mejor_en_test"], tol=0.006)
+    check_exacto("6.2: no argumenta sobre el conjunto de seleccion",
+                 "18.06" not in TEX and "denies itself" not in TEX)
     if "bo64" in _j70.get("campeon_muestreado", {}):
         check("6.2: el campeon a 64 muestras (texto 15.02)", 15.02,
               _j70["campeon_muestreado"]["bo64"]["global"], tol=0.006)

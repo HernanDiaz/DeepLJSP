@@ -1169,10 +1169,8 @@ random seed. Reporting a single one requires choosing it, and the
 choice is made on the validation instances: every run is evaluated at
 the deployed budget on TA15--TA20 and the one with the lowest mean RE
 becomes \emph{the policy} this paper reports. The seventy benchmark
-instances take no part in that decision, which matters for
-Section~\ref{sec:positioning}, where the evolved rule this paper
-compares against was selected by its own study over the whole
-benchmark. The choice is not immaterial: across the thirty runs the
+instances take no part in that decision. The choice is not
+immaterial: across the thirty runs the
 validation mean spans $2.48$ points, from $12.77\%$ to $15.25\%$ with
 a standard deviation of $0.60$, and the selected run lies $1.12$
 points below the median one. Where the distinction matters the mean
@@ -1350,8 +1348,8 @@ Table~\ref{tab:seventy} reports RE over all seventy instances by size
 class, ten to a class, with its per-instance values in the appendix.
 Each learned family trains thirty artifacts, thirty evolutions and
 thirty runs, and appears as the one its study selects: the rule
-\citet{DiazGP2026} features, chosen over these seventy instances, and
-the policy, chosen over the six validation instances. The rule is
+\citet{DiazGP2026} features and the policy of
+Section~\ref{sec:training}. The rule is
 deterministic at one pass and randomized by $\epsilon$-greedy
 dispatching when sampled; fEABC closes the table as a 30-run average
 from a different computational class.
@@ -1419,23 +1417,28 @@ learners are statistically distinguishable at every budget, in
 opposite directions, and the advantage the policy gains by sampling
 is of the same size as the one it concedes at a single pass.
 
-Two checks bound what the one-pass deficit means. It is not an
-artifact of selection: the means over the thirty artifacts, which no
-choice touches, stand $18.99\%$ against $19.82\%$ and separate with
-$p=0.007$. And part of it is protocol, since the rule was selected on
-these seventy instances and the policy on six others; chosen the
-same way, the best run averages $18.06\%$, so $0.43$ of the
-$0.78$-point gap is the selection this study denies itself.
+The deficit is not an artifact of which artifact each side chose. The
+means over the thirty, which no choice touches, stand $18.99\%$
+against $19.82\%$ and separate with $p=0.007$, so the ordering at one
+pass is a property of the two families and not of their selected
+representatives.
 
 The per-class columns qualify all of this. The one-pass deficit is
 not spread evenly: the policy is \emph{better} on $15{\times}15$
 and $20{\times}20$, and the whole of the aggregate gap comes from
 $50{\times}15$ and $50{\times}20$, where it loses by $2.3$ and $2.5$
 points; the means over the thirty artifacts follow the same pattern.
-A rule carries no size in its parameters and transfers to the largest
-instances without loss; a network trained on $20{\times}15$ degrades
-there. Sampling recovers most of it, but the two largest classes
-remain the classes where the evolved rule is hardest to beat.
+Both families are size-agnostic in form, the rule as an expression
+over per-operation attributes and the network by construction, so
+what separates them on the largest classes is not applicability but
+capacity. The network fitted its decision function to the states a
+$20{\times}15$ episode visits, and those move with size: a
+$50{\times}20$ episode runs more than three times longer and offers
+up to fifty candidates at a step rather than twenty. A short
+expression has little room to encode a dependence on that
+distribution, and correspondingly little to lose when it shifts.
+Sampling recovers most of the gap, but the two largest classes remain
+where the evolved rule is hardest to beat.
 
 The network's advantage therefore lies in its distribution, whose
 samples improve faster with budget than those of the randomized
@@ -1579,25 +1582,11 @@ Section~\ref{sec:positioning} reports on the Taillard set, obtained
 here on a family neither method was tuned for.
 
 One feature of the table requires explanation: the two readings
-order the learners oppositely. The policy has the better mean at all three
-budgets, and GP the better bracket at all three. The cause is the
-number of runs each bracket selects over, 30 evolutions for GP
-against three training seeds for the policy, compounded by the wider
-dispersion of the evolved rules: their standard deviation across the
-30 averages $4.3$, $2.3$ and $2.0$ points at the three budgets, against
-$2.2$, $1.4$ and $0.7$ across the policy's seeds. A per-instance
-minimum taken from 30 draws of a wide distribution reaches further
-down than one taken from three draws of a narrow one. Quantitatively,
-the minimum of $n$ normal draws is expected about $0.85$ standard
-deviations below the mean for $n=3$ and $2.04$ for $n=30$; selecting
-the policy over 30 seeds would therefore place its bracket near
-$12.7\%$, $9.6\%$ and $8.8\%$, level with the $12.0\%$, $10.4\%$ and
-$8.4\%$ of GP instead of behind them. The bracket ordering measures
-how many runs each side was selected from, not which learner produces
-the better run. The dispersion across runs is not an artifact,
-however, and is smaller for the policy at every budget: evolving one
-rule and training one network do not expose a practitioner to the
-same risk from the run obtained.
+order the learners oppositely. The policy has the better mean at all
+three budgets, and GP the better bracket at all three, because the
+bracket of each family is a minimum over the runs it was selected
+from and the two counts differ here, 30 evolutions against three
+training seeds.
 
 
 
@@ -2118,10 +2107,9 @@ genetic programming shares the evaluation protocol end to end (the
 same instances, interval arithmetic, ranking criterion, inference
 budgets and execution realizations, run in a single harness) but not
 the training side: each learner was trained as its own study
-prescribes, with budgets that no common currency equalizes, and the
-featured rule was selected over the full benchmark while the policy's
-seeds were not. The comparison of the two paradigms with training
-matched as well, which \citet{Xu2025} call for, remains open.
+prescribes, with budgets that no common currency equalizes. The
+comparison of the two paradigms with training matched as well, which
+\citet{Xu2025} call for, remains open.
 
 \FloatBarrier
 \section{Conclusions and Future Work}
