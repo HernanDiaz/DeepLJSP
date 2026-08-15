@@ -15,4 +15,11 @@ pdflatex -interaction=nonstopmode main.tex > nul
 pdflatex -interaction=nonstopmode main.tex > nul
 findstr /C:"undefined" main.log > nul && echo AVISO: quedan referencias sin resolver
 findstr /C:"Overfull \hbox" main.log > nul && echo AVISO: hay desbordes de caja
+rem El Online Resource 1 se compila con el mismo ciclo
+pdflatex -interaction=nonstopmode supplementary.tex > nul
+bibtex supplementary > nul
+pdflatex -interaction=nonstopmode supplementary.tex > nul
+pdflatex -interaction=nonstopmode supplementary.tex > nul
+pdflatex -interaction=nonstopmode supplementary.tex > nul
+findstr /C:"undefined" supplementary.log > nul && echo AVISO: referencias sin resolver en el suplementario
 echo Compilado.

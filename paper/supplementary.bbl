@@ -1,0 +1,132 @@
+\begin{thebibliography}{}
+\renewcommand{\doi}[1]{\url{https://doi.org/#1}}
+\bibcommenthead
+
+\bibitem [\protect \citeauthoryear {%
+D{\'i}az~Rodr{\'i}guez%
+}{%
+D{\'i}az~Rodr{\'i}guez%
+}{%
+{\protect \APACyear {2026}}%
+}]{%
+DiazGP2026}
+\APACinsertmetastar {%
+DiazGP2026}%
+\begin{APACrefauthors}%
+D{\'i}az~Rodr{\'i}guez, H.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2026}{}{}.
+\newblock
+\APACrefbtitle {Genetic programming hyper-heuristics for the job shop
+  scheduling problem with interval durations: robustness-aware interpretable
+  rules that generalize across instance sizes.} {Genetic programming
+  hyper-heuristics for the job shop scheduling problem with interval durations:
+  robustness-aware interpretable rules that generalize across instance sizes.}
+\newblock
+\APAChowpublished {SSRN}.
+\newblock
+\APACrefnote{Preprint. \doi{10.2139/ssrn.7214286}}
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+L{\'o}pez-Ib{\'a}{\~n}ez%
+, Dubois-Lacoste%
+, P{\'e}rez~C{\'a}ceres%
+, Birattari%
+\BCBL {}\ \BBA {} St{\"u}tzle%
+}{%
+L{\'o}pez-Ib{\'a}{\~n}ez%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2016}}%
+}]{%
+LopezIbanez2016}
+\APACinsertmetastar {%
+LopezIbanez2016}%
+\begin{APACrefauthors}%
+L{\'o}pez-Ib{\'a}{\~n}ez, M.%
+, Dubois-Lacoste, J.%
+, P{\'e}rez~C{\'a}ceres, L.%
+, Birattari, M.%
+\BCBL {} St{\"u}tzle, T.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2016}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {The irace package: Iterated racing for automatic
+  algorithm configuration} {The irace package: Iterated racing for automatic
+  algorithm configuration}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Operations Research Perspectives}{3}{}{43--58,}
+\newblock
+\begin{APACrefDOI} \doi{10.1016/j.orp.2016.09.002} \end{APACrefDOI}
+\newblock
+
+\newblock
+
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Vaswani%
+\ \protect \BOthers {.}}{%
+Vaswani%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2017}}%
+}]{%
+Vaswani2017}
+\APACinsertmetastar {%
+Vaswani2017}%
+\begin{APACrefauthors}%
+Vaswani, A.%
+, Shazeer, N.%
+, Parmar, N.%
+, Uszkoreit, J.%
+, Jones, L.%
+, Gomez, A.N.%
+\BDBL {}Polosukhin, I.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2017}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Attention is all you need} {Attention is all you
+  need}.{\BBCQ}
+\newblock
+ \APACrefbtitle {Advances in Neural Information Processing Systems
+  ({NeurIPS}).} {Advances in neural information processing systems
+  ({NeurIPS}).}
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Xiong%
+\ \protect \BOthers {.}}{%
+Xiong%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2020}}%
+}]{%
+Xiong2020}
+\APACinsertmetastar {%
+Xiong2020}%
+\begin{APACrefauthors}%
+Xiong, R.%
+, Yang, Y.%
+, He, D.%
+, Zheng, K.%
+, Zheng, S.%
+, Xing, C.%
+\BDBL {}Liu, T\BHBI Y.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2020}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {On layer normalization in the transformer architecture}
+  {On layer normalization in the transformer architecture}.{\BBCQ}
+\newblock
+ \APACrefbtitle {International Conference on Machine Learning ({ICML}).}
+  {International conference on machine learning ({ICML}).}
+\PrintBackRefs{\CurrentBib}
+
+\end{thebibliography}

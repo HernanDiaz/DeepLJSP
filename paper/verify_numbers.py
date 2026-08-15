@@ -25,7 +25,14 @@ if not os.path.exists("paper/main.tex"):
     sys.exit("Ejecutar desde la raiz del repo")
 
 TEX = open("paper/main.tex", encoding="utf-8").read()
-TEX_PLANO = " ".join(TEX.split())
+# El Online Resource 1 (campanas de configuracion, variante de atencion
+# y tabla por instancia) forma parte del envio: sus afirmaciones se
+# verifican igual. TEX = solo el paper; TEXSUP = paper + suplementario.
+import os as _os_sup
+SUP = (open("paper/supplementary.tex", encoding="utf-8").read()
+       if _os_sup.path.exists("paper/supplementary.tex") else "")
+TEXSUP = TEX + "\n" + SUP
+TEX_PLANO = " ".join(TEXSUP.split())
 
 ok_n, fallo_n, pend_n = 0, 0, 0
 
@@ -121,7 +128,7 @@ for linea in open("benchmarks/all_baselines.csv",
                   encoding="utf-8").read().splitlines()[1:]:
     c = linea.split(",")
     ab[c[0]] = float(c[8])
-en_tex("$29.5\\%$ mean RE")
+en_tex("to $29.5\\%$ of RE")
 check("G&T-MWKR sobre las 70 (texto 29.5)", 29.5, ab["G&T-MWKR"])
 check("MOR sobre las 70 (texto 45.5)", 45.5, ab["MOR"])
 check("G&T-SPT sobre las 70 (texto 70.6)", 70.6, ab["G&T-SPT"])
@@ -554,9 +561,11 @@ if len(_seg) == 4:
     check("7.3: 2.2x el reloj por episodio (300 ep)", 2.2,
           (sum(_seg["v2-attn-300ep"]) / 3) / (sum(_seg["v2-full-300ep"]) / 3),
           tol=0.051)
-    # 4.4 anunciaba el mismo coste y se quedo con el ~30% retirado de 7.3
-    check_exacto("4.4 cita el mismo factor que 7.3 y no el viejo ~30%",
-                 "by\n$2.2$ (Section" in TEX and "$30\\%$ more" not in TEX)
+    # el resumen de 4.3 y el suplementario citan el mismo factor 2.2,
+    # y el ~30% retirado no vuelve en ninguno de los dos documentos
+    check_exacto("el resumen de la atencion cita 2.2x y no el viejo ~30%",
+                 "2.2 times the episode cost" in TEX
+                 and "by $2.2$" in SUP and "$30\\%$ more" not in TEXSUP)
     # las conclusiones contaban dos campanas de configuracion; son tres
     check_exacto("8: las conclusiones cuentan tres campanas",
                  "three automatic-configuration" in TEX
@@ -856,7 +865,8 @@ check_exacto("abstract dentro de 150-250 palabras (con margen)",
 # bibliografia: que ninguna clave citada falte y que no sobre ninguna
 _bib = open("paper/refs.bib", encoding="utf-8").read()
 _citadas = set()
-for _m in re.finditer(r"\\cite[a-zA-Z]*\*?(?:\[[^\]]*\])*\{([^}]*)\}", TEX):
+for _m in re.finditer(r"\\cite[a-zA-Z]*\*?(?:\[[^\]]*\])*\{([^}]*)\}",
+                      TEXSUP):
     _citadas.update(_k.strip() for _k in _m.group(1).split(","))
 _citadas.discard("")
 _enbib = set(re.findall(r"@\w+\{([^,]+),", _bib))
@@ -1664,7 +1674,8 @@ check_exacto("la fila de medias de tab:classics", _mal_med == 0,
              f"{_mal_med} mal")
 
 print("\n== apendice por instancia ==")
-_blk = TEX[TEX.index("\\label{tab:perinstance}"):]
+# la tabla por instancia vive en el Online Resource 1 desde 2026-08-15
+_blk = SUP[SUP.index("\\label{sup:tab-perinstance}"):]
 _blk = _blk[_blk.index("\\midrule"):_blk.index("\\bottomrule")]
 _n = len(re.findall(r"TA\d+ & \d+ &", _blk))
 check_exacto("filas del apendice: 70/70", _n == 70, f"{_n}/70")

@@ -1309,37 +1309,6 @@ Durasevic2018}%
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
-Vaswani%
-\ \protect \BOthers {.}}{%
-Vaswani%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2017}}%
-}]{%
-Vaswani2017}
-\APACinsertmetastar {%
-Vaswani2017}%
-\begin{APACrefauthors}%
-Vaswani, A.%
-, Shazeer, N.%
-, Parmar, N.%
-, Uszkoreit, J.%
-, Jones, L.%
-, Gomez, A.N.%
-\BDBL {}Polosukhin, I.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2017}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Attention is all you need} {Attention is all you
-  need}.{\BBCQ}
-\newblock
- \APACrefbtitle {Advances in Neural Information Processing Systems
-  ({NeurIPS}).} {Advances in neural information processing systems
-  ({NeurIPS}).}
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
 Vinyals%
 , Fortunato%
 \BCBL {}\ \BBA {} Jaitly%
@@ -1394,36 +1363,6 @@ Wang, Y.%
   job shop scheduling problem.}
 \newblock
 \APACrefnote{arXiv:2502.00018}
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Xiong%
-\ \protect \BOthers {.}}{%
-Xiong%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2020}}%
-}]{%
-Xiong2020}
-\APACinsertmetastar {%
-Xiong2020}%
-\begin{APACrefauthors}%
-Xiong, R.%
-, Yang, Y.%
-, He, D.%
-, Zheng, K.%
-, Zheng, S.%
-, Xing, C.%
-\BDBL {}Liu, T\BHBI Y.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2020}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {On layer normalization in the transformer architecture}
-  {On layer normalization in the transformer architecture}.{\BBCQ}
-\newblock
- \APACrefbtitle {International Conference on Machine Learning ({ICML}).}
-  {International conference on machine learning ({ICML}).}
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
