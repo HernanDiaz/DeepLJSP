@@ -1255,6 +1255,29 @@ try:
 except Exception as e:
     pendiente("dispersion GP vs DRL", type(e).__name__)
 
+# 5.5 da la cuenta de pared de entrenar cada familia. La fuente es el
+# artefacto derivado de los timestamps de las dos campanas (scripts/
+# mide_tiempos_entrenamiento.py); si se reentrenara algo, regenerarlo.
+_TPO = "benchmarks/tiempos/tiempos_entrenamiento.json"
+if not os.path.exists(_TPO):
+    pendiente("tiempos de entrenamiento", "sin tiempos_entrenamiento.json")
+else:
+    _tt = json.load(open(_TPO, encoding="utf-8"))
+    check("5.5: una evolucion tarda 26 min", 26,
+          _tt["gp"]["evolucion_min"], tol=0.51)
+    check("5.5: mediana de un entrenamiento, 92 min", 92,
+          _tt["politica"]["mediana_min"], tol=0.51)
+    check("5.5: rango 60-153 del entrenamiento", 60,
+          _tt["politica"]["min_min"], tol=0.51)
+    check("5.5: rango 60-153 del entrenamiento (max)", 153,
+          _tt["politica"]["max_min"], tol=0.51)
+    check("5.5: 30 evoluciones son 4.4 h", 4.4,
+          _tt["gp"]["total_h_tres_carriles"], tol=0.051)
+    check("5.5: 30 entrenamientos son 16 h", 16,
+          _tt["politica"]["total_h_tres_carriles"], tol=0.051)
+    check_exacto("5.5: 30 semillas en el artefacto de tiempos",
+                 len(_tt["politica"]["por_semilla_min"]) == 30)
+
 # 6.3 y 6.4 afirman COMO se eligio la regla destacada. Es una afirmacion
 # sobre el otro paper, asi que se contrasta contra su fuente, no de
 # memoria: la destacada es la mejor de 30 sobre las 70, y la media de las
@@ -1273,6 +1296,9 @@ else:
                  "$18.99\\%$ ($\\pm1.33$)" in _g and "$18.99\\%$" in TEX)
     check_exacto("6.4: la destacada sobre las 70 es 17.71",
                  "best rule attains\n$17.71\\%$" in _g)
+    check_exacto("5.5: la pasada de la regla cuesta 0.34 s (su fuente)",
+                 "constructive pass takes $0.34$~s with the evolved rule"
+                 in _g and "$0.34$~s" in TEX)
     # 7.5 compara nuestro brazo robusto con el barrido de lambda del
     # companero. Son afirmaciones sobre SU paper: se leen de su fuente.
     check_exacto("7.5: el companero usa el mismo f_lambda con lambda=1",

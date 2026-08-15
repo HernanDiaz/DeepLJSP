@@ -1095,6 +1095,21 @@ evaluation of an evolved expression, which is the cheaper of the two.
 Matched sample counts therefore favour the policy in computational
 terms, and the comparison should be read as one of sample efficiency.
 
+That asymmetry has measured magnitudes. With three concurrent
+processes on the machine of Table~\ref{tab:environment}, one
+evolution under the configuration of~\citet{DiazGP2026}, a population
+of $100$ over $50$ generations, takes $26$ minutes of wall-clock
+time, and one training run of the policy a median of $92$, with a
+range of $60$--$153$ across the thirty runs, so the thirty artifacts
+of each family cost $4.4$ and $16$ hours respectively, incurred once.
+Per schedule at inference, a constructive pass with an evolved rule
+averages $0.34$~s over the seventy instances~\citep{DiazGP2026},
+while a sampled rollout of the policy takes $1.03$~s on a
+$20{\times}15$ instance and $6.4$~s on a $50{\times}20$ one
+(Section~\ref{sec:ablations-bon}). Training and inference thus price
+the policy at several times the rule, a premium the sample-matched
+protocol leaves out of the comparison.
+
 Three published IJSP metaheuristics are included as reference
 yardsticks rather than as direct competitors, since each searches
 every instance separately for minutes on dedicated hardware and
