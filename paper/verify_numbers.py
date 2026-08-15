@@ -1133,7 +1133,10 @@ else:
                      f"{_med['gp_tuned_seed1']:.2f} < "
                      f"{sum(_med.values()) / 30:.2f}")
 
-# G&T, GP mn[bst], Pol.gre mn[bst], GP64 mn[bst], Pol.64 mn[bst], GA, ES.
+# G&T, GP mn[bst], Pol.gre mn[bst], GP64 mn[bst], Pol.64 mn[bst], ESABC.
+# ESABC sustituyo al GA en la tabla el 2026-08-15: dos columnas "GP" al
+# lado de una "GA" invitaban a confundir programacion genetica con
+# algoritmo genetico. El GA sigue citado en la prosa de 6.3.
 # Los corchetes de la politica son la mejor semilla de tres; los del GP,
 # la mejor regla de treinta. El pie de la tabla lo advierte.
 # el 1024 por semilla, que la tabla usa en su tercer grupo (el fichero
@@ -1152,29 +1155,29 @@ _CLAS30 = __import__("json").load(
     open("benchmarks/ext30/resumen_clasicas30.json", encoding="utf-8"))
 TAB_CLASSICS = {
     "FT10": (32.2, 17.0, 7.2, 12.8, 6.6, 11.8, 5.2, 7.9, 4.3,
-             8.5, 4.2, 6.1, 4.3, 5.2),
+             8.5, 4.2, 6.1, 4.3, 3.0),
     "FT20": (40.0, 18.5, 9.4, 12.2, 3.4, 13.3, 5.8, 8.1, 3.4,
-             10.3, 5.4, 6.2, 2.4, 4.4),
+             10.3, 5.4, 6.2, 2.4, 1.8),
     "La21": (24.1, 15.9, 10.3, 18.1, 12.4, 12.6, 10.0, 12.5, 8.6,
-             10.7, 6.8, 9.5, 6.7, 5.0),
+             10.7, 6.8, 9.5, 6.7, 4.0),
     "La24": (26.3, 16.1, 10.1, 16.6, 9.2, 11.5, 8.6, 11.2, 8.8,
-             9.2, 6.2, 9.3, 5.9, 6.3),
+             9.2, 6.2, 9.3, 5.9, 5.0),
     "La25": (16.9, 17.6, 9.6, 18.4, 8.3, 12.3, 8.7, 10.3, 7.8,
-             9.3, 5.1, 8.2, 5.8, 5.1),
+             9.3, 5.1, 8.2, 5.8, 2.7),
     "La27": (34.8, 18.3, 12.3, 14.9, 8.9, 12.5, 10.7, 11.4, 8.4,
-             11.3, 8.2, 9.3, 7.7, 10.2),
+             11.3, 8.2, 9.3, 7.7, 4.1),
     "La29": (24.5, 19.9, 12.9, 22.4, 13.2, 15.0, 11.4, 15.9, 12.3,
-             12.6, 9.7, 13.5, 7.8, 14.2),
+             12.6, 9.7, 13.5, 7.8, 7.0),
     "La38": (27.0, 17.4, 9.2, 15.8, 10.8, 14.3, 9.2, 11.1, 8.0,
-             12.0, 7.1, 9.1, 7.0, 9.2),
+             12.0, 7.1, 9.1, 7.0, 5.8),
     "La40": (27.9, 16.7, 11.7, 13.4, 9.3, 12.3, 8.8, 8.5, 6.0,
-             10.0, 7.1, 7.2, 4.5, 8.7),
+             10.0, 7.1, 7.2, 4.5, 4.1),
     "ABZ7": (28.7, 17.6, 13.3, 18.2, 14.1, 14.3, 11.7, 13.5, 10.4,
-             12.2, 8.9, 11.6, 8.5, 12.5),
+             12.2, 8.9, 11.6, 8.5, 6.7),
     "ABZ8": (36.9, 24.6, 18.1, 21.4, 16.8, 20.9, 17.0, 17.5, 15.0,
-             18.6, 15.0, 15.3, 12.6, 18.5),
+             18.6, 15.0, 15.3, 12.6, 10.9),
     "ABZ9": (41.8, 29.0, 19.5, 24.7, 19.7, 24.0, 17.9, 19.5, 16.3,
-             21.5, 17.4, 17.3, 13.2, 18.0),
+             21.5, 17.4, 17.3, 13.2, 11.2),
 }
 fallos_clas = 0
 for inst, fila in TAB_CLASSICS.items():
@@ -1196,7 +1199,7 @@ for inst, fila in TAB_CLASSICS.items():
               _cl30["64"]["politica"]["mejor"][inst],
               *_gp(2), _cl30["1024"]["politica"]["media"][inst],
               _cl30["1024"]["politica"]["mejor"][inst],
-              float(c["GA"]))
+              float(c["ESABC"]))
     for v_tex, v_dat in zip(fila, reales):
         if abs(v_tex - v_dat) > 0.051:
             print(f"  FALLO celda {inst}: texto={v_tex} datos={v_dat:.2f}")
@@ -1205,10 +1208,14 @@ check_exacto("las 168 celdas de tab:classics", fallos_clas == 0,
              f"{fallos_clas} celdas mal")
 check_exacto("tab:classics ya no imprime el mejor de GA",
              "9.8 [5.8]" not in TEX)
-check_exacto("tab:classics ya no imprime ESABC",
-             "ESABC" not in TEX[TEX.index("\\label{tab:classics}"):
-                                TEX.index("\\end{table}",
-                                          TEX.index("\\label{tab:classics}"))])
+_blkclas = TEX[TEX.index("\\label{tab:classics}"):
+               TEX.index("\\end{table}",
+                         TEX.index("\\label{tab:classics}"))]
+check_exacto("tab:classics imprime ESABC y ya no imprime GA",
+             "ESABC" in _blkclas and "& GA" not in _blkclas)
+check_exacto("la fila Mean de tab:classics cierra con ESABC (5.5)",
+             "& 5.5 \\\\" in _blkclas.split("Mean &", 1)[1],
+             _blkclas.split("Mean &", 1)[1].splitlines()[0].strip())
 # 6.3: la dispersion de las 30 reglas evolucionadas. OJO: la media POR
 # REGLA sobre las 12, no el minimo instancia a instancia (ese "virtual
 # best" da 11.97 y no corresponde a ninguna regla real)
@@ -1393,8 +1400,10 @@ _ps_m = {i: sum(v) / 3 for i, v in _ps.items()}
 # 6.3 ya no compara el mejor por instancia contra la media del GA (era
 # un mejor virtual sobre 30 tiradas, que ninguna tirada alcanza). Lo que
 # afirma ahora es que la MEDIA de las 30 a 1024 muestras queda a medio
-# punto de la media de 30 tiradas del GA
-_ga_media = sum(t[13] for t in TAB_CLASSICS.values()) / 12
+# punto de la media de 30 tiradas del GA. El GA ya no esta en la tabla
+# (la ultima columna es ESABC desde 2026-08-15), asi que la media sale
+# del CSV publicado, no de TAB_CLASSICS
+_ga_media = sum(float(c["GA"]) for c in _clas.values()) / 12
 _pol1024 = _CLAS30["presupuestos"]["1024"]["politica"]["media_global"]
 check("6.3: la politica a 1024 sobre las 12 (texto 10.2)", 10.2,
       _pol1024, tol=0.051)
