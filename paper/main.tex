@@ -376,8 +376,8 @@ lever whose returns grow with the diversity of the learned
 distribution~\citep{Kool2019,Kwon2020}. Permutation-invariant set
 encoders were formalized as Deep Sets~\citep{Zaheer2017}, of which
 self-attention is the natural strict generalization; the architecture
-of Section~\ref{sec:arch} builds on the former and evaluates the
-latter as a controlled ablation.
+of Section~\ref{sec:arch} builds on the former, and the latter is
+evaluated as a controlled ablation in the supplementary material.
 
 The survey by \citet{Xu2025} compares the GP and RL families for job
 shop scheduling and notes the scarcity of comparisons under a common
@@ -1541,15 +1541,17 @@ was not repeated on those arms.
 
 The policy is reported at three inference budgets (one greedy pass,
 $64$ samples and $1024$), which leaves its behaviour between them
-unspecified. To characterize it, all $342$ rollouts per checkpoint
-were retained on each of the 70 instances ($71{,}820$ schedules), so
-that best-of-$B$ is reconstructible for arbitrary $B$ without further
-evaluation. Figure~\ref{fig:budget} plots the resulting curve; its
-band is a dispersion over repetitions, not a confidence interval on
-the mean. The budget is partitioned over the three checkpoints as in
-the deployed protocol and the greedy reference is aggregated
-identically, which places it below the $19.4\%$ of
-Section~\ref{sec:positioning}; EST, at $42.3\%$, lies above the frame.
+unspecified. To characterize the shape of the curve, all $342$
+rollouts of each of the first three training runs were retained on
+each of the 70 instances ($71{,}820$ schedules), so that best-of-$B$
+is reconstructible for arbitrary $B$ without further evaluation; the
+deposit predates the thirty-run campaign, so its absolute level
+corresponds to those three runs with the budget partitioned among
+them, slightly below their aggregated greedy reference, and it is the
+\emph{shape} that this section uses. Figure~\ref{fig:budget} plots
+the curve; its band is a dispersion over repetitions, not a
+confidence interval on the mean. EST, at $42.3\%$, lies above the
+frame.
 A single \emph{sampled} rollout is substantially worse than the greedy
 one, $21.4\%$ against $17.0\%$: the argmax is a high-quality sequence
 within a broadly dispersed distribution. The curve overtakes the
@@ -1893,8 +1895,8 @@ differences are paired effects on six instances rather than claims
 about the population of seeds. The three arms extended to ten
 seeds calibrate what a three-seed comparison can miss: the midpoint
 control turned a null into a detected effect, the attention deficit
-shrank from $1.76$ to $1.06$ points, and the no-width null sharpened
-from $0.18$ to $0.04$ points. Fourth, the four training instances are
+(supplementary material) shrank from $1.76$ to $1.06$ points, and the
+no-width null sharpened from $0.18$ to $0.04$ points. Fourth, the four training instances are
 always presented in the same order, so the variability the seeds
 measure is that of a fixed curriculum; whether a different order
 would move the arm was not tested. Finally, the comparison with the rule evolved by
@@ -1924,8 +1926,9 @@ per-class columns qualify the aggregate: the policy is ahead near the
 size it trained on and behind on the two largest classes, where a
 short expression has less to lose from a shift in the state
 distribution. On the twelve classical instances, a family neither
-method was tuned for, the policy leads on both readings at both
-budgets measured (Q1).
+method was tuned for, the policy holds the lower figure on both
+readings at every budget, significantly so once both methods sample
+(Q1).
 
 The paradigms also differ in where they handle the uncertainty, and
 the design had conflated two things. As inputs the widths are inert:
@@ -1998,7 +2001,8 @@ schedules an instance in seconds is a candidate generator of initial
 solutions for population-based search, and the quality of its
 sampling distribution, documented here at a fixed budget, is the
 property such a use would exploit. The third turns the budget analysis of
-Section~\ref{sec:ablations-bon} inward. The policy commits to a
+Section~\ref{sec:ablations-bon} inward. On the rollout deposit
+measured there, the network commits to a
 schedule at $17.0\%$ while its own thousand samples reach
 $12.9\%$: four points separate the decision the network makes from
 the best one it produces, and finding that one costs a thousand
