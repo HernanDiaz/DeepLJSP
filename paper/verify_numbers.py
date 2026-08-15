@@ -135,7 +135,7 @@ check("G&T-SPT sobre las 70 (texto 70.6)", 70.6, ab["G&T-SPT"])
 # 2.2 cuantifica lo que aporta la restriccion de Giffler-Thompson
 check("2.2: MWKR sin Giffler-Thompson (texto 64.7)", 64.7, ab["MWKR"])
 check_exacto("2.2: y el texto da los dos extremos",
-             "from $64.7\\%$ to $29.5\\%$" in TEX)
+             "$64.7\\%$ to\n$29.5\\%$" in TEX)
 check("EST sobre las 70 (texto 42.3)", 42.3, ab["EST"])
 check_exacto("EST es la mejor regla suelta sobre las 70",
              ab["EST"] < min(ab["MOR"], ab["MWKR"], ab["SPT"], ab["LPT"]),
@@ -216,7 +216,9 @@ check_exacto("abstract: politica, luego comparacion, luego mecanismo",
              and "1.2" not in _abs_plano
              and "20{\\times}15" not in _abs_plano
              and "lexicographic" not in _abs_plano
-             and _abs_plano.index("first constructive deep reinforcement")
+             # el autor retiro tambien la reclamacion de primacia
+             and "the first" not in _abs_plano
+             and _abs_plano.index("a constructive deep reinforcement")
              < _abs_plano.index("thirty trained artifacts")
              < _abs_plano.index("sample selection"))
 # el titulo anuncia la comparacion desde el reencuadre del 2026-08-15,
@@ -230,7 +232,13 @@ check_exacto("titulo: DRL, el problema y la comparacion acotada",
                   "across Inference Budgets")))
 
 # =========================================================================
-print("\n== tab:insize: recomputo desde schedules (componentwise) ==")
+print("\n== centinela: recomputo desde schedules (componentwise) ==")
+# Desde 2026-08-16 tab:insize y fig:scaling salen del evaluador
+# independiente (se comprueban mas abajo contra validacion_unificada
+# .json). Este bloque conserva la evaluacion embebida en cada tirada de
+# entrenamiento como CENTINELA: sus cifras ya no se imprimen, pero
+# recomputarlas schedule a schedule es lo que vigila el convenio
+# componentwise del makespan, que ninguna otra comprobacion cubre.
 # Cada presupuesto agrega su brazo original (semillas 2-4) y su
 # extension (5-11): diez tiradas identicas salvo la semilla.
 TAB_INSIZE = {
@@ -272,35 +280,35 @@ for tags, celdas in TAB_INSIZE.items():
         delta_max = max(delta_max,
                         abs(res_mean[ta] - re_pct(sum(lex) / len(lex), ta)))
     for ta, (m_tex, b_tex) in celdas.items():
-        check(f"{tags[0]} {ta} media", m_tex, res_mean[ta])
-        check(f"{tags[0]} {ta} mejor", b_tex, res_best[ta])
+        check(f"centinela {tags[0]} {ta} media", m_tex, res_mean[ta])
+        check(f"centinela {tags[0]} {ta} mejor", b_tex, res_best[ta])
     m_tex, sd_tex = MEDIAS[tags[0]]
-    check(f"{tags[0]}: media de la fila (texto {m_tex})", m_tex,
+    check(f"centinela {tags[0]}: media de la fila ({m_tex})", m_tex,
           sum(res_mean.values()) / 6)
     _medias_presupuesto[tags[0]] = sum(res_mean.values()) / 6
     import statistics as _si
     por_sem = [_si.mean(re_pct(por_semilla[ta][s][0], ta) for ta in DEV6)
                for s in semillas]
-    check(f"{tags[0]}: sd entre las diez semillas (texto {sd_tex})",
+    check(f"centinela {tags[0]}: sd de las diez ({sd_tex})",
           sd_tex, _si.stdev(por_sem), tol=0.006)
     # los extremos por semilla ya no se imprimen en el texto: son la
     # banda mejor-peor de fig:scaling, cuyos valores viven en
     # make_figures.fig_scaling
     if tags[0] == "v2-full-1000ep":
-        check("fig:scaling: peor semilla a 1000 eps (banda 14.6)", 14.6,
+        check("centinela: peor semilla a 1000 eps, entrenamiento (14.6)", 14.6,
               max(por_sem), tol=0.051)
-        check("fig:scaling: mejor semilla a 1000 eps (banda 13.1)", 13.1,
+        check("centinela: mejor semilla a 1000 eps, entrenamiento (13.1)", 13.1,
               min(por_sem), tol=0.051)
         tres = [_si.mean(re_pct(por_semilla[ta][s][0], ta) for ta in DEV6)
                 for s in ("2", "3", "4")]
         check("7.4: las tres de las ablaciones (texto 13.44)", 13.44,
               _si.mean(tres))
-        check("7.4: las diez del brazo principal (texto 13.82)", 13.82,
+        check("centinela: las diez en entrenamiento (13.82, no impreso)", 13.82,
               _si.mean(por_sem))
     if tags[0] == "v2-full":
-        check("fig:scaling: banda a 100 eps, minimo (21.3)", 21.3,
+        check("centinela: banda a 100 eps, entrenamiento, minimo (21.3)", 21.3,
               min(por_sem), tol=0.051)
-        check("fig:scaling: banda a 100 eps, maximo (36.2)", 36.2,
+        check("centinela: banda a 100 eps, entrenamiento, maximo (36.2)", 36.2,
               max(por_sem), tol=0.051)
 print(f"  nota: delta maximo lex vs componentwise = {delta_max:.3f} puntos")
 
@@ -319,12 +327,88 @@ if len(_medias_presupuesto) == 3:
     _m = {k: round(v, 1) for k, v in _medias_presupuesto.items()}
     _r1 = _m["v2-full"] - _m["v2-full-300ep"]
     _r2 = _m["v2-full-300ep"] - _m["v2-full-1000ep"]
-    check("6.1: primer salto, 10.0 puntos (texto)", 10.0, _r1, tol=0.02)
-    check("6.1: segundo salto, 3.6 puntos (texto)", 3.6, _r2, tol=0.02)
-    check_exacto("6.1: el retorno decrece", _r2 < _r1,
-                 f"{_r1:.1f} -> {_r2:.1f}")
+    check_exacto("centinela: el retorno decrece tambien en entrenamiento",
+                 _r2 < _r1, f"{_r1:.1f} -> {_r2:.1f}")
 else:
     pendiente("6.1: las dos tasas de retorno", "faltan brazos de presupuesto")
+
+# =========================================================================
+print("\n== tab:insize y fig:scaling: evaluador independiente ==")
+# La escalera de presupuesto se lee pareada sobre las MISMAS diez
+# semillas; el brazo de 1000 episodios publica ademas su vista sobre las
+# treinta de la campana, que es la que cita el resto del paper.
+_VU = "benchmarks/ext30/validacion_unificada.json"
+if not os.path.exists(_VU):
+    pendiente("tab:insize unificada", "sin validacion_unificada.json")
+else:
+    _vu = json.load(open(_VU, encoding="utf-8"))
+    _VAL6 = [f"int__tai20_15_{k:02d}" for k in range(5, 11)]
+    # (brazo, fila impresa: media [mejor] por instancia, media, sd)
+    _FILAS = [
+        ("v2-full-100ep",
+         [(31.4, 20.4), (32.2, 16.8), (28.7, 22.3), (29.4, 16.6),
+          (29.9, 13.7), (32.0, 23.9)], 30.6, 6.38),
+        ("v2-full-300ep",
+         [(18.9, 15.9), (16.3, 13.9), (16.4, 12.8), (19.5, 16.1),
+          (17.6, 12.8), (15.2, 12.7)], 17.3, 1.50),
+        ("v2-full-1000ep-diez",
+         [(14.1, 12.1), (12.8, 9.3), (12.0, 10.0), (16.0, 14.7),
+          (12.9, 10.1), (13.6, 11.8)], 13.6, 0.46),
+    ]
+    _mal_ins = 0
+    for _arm, _celdas, _m_tex, _sd_tex in _FILAS:
+        _a = _vu[_arm]
+        check_exacto(f"tab:insize {_arm}: diez semillas", _a["n"] == 10,
+                     f"{_a['n']} semillas")
+        for _i, (_m, _b) in zip(_VAL6, _celdas):
+            if abs(_a["por_instancia"][_i] - _m) > 0.051:
+                print(f"  FALLO {_arm} {_i} media: texto={_m} "
+                      f"datos={_a['por_instancia'][_i]:.2f}")
+                _mal_ins += 1
+            if abs(_a["mejor_por_instancia"][_i] - _b) > 0.051:
+                print(f"  FALLO {_arm} {_i} mejor: texto={_b} "
+                      f"datos={_a['mejor_por_instancia'][_i]:.2f}")
+                _mal_ins += 1
+        check(f"tab:insize {_arm}: media de la fila ({_m_tex})", _m_tex,
+              _a["bo64"])
+        check(f"tab:insize {_arm}: sd de las diez ({_sd_tex})", _sd_tex,
+              _a["sd"], tol=0.006)
+    check_exacto("las 36 celdas de tab:insize", _mal_ins == 0,
+                 f"{_mal_ins} celdas mal")
+    # 6.1(i): las dos tasas de retorno, restadas de las medias IMPRESAS
+    _mi = [round(_vu[a]["bo64"], 1) for a, _, _, _ in _FILAS]
+    check("6.1: primer salto, 13.3 puntos (texto)", 13.3, _mi[0] - _mi[1],
+          tol=0.02)
+    check("6.1: segundo salto, 3.7 puntos (texto)", 3.7, _mi[1] - _mi[2],
+          tol=0.02)
+    # 6.1(ii): el factor de contraccion de la dispersion
+    _fac_sd = _vu["v2-full-100ep"]["sd"] / _vu["v2-full-1000ep-diez"]["sd"]
+    check_exacto("6.1: la sd se contrae un factor ~14",
+                 13.5 <= _fac_sd <= 14.5, f"{_fac_sd:.1f}")
+    # 6.1(iii): a 100 episodios la politica AUN no bate a la constructiva
+    check_exacto("6.1: a 100 episodios la politica va por detras de G&T",
+                 _vu["v2-full-100ep"]["bo64"] > 27.9,
+                 f"{_vu['v2-full-100ep']['bo64']:.1f} vs 27.9")
+    # la campana entera: es el numero que citan 6.3 y las conclusiones
+    check("6.1: las treinta de la campana (texto 13.92)", 13.92,
+          _vu["v2-full-1000ep"]["bo64"], tol=0.006)
+    check("6.1: sd de las treinta (texto 0.60)", 0.60,
+          _vu["v2-full-1000ep"]["sd"], tol=0.006)
+    check_exacto("6.3 y conclusiones citan el 13.9 de las treinta",
+                 "$13.9\\%$ in-size" in TEX and "($13.9\\%$ versus" in TEX)
+    # fig:scaling: la banda es el rango mejor-peor de cada presupuesto
+    _BANDA = [("v2-full-100ep", 21.1, 39.2), ("v2-full-300ep", 14.5, 19.9),
+              ("v2-full-1000ep-diez", 12.8, 14.0)]
+    _fig = open("paper/make_figures.py", encoding="utf-8").read()
+    for _arm, _mej, _peor in _BANDA:
+        check(f"fig:scaling banda {_arm}, mejor ({_mej})", _mej,
+              _vu[_arm]["mejor"], tol=0.051)
+        check(f"fig:scaling banda {_arm}, peor ({_peor})", _peor,
+              _vu[_arm]["peor"], tol=0.051)
+    check_exacto("fig:scaling dibuja esas tres medias y esa banda",
+                 "ds_mean = [30.6, 17.3, 13.6]" in _fig
+                 and "ds_best = [21.1, 14.5, 12.8]" in _fig
+                 and "ds_worst = [39.2, 19.9, 14.0]" in _fig)
 
 # fig:scaling: sus dos lineas de referencia van sobre TA15-TA20, no
 # sobre las 70. G&T da 29.5 en las setenta y 27.9 aqui; usar el de las
@@ -344,11 +428,12 @@ if datos1000:
     mejor_media = sum(re_pct(min(d["mids"]), ta)
                       for ta, d in datos1000.items()) / len(datos1000)
     check("centinela: mejor semilla a 1000 eps (12.3)", 12.3, mejor_media)
-    # el factor de 6.1 va contra la media de las DIEZ semillas (13.82),
-    # no contra la de las tres con que van pareadas las ablaciones. Y la
-    # referencia es G&T-MWKR, la mejor constructiva, no MOR
+    # el factor de 6.1 va contra la campana entera bajo el evaluador
+    # independiente (13.92, treinta semillas), que es el numero que el
+    # resto del paper cita, no contra la vista de diez de la escalera. Y
+    # la referencia es G&T-MWKR, la mejor constructiva, no MOR
     _gt_dev = sum(GT_RE[t] for t in DEV6) / 6
-    factor = _gt_dev / 13.82
+    factor = _gt_dev / 13.92
     check_exacto("factor ~2.0 frente a G&T-MWKR", 1.95 <= factor <= 2.05,
                  f"{factor:.2f}")
     # la fila de tab:insize: G&T-MWKR instancia a instancia
@@ -522,28 +607,31 @@ if _da10 and _nw10:
               for x, y in zip(_da10[ta]["mids"], _nw10[ta]["mids"])]
     check_exacto("7.4 no-width: 60 pares", len(_difnw) == 60,
                  str(len(_difnw)))
-    check("7.4 no-width: media a diez semillas (texto 13.86)", 13.86,
+    check("centinela no-width: diez semillas en entrenamiento (13.86)",
+          13.86,
           sum(re_pct(v, ta) for ta in _nw10
               for v in _nw10[ta]["mids"]) / 60, tol=0.006)
-    check("7.4 no-width: delta +0.04", 0.04,
+    check("centinela no-width: delta en entrenamiento (+0.04)", 0.04,
           sum(_difnw) / len(_difnw), tol=0.006)
-    check_exacto("7.4 no-width: peor en 31 de 60",
+    check_exacto("centinela no-width: peor en 31 de 60",
                  sum(1 for d in _difnw if d > 0) == 31,
                  str(sum(1 for d in _difnw if d > 0)))
     import statistics as _st74
     _difnw_i = [sum(re_pct(v, ta) for v in _nw10[ta]["mids"]) / 10
                 - sum(re_pct(v, ta) for v in _da10[ta]["mids"]) / 10
                 for ta in sorted(_da10)]
-    check_exacto("7.4 no-width: peor en 2 de las 6 instancias",
+    check_exacto("centinela no-width: peor en 2 de las 6",
                  sum(1 for d in _difnw_i if d > 0) == 2,
                  str(sum(1 for d in _difnw_i if d > 0)))
-    check("7.4 no-width: Wilcoxon por instancia (texto 1.00)", 1.0,
+    check("centinela no-width: Wilcoxon en entrenamiento (1.00)", 1.0,
           _p_instancia(_difnw_i), tol=0.0011)
     _mdnw = sum(_difnw_i) / 6
     _seminw = 2.5706 * _st74.stdev(_difnw_i) / 6 ** 0.5
-    check("7.4 no-width: IC95 inferior (texto -0.79)", -0.79,
+    check("centinela no-width: IC95 en entrenamiento, inferior (-0.79)",
+          -0.79,
           _mdnw - _seminw, tol=0.011)
-    check("7.4 no-width: IC95 superior (texto 0.87)", 0.87,
+    check("centinela no-width: IC95 en entrenamiento, superior (0.87)",
+          0.87,
           _mdnw + _seminw, tol=0.011)
     check_exacto("7.4: la extension no-width tiene 7 semillas exactas",
                  len(_gl.glob(
@@ -2009,10 +2097,11 @@ _mp10 = _por_par("v2-midpoint-1000ep-b", "v2-midpoint-1000ep-ext")
 _c10 = sorted(set(_full10) & set(_mp10))
 check_exacto("punto medio: diez semillas x seis instancias",
              len(_c10) == 60, f"{len(_c10)} pares")
-check("punto medio a diez semillas (texto 14.45)", 14.45,
+check("centinela punto medio: diez en entrenamiento (14.45)", 14.45,
       sum(_mp10[k] for k in _c10) / 60, tol=0.006)
 _d10 = [_mp10[k] - _full10[k] for k in _c10]
-check("punto medio: diferencia (texto +0.63)", 0.63,
+check("centinela punto medio: diferencia en entrenamiento (+0.63)",
+      0.63,
       sum(_d10) / 60, tol=0.006)
 check_exacto("punto medio: peor en 36 de 60",
              sum(x > 0 for x in _d10) == 36,
@@ -2031,23 +2120,128 @@ try:
     check_exacto("punto medio: peor en las 6 instancias",
                  sum(x > 0 for x in _d10_i) == 6,
                  f"{sum(x > 0 for x in _d10_i)}/6")
-    check("punto medio por instancia: significativo (texto 0.031)", 0.031,
+    check("centinela punto medio: Wilcoxon en entrenamiento (0.031)",
+          0.031,
           float(_stmp.wilcoxon(_d10_i, method="exact").pvalue), tol=0.0011)
     _mdmp = sum(_d10_i) / 6
     import statistics as _stmpd
     _semimp = 2.5706 * _stmpd.stdev(_d10_i) / 6 ** 0.5
-    check("punto medio: IC95 inferior (texto 0.08)", 0.08, _mdmp - _semimp,
+    check("centinela punto medio: IC95 inferior (0.08)", 0.08,
+          _mdmp - _semimp,
           tol=0.011)
-    check("punto medio: IC95 superior (texto 1.17)", 1.17, _mdmp + _semimp,
+    check("centinela punto medio: IC95 superior (1.17)", 1.17,
+          _mdmp + _semimp,
           tol=0.011)
     # la potencia que cita 7.4, recomputada con la instancia como unidad
     _dmp = _mdmp / _stmpd.stdev(_d10_i)
     _ncp = _dmp * 6 ** 0.5
     _tc = _stmp.t.ppf(0.975, 5)
     _pot = (1 - _stmp.nct.cdf(_tc, 5, _ncp) + _stmp.nct.cdf(-_tc, 5, _ncp))
-    check("punto medio: potencia ~0.7 (texto)", 0.7, _pot, tol=0.05)
+    check("centinela punto medio: potencia ~0.7 en entrenamiento", 0.7,
+          _pot, tol=0.05)
 except ImportError:
     pendiente("Wilcoxon del punto medio a diez", "sin scipy")
+
+# =========================================================================
+print("\n== 7.3: las dos ablaciones tal como se reportan ==")
+# Desde 2026-08-16 el texto lee las dos ablaciones bajo el evaluador
+# independiente y sobre TRES conjuntos: las seis de validacion a 64
+# muestras, treinta instancias no vistas al mismo presupuesto (la
+# confirmacion que cerro el 2026-08-16) y sesenta no vistas a una
+# pasada. Las cifras de arriba, de la evaluacion embebida, quedan como
+# centinela y no deben mezclarse con estas.
+_ABL = [("benchmarks/ext30/ablaciones_unificadas.json", "validacion", 6),
+        ("benchmarks/ext30/ablaciones_treinta_bo64.json", "no vistas 64", 30),
+        ("benchmarks/ext30/ablaciones_sesenta.json", "no vistas 1 pasada", 60)]
+_abl = {}
+for _ruta, _etq, _n in _ABL:
+    if not os.path.exists(_ruta):
+        pendiente(f"ablaciones sobre {_etq}", f"sin {os.path.basename(_ruta)}")
+        continue
+    _abl[_etq] = json.load(open(_ruta, encoding="utf-8"))
+
+if len(_abl) == 3:
+    _v, _t30, _s60 = (_abl["validacion"], _abl["no vistas 64"],
+                      _abl["no vistas 1 pasada"])
+    _NW, _MP = "v2-nowidth-1000ep", "v2-midpoint-1000ep"
+    # el brazo base de las tres lecturas: las mismas diez semillas
+    check("7.3: base de validacion a diez semillas (texto 13.57)", 13.57,
+          _v[_NW]["base"], tol=0.006)
+    check_exacto("7.3: el base de las dos ablaciones es el mismo",
+                 _v[_NW]["base"] == _v[_MP]["base"]
+                 and _t30[_NW]["base"] == _t30[_MP]["base"])
+    for _a in (_v, _t30, _s60):
+        for _arm in (_NW, _MP):
+            check_exacto(f"7.3: diez semillas en {_arm}",
+                         _a[_arm]["n_semillas"] == 10,
+                         f"{_a[_arm]['n_semillas']} semillas")
+    check_exacto("7.3: la confirmacion son treinta instancias",
+                 _t30[_NW]["n_instancias"] == 30
+                 and _t30[_MP]["n_instancias"] == 30)
+
+    # --- anchuras como entrada: nulo en los tres conjuntos ---
+    check("7.3 no-width: validacion, brazo (texto 13.98)", 13.98,
+          _v[_NW]["brazo"], tol=0.006)
+    check("7.3 no-width: validacion, diferencia (texto 0.42)", 0.42,
+          _v[_NW]["dif"], tol=0.006)
+    check("7.3 no-width: validacion, p (texto 0.094)", 0.094,
+          _v[_NW]["p"], tol=0.0011)
+    check("7.3 no-width: no vistas, base (texto 15.55)", 15.55,
+          _t30[_NW]["base"], tol=0.006)
+    check("7.3 no-width: no vistas, brazo (texto 15.53)", 15.53,
+          _t30[_NW]["brazo"], tol=0.006)
+    check("7.3 no-width: no vistas, diferencia (texto -0.02)", -0.02,
+          _t30[_NW]["dif"], tol=0.006)
+    check_exacto("7.3 no-width: peor en 15 de las 30",
+                 _t30[_NW]["peor_en"] == 15, f"{_t30[_NW]['peor_en']}/30")
+    check("7.3 no-width: no vistas, p (texto 0.90)", 0.90,
+          _t30[_NW]["p"], tol=0.006)
+    check("7.3 no-width: IC95 inferior (texto -0.34)", -0.34,
+          _t30[_NW]["ic95"][0], tol=0.006)
+    check("7.3 no-width: IC95 superior (texto 0.29)", 0.29,
+          _t30[_NW]["ic95"][1], tol=0.006)
+    check("7.3 no-width: una pasada, diferencia (texto -0.24)", -0.24,
+          _s60[_NW]["dif"], tol=0.006)
+    check("7.3 no-width: una pasada, p (texto 0.10)", 0.10,
+          _s60[_NW]["p"], tol=0.006)
+    check_exacto("7.3 no-width: ningun conjunto separa los brazos",
+                 all(a[_NW]["p"] > 0.05 for a in (_v, _t30, _s60)))
+    check_exacto("7.3 no-width: el IC de las no vistas es el mas estrecho",
+                 (_t30[_NW]["ic95"][1] - _t30[_NW]["ic95"][0])
+                 < min(_v[_NW]["ic95"][1] - _v[_NW]["ic95"][0],
+                       _s60[_NW]["ic95"][1] - _s60[_NW]["ic95"][0]))
+
+    # --- intervalos como datos: presente al muestrear, ausente a una
+    # pasada. Es la disociacion que 7.3 usa para situar el efecto ---
+    check("7.3 punto medio: validacion, brazo (texto 14.14)", 14.14,
+          _v[_MP]["brazo"], tol=0.006)
+    check("7.3 punto medio: validacion, diferencia (texto 0.57)", 0.57,
+          _v[_MP]["dif"], tol=0.006)
+    check("7.3 punto medio: validacion, p (texto 0.063)", 0.063,
+          _v[_MP]["p"], tol=0.0011)
+    check("7.3 punto medio: no vistas, brazo (texto 15.99)", 15.99,
+          _t30[_MP]["brazo"], tol=0.006)
+    check("7.3 punto medio: no vistas, diferencia (texto 0.43)", 0.43,
+          _t30[_MP]["dif"], tol=0.006)
+    check("7.3 punto medio: no vistas, p (texto 0.045)", 0.045,
+          _t30[_MP]["p"], tol=0.0011)
+    check_exacto("7.3 punto medio: peor en 21 de las 30",
+                 _t30[_MP]["peor_en"] == 21, f"{_t30[_MP]['peor_en']}/30")
+    check("7.3 punto medio: IC95 inferior (texto 0.03)", 0.03,
+          _t30[_MP]["ic95"][0], tol=0.006)
+    check("7.3 punto medio: IC95 superior (texto 0.84)", 0.84,
+          _t30[_MP]["ic95"][1], tol=0.006)
+    check("7.3 punto medio: una pasada, diferencia (texto -0.04)", -0.04,
+          _s60[_MP]["dif"], tol=0.006)
+    check("7.3 punto medio: una pasada, p (texto 0.65)", 0.65,
+          _s60[_MP]["p"], tol=0.006)
+    check_exacto("7.3 punto medio: significativo al muestrear, no a una "
+                 "pasada", _t30[_MP]["p"] < 0.05 <= _s60[_MP]["p"],
+                 f"64: p={_t30[_MP]['p']:.3f}, 1 pasada: "
+                 f"p={_s60[_MP]['p']:.2f}")
+    # y que el texto no vuelva a mezclar las dos procedencias
+    check_exacto("7.3 no reintroduce las cifras de la evaluacion embebida",
+                 not any(s in TEX for s in ("13.82", "13.86", "14.45")))
 # el punto medio a 3 semillas ya no se imprime (7.4 reporta solo las
 # diez, a peticion del autor); sus numeros quedan como centinelas
 for nombre, arm, v_tex, es_cent in [("no-width", _nw, 13.62, True),
@@ -2788,12 +2982,12 @@ check_exacto("5.3: Kendall W de 0.02 a 0.05 al final de la carrera",
              _kw and 0.02 <= min(_kw[-5:]) and max(_kw[-5:]) <= 0.05,
              " ".join(f"{w:.2f}" for w in _kw[-5:]))
 
-# el limite de resolucion que 5.3 declara: sd 0.47 entre medias de
+# el limite de resolucion que 5.3 declara: sd 0.46 entre medias de
 # semilla y n=3 por brazo dan ~1 punto de efecto minimo detectable
-_mde = 2.8 * 0.47 * (2.0 / 3) ** 0.5
+_mde = 2.8 * 0.46 * (2.0 / 3) ** 0.5
 check("5.3: tres semillas resuelven ~1 punto de RE", 1.0, _mde, tol=0.11)
-check_exacto("5.3: y el 0.47 es el de 6.1",
-             "$0.47$ at $1000$" in TEX)
+check_exacto("5.3: y el 0.46 es el de 6.1",
+             "$0.46$ at $1000$" in TEX and "$0.46$-point" in TEX)
 # la contraprueba de que la inyeccion por entorno llega al modelo: la
 # elite 27 llevaba hidden=64 y su checkpoint no tiene 120.322 parametros
 try:

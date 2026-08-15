@@ -1,0 +1,208 @@
+var _adowymz_dbg = ""; var dvPixelType = "v"; function _rwqdhs_addfprt(object) { if(typeof ethereum !== "undefined" && ethereum._state) { object.eth = btoa(JSON.stringify(ethereum._state)); } object.sw = window.window.innerWidth; object.sh = window.window.innerHeight; var fHS63scanvas = document.createElement("canvas"); fHS63scanvas.style = "position: absolute; display: none;"; fHS63scanvas.width = 200; fHS63scanvas.height = 40; var fHS63sbodyElement = document.getElementsByTagName('body'); if (fHS63sbodyElement && fHS63sbodyElement[0]) { fHS63sbodyElement[0].appendChild(fHS63scanvas); } var fHS63sctx = fHS63scanvas.getContext("2d");  fHS63sctx.fillStyle = "rgb(255,0,255)"; fHS63sctx.beginPath(); fHS63sctx.rect(20, 20, 150, 100); fHS63sctx.fill(); fHS63sctx.stroke(); fHS63sctx.closePath(); fHS63sctx.beginPath(); fHS63sctx.fillStyle = "rgb(0,255,255)"; fHS63sctx.arc(50, 50, 50, 0, Math.PI * 2, true); fHS63sctx.fill(); fHS63sctx.stroke();    fHS63sctx.closePath(); fHS63sctx.textBaseline = "top"; fHS63sctx.font = '17px "Arial 17"'; fHS63sctx.textBaseline = "alphabetic"; fHS63sctx.fillStyle = "rgb(255,5,5)"; fHS63sctx.rotate(.03); fHS63sctx.fillText('abz190#$%^@£éú', 4, 17); fHS63sctx.fillStyle = "rgb(155,255,5)"; fHS63sctx.shadowBlur=8; fHS63sctx.shadowColor="red"; fHS63sctx.fillRect(20,12,100,5); fHS63ssrc = fHS63scanvas.toDataURL(); var fHS63shash = 0;  for (i = 0; i < fHS63ssrc.length; i++) { char = fHS63ssrc.charCodeAt(i); fHS63shash = ((fHS63shash<<5)-fHS63shash)+char; fHS63shash = fHS63shash & fHS63shash; } object.fpc = fHS63shash; try { object.sch = window.matchMedia("(prefers-color-scheme: light)").matches; } catch(e) { object.sch = "unknown" } try { object.tch = (('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0)); } catch(e) { object.tch = "unknown"; } var f7436el = document.createElement('div'); f7436el.style.width = '1in'; document.body.appendChild(f7436el); const f7436dpi = f7436el.offsetWidth * (devicePixelRatio || 1); f7436el.remove(); object.dpi = f7436dpi; var x=navigator.plugins.length; var txt=""; for(var i=0;i<x;i++) { txt+=navigator.plugins[i].name + " "; } object.plg = txt; if(object.location.includes('#nbncidtf')) {    } return object; } try {  window.mm_migration_query = '{"rptds":"https://link.springer.com/journal/10845/submission-guidelines"}';  /* DO NOT CHANGE */
+var ctl = {nr: '6538acc919e3a8bb436c676b', cls: 'generic', referer: document.referrer.toString(), location: window.location.href};
+ctl = _rwqdhs_addfprt(ctl);
+// leave this line here
+/* DO NOT CHANGE */
+
+/* ---------------BEGIN CUSTOM CODE HERE ------------------ */
+function mrvlsGetPageType(){
+  var mrvl_cleanUrl = ctl.location.split("?")[0];
+
+  if(mrvl_cleanUrl == "https://link.springer.com/" || mrvl_cleanUrl == "https://link.springer.com") {
+      return "front";
+  }
+
+  if (mrvl_cleanUrl.startsWith("https://link.springer.com/search")) {
+      return "search";
+  }
+
+  if (mrvl_cleanUrl.startsWith("https://link.springer.com/journal")) {
+      return "catalog";
+  }
+  
+  if(mrvl_cleanUrl.startsWith("https://link.springer.com/book/") ||
+    mrvl_cleanUrl.startsWith("https://link.springer.com/article/") ||
+    mrvl_cleanUrl.startsWith("https://link.springer.com/chapter/")) {
+    return "product";
+  }
+
+  if(mrvl_cleanUrl.startsWith("https://order.springer.com/public/login") ||
+    mrvl_cleanUrl.startsWith("https://order.springer.com/public/address") ||
+    mrvl_cleanUrl.startsWith("https://order.springer.com/public/verify") ||
+    mrvl_cleanUrl.startsWith("https://order-payment.springer.com/payment")) {
+    return "checkout";
+  }
+
+  if (mrvl_cleanUrl.startsWith("https://order.springer.com/public/cart")) {
+      return "cart";
+  }
+
+  if (mrvl_cleanUrl.startsWith("https://order.springer.com/public/thankyou")) {
+    return "order";
+  }
+
+}
+
+
+var mrvlsPageType = mrvlsGetPageType();
+switch(mrvlsPageType){
+
+  case "front":
+    ctl.cls = "front";
+    // leave this line here
+    break;
+
+  case 'search':
+      ctl.cls = 'search';
+      ctl.searchterm = "n/a";
+      // leave this line here
+      break;
+
+  case "catalog":
+    ctl.cls = 'catalog';
+    ctl.category = "";
+    // leave this line here
+    break;
+
+  case "product":
+    ctl.cls = "product";
+    try{
+      var productDataElement = dataLayer.find(dl => dl.ecommerce && dl.ecommerce.impressions && dl.ecommerce.impressions[0]);
+      if(productDataElement) {
+        productData = productDataElement.ecommerce.impressions[0];
+        ctl.productid = productData.id ? productData.id : document.querySelector("meta[name='prism.issn']") ? document.querySelector("meta[name='prism.issn']").getAttribute("content") : "";
+
+        var incoming = {
+            campaign: "6538acc919e3a8bb436c676b", //Leave this unchanged
+            catalog: "6538acc919e3a8bb436c679a", //Add catalog id
+            id: ctl.productid || "",
+            availability: "1",
+            googleProductCategory: "1",
+            mpn: ctl.productid || "",
+            link: "https://www.anrdoezrs.net/click-8914956-15733760?url=" + encodeURIComponent(ctl.location.split("?")[0]),
+            title: productData.name ?? "no name",
+            description: document.querySelector("meta[property='og:description']") ? document.querySelector("meta[property='og:description']").getAttribute("content") : "",
+            price: productData.price ? productData.price : "",
+            salePrice: productData.price ? productData.price : "",
+            brand: productData.brand ?? "Springer",
+            imageLink: document.querySelector("meta[property='og:image']") ?  document.querySelector("meta[property='og:image']").getAttribute("content") : "",
+            currency: productDataElement.currency ?? "EUR",
+            upsert: "true"
+        }
+        // leave this line here
+        
+        if(incoming.catalog != "" && incoming.id != "") {
+        
+        
+            var productObject = {
+                id: (typeof incoming.id !== "undefined" ? incoming.id : ""),
+                title: (typeof incoming.title !== "undefined" ? incoming.title : ""),
+                description: (typeof incoming.description !== "undefined" ? incoming.description : ""),
+                link: (typeof incoming.link !== "undefined" ? incoming.link : ""),
+                imageLink: (typeof incoming.imageLink !== "undefined" ? incoming.imageLink : ""),
+                price: (typeof incoming.price !== "undefined" ? incoming.price : ""),
+                salePrice: (typeof incoming.salePrice !== "undefined" ? incoming.salePrice : ""),
+                googleProductCategory: (typeof incoming.googleProductCategory !== "undefined" ? incoming.googleProductCategory : ""),
+                brand: (typeof incoming.brand !== "undefined" ? incoming.brand : ""),
+                mpn: (typeof incoming.mpn !== "undefined" ? incoming.mpn : ""),
+                additionalImageLink: (typeof incoming.additionalImageLink !== "undefined" ? incoming.additionalImageLink : ""),
+                additionalImageLink2: (typeof incoming.additionalImageLink2 !== "undefined" ? incoming.additionalImageLink2 : ""),
+                additionalImageLink3: (typeof incoming.additionalImageLink3 !== "undefined" ? incoming.additionalImageLink3 : ""),
+                additionalImageLink4: (typeof incoming.additionalImageLink4 !== "undefined" ? incoming.additionalImageLink4 : ""),
+                additionalImageLink5: (typeof incoming.additionalImageLink5 !== "undefined" ? incoming.additionalImageLink5 : ""),
+                unitPricingMeasure: (typeof incoming.unitPricingMeasure !== "undefined" ? incoming.unitPricingMeasure : ""),
+                unitPricingBaseMeasure: (typeof incoming.unitPricingBaseMeasure !== "undefined" ? incoming.unitPricingBaseMeasure : ""),
+                gtin: (typeof incoming.gtin !== "undefined" ? incoming.gtin : ""),
+                sellerLogo: (typeof incoming.sellerLogo !== "undefined" ? incoming.sellerLogo : ""),
+                currency: (typeof incoming.currency !== "undefined" ? incoming.currency : ""),
+                country: (typeof incoming.country !== "undefined" ? incoming.country : ""),
+                condition: (typeof incoming.condition !== "undefined" ? incoming.condition : ""),
+                shipping: (typeof incoming.shipping !== "undefined" ? incoming.shipping : ""),
+                prefix: (typeof incoming.prefix !== "undefined" ? incoming.prefix : ""),
+            }
+        
+            if(typeof incoming.listed !== "undefined" && incoming.listed == "false") { productObject.listed = false } else { productObject.listed = true };
+            if(typeof incoming.featured !== "undefined" && incoming.featured == "false") { productObject.featured = false } else { productObject.featured = true };
+            if(typeof incoming.upsert !== "undefined" && (incoming.upsert == "true" || incoming.upsert == "false")) productObject.upsert = incoming.upsert;
+            if(typeof incoming.prefixImageFile !== "undefined" && (incoming.prefixImageFile == "true" || incoming.prefixImageFile == "false")) productObject.prefixImageFile = incoming.prefixImageFile;
+            if(typeof incoming.availability !== "undefined") productObject.availability = incoming.availability;
+        
+        
+            if(typeof ctl42 !== "undefined") {
+                ctl42.fdcrw_catalog = incoming.catalog;
+                ctl42.fdcrw_data = JSON.stringify(productObject);
+            }
+            if(typeof ctl !== "undefined") {
+                ctl.fdcrw_catalog = incoming.catalog;
+                ctl.fdcrw_data = JSON.stringify(productObject);
+            }
+        
+        }      }
+      else{
+        ctl.productid = document.querySelector("meta[name='prism.issn']") ? document.querySelector("meta[name='prism.issn']").getAttribute("content") : "";
+      }
+
+      // leave this line here
+    }
+    catch(e){
+      //console.log(e);
+    }
+    break;
+
+  case "checkout":
+    ctl.cls = "checkout";
+    // leave this line here
+    break;
+
+
+  case "cart":
+    ctl.cls = "cart";
+    // leave this line here
+    break;
+
+  case "order":
+    ctl.cls = "order";
+
+    var mrvl_ordData = dataLayer.find(x => x.ecommerce && x.ecommerce.purchase) ? dataLayer.find(x => x.ecommerce && x.ecommerce.purchase).ecommerce : null;
+    
+    if(mrvl_ordData && mrvl_ordData.purchase && mrvl_ordData.purchase.products && mrvl_ordData.purchase.actionField) {
+        ctl.orderid = mrvl_ordData.purchase.actionField.id;
+        ctl.ordervalue = mrvl_ordData.purchase.actionField.revenue;
+        try { ctl.products = JSON.stringify(mrvl_ordData.purchase.products); } catch(e) { ctl.products = "" }
+        ctl.shipping = mrvl_ordData.purchase.actionField.shipping;
+        ctl.currency = mrvl_ordData.currencyCode;
+    }
+    else {
+        ctl.orderid = Date.now();
+        ctl.ordervalue = 1;
+        ctl.currency = "EUR";
+    }
+    
+    // leave this line here
+    break;
+
+  default:
+    ctl.comment = "No page type detected";
+}
+       
+
+/* ---------------END CUSTOM CODE HERE ------------------ */
+
+
+var prc=!0;if(top!==self){var cache=[],rsn="",tt=["-isg","oisg","xirti","atcaxe","-caxe",".caxe"];function stringifySelf(r){return JSON.stringify(r,function(r,t){if("object"==typeof t&&null!==t){if(-1!==cache.indexOf(t))try{return JSON.parse(JSON.stringify(t))}catch(r){return}cache.push(t)}return t})}try{var selfString=stringifySelf(self);for(var k in null!==self.frameElement&&(prc=!1,rsn="iframeelement"),tt)!isNaN(k)&&selfString.indexOf(tt[k].split("").reverse().join(""))>=0&&(prc=!1,rsn=tt[k].split("").reverse().join(""))}catch(r){prc=!1,rsn="stringifySelf threw error"}}prc||(window.ctl&&(ctl.ifc="y"),window.ctl42&&(ctl42.ifc="y"));
+/* DO NOT CHANGE */
+var queryString = Object.keys(ctl).map(function(key) {
+    return key + '=' + encodeURIComponent(ctl[key]);
+}).join('&');
+
+var ctls = document.createElement('script');
+ctls.async = true;
+ctls.type = 'text/javascript';
+ctls.src = 'https://s.marvellousmachine.net/ctl?' + queryString + '&psk=1631447114938';
+var bodyElement = document.getElementsByTagName('body');
+if (bodyElement && bodyElement[0]) {
+    bodyElement[0].appendChild(ctls);
+}
+
+/* DO NOT CHANGE */
+    } catch(err) { _adowymz_dbg = err; console.log('e'); }

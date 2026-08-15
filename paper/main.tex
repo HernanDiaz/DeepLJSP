@@ -65,7 +65,7 @@ Inference Budgets}
 each uncertain processing time as an interval between known bounds
 and is solved in the literature by per-instance metaheuristic
 search. This paper
-presents the first constructive deep reinforcement learning policy
+presents a constructive deep reinforcement learning policy
 for the problem. Its state features are dimensionless and its
 encoder is permutation-invariant, so a single trained network
 applies to instances of any size and returns a schedule in seconds.
@@ -275,39 +275,32 @@ The oldest constructive approach to the job shop builds a schedule in
 a single left-to-right pass, repeatedly choosing which of the eligible
 operations to place next. A \emph{priority dispatching rule} makes
 that choice by scoring the candidates with a fixed formula over their
-attributes. The rules this paper uses as baselines and as verification
-anchors are the classical single-attribute ones, retained here with
-their usual acronyms. Two look at the operation itself: \emph{shortest} and
-\emph{longest processing time} (SPT, LPT) prefer the smallest and the
-largest duration. One looks at the schedule built so far:
-\emph{earliest starting time} (EST) prefers the operation that could
-begin soonest given the current occupation of its machine and the
-progress of its job. Two look at the job the operation belongs to:
-\emph{most work remaining} and \emph{most operations remaining}
-(MWKR, MOR) prefer the job with the most pending work, counted in
-time units and in operations respectively. Under interval durations
-these attributes are intervals themselves, and candidates are compared
-with the interval ranking introduced in Section~\ref{sec:problem}.
-Surveys catalogue well over a
-hundred variants of such rules~\citep{Panwalkar1977,Haupt1989} and
-recent ones revisit those still in use~\citep{Durasevic2018}.
+attributes. Surveys catalogue well over a hundred
+variants~\citep{Panwalkar1977,Haupt1989,Durasevic2018}; the baselines
+of this paper are the classical single-attribute ones, retained with
+their usual acronyms. Shortest and longest processing time (SPT, LPT)
+read the operation itself, earliest starting time (EST) reads the
+schedule built so far, and most work remaining and most operations
+remaining (MWKR, MOR) read the job the operation belongs to, counting
+its pending work in time units and in operations respectively. Under
+interval durations these attributes are intervals, and candidates are
+compared with the ranking of Section~\ref{sec:problem}.
 
-A refinement worth separating from the rules themselves is the
-active-schedule generator of \citet{GifflerThompson1960}, which at
-each step restricts the candidates to the conflict set of the machine
-that would finish earliest, and applies a priority rule only to break
-ties within that set. The restriction guarantees \emph{active}
-schedules, in which no operation can be started earlier without
-delaying another, and improves markedly on the plain rules: on the benchmark
-used here it takes MWKR from $64.7\%$ to $29.5\%$ of RE. We write
-G\&T-SPT and G\&T-MWKR for the two combinations used here.
+The active-schedule generator of \citet{GifflerThompson1960} is a
+refinement of the dispatching step rather than a rule: it restricts
+the candidates to the conflict set of the machine that would finish
+earliest and applies a priority rule only within that set,
+guaranteeing \emph{active} schedules, in which no operation can be
+started earlier without delaying another. The restriction is worth
+more than the choice of rule it wraps, taking MWKR from $64.7\%$ to
+$29.5\%$ of RE on the benchmark used here; G\&T-SPT and G\&T-MWKR
+denote the two combinations reported below.
 
-These rules require one pass and no search, which makes them the
-cheapest constructive option available. Their limitation is that a fixed formula cannot suit
-every shop and objective~\citep{Haupt1989}, which motivates the
-learned alternatives of Sections~\ref{sec:related-gp}
-and~\ref{sec:related-learning}, and is also why
-a constructive policy is compared against these rules and not against
+One pass and no search makes these rules the cheapest constructive
+option available, and a fixed formula suiting neither every shop nor
+every objective~\citep{Haupt1989} is what motivates learning one
+instead, by either of the two routes that follow. It is also why a
+constructive policy is measured against them rather than against
 per-instance metaheuristics, which belong to a different
 computational class.
 
@@ -719,10 +712,6 @@ Section~\ref{sec:arch}.
 \caption{Per-operation features (all dimensionless). $d=\mathbf{p}_{jk}$,
 $\mathbf{est}$ = earliest start interval, $\mathbf{rem}$ = remaining work
 interval of the job strictly after $o$, excluding $o$ itself;
-$\mathrm{mid}(\cdot)$ is the interval midpoint, a ratio whose
-denominator is floored at a small positive constant and whose
-uncertainty feature is set to zero when the start interval is
-$[0,0]$, the case of the operations eligible at the first decision;
 $\mathrm{mid}(\cdot)$ is the interval
 midpoint; $L(\mu)$ the remaining worst-case load of machine $\mu$;
 $\bar L$ its average over machines; $\mathbf{c}_{J}$ and
@@ -1007,7 +996,7 @@ $300$ experiments each, two over the optimizer (one at reduced
 fidelity, one at the operating budget) and one over the six reward
 weights of Eq.~\eqref{eq:reward}: none of their winners improved on
 the hand-set values under a paired confirmation, whose resolution,
-set by the $0.47$-point standard deviation across seeds
+set by the $0.46$-point standard deviation across seeds
 (Section~\ref{sec:results-insize}), is approximately one point of RE.
 The campaigns therefore exclude improvements larger than that
 magnitude, not the existence of smaller ones. Their search spaces,
@@ -1120,6 +1109,37 @@ figures are quoted from those papers, not re-run here.
 \section{Results}
 \label{sec:results}
 
+\begin{table}[t]
+\centering\small
+\caption{RE (\%) per validation instance, mean [best] over the same
+ten training runs at each budget, differing only in their random
+seed, Deep Sets model, best-of-64 inference under the standalone
+evaluator. Here and throughout, \emph{best} is the best
+training run, never the best rollout within a run: sampling is
+already aggregated by the best-of-$N$ rule. Each seed contributes one
+mean over the six instances, and the rightmost column is the standard
+deviation of those ten numbers; the last row is
+the strongest constructive baseline, a single deterministic pass.}
+\label{tab:insize}
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lcccccccc}
+\toprule
+Budget & TA15 & TA16 & TA17 & TA18 & TA19 & TA20 & Mean & SD \\
+\midrule
+100 eps & 31.4 [20.4] & 32.2 [16.8] & 28.7 [22.3] & 29.4 [16.6] &
+29.9 [13.7] & 32.0 [23.9] & 30.6 & 6.38 \\
+300 eps & 18.9 [15.9] & 16.3 [13.9] & 16.4 [12.8] & 19.5 [16.1] &
+17.6 [12.8] & 15.2 [12.7] & 17.3 & 1.50 \\
+1000 eps & \textbf{14.1} [12.1] & \textbf{12.8} [9.3] &
+\textbf{12.0} [10.0] & \textbf{16.0} [14.7] & \textbf{12.9} [10.1] &
+\textbf{13.6} [11.8] & \textbf{13.6} & \textbf{0.46} \\
+\midrule
+G\&T-MWKR & 30.6 & 34.0 & 17.7 & 31.8 & 29.3 & 24.1 & 27.9 & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{In-size performance and budget scaling}
 \label{sec:results-insize}
 
@@ -1141,18 +1161,23 @@ Deployment on the validation instances is reported in
 Table~\ref{tab:insize}, per instance and for increasing training
 budgets over ten independent training runs, with
 Figure~\ref{fig:scaling} showing their means against the budget.
+The three budgets are paired on the same ten seeds; the operating one
+was afterwards extended to the thirty of the campaign, whose mean is
+$13.92\%$ with a standard deviation of $0.60$.
 Three observations follow.
 (i) The policy scales monotonically with budget
-($27.4\%\to17.4\%\to13.8\%$ mean RE at $100/300/1000$ episodes per
+($30.6\%\to17.3\%\to13.6\%$ mean RE at $100/300/1000$ episodes per
 instance), with the return per tripling of the budget falling from
-$10.0$ points to $3.6$. (ii) The spread between training runs
+$13.3$ points to $3.7$. (ii) The spread between training runs
 contracts as the budget grows, the standard deviation across the ten
-seed means falling from $4.69$ points at $100$ episodes to $1.30$ at
-$300$ and $0.47$ at $1000$, a factor of ten, so what the extra budget
-yields is not only a better mean but a more reproducible one; this is
-the deployed counterpart of the narrowing seed band of
+seed means falling from $6.38$ points at $100$ episodes to $1.50$ at
+$300$ and $0.46$ at $1000$, a factor of fourteen, so what the extra
+budget yields is not only a better mean but a more reproducible one;
+this is the deployed counterpart of the narrowing seed band of
 Figure~\ref{fig:training}. (iii) The gap to the strongest
-constructive baseline is a factor ${\approx}2.0$.
+constructive baseline is a factor ${\approx}2.0$, and it is opened by
+the budget: at $100$ episodes the policy is still behind that
+baseline.
 Figure~\ref{fig:scaling} places the curve between two dotted
 references measured on the same six instances: G\&T-MWKR above, at
 $27.9\%$, and fEABC below, at $9.6\%$, the latter a reference from
@@ -1171,35 +1196,6 @@ per-instance search.
   \label{fig:training}
 \end{figure}
 
-\begin{table}[t]
-\centering\small
-\caption{RE (\%) per validation instance, mean [best] over ten
-training runs differing only in their random seed, Deep Sets model,
-best-of-64 inference. Here and throughout, \emph{best} is the best
-training run, never the best rollout within a run: sampling is
-already aggregated by the best-of-$N$ rule. Each seed contributes one
-mean over the six instances, and the rightmost column is the standard
-deviation of those ten numbers; the last row is
-the strongest constructive baseline, a single deterministic pass.}
-\label{tab:insize}
-\footnotesize
-\setlength{\tabcolsep}{3.5pt}
-\begin{tabular}{lcccccccc}
-\toprule
-Budget & TA15 & TA16 & TA17 & TA18 & TA19 & TA20 & Mean & SD \\
-\midrule
-100 eps & 30.2 [21.9] & 26.3 [19.7] & 26.8 [18.1] & 26.7 [18.4] &
-28.7 [21.5] & 25.8 [18.5] & 27.4 & 4.69 \\
-300 eps & 19.0 [16.3] & 16.3 [14.3] & 16.6 [13.3] & 18.5 [16.2] &
-17.2 [13.3] & 16.6 [14.9] & 17.4 & 1.30 \\
-1000 eps & \textbf{14.9} [12.1] & \textbf{13.2} [11.8] &
-\textbf{12.9} [10.4] & \textbf{16.3} [14.6] & \textbf{12.8} [11.1] &
-\textbf{12.8} [10.5] & \textbf{13.8} & \textbf{0.47} \\
-\midrule
-G\&T-MWKR & 30.6 & 34.0 & 17.7 & 31.8 & 29.3 & 24.1 & 27.9 & --- \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 \begin{figure}[t]
   \centering
@@ -1327,7 +1323,7 @@ samples improve faster with budget than those of the randomized
 rule. The best-of-$N$ ablation of
 Section~\ref{sec:ablations-bon} reaches the same conclusion from the
 training side. The policy's
-standalone RE ($13.8\%$ in-size, $9$--$20\%$ class means at the
+standalone RE ($13.9\%$ in-size, $9$--$20\%$ class means at the
 largest budget) places it between the dispatching rules ($42.3\%$ for
 EST, the strongest) and the per-instance metaheuristics ($9.4\%$ for
 fEABC).
@@ -1644,30 +1640,35 @@ the uncertainty at all; whether the upper bounds shown during training
 must be the true ones, which Eq.~\eqref{eq:upperclosed} does not
 settle, since midpoint training changes the upper endpoints
 themselves; and whether the policy would come to consult the widths
-under an objective that pays for them. Each ablation is paired against
-the main arm on the training seeds it shares: the first two over all
-ten seeds, whose baseline is the $13.82\%$ of
-Section~\ref{sec:results-insize}, and the third over the three seeds
-of its rollout deposits, whose baseline is the $13.44\%$ mean of
-those three.
+under an objective that pays for them. Each ablation is paired against the main arm on the training seeds it
+shares. The first two retrain ten seeds each and are read on three
+sets under the standalone evaluator: the six validation instances at
+the deployed budget of $64$ samples, whose baseline is the $13.57\%$
+of those ten seeds; thirty instances of the test benchmark, five per
+size class, that no arm has seen, at that same budget; and the sixty
+unseen instances at one constructive pass. The third is confined to
+the three seeds of its rollout deposits, whose baseline is the
+$13.44\%$ mean of those three.
 
 \paragraph{Widths as inputs.} The first ablation removes the
 information: the encoder collapses every interval to its worst case
 before the features are computed, so the width features are
 identically zero and the bounds coincide, while the architecture, the
 hyperparameters and the schedule builder remain untouched and the
-environment still executes interval semantics. Ten seeds retrained
-from scratch reach $13.86\%$ mean RE against the ten-seed baseline's
-$13.82\%$: a difference of $0.04$ points, worse on 2 of the 6
-instances, not significant (Wilcoxon signed-rank, $p=1.00$). The
-measurement is not redundant with the prediction, because
-Eq.~\eqref{eq:upperclosed} concerns the objective while the widths
-could in principle have shaped the value function or the exploration
-as an auxiliary signal. They do not, and the interval estimate bounds
-what room remains: the difference lies between $-0.79$ and $+0.87$
-points with $95\%$ confidence, so any effect these data leave open is
-smaller than the one the next ablation attributes to the training
-distribution.
+environment still executes interval semantics. No set separates the
+two arms. On the validation instances the ablated arm reaches
+$13.98\%$ against $13.57\%$, a difference of $0.42$ points that does
+not reach significance ($p=0.094$); on the thirty unseen instances at
+the same budget the two are indistinguishable, $15.53\%$ against
+$15.55\%$, worse on 15 of the 30 ($p=0.90$); at one constructive pass
+over sixty unseen instances the ablated arm is nominally ahead by
+$0.24$ points ($p=0.10$). The measurement is not redundant with the
+prediction, because Eq.~\eqref{eq:upperclosed} concerns the objective
+while the widths could in principle have shaped the value function or
+the exploration as an auxiliary signal. They do not, and the thirty
+unseen instances bound what room remains: the difference there lies
+between $-0.34$ and $+0.29$ points with $95\%$ confidence, a third of
+a point in either direction.
 
 \paragraph{Intervals as training data.} The second ablation removes
 the uncertainty from training altogether. The benchmark perturbs each
@@ -1677,15 +1678,18 @@ crisp duration symmetrically, so the original crisp instances
 trained on them and evaluated, unchanged, on the interval
 instances. This is the case Eq.~\eqref{eq:upperclosed} leaves
 open, since midpoint training replaces the upper endpoints
-themselves, and both arms extend to ten seeds: the gap is
-$0.63$ points, from $13.82\%$ to $14.45\%$ ($95\%$ CI $0.08$ to
-$1.17$), worse on all six instances and positive for eight of the ten
-seeds ($p=0.031$). Training on the true upper bounds is slightly
-better than training on their midpoints. Six instances give this
-comparison about a $0.7$ chance of detecting an effect of the size
-observed, so the finding establishes the direction of the gap more
-firmly than its magnitude, which the confidence interval leaves loose.
-The delimitation is therefore sharper
+themselves, and both arms extend to ten seeds. Here the sets do not
+agree, and the disagreement is informative. At the deployed budget
+the gap is present on both: $0.57$ points on the validation
+instances, from $13.57\%$ to $14.14\%$ ($p=0.063$), and $0.43$ points
+on the thirty unseen ones, from $15.55\%$ to $15.99\%$ ($95\%$ CI
+$0.03$ to $0.84$), worse on 21 of the 30 ($p=0.045$). At one
+constructive pass over sixty unseen instances it vanishes
+($-0.04$ points, $p=0.65$). Training on the true upper bounds is
+therefore better than training on their midpoints when the policy
+samples, and not measurably so when it constructs once, which places
+the contribution of the interval data at the same stage the objective
+ablation below identifies. The delimitation is therefore sharper
 than a blanket statement about what the intervals contribute. As
 \emph{input features} the widths are inert here, and
 Eq.~\eqref{eq:upperclosed} suggests why in a way that reaches past
@@ -1949,13 +1953,15 @@ The paradigms also differ in where they handle the uncertainty, and
 the design had conflated two things. As inputs the widths are inert:
 permuting them costs the policy $0.3$ and $0.9$ points, the floor of
 a ranking whose top feature costs $56.5$, and removing them from
-training costs nothing measurable over ten seeds ($13.86$ against
-$13.82\%$, $p=1.00$), consistent with the closed recursion for the
+training costs nothing measurable on thirty instances no arm has seen
+($-0.02$ points, $p=0.90$, the effect bounded within a third of a
+point either way), consistent with the closed recursion for the
 worst-case makespan, which contains no lower endpoint, and with the
 absence of upper-endpoint ties in the measured pools. As
 training data the intervals are not inert: fitting the policy to the
-crisp midpoints instead costs $0.63$ points over ten seeds ($14.45$
-against $13.82\%$, $p=0.031$). An objective that charges for the
+crisp midpoints instead costs $0.43$ points on those same thirty
+instances ($p=0.045$), a cost that appears when the policy samples
+and disappears when it constructs once. An objective that charges for the
 width then locates the difference between the paradigms: swept from
 $\lambda=0$ to $4$, the deployed arms trace a monotone
 width--makespan frontier (the predicted interval narrows from
@@ -1973,7 +1979,7 @@ evolved rules exploit, with the width features at the floor of its
 ranking (Q2).
 
 Both learners leave the hand-crafted rules behind. On its training
-class the policy improves on them by a wide margin ($13.8\%$ versus
+class the policy improves on them by a wide margin ($13.9\%$ versus
 $27.9\%$ for G\&T-MWKR and ${\approx}46\%$ for the best plain rule),
 and because the representation is dimensionless and the encoder
 permutation-invariant, one network serves the entire benchmark: at

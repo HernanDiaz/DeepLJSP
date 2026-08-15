@@ -42,6 +42,18 @@ from jobshop_rl.experiments.factory import EnvironmentFactory  # noqa: E402
 from jobshop_rl.models.interval import final_makespan          # noqa: E402
 
 VAL = [f"int__tai20_15_{k:02d}" for k in range(5, 11)]
+# Las sesenta que no entraron ni en entrenamiento ni en validacion: todo
+# el benchmark menos la clase 20x15. Sirven para dar potencia a las
+# ablaciones, que sobre seis instancias se quedan en la frontera.
+TEST60 = [f"int__{c}_{k:02d}"
+          for c in ("tai15_15", "tai20_20", "tai30_15", "tai30_20",
+                    "tai50_15", "tai50_20")
+          for k in range(1, 11)]
+# A 64 muestras las 60 costarian 89 h de CPU; cinco por clase bajan a
+# 45 h y conservan el equilibrio entre clases, que es lo que importa
+# porque los efectos cambian de signo entre ellas
+TEST30 = [p for p in TEST60 if int(p[-2:]) <= 5]
+CONJUNTOS = {"val": VAL, "test60": TEST60, "test30": TEST30}
 
 
 def capas_atencion(estado):
@@ -83,7 +95,22 @@ def main():
                     help="nombre del brazo en el CSV; por defecto el "
                          "primer tag. Sirve para que un brazo troceado "
                          "en varios carriles se agregue como uno solo")
+    ap.add_argument("--semillas", default="",
+                    help="subconjunto de semillas, p.ej. 2,5,8; vacio = "
+                         "todas las del tag. Sirve para equilibrar "
+                         "carriles cuando un brazo tiene 3 y otro 7")
+    ap.add_argument("--conjunto", default="val",
+                    choices=list(CONJUNTOS),
+                    help="val = las seis de validacion; test60 = las "
+                         "sesenta que no entraron en nada")
+    ap.add_argument("--worstcase-only", action="store_true",
+                    help="colapsa cada intervalo a su peor caso en el "
+                         "encoder, como el brazo sin anchuras. SIN esto, "
+                         "sus pesos reciben anchuras que nunca vieron al "
+                         "entrenar y la ablacion mide otra cosa")
     args = ap.parse_args()
+    if args.worstcase_only:
+        os.environ["DEEPLJSP_V2_WORSTCASE_ONLY"] = "1"
 
     brazo = args.brazo or args.tags.split(",")[0]
     salida = args.salida or f"benchmarks/ext30/val_{brazo}_bo{args.bo}.csv"
@@ -105,8 +132,12 @@ def main():
     if not dirs:
         raise SystemExit(f"sin directorios para {args.tags}")
 
+    sel = {s.strip() for s in args.semillas.split(",")} if args.semillas \
+        else None
     for d in dirs:
         sem = d.split("_seed")[-1]
+        if sel and sem not in sel:
+            continue
         ruta = os.path.join(d, "best_model.pt")
         if not os.path.exists(ruta):
             print(f"  aviso: {d} sin best_model.pt")
@@ -118,7 +149,7 @@ def main():
         red.load_state_dict(estado)
         red.eval()
         t0 = time.time()
-        for pid in VAL:
+        for pid in CONJUNTOS[args.conjunto]:
             if (brazo, sem, pid) in ya:
                 continue
             env = EnvironmentFactory.create_from_problem_id(

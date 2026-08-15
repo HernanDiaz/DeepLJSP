@@ -37,9 +37,11 @@ def fig_scaling():
     episodes = [100, 300, 1000]
     # diez semillas por punto; la banda es el rango entre la mejor y la
     # peor tirada, que es lo que colapsa con el presupuesto
-    ds_mean = [27.4, 17.4, 13.8]
-    ds_best = [21.3, 14.8, 13.1]
-    ds_worst = [36.2, 19.0, 14.6]
+    # cifras del evaluador independiente (validacion_unificada.json), las
+    # mismas diez semillas en los tres presupuestos
+    ds_mean = [30.6, 17.3, 13.6]
+    ds_best = [21.1, 14.5, 12.8]
+    ds_worst = [39.2, 19.9, 14.0]
     # la variante de atencion NO se dibuja aqui: tiene tres semillas y
     # esta curva ya tiene diez, asi que ponerlas juntas invitaria a una
     # comparacion no pareada. Su contraste vive en tab:insize-attn.
