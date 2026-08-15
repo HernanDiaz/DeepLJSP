@@ -490,9 +490,9 @@ for tags, (m_tex, b_tex) in TAB_ATTN.items():
     n_sem = len(next(iter(datos.values()))["mids"])
     por_sem = [sum(re_pct(d["mids"][i], ta) for ta, d in datos.items())
                / len(datos) for i in range(n_sem)]
-    check(f"{tag}: media sobre {n_sem} semillas (texto {m_tex})",
+    check(f"centinela {tag}: media sobre {n_sem} semillas ({m_tex})",
           m_tex, attn_media[tag], tol=0.06)
-    check(f"{tag}: mejor semilla (texto {b_tex})", b_tex, min(por_sem),
+    check(f"centinela {tag}: mejor semilla ({b_tex})", b_tex, min(por_sem),
           tol=0.06)
 
 # el makespan medio ya no se imprime (7.3 lo cuenta en puntos de RE y
@@ -521,7 +521,7 @@ def _p_instancia(dif_por_ta):
 
 
 for _tb, _d_tex, _pares_tex, _inst_tex, _p_tex, _cent in [
-        ("300ep", 1.03, 12, 5, 0.063, False),
+        ("300ep", 1.03, 12, 5, 0.063, True),
         ("1000ep", 1.76, 16, 6, 0.031, True)]:
     _da = bench_por_instancia("v2-full-" + _tb)
     _db = bench_por_instancia("v2-attn-" + _tb)
@@ -530,7 +530,7 @@ for _tb, _d_tex, _pares_tex, _inst_tex, _p_tex, _cent in [
         continue
     _dif = [re_pct(y, ta) - re_pct(x, ta) for ta in sorted(_da)
             for x, y in zip(_da[ta]["mids"], _db[ta]["mids"])]
-    _pref = "centinela: " if _cent else "7.3 "
+    _pref = "centinela " if _cent else "7.3 "
     check_exacto(f"{_pref}{_tb}: 18 pares (instancia, semilla)",
                  len(_dif) == 18, str(len(_dif)))
     check(f"{_pref}{_tb}: la atencion pierde {_d_tex} puntos de RE",
@@ -556,11 +556,11 @@ _db10 = bench_por_instancia_multi("v2-attn-1000ep", "v2-attn-1000ep-ext")
 if _da10 and _db10:
     _dif10 = [re_pct(y, ta) - re_pct(x, ta) for ta in sorted(_da10)
               for x, y in zip(_da10[ta]["mids"], _db10[ta]["mids"])]
-    check_exacto("7.3 1000ep: 60 pares (instancia, semilla)",
+    check_exacto("centinela 1000ep: 60 pares (instancia, semilla)",
                  len(_dif10) == 60, str(len(_dif10)))
-    check("7.3 1000ep: la atencion pierde 1.06 puntos", 1.06,
+    check("centinela 1000ep: atencion -1.06 en entrenamiento", 1.06,
           sum(_dif10) / len(_dif10), tol=0.011)
-    check_exacto("7.3 1000ep: peor en 41 de los 60 pares",
+    check_exacto("centinela 1000ep: peor en 41 de los 60 pares",
                  sum(1 for d in _dif10 if d > 0) == 41,
                  str(sum(1 for d in _dif10 if d > 0)))
     _pi10 = sum(1 for ta in _da10
@@ -586,9 +586,11 @@ if _da10 and _db10:
     _md10 = sum(_dif10_i) / 6
     _sd10 = (sum((x - _md10) ** 2 for x in _dif10_i) / 5) ** 0.5
     _semi10 = 2.5706 * _sd10 / 6 ** 0.5
-    check("7.3 1000ep: IC95 inferior (texto 0.46)", 0.46, _md10 - _semi10,
+    check("centinela 1000ep: IC95 inferior en entrenamiento (0.46)", 0.46,
+          _md10 - _semi10,
           tol=0.011)
-    check("7.3 1000ep: IC95 superior (texto 1.65)", 1.65, _md10 + _semi10,
+    check("centinela 1000ep: IC95 superior en entrenamiento (1.65)", 1.65,
+          _md10 + _semi10,
           tol=0.011)
     # y que ninguna cuarentena contamina los globs
     import glob as _gl
@@ -2242,6 +2244,63 @@ if len(_abl) == 3:
     # y que el texto no vuelva a mezclar las dos procedencias
     check_exacto("7.3 no reintroduce las cifras de la evaluacion embebida",
                  not any(s in TEX for s in ("13.82", "13.86", "14.45")))
+
+    # --- la atencion, que vive en el suplementario, bajo el mismo
+    # evaluador: el paper cita 1.4 puntos y el suplementario el detalle
+    _at = _v["v2-attn-1000ep"]
+    check("S2: la atencion pierde 1.36 puntos a diez semillas", 1.36,
+          _at["dif"], tol=0.006)
+    check("S2: IC95 de la atencion, inferior (0.64)", 0.64,
+          _at["ic95"][0], tol=0.006)
+    check("S2: IC95 de la atencion, superior (2.08)", 2.08,
+          _at["ic95"][1], tol=0.006)
+    check_exacto("S2: peor en las seis instancias",
+                 _at["peor_en"] == 6, f"{_at['peor_en']}/6")
+    check("S2: p de la atencion (0.031)", 0.031, _at["p"], tol=0.0011)
+    check_exacto("7.2 redondea ese deficit a 1.4 puntos",
+                 "by $1.4$ points" in TEX)
+    _at3 = _v["v2-attn-300ep"]
+    check("S2: a 300 episodios la atencion pierde 0.42", 0.42,
+          _at3["dif"], tol=0.006)
+    check("S2: y ahi p=0.69", 0.69, _at3["p"], tol=0.006)
+    check_exacto("S2: a 300 episodios, peor en 3 de las 6",
+                 _at3["peor_en"] == 3, f"{_at3['peor_en']}/6")
+    # las filas de sup:tab-attn, con las semillas pareadas de cada
+    # presupuesto (tres a 300, diez a 1000)
+    for _fila in ("Deep Sets & \\textbf{17.0} [16.7] & "
+                  "\\textbf{13.6} [12.8] \\\\",
+                  "+ attention ($B{=}2$) & 17.4 [16.9] & 14.9 [13.7] \\\\"):
+        check_exacto(f"sup:tab-attn imprime {_fila.split('&')[0].strip()}",
+                     _fila in SUP)
+
+    # --- la tercera limitacion: lo que tres semillas no ven ---
+    # se recomputa el mismo contraste restringido a las semillas 2-4,
+    # leyendo los CSV crudos del evaluador independiente
+    # los ficheros de la campana no llevan columna de brazo: son todos
+    # del principal a 1000 episodios
+    _bruto = {}
+    _csvmod = __import__("csv")
+    for _f in (sorted(glob.glob("benchmarks/ext30/val_*.csv"))
+               + sorted(glob.glob("benchmarks/ext30/eval_val_bo64*.csv"))):
+        for _r in _csvmod.DictReader(open(_f, encoding="utf-8")):
+            _bruto.setdefault(_r.get("arm", "v2-full-1000ep"), {}).setdefault(
+                _r["seed"], {})[_r["instance"]] = float(_r["re_bo"])
+    _tres = {}
+    for _arm in ("v2-attn-1000ep", _NW, _MP):
+        _sem3 = [s for s in ("2", "3", "4")]
+        _a3 = {i: sum(_bruto[_arm][s][i] for s in _sem3) / 3 for i in _VAL6}
+        _b3 = {i: sum(_bruto["v2-full-1000ep"][s][i] for s in _sem3) / 3
+               for i in _VAL6}
+        _tres[_arm] = sum(_a3[i] - _b3[i] for i in _VAL6) / 6
+    check("limitacion 3: no-width a tres semillas (-0.99)", -0.99,
+          _tres[_NW], tol=0.006)
+    check("limitacion 3: punto medio a tres semillas (0.18)", 0.18,
+          _tres[_MP], tol=0.006)
+    check("limitacion 3: atencion a tres semillas (0.75)", 0.75,
+          _tres["v2-attn-1000ep"], tol=0.006)
+    check_exacto("limitacion 3: el no-width cambia de signo con diez",
+                 _tres[_NW] < 0 < _v[_NW]["dif"],
+                 f"{_tres[_NW]:+.2f} -> {_v[_NW]['dif']:+.2f}")
 # el punto medio a 3 semillas ya no se imprime (7.4 reporta solo las
 # diez, a peticion del autor); sus numeros quedan como centinelas
 for nombre, arm, v_tex, es_cent in [("no-width", _nw, 13.62, True),

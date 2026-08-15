@@ -178,7 +178,7 @@ per-instance metaheuristic state of the art?
 
 \paragraph{Contributions.}
 \begin{enumerate}
-\item \emph{The first size-invariant constructive DRL policy for the
+\item \emph{A size-invariant constructive DRL policy for the
   IJSP} (Section~\ref{sec:method}). All features are dimensionless:
   temporal quantities are scaled by a per-instance lower bound and
   interval uncertainty enters as relative widths. A Deep
@@ -1589,7 +1589,7 @@ than its predecessor, so a constant rate is the optimistic reading.
 A second standard component was evaluated the same way. Two
 self-attention blocks inserted before the pooling brought no
 improvement at either training budget and degraded the operating one
-by about a point, with $3.2$ times the parameters; the architecture
+by $1.4$ points, with $3.2$ times the parameters; the architecture
 and the full comparison are given in the supplementary material.
 
 \subsection{Where each paradigm handles the uncertainty}
@@ -1900,10 +1900,12 @@ Section~\ref{sec:ablations-interval} are run over three training
 seeds, so their instance means rest on three runs each and the
 differences are paired effects on six instances rather than claims
 about the population of seeds. The three arms extended to ten
-seeds calibrate what a three-seed comparison can miss: the midpoint
-control turned a null into a detected effect, the attention deficit
-(supplementary material) shrank from $1.76$ to $1.06$ points, and the
-no-width null sharpened from $0.18$ to $0.04$ points. Fourth, the four training instances are
+seeds calibrate what a three-seed comparison can miss, and the answer
+is a great deal: read on three seeds the no-width arm looks $0.99$
+points \emph{better} than the default, where ten turn that into a
+$0.42$-point deficit; over the same step the midpoint gap widens from
+$0.18$ to $0.57$ points and the attention deficit (supplementary
+material) from $0.75$ to $1.36$. Fourth, the four training instances are
 always presented in the same order, so the variability the seeds
 measure is that of a fixed curriculum; whether a different order
 would move the arm was not tested. Finally, the comparison with the rule evolved by
@@ -1924,11 +1926,17 @@ Neither learned paradigm dominates the other: the two separate at
 every inference budget and the ordering is set by that budget. Given
 one constructive pass each the evolved rule leads by $0.78$ points of
 relative error, and the reading over the thirty artifacts of each
-family, which no selection touches, gives the same $0.83$; once both
+family, which no selection touches, agrees at $0.83$; once both
 methods sample the policy leads by $0.86$ at $64$ samples and $0.82$
 at $1024$, all four differences significant with the instance as the
 unit. What the network contributes over a compact formula is
-therefore its sampling distribution rather than its argmax. The
+therefore its sampling distribution rather than its argmax. That
+contribution is not free: the budget those figures equalize is the
+number of schedules constructed, and a policy artifact costs some
+four times an evolved rule to train and about three times as much per
+schedule at inference (Section~\ref{sec:baselines}), so the
+policy's advantage at matched samples is bought with computation the
+matching does not price. The
 per-class columns qualify the aggregate: the policy is ahead near the
 size it trained on and behind on the two largest classes, where a
 short expression has less to lose from a shift in the state

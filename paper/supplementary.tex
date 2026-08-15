@@ -179,27 +179,28 @@ employed in the study: over three seeds at $300$ episodes and over
 ten at $1000$, the operating budget.
 
 The variant yields no improvement at either budget and a significant
-degradation at the operating one. At $300$ episodes it is $1.03$
-points of RE inferior (95\% CI $0.01$ to $2.06$), degraded on 5 of
-the 6 instances, a difference that does not reach significance
-(Wilcoxon signed-rank, $p=0.063$); at $1000$ episodes the deficit is
-$1.06$ points ($0.46$ to $1.65$), degraded on all six instances and
-in every one of the ten seeds ($p=0.031$, the smallest value six
-instances admit). Table~\ref{sup:tab-attn} reports the corresponding
-means and best seeds.
+degradation at the operating one. At $300$ episodes, where three
+seeds are available, it is $0.42$ points of RE inferior (95\% CI
+$-1.73$ to $2.57$), degraded on 3 of the 6 instances, a difference
+this design cannot resolve (Wilcoxon signed-rank, $p=0.69$); at
+$1000$ episodes the deficit is $1.36$ points ($0.64$ to $2.08$),
+degraded on all six instances and in nine of the ten seeds
+($p=0.031$, the smallest value six instances admit).
+Table~\ref{sup:tab-attn} reports the corresponding means and best
+seeds.
 
 \begin{table}[!htb]
 \centering\small
 \caption{Attention ablation: mean [best seed] RE (\%) on the
-validation set, over three seeds at $300$ episodes and ten at
-$1000$.}
+validation set, over the three seeds paired at $300$ episodes and the
+ten paired at $1000$.}
 \label{sup:tab-attn}
 \begin{tabular}{lcc}
 \toprule
 Configuration & 300 eps & 1000 eps \\
 \midrule
-Deep Sets & \textbf{16.6} [16.2] & \textbf{13.8} [13.1] \\
-+ attention ($B{=}2$) & 17.6 [17.2] & 14.9 [14.2] \\
+Deep Sets & \textbf{17.0} [16.7] & \textbf{13.6} [12.8] \\
++ attention ($B{=}2$) & 17.4 [16.9] & 14.9 [13.7] \\
 \bottomrule
 \end{tabular}
 \end{table}
