@@ -205,12 +205,20 @@ _abs_tex = re.search(r"\\abstract\{(.*?)\n\n", TEX, re.S).group(1)
 # comparacion, despues el mecanismo. El 0.63 del punto medio salio del
 # abstract mientras su confirmacion sobre no vistas esta en curso.
 _abs_plano = " ".join(_abs_tex.split())
+# El autor retiro ademas del abstract el conteo de parametros, el
+# 20x15, la coletilla sobre la laguna en la literatura y la afirmacion
+# analitica sobre el criterio (que el cuerpo ahora matiza: la clave
+# secundaria SI lee el extremo inferior; la reduccion a la primaria es
+# una propiedad medida de los pools, no un teorema)
 check_exacto("abstract: politica, luego comparacion, luego mecanismo",
              "46\\%" not in _abs_plano
              and "genetic programming" in _abs_plano
+             and "1.2" not in _abs_plano
+             and "20{\\times}15" not in _abs_plano
+             and "lexicographic" not in _abs_plano
              and _abs_plano.index("first constructive deep reinforcement")
              < _abs_plano.index("thirty trained artifacts")
-             < _abs_plano.index("lexicographic"))
+             < _abs_plano.index("sample selection"))
 # el titulo anuncia la comparacion desde el reencuadre del 2026-08-15,
 # acotada a las hiperheuristicas GP (no es una comparacion general).
 # Se normalizan los saltos de linea del .tex antes de buscar

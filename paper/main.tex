@@ -65,28 +65,24 @@ Inference Budgets}
 only the support bounds of uncertain processing times and is solved
 in the literature by per-instance metaheuristic search. This paper
 presents the first constructive deep reinforcement learning policy
-for the problem: dimensionless state features and a
-permutation-invariant encoder make one parameter set of
-${\sim}1.2\times10^{5}$ weights applicable to any instance size.
-Trained with proximal policy optimization on four $20{\times}15$
-Taillard instances, the policy improves on every hand-crafted
-dispatching rule on all seventy benchmark instances, six of the
-seven size classes unseen. It is then compared against a dispatching
-rule evolved by genetic programming for the same benchmark, thirty
-trained artifacts per family evaluated in one harness, the
-comparison between the two learned constructive families that the
-literature lacks. The two separate at every inference budget and the
-ordering is set by that budget: the rule leads by $0.8$ points of
-relative error given one constructive pass each, and the policy
-leads by the same margin once both draw samples. The paradigms also
-differ in where they handle the uncertainty. Under the lexicographic
-ranking standard in the field the worst-case makespan depends on the
-upper duration endpoints alone, so interval widths cannot inform
-decisions judged by it, and removing them from the policy costs
-nothing measurable; an objective that charges for the predicted
-width narrows the policy's schedules through sample selection, its
-weights unmoved, where the same objective acts through the evolved
-representation.}
+for the problem. Its state features are dimensionless and its
+encoder is permutation-invariant, so a single trained network
+applies to instances of any size and returns a schedule in seconds.
+Trained on instances of a single size class, the policy improves on
+every hand-crafted dispatching rule on all seventy benchmark
+instances, six of the seven size classes unseen. It is then compared
+against a dispatching rule evolved by genetic programming for the
+same benchmark, thirty trained artifacts per family evaluated in one
+harness at matched inference budgets. The two separate at every
+budget and the ordering is set by it: the rule leads by $0.8$ points
+of relative error given one constructive pass each, and the policy
+leads by the same margin once both draw samples; on twelve classical
+instances outside the training family the policy leads at every
+budget. The paradigms also differ in where an objective that values
+robustness acts: retrained under a width-penalizing objective, the
+policy narrows its schedules through sample selection, its weights
+unmoved, whereas the same objective acts through the evolved
+representation in the rules.}
 
 \keywords{job shop scheduling, interval uncertainty, deep reinforcement
 learning, neural combinatorial optimization, genetic programming
@@ -202,16 +198,17 @@ per-instance metaheuristic state of the art?
   the ordering is set by it.
 \item \emph{A localization of where each paradigm handles the
   uncertainty} (Section~\ref{sec:ablations-interval}), in three
-  parts. An analytic argument: under the lexicographic criterion the
-  worst-case makespan is a function of the upper duration endpoints
-  alone, so interval widths cannot inform the decisions of any method
-  ranked by it, whatever the model class. Its causal verification on
-  the trained policy: a permutation audit and two retraining
-  ablations that separate the widths as inputs, which are inert, from
-  the intervals as training data, which are not. And the contrast
-  that follows: a width-penalizing objective acts through sample
-  selection in the policy, with the weights unmoved, and through the
-  evolved representation in the GP study~\citep{DiazGP2026}.
+  parts. An analytic observation: the reward and the primary key of
+  the lexicographic criterion read only the upper duration endpoints,
+  so interval widths can reach a decision only through exact ties of
+  that key, and no such tie arises in any of the rollout pools
+  measured here. Its examination on the trained policy: a permutation
+  audit and two retraining ablations that probe the widths as inputs,
+  which prove inert in this setting, and the intervals as training
+  data. And the contrast between the paradigms: a width-penalizing
+  objective acts through sample selection in the policy, with the
+  weights unmoved, and through the evolved representation in the GP
+  study~\citep{DiazGP2026}.
 \item \emph{An account of which standard components earn their cost}
   (Section~\ref{sec:analysis}): best-of-$N$ inference does,
   self-attention and three automatic-configuration campaigns do not,
@@ -1501,12 +1498,14 @@ decision.
 
 The two interval-width features sit inside that floor, one of them
 last of the sixteen ($+0.3\pm0.3$ for the duration width,
-$+0.9\pm0.5$ for the start width), and their position follows from
-the objective. The primary key of the criterion of
+$+0.9\pm0.5$ for the start width), and their position is consistent
+with the objective. The primary key of the criterion of
 Eq.~\eqref{eq:lex}, the worst-case makespan, on which the reward
 also trains, is a function of the upper endpoints alone
-(Section~\ref{sec:ablations-interval}), so a width cannot inform a
-decision judged by that criterion. The same asymmetry appears within
+(Section~\ref{sec:ablations-interval}), so a width can influence a
+decision only through the secondary key, that is, through exact ties
+of the upper endpoint, and Section~\ref{sec:ablations-interval}
+verifies that no such tie arises in the measured pools. The same asymmetry appears within
 the features themselves: three quantities enter as a pair of interval
 endpoints, and in the two pairs that rise above the floor the upper
 endpoint costs several times its lower counterpart ($9.6$ against
@@ -1605,16 +1604,20 @@ and the upper endpoints alone, the lower half determining
 $C^L_{\max}$ without ever entering it. $C^U_{\max}$ is the primary
 key of the lexicographic criterion of Eq.~\eqref{eq:lex} under which
 every schedule in this paper is compared. Its secondary key, the lower
-endpoint, is consulted only on exact ties of the upper one, and on the
-rollout pools of this section such ties do not arise (the upper-bound
+endpoint, is consulted only on exact ties of the upper one. The
+criterion as defined therefore does depend on the lower endpoints,
+and everything below is conditional on ties not deciding; that
+condition is measured rather than assumed, since the upper-bound
 minimizer is unique in every one of the 90 (arm, instance, seed)
-pools), so in practice the criterion reduces to its primary key. The reward of
+rollout pools of this section, so on these experiments the criterion
+operates through its primary key alone. The reward of
 Section~\ref{sec:mdp} trains on that primary key, and across its six
 components not one reads a lower bound, so there is no channel
 through which knowing an interval's width could reduce what the policy
 is being trained to reduce. A width feature can at best be an
-auxiliary signal for learning; it cannot be information about the
-objective, because the objective does not contain it.
+auxiliary signal for learning, or a tiebreaker for a tie that did not
+occur here; it cannot be information about the trained objective,
+because that objective does not contain it.
 
 The permutation audit of Section~\ref{sec:results-importance} found
 both width features at the floor of its ranking, consistent with this
@@ -1667,14 +1670,16 @@ observed, so the finding establishes the direction of the gap more
 firmly than its magnitude, which the confidence interval leaves loose.
 The delimitation is therefore sharper
 than a blanket statement about what the intervals contribute. As
-\emph{input features} the widths are inert, and
-Eq.~\eqref{eq:upperclosed} says
-why in a way that generalizes past this network: any method that ranks
-semiactive schedules by the criterion of Eq.~\eqref{eq:lex} optimizes,
-through its primary key, a function of the upper endpoints alone,
-whatever the model class. As \emph{training distribution} the
-intervals are not inert. The boundary of the claim is the reward and
-the data, not the architecture.
+\emph{input features} the widths are inert here, and
+Eq.~\eqref{eq:upperclosed} suggests why in a way that reaches past
+this network: for any method that ranks semiactive schedules by the
+criterion of Eq.~\eqref{eq:lex}, the widths can enter only through
+the secondary key, so wherever upper-endpoint ties are as absent as
+they are in these pools, the method optimizes a function of the upper
+endpoints alone, whatever the model class. As \emph{training
+distribution} the intervals are not inert. The boundary of the claim
+is the reward, the data and the observed absence of ties, not the
+architecture.
 
 \paragraph{A width-penalizing objective.} The third ablation changes
 the objective so that the width enters it. The policy is retrained,
@@ -1927,8 +1932,9 @@ the design had conflated two things. As inputs the widths are inert:
 permuting them costs the policy $0.3$ and $0.9$ points, the floor of
 a ranking whose top feature costs $56.5$, and removing them from
 training costs nothing measurable over ten seeds ($13.86$ against
-$13.82\%$, $p=1.00$), which the closed recursion for the worst-case
-makespan predicts, since that quantity contains no lower endpoint. As
+$13.82\%$, $p=1.00$), consistent with the closed recursion for the
+worst-case makespan, which contains no lower endpoint, and with the
+absence of upper-endpoint ties in the measured pools. As
 training data the intervals are not inert: fitting the policy to the
 crisp midpoints instead costs $0.63$ points over ten seeds ($14.45$
 against $13.82\%$, $p=0.031$). An objective that charges for the
