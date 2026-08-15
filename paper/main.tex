@@ -1493,9 +1493,11 @@ values~\citep{DiazFEABC2023}.
 \caption{RE (\%) on the 12 classical interval instances. Column
 groups are inference budgets: GP and the policy (Pol.) are comparable
 within a group and not across groups. Each entry is the mean over
-that method's independent runs, with the per-instance best over those
-runs in brackets. Reference bounds are best-known expected makespans,
-not Taillard's crisp bounds.}
+that method's thirty independent runs, thirty evolutions and thirty
+training runs, with the per-instance best over those runs in
+brackets. GA is a 30-run average from a different computational
+class. Reference bounds are best-known expected makespans, not
+Taillard's crisp bounds.}
 \label{tab:classics}
 \footnotesize
 \setlength{\tabcolsep}{3.5pt}
@@ -1513,75 +1515,72 @@ Inst. & G\&T & GP & \textbf{Pol.} & GP & \textbf{Pol.} & GP &
  & & {\scriptsize mn [bst]} & {\scriptsize mn [bst]} &
 {\scriptsize mn [bst]} & {\scriptsize mn [bst]} &
 {\scriptsize mn [bst]} & {\scriptsize mn [bst]} &
-{\scriptsize mn [bst]} \\
+{\scriptsize mn} \\
 \midrule
-FT10 & 32.2 & 17.0 [7.2] & 16.7 [16.0] & 11.8 [5.2] & 8.5 [6.3] & 8.5 [4.2] & 6.1 [5.4] & 5.2 [1.8] \\
-FT20 & 40.0 & 18.5 [9.4] & 8.6 [4.4] & 13.3 [5.8] & 5.8 [4.4] & 10.3 [5.4] & 4.4 [3.6] & 4.4 [1.5] \\
-La21 & 24.1 & 15.9 [10.3] & 18.3 [15.5] & 12.6 [10.0] & 12.6 [10.4] & 10.7 [6.8] & 10.8 [10.7] & 5.0 [3.2] \\
-La24 & 26.3 & 16.1 [10.1] & 19.3 [17.1] & 11.5 [8.6] & 11.9 [10.9] & 9.2 [6.2] & 9.1 [8.1] & 6.3 [4.1] \\
-La25 & 16.9 & 17.6 [9.6] & 17.3 [16.7] & 12.3 [8.7] & 9.6 [9.2] & 9.3 [5.1] & 8.9 [8.2] & 5.1 [1.9] \\
-La27 & 34.8 & 18.3 [12.3] & 15.0 [13.8] & 12.5 [10.7] & 11.3 [10.9] & 11.3 [8.2] & 9.0 [8.1] & 10.2 [4.6] \\
-La29 & 24.5 & 19.9 [12.9] & 21.1 [16.2] & 15.0 [11.4] & 16.6 [14.0] & 12.6 [9.7] & 13.3 [12.9] & 14.2 [11.1] \\
-La38 & 27.0 & 17.4 [9.2] & 17.2 [16.6] & 14.3 [9.2] & 12.8 [11.7] & 12.0 [7.1] & 9.6 [8.3] & 9.2 [6.0] \\
-La40 & 27.9 & 16.7 [11.7] & 12.0 [9.3] & 12.3 [8.8] & 9.3 [8.1] & 10.0 [7.1] & 7.2 [6.5] & 8.7 [5.1] \\
-ABZ7 & 28.7 & 17.6 [13.3] & 16.7 [15.9] & 14.3 [11.7] & 13.4 [12.0] & 12.2 [8.9] & 11.9 [11.1] & 12.5 [6.3] \\
-ABZ8 & 36.9 & 24.6 [18.1] & 21.8 [19.1] & 20.9 [17.0] & 17.3 [16.9] & 18.6 [15.0] & 15.8 [15.6] & 18.5 [11.3] \\
-ABZ9 & 41.8 & 29.0 [19.5] & 22.6 [19.7] & 24.0 [17.9] & 19.2 [18.8] & 21.5 [17.4] & 17.1 [16.6] & 18.0 [13.0] \\
+FT10 & 32.2 & 17.0 [7.2] & 12.8 [6.6] & 11.8 [5.2] & 7.9 [4.3] & 8.5 [4.2] & 6.1 [4.3] & 5.2 \\
+FT20 & 40.0 & 18.5 [9.4] & 12.2 [3.4] & 13.3 [5.8] & 8.1 [3.4] & 10.3 [5.4] & 6.2 [2.4] & 4.4 \\
+La21 & 24.1 & 15.9 [10.3] & 18.1 [12.4] & 12.6 [10.0] & 12.5 [8.6] & 10.7 [6.8] & 9.5 [6.7] & 5.0 \\
+La24 & 26.3 & 16.1 [10.1] & 16.6 [9.2] & 11.5 [8.6] & 11.2 [8.8] & 9.2 [6.2] & 9.3 [5.9] & 6.3 \\
+La25 & 16.9 & 17.6 [9.6] & 18.4 [8.3] & 12.3 [8.7] & 10.3 [7.8] & 9.3 [5.1] & 8.2 [5.8] & 5.1 \\
+La27 & 34.8 & 18.3 [12.3] & 14.9 [8.9] & 12.5 [10.7] & 11.4 [8.4] & 11.3 [8.2] & 9.3 [7.7] & 10.2 \\
+La29 & 24.5 & 19.9 [12.9] & 22.4 [13.2] & 15.0 [11.4] & 15.9 [12.3] & 12.6 [9.7] & 13.5 [7.8] & 14.2 \\
+La38 & 27.0 & 17.4 [9.2] & 15.8 [10.8] & 14.3 [9.2] & 11.1 [8.0] & 12.0 [7.1] & 9.1 [7.0] & 9.2 \\
+La40 & 27.9 & 16.7 [11.7] & 13.4 [9.3] & 12.3 [8.8] & 8.5 [6.0] & 10.0 [7.1] & 7.2 [4.5] & 8.7 \\
+ABZ7 & 28.7 & 17.6 [13.3] & 18.2 [14.1] & 14.3 [11.7] & 13.5 [10.4] & 12.2 [8.9] & 11.6 [8.5] & 12.5 \\
+ABZ8 & 36.9 & 24.6 [18.1] & 21.4 [16.8] & 20.9 [17.0] & 17.5 [15.0] & 18.6 [15.0] & 15.3 [12.6] & 18.5 \\
+ABZ9 & 41.8 & 29.0 [19.5] & 24.7 [19.7] & 24.0 [17.9] & 19.5 [16.3] & 21.5 [17.4] & 17.3 [13.2] & 18.0 \\
 \midrule
-Mean & 30.1 & 19.0 [12.0] & 17.2 [15.0] & 14.6 [10.4] & 12.4 [11.1] & 12.2 [8.4] & 10.3 [9.6] & 9.8 [5.8] \\
+Mean & 30.1 & 19.0 [12.0] & 17.4 [11.0] & 14.6 [10.4] & 12.3 [9.1] & 12.2 [8.4] & 10.2 [7.2] & 9.8 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:classics} positions the policy (best-of-64, mean and
-best of the three seeds) against the shared-evaluator rules and the
-published 30-run averages of the per-instance metaheuristics, the
-latter quoted from Table~2 of~\citet{DiazFEABC2023}. Its GP columns
-are the 30 evolutions themselves, the full set being available only
-on this family, whereas the single featured rule of
-Section~\ref{sec:positioning} represents GP on the Taillard set. The
-policy improves on EST and G\&T-MWKR on all twelve instances and lands
-at $12.4\%$ mean RE, between the hand-crafted constructive
+This family allows the comparison of Section~\ref{sec:positioning} to
+be made with both readings at every budget, which the Taillard set
+does not: the GP study publishes its thirty evolutions here at all
+three, so each column of Table~\ref{tab:classics} pairs thirty
+artifacts against thirty, as a mean over the runs and as the
+per-instance best over them. The per-instance metaheuristics are
+quoted from Table~2 of~\citet{DiazFEABC2023}. The policy improves on
+EST and G\&T-MWKR on all twelve instances and lands at $12.3\%$ mean
+RE at its deployed budget, between the hand-crafted constructive
 baselines ($30.1\%$ for G\&T-MWKR) and the per-instance searchers
-(GA at $9.8\%$, ESABC at $5.5\%$). On La29, La40, ABZ7 and ABZ8 the
-policy's best seed reaches a lower RE than the 30-run average of GA,
-a method that searches each of these instances from scratch, whereas
-the policy has never seen them.
+(GA at $9.8\%$, ESABC at $5.5\%$). Given $1024$ samples the mean over
+its thirty runs reaches $10.2\%$, within half a point of the $30$-run
+average of GA, a method that searches each of these instances from
+scratch while the policy has never seen them; the two remaining
+metaheuristics stay clear of both.
 
 \begin{figure}[!htb]
   \centering
   \includegraphics[width=.78\linewidth]{figures/fig_ladder.pdf}
   \caption{Mean RE over the 12 classical interval instances, grouped
   by the inference budget each method is given. Both learned entries
-  are means over independent runs.}
+  are means over the thirty independent runs of their family.}
   \label{fig:ladder}
 \end{figure}
 
-Against the evolved rules the comparison must be made budget by
-budget, as it was on the Taillard set, and Figure~\ref{fig:ladder} is
-arranged that way. Given one pass each, the policy's $17.2\%$ leads
-the $19.0\%$ a single evolution should be expected to yield, and
-trails the featured rule's $17.9\%$ on 5 of the 12 instances
-(Wilcoxon signed-rank against the featured rule, $p=0.73$: the two are
-indistinguishable). Given $64$ samples each, with the rules randomized by
-the $\epsilon$-greedy dispatching their own study provides, the
-policy leads on both readings, $12.4\%$ against $14.6\%$ for the mean
-of 30 and $14.2\%$ for the featured rule, better than the latter on 9
-of 12, though on twelve instances even that is only marginal
-($p=0.077$). At $1024$ samples per run the gap is both the widest and
-the only one that separates: $10.3\%$ against $12.2\%$, better on 10
-of the 12 instances ($p=0.009$). Reading these three rows in order,
-the policy is level with the rules at one pass and separates from
-them as both are allowed to sample, the same ordering that
-Section~\ref{sec:positioning} reports on the Taillard set, obtained
-here on a family neither method was tuned for.
+Against the evolved rules the comparison is again made budget by
+budget, and Figure~\ref{fig:ladder} is arranged that way. The policy
+holds the lower figure in all six cells, and the two readings agree
+at every budget. Given one pass each it leads by $1.64$ points on the
+means and $0.92$ on the brackets, ahead on 7 of the 12 instances, a
+margin this sample cannot separate ($p=0.09$ and $p=0.27$). Given
+$64$ samples each, with the rules randomized by the
+$\epsilon$-greedy dispatching their own study provides, it leads by
+$2.28$ and $1.31$ points, ahead on 11 and 10 of the 12
+($p=0.003$ and $p=0.005$); at $1024$ samples, by $1.96$ and $1.21$,
+ahead on 10 of the 12 in both readings ($p=0.003$ and $p=0.012$).
 
-One feature of the table requires explanation: the two readings
-order the learners oppositely. The policy has the better mean at all
-three budgets, and GP the better bracket at all three, because the
-bracket of each family is a minimum over the runs it was selected
-from and the two counts differ here, 30 evolutions against three
-training seeds.
+The ordering therefore differs from the one the Taillard set gives.
+There the rule was ahead at a single pass; here it is behind at every
+budget, though the one-pass difference does not reach significance.
+The families this test uses are smaller than the Taillard classes the
+rule was evolved on, ten and fifteen jobs against twenty, and the
+policy was likewise trained on twenty; whatever else separates the
+two paradigms, the advantage the rule holds at one pass does not
+survive the change of family, while the advantage the policy gains by
+sampling does.
 
 
 

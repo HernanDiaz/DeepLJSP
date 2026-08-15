@@ -1123,31 +1123,33 @@ for r in __import__("csv").DictReader(
 GA_BEST = {"ABZ7": 6.3, "ABZ8": 11.3, "ABZ9": 13.0, "FT10": 1.8,
            "FT20": 1.5, "La21": 3.2, "La24": 4.1, "La25": 1.9,
            "La27": 4.6, "La29": 11.1, "La38": 6.0, "La40": 5.1}
+_CLAS30 = __import__("json").load(
+    open("benchmarks/ext30/resumen_clasicas30.json", encoding="utf-8"))
 TAB_CLASSICS = {
-    "FT10": (32.2, 17.0, 7.2, 16.7, 16.0, 11.8, 5.2, 8.5, 6.3,
-             8.5, 4.2, 6.1, 5.4, 5.2, 1.8),
-    "FT20": (40.0, 18.5, 9.4, 8.6, 4.4, 13.3, 5.8, 5.8, 4.4,
-             10.3, 5.4, 4.4, 3.6, 4.4, 1.5),
-    "La21": (24.1, 15.9, 10.3, 18.3, 15.5, 12.6, 10.0, 12.6, 10.4,
-             10.7, 6.8, 10.8, 10.7, 5.0, 3.2),
-    "La24": (26.3, 16.1, 10.1, 19.3, 17.1, 11.5, 8.6, 11.9, 10.9,
-             9.2, 6.2, 9.1, 8.1, 6.3, 4.1),
-    "La25": (16.9, 17.6, 9.6, 17.3, 16.7, 12.3, 8.7, 9.6, 9.2,
-             9.3, 5.1, 8.9, 8.2, 5.1, 1.9),
-    "La27": (34.8, 18.3, 12.3, 15.0, 13.8, 12.5, 10.7, 11.3, 10.9,
-             11.3, 8.2, 9.0, 8.1, 10.2, 4.6),
-    "La29": (24.5, 19.9, 12.9, 21.1, 16.2, 15.0, 11.4, 16.6, 14.0,
-             12.6, 9.7, 13.3, 12.9, 14.2, 11.1),
-    "La38": (27.0, 17.4, 9.2, 17.2, 16.6, 14.3, 9.2, 12.8, 11.7,
-             12.0, 7.1, 9.6, 8.3, 9.2, 6.0),
-    "La40": (27.9, 16.7, 11.7, 12.0, 9.3, 12.3, 8.8, 9.3, 8.1,
-             10.0, 7.1, 7.2, 6.5, 8.7, 5.1),
-    "ABZ7": (28.7, 17.6, 13.3, 16.7, 15.9, 14.3, 11.7, 13.4, 12.0,
-             12.2, 8.9, 11.9, 11.1, 12.5, 6.3),
-    "ABZ8": (36.9, 24.6, 18.1, 21.8, 19.1, 20.9, 17.0, 17.3, 16.9,
-             18.6, 15.0, 15.8, 15.6, 18.5, 11.3),
-    "ABZ9": (41.8, 29.0, 19.5, 22.6, 19.7, 24.0, 17.9, 19.2, 18.8,
-             21.5, 17.4, 17.1, 16.6, 18.0, 13.0),
+    "FT10": (32.2, 17.0, 7.2, 12.8, 6.6, 11.8, 5.2, 7.9, 4.3,
+             8.5, 4.2, 6.1, 4.3, 5.2),
+    "FT20": (40.0, 18.5, 9.4, 12.2, 3.4, 13.3, 5.8, 8.1, 3.4,
+             10.3, 5.4, 6.2, 2.4, 4.4),
+    "La21": (24.1, 15.9, 10.3, 18.1, 12.4, 12.6, 10.0, 12.5, 8.6,
+             10.7, 6.8, 9.5, 6.7, 5.0),
+    "La24": (26.3, 16.1, 10.1, 16.6, 9.2, 11.5, 8.6, 11.2, 8.8,
+             9.2, 6.2, 9.3, 5.9, 6.3),
+    "La25": (16.9, 17.6, 9.6, 18.4, 8.3, 12.3, 8.7, 10.3, 7.8,
+             9.3, 5.1, 8.2, 5.8, 5.1),
+    "La27": (34.8, 18.3, 12.3, 14.9, 8.9, 12.5, 10.7, 11.4, 8.4,
+             11.3, 8.2, 9.3, 7.7, 10.2),
+    "La29": (24.5, 19.9, 12.9, 22.4, 13.2, 15.0, 11.4, 15.9, 12.3,
+             12.6, 9.7, 13.5, 7.8, 14.2),
+    "La38": (27.0, 17.4, 9.2, 15.8, 10.8, 14.3, 9.2, 11.1, 8.0,
+             12.0, 7.1, 9.1, 7.0, 9.2),
+    "La40": (27.9, 16.7, 11.7, 13.4, 9.3, 12.3, 8.8, 8.5, 6.0,
+             10.0, 7.1, 7.2, 4.5, 8.7),
+    "ABZ7": (28.7, 17.6, 13.3, 18.2, 14.1, 14.3, 11.7, 13.5, 10.4,
+             12.2, 8.9, 11.6, 8.5, 12.5),
+    "ABZ8": (36.9, 24.6, 18.1, 21.4, 16.8, 20.9, 17.0, 17.5, 15.0,
+             18.6, 15.0, 15.3, 12.6, 18.5),
+    "ABZ9": (41.8, 29.0, 19.5, 24.7, 19.7, 24.0, 17.9, 19.5, 16.3,
+             21.5, 17.4, 17.3, 13.2, 18.0),
 }
 fallos_clas = 0
 for inst, fila in TAB_CLASSICS.items():
@@ -1159,20 +1161,25 @@ for inst, fila in TAB_CLASSICS.items():
         v = [_bon[r][i][k] for r in _bon]
         return sum(v) / len(v), min(v)
 
+    # las columnas de politica salen ahora de las TREINTA semillas
+    # (campana de 2026-08-15), no de las tres desplegadas
+    _cl30 = _CLAS30["presupuestos"]
     reales = (float(c["gt"]),
-              *_gp(0), sum(_gre12[inst]) / 3, min(_gre12[inst]),
-              *_gp(1), sum(_pol12[inst]) / len(_pol12[inst]),
-              min(_pol12[inst]),
-              *_gp(2), sum(_ps[inst]) / 3, min(_ps[inst]),
-              float(c["GA"]), GA_BEST[inst])
+              *_gp(0), _cl30["1"]["politica"]["media"][inst],
+              _cl30["1"]["politica"]["mejor"][inst],
+              *_gp(1), _cl30["64"]["politica"]["media"][inst],
+              _cl30["64"]["politica"]["mejor"][inst],
+              *_gp(2), _cl30["1024"]["politica"]["media"][inst],
+              _cl30["1024"]["politica"]["mejor"][inst],
+              float(c["GA"]))
     for v_tex, v_dat in zip(fila, reales):
         if abs(v_tex - v_dat) > 0.051:
             print(f"  FALLO celda {inst}: texto={v_tex} datos={v_dat:.2f}")
             fallos_clas += 1
-check_exacto("las 180 celdas de tab:classics", fallos_clas == 0,
+check_exacto("las 168 celdas de tab:classics", fallos_clas == 0,
              f"{fallos_clas} celdas mal")
-check("GA: media de sus mejores publicados (texto 5.8)", 5.8,
-      sum(GA_BEST.values()) / 12, tol=0.051)
+check_exacto("tab:classics ya no imprime el mejor de GA",
+             "9.8 [5.8]" not in TEX)
 check_exacto("tab:classics ya no imprime ESABC",
              "ESABC" not in TEX[TEX.index("\\label{tab:classics}"):
                                 TEX.index("\\end{table}",
@@ -1204,8 +1211,15 @@ try:
     _sd_gp = sum(_stt.stdev([_arm12[r][i] for r in _arm12])
                  for i in _insts12) / 12
     _sd_pol = sum(_stt.stdev(v) for v in _gre12.values()) / 12
-    check("6.3: sd entre reglas GP (texto 4.3)", 4.3, _sd_gp, tol=0.06)
-    check("6.3: sd entre semillas DRL (texto 2.2)", 2.2, _sd_pol, tol=0.06)
+    # el pasaje de estadistica de orden que citaba estas dispersiones se
+    # retiro: con 30 artefactos por lado el corchete deja de estar
+    # sesgado y la explicacion sobra. Quedan como centinelas del dato
+    check("centinela: sd entre reglas GP sobre las 12 (4.3)", 4.3,
+          _sd_gp, tol=0.06)
+    check("centinela: sd entre semillas DRL sobre las 12 (2.2)", 2.2,
+          _sd_pol, tol=0.06)
+    check_exacto("6.3: ya no argumenta con estadistica de orden",
+                 "0.85" not in TEX and "2.04" not in TEX)
 except Exception as e:
     pendiente("dispersion GP vs DRL", type(e).__name__)
 
@@ -1254,8 +1268,26 @@ _pg = {i: sum(v) / 3 for i, v in _gre12.items()}
 _pb = {i: sum(v) / len(v) for i, v in _pol12.items()}
 check("clasicas: GP una pasada (texto 17.9)", 17.9,
       sum(_gp1.values()) / 12)
-check("clasicas: politica greedy (texto 17.2)", 17.2,
+check("centinela: politica greedy, tres semillas (17.2)", 17.2,
       sum(_pg.values()) / 12)
+# las cifras que 6.3 cita ahora, de las TREINTA semillas
+_enf_cl = "benchmarks/ext30/enfrentamiento_clasicas.json"
+if not os.path.exists(_enf_cl):
+    pendiente("enfrentamiento en las clasicas", "sin json")
+else:
+    _ec = __import__("json").load(open(_enf_cl, encoding="utf-8"))
+    for _k, _dif, _gana, _p in [("1_media", 1.64, 7, 0.0923),
+                                ("1_mejor", 0.92, 7, 0.2661),
+                                ("64_media", 2.28, 11, 0.0034),
+                                ("64_mejor", 1.31, 10, 0.0049),
+                                ("1024_media", 1.96, 10, 0.0034),
+                                ("1024_mejor", 1.21, 10, 0.0122)]:
+        _e = _ec[_k]
+        check(f"6.3 {_k}: ventaja de la politica (texto {_dif})", _dif,
+              _e["gp"] - _e["pol"], tol=0.006)
+        check_exacto(f"6.3 {_k}: gana en {_gana} de 12",
+                     _e["gana_pol"] == _gana, f"{_e['gana_pol']}/12")
+        check(f"6.3 {_k}: p (texto {_p})", _p, _e["p"], tol=0.0006)
 check("clasicas: GP con 64 (texto 14.2)", 14.2, sum(_gp64.values()) / 12)
 _gp1024c = {i: float(_clas[i]["gp1024"]) for i in _clas}
 _p1024 = {}
@@ -1333,12 +1365,19 @@ check_exacto("1024 por semilla: 12 instancias x 3 checkpoints",
              len(_ps) == 12 and all(len(v) == 3 for v in _ps.values()),
              f"{len(_ps)} instancias")
 _ps_m = {i: sum(v) / 3 for i, v in _ps.items()}
-# 6.3: en que instancias la mejor semilla (bo64) bate a la media del GA
-_gana_ga = {i for i, t in TAB_CLASSICS.items() if t[8] < t[13]}
-check_exacto("6.3: mejor semilla > media GA en La29, La40, ABZ7, ABZ8",
-             _gana_ga == {"La29", "La40", "ABZ7", "ABZ8"},
-             str(sorted(_gana_ga)))
-check("clasicas: politica con 1024 por semilla (texto 10.27)", 10.27,
+# 6.3 ya no compara el mejor por instancia contra la media del GA (era
+# un mejor virtual sobre 30 tiradas, que ninguna tirada alcanza). Lo que
+# afirma ahora es que la MEDIA de las 30 a 1024 muestras queda a medio
+# punto de la media de 30 tiradas del GA
+_ga_media = sum(t[13] for t in TAB_CLASSICS.values()) / 12
+_pol1024 = _CLAS30["presupuestos"]["1024"]["politica"]["media_global"]
+check("6.3: la politica a 1024 sobre las 12 (texto 10.2)", 10.2,
+      _pol1024, tol=0.051)
+check("6.3: GA sobre las 12 (texto 9.8)", 9.8, _ga_media, tol=0.051)
+check_exacto("6.3: la distancia a GA es de medio punto",
+             0 < _pol1024 - _ga_media < 0.5,
+             f"{_pol1024 - _ga_media:.2f} puntos")
+check("centinela: politica con 1024, tres semillas (10.27)", 10.27,
       sum(_ps_m.values()) / 12, tol=0.006)
 if _mejor_regla:
     _gp1024m = {i: sum(_bon[r][i][2] for r in _bon) / len(_bon)

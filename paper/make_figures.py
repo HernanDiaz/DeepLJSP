@@ -459,10 +459,24 @@ def fig_ladder():
         open("benchmarks/classic12_tuned.csv", encoding="utf-8"))}
     est = {r["inst"]: float(r["est_re"]) for r in csv.DictReader(
         open("benchmarks/classic12_est.csv", encoding="utf-8"))}
-    pol = defaultdict(list)
-    for r in csv.DictReader(open("benchmarks/eval_classic12_policy.csv",
-                                 encoding="utf-8")):
-        pol[r["name"]].append(float(r["re"]))
+    # las TREINTA semillas de la campana de 2026-08-15, a los tres
+    # presupuestos, para que la escalera enfrente 30 contra 30 en cada
+    # peldano y no tres contra treinta
+    import glob as _g
+    campana = defaultdict(lambda: defaultdict(list))
+    for f in _g.glob("benchmarks/ext30/classic12_bo*_*.csv"):
+        if "maestro" in f:
+            continue
+        for r in csv.DictReader(open(f, encoding="utf-8")):
+            campana[int(r["n_samples"])][r["name"]].append(
+                (int(r["seed"]), float(r["re"])))
+
+    def por_presupuesto(n):
+        """{instancia: [RE por semilla]} deduplicado por semilla."""
+        return {i: [v for _, v in dict(vs).items()]
+                for i, vs in campana[n].items()}
+
+    pol = por_presupuesto(64)
 
     def media(d):
         return sum(d) / len(d)
@@ -470,19 +484,12 @@ def fig_ladder():
     # la politica greedy, para que la clase de una pasada tenga las dos
     # familias al mismo presupuesto (antes se comparaba su best-of-64
     # contra la regla a una pasada, y ambas iban en la misma clase)
-    gre = defaultdict(list)
-    for r in csv.DictReader(open("benchmarks/eval_classic12_greedy.csv",
-                                 encoding="utf-8")):
-        gre[r["name"]].append(float(r["re"]))
+    gre = por_presupuesto(1)
     # A 1024 la figura usa el fichero POR SEMILLA: cada checkpoint con sus
     # propias 1024 muestras, promediado sobre los tres. El otro fichero
     # reparte 342 entre los tres y agrega, que empareja el presupuesto en
     # muestras pero no en modelos -- una tirada de GP es UNA regla.
-    bo1024 = defaultdict(list)
-    for r in csv.DictReader(
-            open("benchmarks/eval_classic12_bo1024_porsemilla.csv",
-                 encoding="utf-8")):
-        bo1024[r["name"]].append(float(r["re"]))
+    bo1024 = por_presupuesto(1024)
 
     def media(d):
         return sum(d) / len(d)
