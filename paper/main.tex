@@ -913,9 +913,7 @@ One convention governs every significance test reported below. The
 independent unit is the instance, not the pair (instance, seed):
 policies trained under different seeds are evaluated on the same
 instances, so their results are averaged over seeds before any
-instance is entered into a paired test. Treating the pairs as
-independent would multiply the apparent sample size without adding
-information about generalization. Tests are two-sided exact Wilcoxon
+instance is entered into a paired test. Tests are two-sided exact Wilcoxon
 signed-rank tests over the instances of the set in question, reported
 with the mean difference and its $95\%$ confidence interval, and the
 smallest attainable $p$-value is $0.031$ on the six validation
