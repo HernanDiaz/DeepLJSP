@@ -1188,10 +1188,8 @@ per-instance search.
   \caption{Training dynamics of the deployed arm: RE of the sampled
   training episodes (smoothed over $25$ episodes; the band spans the
   seeds) and of the best schedule found so far, over the four
-  training blocks TA11--TA14 with weights carried from block to
-  block. Curves aggregate the seven seeds of the ten whose runs
-  recorded per-episode logs; the remaining three predate that
-  logging.}
+  training blocks TA11--TA14. Curves aggregate the seven of the ten
+  runs that recorded per-episode logs.}
   \label{fig:training}
 \end{figure}
 
@@ -1363,14 +1361,9 @@ values~\citep{DiazFEABC2023}.
 
 \begin{table}[!htb]
 \centering\small
-\caption{RE (\%) on the 12 classical interval instances. Column
-groups are inference budgets: GP and the policy (Pol.) are comparable
-within a group and not across groups. Each entry is the mean over
-that method's thirty independent runs, thirty evolutions and thirty
-training runs, with the per-instance best over those runs in
-brackets. ESABC is a 30-run average from a different computational
-class. Reference bounds are best-known expected makespans, not
-Taillard's crisp bounds.}
+\caption{RE (\%) on the 12 classical interval instances, by inference
+budget. Entries are means over thirty runs, with the per-instance
+best over those runs in brackets.}
 \label{tab:classics}
 \footnotesize
 \setlength{\tabcolsep}{3.5pt}
@@ -1413,8 +1406,10 @@ be made with both readings at every budget, which the Taillard set
 does not: the GP study publishes its thirty evolutions here at all
 three, so each column of Table~\ref{tab:classics} pairs thirty
 artifacts against thirty, as a mean over the runs and as the
-per-instance best over them. The per-instance metaheuristics are
-quoted from Table~2 of~\citet{DiazFEABC2023}. The policy improves on
+per-instance best over them. The two learners are comparable within a
+budget group and not across groups. The per-instance metaheuristics
+are quoted from Table~2 of~\citet{DiazFEABC2023} and belong to a
+different computational class. The policy improves on
 EST and G\&T-MWKR on all twelve instances and lands at $12.3\%$ mean
 RE at its deployed budget, between the hand-crafted constructive
 baselines ($30.1\%$ for G\&T-MWKR) and the per-instance searchers,
@@ -1480,12 +1475,10 @@ the intact rollouts ($18.2\%$).
 \begin{figure}[!htb]
   \centering
   \includegraphics[width=.72\linewidth]{figures/fig_importance.pdf}
-  \caption{Permutation importance of the 16 operation features: change
-  in mean validation-set RE when the feature's column is shuffled
-  across the eligible operations at every decision (greedy rollouts,
-  three seeds; intact baseline $18.2\%$). Bars are the mean of five
-  independent permutation draws and whiskers their standard deviation.
-  The two interval-width features are highlighted.}
+  \caption{Permutation importance of the 16 operation features, as the
+  change in mean validation-set RE. Bars are the mean of five
+  independent permutation draws and whiskers their standard deviation;
+  the two interval-width features are highlighted.}
   \label{fig:importance}
 \end{figure}
 
@@ -1542,10 +1535,8 @@ was not repeated on those arms.
   \centering
   \includegraphics[width=.62\linewidth]{figures/fig_budget.pdf}
   \caption{RE against the \emph{inference} budget $B$ on a base-2
-  logarithmic axis: for each instance the best of the $B$ samples
-  spent on it is kept, and the curve reports the mean of that value
-  over the 70 instances. The band is the 10--90 percentile over
-  resamplings.}
+  logarithmic axis, as the mean over the 70 instances of the best of
+  $B$ samples. The band is the 10--90 percentile over resamplings.}
   \label{fig:budget}
 \end{figure}
 
@@ -1727,9 +1718,7 @@ objective is available, at a price of about two points of RE.
   \includegraphics[width=.66\linewidth]{figures/fig_frontier.pdf}
   \caption{Mean relative width of the selected schedule against its
   mean RE, over the 18 (instance, seed) pools of each arm's common
-  rollout deposit. The deployed arms trace the frontier; re-ranking
-  the default policy's deposit reproduces it; under a common criterion
-  the retrained arms do not separate.}
+  rollout deposit, under three selection regimes.}
   \label{fig:frontier}
 \end{figure}
 
