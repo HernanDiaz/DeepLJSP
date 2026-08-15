@@ -61,29 +61,32 @@ Inference Budgets}
 \orgname{University of Oviedo}, \orgaddress{\city{Gij\'on},
 \country{Spain}}}
 
-\abstract{Two families of learned constructive heuristic compete for
-the same ground: genetic programming evolves a dispatching rule,
-deep reinforcement learning trains a policy. Comparisons between them
-under a common protocol are scarce, and none exists for the interval
-job shop scheduling problem (IJSP), which retains only the support
-bounds of uncertain processing times. This paper trains the first
-size-invariant constructive DRL policy for the IJSP, one parameter
-set for any instance size, and compares it against a rule evolved for
-the same benchmark, thirty trained artifacts per family, on seventy
-instances evaluated in one harness. The two are separated at every
-inference budget and the ordering is set by that budget: the rule
-leads by $0.8$ points of relative error given one constructive pass
-each, the policy leads by the same margin once both draw samples.
-Both improve on every hand-crafted dispatching rule. The paradigms
-also differ in where they handle the uncertainty. Under the
-lexicographic ranking standard in the field the worst-case makespan
-depends on the upper duration endpoints alone, so interval widths
-cannot inform decisions judged by it, and removing them from the
-policy costs nothing measurable; the intervals matter as training
-data instead, at $0.63$ points. Accordingly, an objective that
-charges for the predicted width narrows the policy's schedules
-through sample selection, its weights unmoved, where the same
-objective acts through the evolved representation.}
+\abstract{The interval job shop scheduling problem (IJSP) retains
+only the support bounds of uncertain processing times and is solved
+in the literature by per-instance metaheuristic search. This paper
+presents the first constructive deep reinforcement learning policy
+for the problem: dimensionless state features and a
+permutation-invariant encoder make one parameter set of
+${\sim}1.2\times10^{5}$ weights applicable to any instance size.
+Trained with proximal policy optimization on four $20{\times}15$
+Taillard instances, the policy improves on every hand-crafted
+dispatching rule on all seventy benchmark instances, six of the
+seven size classes unseen. It is then compared against a dispatching
+rule evolved by genetic programming for the same benchmark, thirty
+trained artifacts per family evaluated in one harness, the
+comparison between the two learned constructive families that the
+literature lacks. The two separate at every inference budget and the
+ordering is set by that budget: the rule leads by $0.8$ points of
+relative error given one constructive pass each, and the policy
+leads by the same margin once both draw samples. The paradigms also
+differ in where they handle the uncertainty. Under the lexicographic
+ranking standard in the field the worst-case makespan depends on the
+upper duration endpoints alone, so interval widths cannot inform
+decisions judged by it, and removing them from the policy costs
+nothing measurable; an objective that charges for the predicted
+width narrows the policy's schedules through sample selection, its
+weights unmoved, where the same objective acts through the evolved
+representation.}
 
 \keywords{job shop scheduling, interval uncertainty, deep reinforcement
 learning, neural combinatorial optimization, genetic programming
@@ -178,6 +181,14 @@ per-instance metaheuristic state of the art?
 
 \paragraph{Contributions.}
 \begin{enumerate}
+\item \emph{The first size-invariant constructive DRL policy for the
+  IJSP} (Section~\ref{sec:method}). All features are dimensionless:
+  temporal quantities are scaled by a per-instance lower bound and
+  interval uncertainty enters as relative widths. A Deep
+  Sets~\citep{Zaheer2017} encoder over the eligible-operation set,
+  combined with a pooled global context, yields policy \emph{and}
+  value networks of ${\approx}1.2\times10^{5}$ parameters, independent
+  of the numbers of jobs and machines.
 \item \emph{A head-to-head comparison of the two learned constructive
   paradigms under a shared protocol}
   (Sections~\ref{sec:positioning} and~\ref{sec:results-classics}),
@@ -201,13 +212,6 @@ per-instance metaheuristic state of the art?
   that follows: a width-penalizing objective acts through sample
   selection in the policy, with the weights unmoved, and through the
   evolved representation in the GP study~\citep{DiazGP2026}.
-\item \emph{The first size-invariant constructive DRL policy for the
-  IJSP} (Section~\ref{sec:method}), the instrument the comparison is
-  run on. All features are dimensionless, and a Deep
-  Sets~\citep{Zaheer2017} encoder over the eligible-operation set,
-  combined with a pooled global context, yields policy \emph{and}
-  value networks of ${\approx}1.2\times10^{5}$ parameters, independent
-  of the numbers of jobs and machines.
 \item \emph{An account of which standard components earn their cost}
   (Section~\ref{sec:analysis}): best-of-$N$ inference does,
   self-attention and three automatic-configuration campaigns do not,

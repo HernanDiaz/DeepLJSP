@@ -200,14 +200,17 @@ check("MOR medio en desarrollo (conclusiones ~46)", 46.0, mor_dev,
       tol=0.55)
 # El abstract cita ahora la linea base fuerte, no la simple
 _abs_tex = re.search(r"\\abstract\{(.*?)\n\n", TEX, re.S).group(1)
-# Desde el reencuadre del 2026-08-14 el abstract abre con la
-# delimitacion y no lleva cifras de linea base; si conserva el 0.63 del
-# punto medio y sigue sin citar el ~46 de la regla simple
-check_exacto("abstract: comparacion primero, delimitacion despues",
-             "0.63" in _abs_tex and "46\\%" not in _abs_tex
-             and "genetic programming" in _abs_tex
-             and _abs_tex.index("thirty trained artifacts")
-             < _abs_tex.index("lexicographic"))
+# Orden fijado por el autor el 2026-08-15: primero la politica (la
+# primera DRL invariante al tamano para el IJSP), despues la
+# comparacion, despues el mecanismo. El 0.63 del punto medio salio del
+# abstract mientras su confirmacion sobre no vistas esta en curso.
+_abs_plano = " ".join(_abs_tex.split())
+check_exacto("abstract: politica, luego comparacion, luego mecanismo",
+             "46\\%" not in _abs_plano
+             and "genetic programming" in _abs_plano
+             and _abs_plano.index("first constructive deep reinforcement")
+             < _abs_plano.index("thirty trained artifacts")
+             < _abs_plano.index("lexicographic"))
 # el titulo anuncia la comparacion desde el reencuadre del 2026-08-15,
 # acotada a las hiperheuristicas GP (no es una comparacion general).
 # Se normalizan los saltos de linea del .tex antes de buscar
