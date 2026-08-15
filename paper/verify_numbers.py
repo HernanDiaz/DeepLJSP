@@ -196,8 +196,16 @@ _abs_tex = re.search(r"\\abstract\{(.*?)\n\n", TEX, re.S).group(1)
 # Desde el reencuadre del 2026-08-14 el abstract abre con la
 # delimitacion y no lleva cifras de linea base; si conserva el 0.63 del
 # punto medio y sigue sin citar el ~46 de la regla simple
-check_exacto("abstract: delimitacion primero (0.63 presente, sin ~46)",
-             "0.63" in _abs_tex and "46\\%" not in _abs_tex)
+check_exacto("abstract: comparacion primero, delimitacion despues",
+             "0.63" in _abs_tex and "46\\%" not in _abs_tex
+             and "genetic programming" in _abs_tex
+             and _abs_tex.index("thirty trained artifacts")
+             < _abs_tex.index("lexicographic"))
+# el titulo anuncia la comparacion desde el reencuadre del 2026-08-15
+check_exacto("titulo: nombra DRL, el problema y la comparacion con GP",
+             all(s in TEX[:TEX.index("\\author")] for s in
+                 ("Deep Reinforcement Learning", "Interval Job",
+                  "Comparison with Genetic Programming")))
 
 # =========================================================================
 print("\n== tab:insize: recomputo desde schedules (componentwise) ==")
