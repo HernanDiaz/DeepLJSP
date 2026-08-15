@@ -208,7 +208,8 @@ _titulo = re.sub(r"\s+", " ", TEX[:TEX.index("\\author")])
 check_exacto("titulo: DRL, el problema y la comparacion acotada",
              all(s in _titulo for s in
                  ("Deep Reinforcement Learning", "Interval Job",
-                  "Genetic Programming Hyper-Heuristics")))
+                  "Genetic Programming Hyper-Heuristics",
+                  "across Inference Budgets")))
 
 # =========================================================================
 print("\n== tab:insize: recomputo desde schedules (componentwise) ==")
