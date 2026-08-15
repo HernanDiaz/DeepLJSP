@@ -201,11 +201,14 @@ check_exacto("abstract: comparacion primero, delimitacion despues",
              and "genetic programming" in _abs_tex
              and _abs_tex.index("thirty trained artifacts")
              < _abs_tex.index("lexicographic"))
-# el titulo anuncia la comparacion desde el reencuadre del 2026-08-15
-check_exacto("titulo: nombra DRL, el problema y la comparacion con GP",
-             all(s in TEX[:TEX.index("\\author")] for s in
+# el titulo anuncia la comparacion desde el reencuadre del 2026-08-15,
+# acotada a las hiperheuristicas GP (no es una comparacion general).
+# Se normalizan los saltos de linea del .tex antes de buscar
+_titulo = re.sub(r"\s+", " ", TEX[:TEX.index("\\author")])
+check_exacto("titulo: DRL, el problema y la comparacion acotada",
+             all(s in _titulo for s in
                  ("Deep Reinforcement Learning", "Interval Job",
-                  "Comparison with Genetic Programming")))
+                  "Genetic Programming Hyper-Heuristics")))
 
 # =========================================================================
 print("\n== tab:insize: recomputo desde schedules (componentwise) ==")
