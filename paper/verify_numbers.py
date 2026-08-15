@@ -1857,20 +1857,29 @@ else:
     import statistics as _stc
     _cj = _json.load(open(_camp_j, encoding="utf-8"))
     _cv = [r["bo64"] for r in _cj["ranking"]]
+    # el apartado con la dispersion de las 30 se retiro del texto
+    # (2026-08-15, peticion del autor): quedan como centinelas del dato,
+    # y la definicion de "la politica reportada" vive en dos frases de
+    # Training and inference
     check_exacto("5.4: treinta semillas en el ranking", len(_cv) == 30,
                  f"{len(_cv)}")
-    check_exacto("5.4: el campeon es la semilla 5", _cj["campeon"] == 5,
-                 f"semilla {_cj['campeon']}")
-    check("5.4: mejor de las 30 (texto 12.77)", 12.77, min(_cv), tol=0.006)
-    check("5.4: peor de las 30 (texto 15.25)", 15.25, max(_cv), tol=0.006)
-    check("5.4: sd de las 30 (texto 0.60)", 0.60, _stc.stdev(_cv),
+    check_exacto("5.4: la politica reportada es la semilla 5",
+                 _cj["campeon"] == 5, f"semilla {_cj['campeon']}")
+    check("centinela: mejor de las 30 en validacion (12.77)", 12.77,
+          min(_cv), tol=0.006)
+    check("centinela: peor de las 30 (15.25)", 15.25, max(_cv), tol=0.006)
+    check("centinela: sd de las 30 (0.60)", 0.60, _stc.stdev(_cv),
           tol=0.006)
-    check("5.4: recorrido de las 30 (texto 2.48)", 2.48,
+    check("centinela: recorrido de las 30 (2.48)", 2.48,
           max(_cv) - min(_cv), tol=0.006)
-    check("5.4: el campeon bajo la mediana (texto 1.12)", 1.12,
+    check("centinela: la elegida bajo la mediana (1.12)", 1.12,
           _stc.median(_cv) - min(_cv), tol=0.006)
-    check_exacto("5.4: el campeon se elige en validacion, no en las 70",
+    check_exacto("5.4: la politica se elige en validacion, no en las 70",
                  "TA15-TA20" in _cj["criterio"], _cj["criterio"])
+    check_exacto("5.4: el texto define la politica reportada",
+                 "the lowest mean\nRE on the validation instances" in TEX
+                 or "lowest mean RE on the validation instances"
+                 in " ".join(TEX.split()))
 
 # Las 30 semillas sobre las 70: las dos lecturas simetricas frente al
 # estudio del GP. Lo escribe scripts/resume_70_treinta.py fusionando el

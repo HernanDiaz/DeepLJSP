@@ -1056,19 +1056,12 @@ strongly correlated: pooling widens the sample the advantage estimate
 is computed from, and normalizing keeps the gradient scale
 comparable across instances of different size.
 
-\paragraph{Seeds and the choice of a network.} Thirty networks were
-trained under this protocol, differing from one another only in their
-random seed. Reporting a single one requires choosing it, and the
-choice is made on the validation instances: every run is evaluated at
-the deployed budget on TA15--TA20 and the one with the lowest mean RE
-becomes \emph{the policy} this paper reports. The seventy benchmark
-instances take no part in that decision. The choice is not
-immaterial: across the thirty runs the
-validation mean spans $2.48$ points, from $12.77\%$ to $15.25\%$ with
-a standard deviation of $0.60$, and the selected run lies $1.12$
-points below the median one. Where the distinction matters the mean
-over the thirty is given as well, since that is what training once
-and deploying whatever comes out delivers in expectation.
+Thirty runs of this protocol were trained, differing from one
+another only in their random seed, and the one with the lowest mean
+RE on the validation instances at the deployed budget is \emph{the
+policy} this paper reports; the seventy benchmark instances take no
+part in that choice. Where the difference matters, results also give
+the mean over the thirty runs.
 
 \paragraph{Best-of-$N$ inference.} At evaluation time the stochastic
 policy is exploited by drawing one greedy rollout and $N-1$ sampled
