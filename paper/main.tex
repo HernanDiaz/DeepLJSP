@@ -1111,15 +1111,9 @@ figures are quoted from those papers, not re-run here.
 
 \begin{table}[t]
 \centering\small
-\caption{RE (\%) per validation instance, mean [best] over the same
-ten training runs at each budget, differing only in their random
-seed, Deep Sets model, best-of-64 inference under the standalone
-evaluator. Here and throughout, \emph{best} is the best
-training run, never the best rollout within a run: sampling is
-already aggregated by the best-of-$N$ rule. Each seed contributes one
-mean over the six instances, and the rightmost column is the standard
-deviation of those ten numbers; the last row is
-the strongest constructive baseline, a single deterministic pass.}
+\caption{RE (\%) per validation instance and training budget, mean
+[best] over ten training runs at best-of-64 inference. The last row
+is the strongest constructive baseline, a single deterministic pass.}
 \label{tab:insize}
 \footnotesize
 \setlength{\tabcolsep}{3.5pt}
@@ -1159,11 +1153,16 @@ greedy.
 
 Deployment on the validation instances is reported in
 Table~\ref{tab:insize}, per instance and for increasing training
-budgets over ten independent training runs, with
-Figure~\ref{fig:scaling} showing their means against the budget.
-The three budgets are paired on the same ten seeds; the operating one
-was afterwards extended to the thirty of the campaign, whose mean is
-$13.92\%$ with a standard deviation of $0.60$.
+budgets, with Figure~\ref{fig:scaling} showing their means against
+the budget. The three budgets are paired on the same ten training
+runs, which differ only in their random seed, and all of them are
+read under the standalone evaluator. Each seed contributes one mean
+over the six instances; the rightmost column is the standard
+deviation of those ten numbers, and here and throughout \emph{best}
+is the best training run, never the best rollout within a run, since
+sampling is already aggregated by the best-of-$N$ rule. The operating
+budget was afterwards extended to the thirty runs of the campaign,
+whose mean is $13.92\%$ with a standard deviation of $0.60$.
 Three observations follow.
 (i) The policy scales monotonically with budget
 ($30.6\%\to17.3\%\to13.6\%$ mean RE at $100/300/1000$ episodes per
