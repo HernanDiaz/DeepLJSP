@@ -25,7 +25,9 @@ if hasattr(sys.stdout, "reconfigure"):
 
 DIR = "benchmarks/ext30"
 CAMPO = ["name", "seed", "lb", "n_samples", "mid", "re", "seconds"]
-N = 3
+# carriles: seis de un hilo exprimen mas la maquina que tres, porque el
+# coste es Python recorriendo el entorno y no la red
+N = int(sys.argv[1]) if len(sys.argv) > 1 else 3
 
 
 def main():
