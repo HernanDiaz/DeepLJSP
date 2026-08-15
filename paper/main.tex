@@ -187,7 +187,7 @@ per-instance metaheuristic state of the art?
   a single harness that fixes the instances, the interval arithmetic,
   the ranking criterion, the inference budgets and the execution
   realizations, with per-instance results reported in full
-  (Online Resource~1). The two separate at every budget and
+  (supplementary material). The two separate at every budget and
   the ordering is set by it.
 \item \emph{A localization of where each paradigm handles the
   uncertainty} (Section~\ref{sec:ablations-interval}), in three
@@ -525,8 +525,8 @@ by a fixed, hand-written formula.
 \includegraphics[width=\linewidth]{figures/fig_arch.pdf}
 \caption{The size-invariant policy/value network. Solid edges are the
 base model's data path; the grey dashed edge is the per-candidate
-skip connection; the dashed detour is the self-attention variant of
-Online Resource~1, not part of the base model ($B{=}0$).}
+skip connection; the dashed detour is the self-attention variant reported
+in the supplementary material, not part of the base model ($B{=}0$).}
 \label{fig:arch}
 \end{figure}
 
@@ -568,8 +568,8 @@ two heads) are composed into a single network and trained jointly end to
 end.
 
 The dashed detour between the embeddings and the pooling is an
-\emph{optional} self-attention stage, evaluated as a variant in
-Online Resource~1; the base model, which every headline
+\emph{optional} self-attention stage, evaluated as a variant in the
+supplementary material; the base model, which every headline
 result of this paper uses, omits it.
 
 Sections~\ref{sec:mdp}--\ref{sec:arch} specify, in order, the
@@ -879,7 +879,7 @@ blocks between the embedding and pooling stages was evaluated as a
 controlled ablation and yielded no improvement at either training
 budget, degrading the operating one by about a point while carrying
 3.2 times the parameters and 2.2 times the episode cost; its
-architecture and the full comparison are given in Online Resource~1.
+architecture and the full comparison are given in the supplementary material.
 
 \section{Experimental Methodology}
 \label{sec:setup}
@@ -1011,7 +1011,8 @@ set by the $0.47$-point standard deviation across seeds
 (Section~\ref{sec:results-insize}), is approximately one point of RE.
 The campaigns therefore exclude improvements larger than that
 magnitude, not the existence of smaller ones. Their search spaces,
-outcomes and by-products are reported in Online Resource~1.
+outcomes and by-products are provided in the supplementary
+material.
 
 \subsection{Training and inference}
 \label{sec:training}
@@ -1217,8 +1218,7 @@ training or fine-tuning of any kind. The seventh, marked in the
 table, is $20{\times}15$, which holds the four training and the six
 validation instances.
 Table~\ref{tab:seventy} reports RE over all seventy instances by size
-class, ten to a class, with its per-instance values in Online
-Resource~1.
+class, ten to a class, with its per-instance values in the supplementary material.
 Each learned family trains thirty artifacts, thirty evolutions and
 thirty runs, and appears as the one its study selects: the rule
 \citet{DiazGP2026} features and the policy of
@@ -1593,7 +1593,7 @@ A second standard component was evaluated the same way. Two
 self-attention blocks inserted before the pooling brought no
 improvement at either training budget and degraded the operating one
 by about a point, with $3.2$ times the parameters; the architecture
-and the full comparison are given in Online Resource~1.
+and the full comparison are given in the supplementary material.
 
 \subsection{Where each paradigm handles the uncertainty}
 \label{sec:ablations-interval}
