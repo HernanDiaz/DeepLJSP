@@ -16,6 +16,8 @@
 
 ## Qué se sube
 
+- `zenodo_drl_v1.zip` va a ZENODO, no a la revista: no incluirlo en
+  el envío del manuscrito.
 - `manuscript.pdf` — el manuscrito (38 pp., una columna, sn-jnl).
 - `supplementary_material.pdf` — como Supplementary Information.
 - `fuente/` — tex + bib + bbl + clase + bst + sty + figuras; el
