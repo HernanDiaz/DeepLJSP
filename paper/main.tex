@@ -1528,24 +1528,26 @@ was not repeated on those arms.
   \label{fig:budget}
 \end{figure}
 
-The policy is reported at three inference budgets (one greedy pass,
-$64$ samples and $1024$), which leaves its behaviour between them
-unspecified. To characterize the shape of the curve, all $342$
-rollouts of each of the first three training runs were retained on
-each of the 70 instances ($71{,}820$ schedules), so that best-of-$B$
-is reconstructible for arbitrary $B$ without further evaluation; the
-deposit predates the thirty-run campaign, so its absolute level
-corresponds to those three runs with the budget partitioned among
-them, slightly below their aggregated greedy reference, and it is the
-\emph{shape} that this section uses. Figure~\ref{fig:budget} plots
-the curve; its band is a dispersion over repetitions, not a
-confidence interval on the mean. EST, at $42.3\%$, lies above the
-frame.
-A single \emph{sampled} rollout is substantially worse than the greedy
-one, $21.4\%$ against $17.0\%$: the argmax is a high-quality sequence
-within a broadly dispersed distribution. The curve overtakes the
-evolved rule at $B{=}6$ and the greedy pass at $B{=}12$, so sampling
-becomes profitable at budgets far below the $64$ used throughout. The
+Section~\ref{sec:positioning} samples the budget axis at three
+points, so it locates the reversal between the two learners no more
+precisely than between one pass and $64$. This section reconstructs
+the whole curve and finds the crossing near its left end: the policy
+overtakes the evolved rule at $B{=}6$ and its own greedy pass at
+$B{=}12$, so sampling becomes profitable at budgets far below the
+$64$ used throughout, and the rule's advantage at one pass occupies a
+narrow initial segment of the budget axis. The reconstruction retains
+all $342$ rollouts of each of the first three training runs on each
+of the 70 instances ($71{,}820$ schedules), so that best-of-$B$ can
+be read off for arbitrary $B$ without further evaluation; the deposit
+predates the thirty-run campaign, so its absolute level corresponds
+to those three runs with the budget partitioned among them, slightly
+below their aggregated greedy reference, and it is the \emph{shape}
+that this section uses. Figure~\ref{fig:budget} plots the curve; its
+band is a dispersion over repetitions, not a confidence interval on
+the mean, and EST, at $42.3\%$, lies above the frame. A single
+\emph{sampled} rollout is substantially worse than the greedy one,
+$21.4\%$ against $17.0\%$: the argmax is a high-quality sequence
+within a broadly dispersed distribution. Past the crossing, the
 returns are near-logarithmic over three orders of magnitude,
 $14.9\%$ at $64$ and $12.9\%$ at $1023$ ($341$ per checkpoint, the
 reconstruction's closest point to the nominal $1024$), without an
