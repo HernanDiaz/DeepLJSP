@@ -1308,6 +1308,30 @@ for inst, fila in TAB_CLASSICS.items():
             fallos_clas += 1
 check_exacto("las 168 celdas de tab:classics", fallos_clas == 0,
              f"{fallos_clas} celdas mal")
+# 6.3 explica el cambio de orden por el tamano. Las dimensiones se leen
+# de los propios ficheros de instancia, no de memoria: el 2026-08-16 el
+# texto afirmaba "diez y quince trabajos frente a veinte", y ABZ7-9 son
+# 20x15, exactamente la clase de entrenamiento
+_DIM = {}
+for _f in glob.glob("zenodo_deposit/instances/interval_classical/F0.15.0.*.txt"):
+    _nom = os.path.basename(_f).split(".")[-2].split("_")[0].upper()
+    _ls = [l.strip() for l in open(_f, encoding="utf-8", errors="replace")
+           if l.strip()]
+    _n = [int(l) for l in _ls if l.isdigit()][:2]
+    if len(_n) == 2:
+        _DIM[_nom] = tuple(_n)
+if len(_DIM) != 12:
+    pendiente("dimensiones de las 12 clasicas", f"{len(_DIM)} ficheros")
+else:
+    check_exacto("6.3: las clasicas van de 10x10 a 20x15",
+                 min(_DIM.values()) == (10, 10)
+                 and max(_DIM.values()) == (20, 15),
+                 f"{min(_DIM.values())} a {max(_DIM.values())}")
+    check_exacto("6.3: ninguna excede la clase de entrenamiento 20x15",
+                 all(j <= 20 and m <= 15 for j, m in _DIM.values()),
+                 str(sorted(set(_DIM.values()))))
+    check_exacto("6.3: y el texto lo dice asi",
+                 "range from $10{\\times}10$ to $20{\\times}15$" in TEX)
 check_exacto("tab:classics ya no imprime el mejor de GA",
              "9.8 [5.8]" not in TEX)
 _blkclas = TEX[TEX.index("\\label{tab:classics}"):
