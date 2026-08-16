@@ -1381,28 +1381,67 @@ try:
 except Exception as e:
     pendiente("dispersion GP vs DRL", type(e).__name__)
 
-# 5.5 da la cuenta de pared de entrenar cada familia. La fuente es el
-# artefacto derivado de los timestamps de las dos campanas (scripts/
-# mide_tiempos_entrenamiento.py); si se reentrenara algo, regenerarlo.
+# tab:cost (7.2) da la cuenta de pared de las dos familias. Las filas
+# de entrenamiento vienen del artefacto derivado de los timestamps de
+# las dos campanas (scripts/mide_tiempos_entrenamiento.py); las de
+# inferencia, de las dos mediciones en el harness sobre las mismas
+# instancias representativas (tiempos_inferencia.csv para la politica,
+# tiempos_gp_harness para la regla destacada).
 _TPO = "benchmarks/tiempos/tiempos_entrenamiento.json"
 if not os.path.exists(_TPO):
     pendiente("tiempos de entrenamiento", "sin tiempos_entrenamiento.json")
 else:
     _tt = json.load(open(_TPO, encoding="utf-8"))
-    check("5.5: una evolucion tarda 26 min", 26,
+    check("tab:cost: una evolucion tarda 26 min", 26,
           _tt["gp"]["evolucion_min"], tol=0.51)
-    check("5.5: mediana de un entrenamiento, 92 min", 92,
+    check("tab:cost: mediana de un entrenamiento, 92 min", 92,
           _tt["politica"]["mediana_min"], tol=0.51)
-    check("5.5: rango 60-153 del entrenamiento", 60,
+    check("tab:cost: rango 60-153 del entrenamiento", 60,
           _tt["politica"]["min_min"], tol=0.51)
-    check("5.5: rango 60-153 del entrenamiento (max)", 153,
+    check("tab:cost: rango 60-153 del entrenamiento (max)", 153,
           _tt["politica"]["max_min"], tol=0.51)
-    check("5.5: 30 evoluciones son 4.4 h", 4.4,
+    check("tab:cost: 30 evoluciones son 4.4 h", 4.4,
           _tt["gp"]["total_h_tres_carriles"], tol=0.051)
-    check("5.5: 30 entrenamientos son 16 h", 16,
+    check("tab:cost: 30 entrenamientos son 16 h", 16,
           _tt["politica"]["total_h_tres_carriles"], tol=0.051)
-    check_exacto("5.5: 30 semillas en el artefacto de tiempos",
+    check_exacto("tab:cost: 30 semillas en el artefacto de tiempos",
                  len(_tt["politica"]["por_semilla_min"]) == 30)
+_TGP = "benchmarks/tiempos_gp_harness/tiempos_gp.csv"
+_TIN = "benchmarks/tiempos_inferencia.csv"
+if not (os.path.exists(_TGP) and os.path.exists(_TIN)):
+    pendiente("tiempos por schedule", "faltan CSV de tiempos")
+else:
+    _csvt = __import__("csv")
+    _gp_t = {r["clase"]: r for r in
+             _csvt.DictReader(open(_TGP, encoding="utf-8"))}
+    _po_t = {r["clase"]: r for r in
+             _csvt.DictReader(open(_TIN, encoding="utf-8"))}
+    check_exacto("tab:cost: mismas instancias representativas",
+                 all(_gp_t[c]["instancia"] == _po_t[c]["instancia"]
+                     for c in ("20x15", "50x20")))
+    for _c, _gp_det, _gp_mu, _po_det, _po_mu in [
+            ("20x15", 0.10, 0.10, 0.86, 1.03),
+            ("50x20", 1.00, 0.93, 3.98, 6.4)]:
+        check(f"tab:cost regla det {_c}", _gp_det,
+              float(_gp_t[_c]["det_s"]), tol=0.006)
+        check(f"tab:cost regla muestra {_c}", _gp_mu,
+              float(_gp_t[_c]["por_muestra_s"]), tol=0.006)
+        check(f"tab:cost politica greedy {_c}", _po_det,
+              float(_po_t[_c]["greedy_s"]), tol=0.006)
+        check(f"tab:cost politica muestra {_c}", _po_mu,
+              float(_po_t[_c]["bo64_s"]) / 64, tol=0.051)
+    # el factor de las conclusiones y de 7.2: siete a once veces
+    _f2015 = (float(_po_t["20x15"]["bo64_s"]) / 64
+              / float(_gp_t["20x15"]["por_muestra_s"]))
+    _f5020 = (float(_po_t["50x20"]["bo64_s"]) / 64
+              / float(_gp_t["50x20"]["por_muestra_s"]))
+    check_exacto("7.2 y conclusiones: la regla es ~7-11 veces mas barata",
+                 6.5 <= min(_f2015, _f5020) and max(_f2015, _f5020) <= 11.5,
+                 f"{_f5020:.1f} a {_f2015:.1f}")
+    check_exacto("7.2: el muestreo eps-greedy no encarece la pasada GP",
+                 all(float(_gp_t[c]["por_muestra_s"])
+                     <= float(_gp_t[c]["det_s"]) * 1.1
+                     for c in _gp_t))
 
 # 6.3 y 6.4 afirman COMO se eligio la regla destacada. Es una afirmacion
 # sobre el otro paper, asi que se contrasta contra su fuente, no de
@@ -1422,9 +1461,13 @@ else:
                  "$18.99\\%$ ($\\pm1.33$)" in _g and "$18.99\\%$" in TEX)
     check_exacto("6.4: la destacada sobre las 70 es 17.71",
                  "best rule attains\n$17.71\\%$" in _g)
-    check_exacto("5.5: la pasada de la regla cuesta 0.34 s (su fuente)",
+    # el 0.34 s publicado (media sobre las 70) ya no se imprime aqui:
+    # tab:cost lo sustituye por la medicion simetrica por clase. Queda
+    # como centinela de coherencia: nuestra pasada por clase (0.10-1.00)
+    # encierra a su media publicada
+    check_exacto("centinela: la fuente GP sigue publicando 0.34 s",
                  "constructive pass takes $0.34$~s with the evolved rule"
-                 in _g and "$0.34$~s" in TEX)
+                 in _g)
     # 3 afirma que las cuatro convenciones del planteamiento son las
     # mismas en los dos estudios. Es una afirmacion sobre SU paper, asi
     # que cada una se contrasta contra su fuente: si el companero cambia
@@ -2558,6 +2601,15 @@ else:
         check_exacto("7.5: el minimizador del extremo superior es unico "
                      "en los 90 pools", _con_empate == 0,
                      f"{_con_empate} pools con empate")
+        # el matiz que el texto anade el 2026-08-16: los empates del
+        # extremo superior en general son COMUNES (todos los pools
+        # tienen alguno); lo que no se da nunca es el empate en el
+        # minimo, el unico que entregaria la seleccion a la clave
+        # secundaria
+        _con_alguno = sum(1 for v in _pool.values()
+                          if len({u for _, u in v}) < len(v))
+        check_exacto("7.5: y aun asi los empates en general son comunes",
+                     _con_alguno == 90, f"{_con_alguno}/90 pools")
 
 
         def _sel64(v, lam):

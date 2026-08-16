@@ -1082,20 +1082,9 @@ evaluation of an evolved expression, which is the cheaper of the two.
 Matched sample counts therefore favour the policy in computational
 terms, and the comparison should be read as one of sample efficiency.
 
-That asymmetry has measured magnitudes. With three concurrent
-processes on the machine of Table~\ref{tab:environment}, one
-evolution under the configuration of~\citet{DiazGP2026}, a population
-of $100$ over $50$ generations, takes $26$ minutes of wall-clock
-time, and one training run of the policy a median of $92$, with a
-range of $60$--$153$ across the thirty runs, so the thirty artifacts
-of each family cost $4.4$ and $16$ hours respectively, incurred once.
-Per schedule at inference, a constructive pass with an evolved rule
-averages $0.34$~s over the seventy instances~\citep{DiazGP2026},
-while a sampled rollout of the policy takes $1.03$~s on a
-$20{\times}15$ instance and $6.4$~s on a $50{\times}20$ one
-(Section~\ref{sec:ablations-bon}). Training and inference thus price
-the policy at several times the rule, a premium the sample-matched
-protocol leaves out of the comparison.
+That asymmetry has measured magnitudes: Table~\ref{tab:cost}
+(Section~\ref{sec:ablations-bon}) prices training and inference for
+both families in this same harness.
 
 Three published IJSP metaheuristics are included as reference
 yardsticks rather than as direct competitors, since each searches
@@ -1576,6 +1565,43 @@ measured range, and within it the marginal return is itself
 contracting, with each octave yielding approximately a tenth less
 than its predecessor, so a constant rate is the optimistic reading.
 
+\begin{table}[!htb]
+\centering\small
+\caption{Wall-clock cost of the two families, measured in the
+harness of this paper on the machine of
+Table~\ref{tab:environment}. Training runs three concurrent
+processes; per-schedule times are on one representative instance per
+class, the best-of-64 batch timed whole and divided by $64$.}
+\label{tab:cost}
+\begin{tabular}{lcc}
+\toprule
+ & GP rule & Policy \\
+\midrule
+Training one artifact (min) & $26$ & $92$ [$60$--$153$] \\
+Thirty artifacts (h) & $4.4$ & $16$ \\
+\addlinespace
+One deterministic pass, $20{\times}15$ (s) & $0.10$ & $0.86$ \\
+\phantom{One deterministic pass, }$50{\times}20$ (s) & $1.00$ & $3.98$ \\
+Per sample at best-of-64, $20{\times}15$ (s) & $0.10$ & $1.03$ \\
+\phantom{Per sample at best-of-64, }$50{\times}20$ (s) & $0.93$ & $6.4$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:cost} closes the budget analysis by pricing both
+families in this harness, on the same machine and the same
+representative instances. Evolving one rule takes $26$ minutes
+against a median of $92$ for training one policy, $4.4$ against $16$
+hours for the thirty artifacts of each family, both costs incurred
+once; per schedule the rule is about seven to eleven times cheaper
+depending on the size, and $\epsilon$-greedy sampling adds nothing
+measurable to its deterministic pass. Both families run the same
+schedule builder, so the factor is the forward pass against the
+evaluation of a compact expression. The sample-matched protocol of
+Section~\ref{sec:positioning} charges for neither difference, which
+is the premium behind the sample-efficiency reading fixed in
+Section~\ref{sec:baselines}.
+
 A second standard component was evaluated the same way. Two
 self-attention blocks inserted before the pooling brought no
 improvement at either training budget and degraded the operating one
@@ -1600,10 +1626,13 @@ every schedule in this paper is compared. Its secondary key, the lower
 endpoint, is consulted only on exact ties of the upper one. The
 criterion as defined therefore does depend on the lower endpoints,
 and everything below is conditional on ties not deciding; that
-condition is measured rather than assumed, since the upper-bound
-minimizer is unique in every one of the 90 (arm, instance, seed)
-rollout pools of this section, so on these experiments the criterion
-operates through its primary key alone. The reward of
+condition is measured rather than assumed. Ties of the upper endpoint
+as such are common, every one of the 90 (arm, instance, seed) rollout
+pools of this section containing some pair of rollouts that share
+one, but the minimum is another matter: the upper-bound minimizer is
+unique in all 90 pools, and only a tie at the minimum would hand the
+selection to the secondary key. On these experiments the criterion
+therefore operates through its primary key alone. The reward of
 Section~\ref{sec:mdp} trains on that primary key, and across its six
 components not one reads a lower bound, so there is no channel
 through which knowing an interval's width could reduce what the policy
@@ -1923,7 +1952,8 @@ unit. What the network contributes over a compact formula is
 therefore its sampling distribution rather than its argmax, and that
 contribution is not free: the budget those figures equalize is the
 number of schedules constructed, while a policy costs some four times
-an evolved rule to train and about three times as much per schedule.
+an evolved rule to train and about seven to eleven times as much per
+schedule (Table~\ref{tab:cost}).
 The aggregate also hides a size effect, the policy leading near the
 class it trained on and trailing on the two largest. On the twelve
 classical instances, a family neither method was tuned for, it holds
