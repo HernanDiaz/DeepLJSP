@@ -28,6 +28,10 @@ TEX = open("paper/main.tex", encoding="utf-8").read()
 # El Online Resource 1 (campanas de configuracion, variante de atencion
 # y tabla por instancia) forma parte del envio: sus afirmaciones se
 # verifican igual. TEX = solo el paper; TEXSUP = paper + suplementario.
+# El suplementario cita tablas, ecuaciones y figuras del principal por
+# su NUMERO literal (la clase no comparte contadores entre documentos),
+# asi que cada renumeracion del principal puede dejarlo mal en silencio:
+# los literales se contrastan contra main.aux mas abajo.
 import os as _os_sup
 SUP = (open("paper/supplementary.tex", encoding="utf-8").read()
        if _os_sup.path.exists("paper/supplementary.tex") else "")
@@ -2179,6 +2183,31 @@ for _f in ("paper/main.tex", "paper/refs.bib"):
 _log = open("paper/main.log", encoding="utf-8", errors="replace").read()
 check_exacto("tex: sin citas ni referencias sin resolver",
              "undefined" not in _log.lower().replace("undefined control", ""))
+
+# los numeros literales con que el suplementario cita al principal,
+# contrastados contra main.aux: si una renumeracion los mueve, esto
+# salta en vez de dejar el suplementario apuntando a la tabla equivocada
+_aux = open("paper/main.aux", encoding="utf-8", errors="replace").read()
+
+
+def _num_de(etiqueta):
+    _m = re.search(r"newlabel\{" + re.escape(etiqueta) + r"\}\{\{(\d+)\}",
+                   _aux)
+    return int(_m.group(1)) if _m else -1
+
+
+for _etq, _num, _uso in [("tab:hyper", 5, "Table~5 of the paper"),
+                         ("eq:reward", 5, "Eq.~(5) of the paper"),
+                         ("fig:arch", 1, "Figure~1 of the paper"),
+                         ("tab:classics", 8, "Table~8 of")]:
+    check_exacto(f"sup cita {_etq} como numero {_num}",
+                 _num_de(_etq) == _num and _uso in SUP,
+                 f"aux dice {_num_de(_etq)}")
+# y el bloque de autor es identico en los dos documentos
+check_exacto("la afiliacion coincide entre paper y suplementario",
+             "\\orgdiv{Department of Computing}" in TEX
+             and "\\orgdiv{Department of Computing}" in SUP
+             and TEXSUP.count("diazhernan@uniovi.es") == 2)
 
 
 def _por_par(*tags):
