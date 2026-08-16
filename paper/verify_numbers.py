@@ -216,7 +216,9 @@ check_exacto("abstract: politica, luego comparacion, luego mecanismo",
              and "1.2" not in _abs_plano
              and "20{\\times}15" not in _abs_plano
              and "lexicographic" not in _abs_plano
-             # el autor retiro tambien la reclamacion de primacia
+             # el autor retiro del ABSTRACT la reclamacion de primacia;
+             # vive en la primera contribucion, anclada a 2.4, que es
+             # donde se documenta el hueco
              and "the first" not in _abs_plano
              and _abs_plano.index("a constructive deep reinforcement")
              < _abs_plano.index("thirty trained artifacts")
@@ -225,6 +227,15 @@ check_exacto("abstract: politica, luego comparacion, luego mecanismo",
 # acotada a las hiperheuristicas GP (no es una comparacion general).
 # Se normalizan los saltos de linea del .tex antes de buscar
 _titulo = re.sub(r"\s+", " ", TEX[:TEX.index("\\author")])
+# la primacia se reclama en la contribucion 1, y solo se sostiene si
+# 2.4 sigue documentando el hueco: la literatura neuronal llega a lo
+# estocastico y lo difuso, no a lo intervalar
+check_exacto("contribucion 1: reclama la primera aplicacion de DRL al IJSP",
+             "the first application of deep reinforcement learning to this"
+             in TEX)
+check_exacto("2.4 sigue sosteniendo ese hueco",
+             "The interval\nrepresentation, the minimal of these uncertainty "
+             "models, remains\nunaddressed by this literature" in TEX)
 check_exacto("titulo: DRL, el problema y la comparacion acotada",
              all(s in _titulo for s in
                  ("Deep Reinforcement Learning", "Interval Job",
