@@ -76,8 +76,12 @@ def main():
     print(f"registros: {copiados} copiados, {saltados} ya estaban")
 
     # --- extractos de las tiradas de entrenamiento ---
+    # solo tiradas COMPLETAS: una en curso no tiene best_model.pt y no
+    # debe viajar a medias
     c2, s2 = 0, 0
     for d in sorted(glob.glob("outputs/bench_*")):
+        if not os.path.exists(os.path.join(d, "best_model.pt")):
+            continue
         nombre = os.path.basename(d)
         for patron in ("best_model.pt", "global_training_log.csv",
                        "training_summary.csv", "training_stats.txt",

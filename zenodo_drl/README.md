@@ -26,6 +26,10 @@ training_runs/
                         one folder per training run: final checkpoint
                         (best_model.pt), training logs, and the
                         schedules of the embedded evaluation
+supplementary_material.pdf
+                        the article's supplementary material (irace
+                        campaigns, self-attention variant,
+                        per-instance results)
 code/
   jobshop_rl/           the training and evaluation package
   scripts/              evaluation, analysis and campaign scripts
@@ -67,9 +71,6 @@ The code is also maintained at https://github.com/HernanDiaz/ijsp-drl.
 Code under MIT; data under CC BY 4.0 (LICENSE files at the root).
 Please cite the article and this deposit.
 
-PENDIENTE antes de publicar: (1) añadir los artefactos del barrido de
-lambda a diez semillas; (2) copiar LICENSE y LICENSE-DATA; (3) rellenar
-ZENODO_METADATA.md (título, autor con ORCID, descripción, palabras
-clave) calcado del depósito de GP; (4) comprobar que verify_numbers.py
-corre contra el paquete; (5) zip y subida por el autor, y el DOI
-resultante cierra el \todo del paper.
+Version note: v1 of this deposit precedes the ten-seed extension of
+the lambda sweep; its runs, deposits and reanalysis files are added
+in v2. The concept DOI always resolves to the latest version.
