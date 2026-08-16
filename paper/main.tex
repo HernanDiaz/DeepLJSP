@@ -1019,9 +1019,7 @@ instances are presented in their benchmark order, TA11 to TA14, which
 the seed does not permute: the seed governs network initialization,
 action sampling and minibatch composition, so the experiments here
 measure variability under a fixed curriculum and not over the
-orderings of it. Each training budget is a separate run from
-scratch rather than a checkpoint of a longer one, so the arms at
-$100$, $300$ and $1000$ episodes per instance share no trajectory.
+orderings of it.
 A \emph{rollout} is one complete construction episode
 played by the current policy: \emph{sampled} when each operation is
 drawn from $\pi$, as during training, and \emph{greedy} when every
@@ -1049,8 +1047,7 @@ Thirty runs of this protocol were trained, differing from one
 another only in their random seed, and the one with the lowest mean
 RE on the validation instances at the deployed budget is \emph{the
 policy} this paper reports; the seventy benchmark instances take no
-part in that choice. Where the difference matters, results also give
-the mean over the thirty runs.
+part in that choice.
 
 \paragraph{Best-of-$N$ inference.} At evaluation time the stochastic
 policy is exploited by drawing one greedy rollout and $N-1$ sampled
