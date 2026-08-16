@@ -27,9 +27,11 @@ if hasattr(sys.stdout, "reconfigure"):
 
 DESTINO = "zenodo_drl"
 # campanas del paper de GP que viven en este repo y NO van en este
-# deposito (ya estan publicadas en el suyo)
+# deposito (ya estan publicadas en el suyo). OJO: classic12_arm_bon NO
+# se excluye, porque esas evaluaciones de las 30 reglas a tres
+# presupuestos son de ESTE paper (tab:classics), no del suyo
 EXCLUIR_BENCH = ("reevo_fixedfit", "pilot_robust", "lambda_sweep",
-                 "classic12_arm_bon", "clon_v2")
+                 "clon_v2")
 EXCLUIR_SCRIPTS_PREFIJO = ("clon_",)
 
 
@@ -50,6 +52,9 @@ def main():
     ver = open("paper/verify_numbers.py", encoding="utf-8").read()
     rutas = set(re.findall(r'"(benchmarks/[^"*]+?\.\w+)"', ver))
     rutas |= set(re.findall(r'"(tuning/[^"*]+?\.\w+)"', ver))
+    # y las lecturas por glob (classic12_arm_bon entre ellas)
+    for patron in re.findall(r'"((?:benchmarks|tuning)/[^"]*\*[^"]*)"', ver):
+        rutas |= set(glob.glob(patron))
     carpetas = set()
     for r in sorted(rutas):
         if not os.path.exists(r):
