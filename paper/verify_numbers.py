@@ -2480,13 +2480,16 @@ else:
                                           for v in _diez.values()),
                  f"{len(_diez)} semillas")
     _m = sorted(sum(v) / len(v) for v in _diez.values())
-    check("diez semillas: media (texto 13.82)", 13.82,
+    check("centinela diez semillas en entrenamiento: media (13.82)",
+          13.82,
           sum(_m) / len(_m), tol=0.006)
-    check("diez semillas: minimo (texto 13.12)", 13.12, _m[0], tol=0.006)
-    check("diez semillas: maximo (texto 14.62)", 14.62, _m[-1], tol=0.006)
+    check("centinela diez semillas en entrenamiento: minimo (13.12)",
+          13.12, _m[0], tol=0.006)
+    check("centinela diez semillas en entrenamiento: maximo (14.62)",
+          14.62, _m[-1], tol=0.006)
     try:
         import statistics as _stat
-        check("diez semillas: sd entre medias (texto 0.47)", 0.47,
+        check("centinela diez semillas en entrenamiento: sd (0.47)", 0.47,
               _stat.stdev(_m), tol=0.006)
     except Exception:
         pendiente("sd de las diez semillas", "no calculable")
