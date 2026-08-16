@@ -2178,6 +2178,16 @@ else:
     else:
         pendiente("campeon a 1024 muestras", "carriles en curso")
 
+# El deposito propio, publicado el 2026-08-16: la declaracion de datos
+# cita el DOI de CONCEPTO (21970431), que resuelve siempre a la ultima
+# version; la v1 subida lleva el DOI de version 21970432
+check_exacto("declaracion de datos: cita el deposito propio",
+             "DiazDRLDataset2026" in TEX
+             and "10.5281/zenodo.21970431" in open(
+                 "paper/refs.bib", encoding="utf-8").read())
+check_exacto("declaracion de datos: y el repo de codigo",
+             "github.com/HernanDiaz/ijsp-drl" in TEX)
+
 # Marcadores \todo pendientes: se imprimen en rojo en el PDF (uno de
 # ellos llego a salir dentro de la bibliografia), asi que ninguno puede
 # sobrevivir al envio. Se listan en cada pasada hasta que desaparezcan.

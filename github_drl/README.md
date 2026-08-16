@@ -54,7 +54,7 @@ python scripts/eval_val_brazos.py --brazo v2-full-1000ep --semillas 2
 Benchmark instances and the thirty evolved GP rules are published at
 doi:10.5281/zenodo.21716972. The trained checkpoints and the primary
 result files behind every table and figure of the article are in the
-article's companion deposit (DOI in the article).
+article's companion deposit, doi:10.5281/zenodo.21970431.
 
 ## License and citation
 
