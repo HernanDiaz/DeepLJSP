@@ -783,11 +783,15 @@ audit of Section~\ref{sec:results-importance}.
 
 The second component of size invariance is architectural. The number
 of candidates changes at every step and from instance to instance,
-while a neural network requires inputs of fixed dimension. Two
-elements resolve this: the \emph{same} network reads every
-candidate, so any number of them can be processed, and the resulting
-embeddings are \emph{pooled} into fixed-size summaries, so the
-scoring stage receives a representation of the whole decision. Let
+while a neural network requires inputs of fixed dimension. What is
+fixed here is the dimension of a single candidate and not their
+number: the eligible set enters as a $|\mathcal{E}|\times16$ matrix
+whose rows share one encoder, so the count is a row dimension that no
+weight matrix sees. Two elements resolve the difficulty on that
+basis: the \emph{same} network reads every candidate, so any number
+of them can be processed, and the resulting embeddings are
+\emph{pooled} into fixed-size summaries, so the scoring stage
+receives a representation of the whole decision. Let
 $x_i\in\mathbb{R}^{16}$ be the features of eligible operation $i$ and
 $g_0\in\mathbb{R}^{12}$ the global state; the construction has
 three stages (Figure~\ref{fig:arch}).
