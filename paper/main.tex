@@ -1922,123 +1922,80 @@ comparison of the two paradigms with training matched as well, which
 \label{sec:conclusions}
 
 The three questions posed in the introduction now have answers.
+
 Neither learned paradigm dominates the other: the two separate at
 every inference budget and the ordering is set by that budget. Given
 one constructive pass each the evolved rule leads by $0.78$ points of
 relative error, and the reading over the thirty artifacts of each
 family, which no selection touches, agrees at $0.83$; once both
-methods sample the policy leads by $0.86$ at $64$ samples and $0.82$
+methods sample, the policy leads by $0.86$ at $64$ samples and $0.82$
 at $1024$, all four differences significant with the instance as the
 unit. What the network contributes over a compact formula is
-therefore its sampling distribution rather than its argmax. That
+therefore its sampling distribution rather than its argmax, and that
 contribution is not free: the budget those figures equalize is the
-number of schedules constructed, and a policy artifact costs some
-four times an evolved rule to train and about three times as much per
-schedule at inference (Section~\ref{sec:baselines}), so the
-policy's advantage at matched samples is bought with computation the
-matching does not price. The
-per-class columns qualify the aggregate: the policy is ahead near the
-size it trained on and behind on the two largest classes, where a
-short expression has less to lose from a shift in the state
-distribution. On the twelve classical instances, a family neither
-method was tuned for, the policy holds the lower figure on both
-readings at every budget, significantly so once both methods sample
-(Q1).
+number of schedules constructed, while a policy costs some four times
+an evolved rule to train and about three times as much per schedule.
+The aggregate also hides a size effect, the policy leading near the
+class it trained on and trailing on the two largest. On the twelve
+classical instances, a family neither method was tuned for, it holds
+the lower figure at every budget (Q1).
 
-The paradigms also differ in where they handle the uncertainty, and
-the design had conflated two things. As inputs the widths are inert:
-permuting them costs the policy $0.3$ and $0.9$ points, the floor of
-a ranking whose top feature costs $56.5$, and removing them from
-training costs nothing measurable on thirty instances no arm has seen
-($-0.02$ points, $p=0.90$, the effect bounded within a third of a
-point either way), consistent with the closed recursion for the
-worst-case makespan, which contains no lower endpoint, and with the
-absence of upper-endpoint ties in the measured pools. As
-training data the intervals are not inert: fitting the policy to the
-crisp midpoints instead costs $0.43$ points on those same thirty
-instances ($p=0.045$), a cost that appears when the policy samples
-and disappears when it constructs once. An objective that charges for the
-width then locates the difference between the paradigms: swept from
-$\lambda=0$ to $4$, the deployed arms trace a monotone
-width--makespan frontier (the predicted interval narrows from
-$12.80\%$ to $10.99\%$ of the expected makespan, at about $1.9$
-points of RE per point of width), yet with the selection criterion
-held fixed the robust weights and the default ones are
-indistinguishable, and ranking the default policy's own samples by
-$f_\lambda$ retraces the frontier without any retraining. What
-narrows the interval is which sample is kept, not which network
-produced it, where in the GP study the same objective acts through
-the evolved representation. A permutation audit completes the
-picture: the network leans on slack, remaining operations and
-worst-case remaining work, the attributes that hand-crafted and
-evolved rules exploit, with the width features at the floor of its
-ranking (Q2).
+The paradigms differ in where they handle the uncertainty. For the
+policy the interval widths are inert as inputs: they sit at the floor
+of a permutation audit, and removing them from training costs nothing
+measurable on thirty instances no arm has seen ($-0.02$ points, the
+effect bounded within a third of a point either way), as the closed
+recursion for the worst-case makespan, which contains no lower
+endpoint, leads one to expect. As training data they are not inert,
+but only where the policy samples: fitting it to the crisp midpoints
+instead costs $0.43$ points at the deployed budget ($p=0.045$) and
+nothing at one constructive pass. An objective that charges for the
+width then separates the families. It narrows the policy's schedules
+through which sample is kept, the retrained weights being
+indistinguishable from the default ones under a common selection
+criterion and ranking the default policy's own samples by $f_\lambda$
+retracing the frontier without any retraining, where in the GP study
+the same objective acts through the evolved representation. What
+distinguishes the two is the stage at which robustness is bought
+rather than its price, about two points of expected makespan on
+either side. Bought deliberately, it reaches execution: the arm
+trained under that objective attains the lowest deviation between
+predicted and realized makespans of the whole comparison (Q2).
 
-Both learners leave the hand-crafted rules behind. On its training
-class the policy improves on them by a wide margin ($13.9\%$ versus
-$27.9\%$ for G\&T-MWKR and ${\approx}46\%$ for the best plain rule),
-and because the representation is dimensionless and the encoder
-permutation-invariant, one network serves the entire benchmark: at
-its deployed budget it outperforms the strongest dispatching rule on
-every one of the seventy instances, six of the seven size classes
-never having been trained on, and the same weights improve on every
-rule on all twelve classical instances. The per-instance
+Both learners leave the hand-crafted rules behind, and by a margin
+that dwarfs the one between them. At its deployed budget the policy
+improves on the strongest dispatching rule on every one of the
+seventy instances, six of the seven size classes never having been
+trained on, and on all twelve classical ones, at $13.9\%$ mean RE on
+its training class against $27.9\%$ for G\&T-MWKR. The per-instance
 metaheuristics retain the lead in solution quality, on their
 published figures rather than on a rerun under a common protocol
-($9.4\%$ mean RE for fEABC against $13.2\%$ for the policy at its
-largest budget), at the cost of a search on every new instance: both
-learned constructive families occupy the ground between the
+($9.4\%$ for fEABC against $13.2\%$ for the policy at its largest
+budget), at the cost of a search on every new instance. Both learned
+constructive families therefore occupy the same ground, between the
 baselines they dominate and the search algorithms they do not attempt
-to replace (Q3).
+to replace, and the choice between them is the budget question of Q1
+rather than a difference in kind (Q3).
 
-Of the standard techniques evaluated, only best-of-$N$ inference
-improved results at practical budgets: self-attention blocks added to
-the pooled encoder brought no improvement,
-and three automatic-configuration
-campaigns (two over the optimizer, one over the reward
-weights) failed to beat the hand-set values by more than the
-resolution of the confirmation protocol. At execution time the
-policy's schedules are among the most dependable of the constructive
-pool, more faithful than every hand-crafted rule over the seventy
-instances and level with the evolved rule, while the width-charging
-arm attains the lowest deviation of the comparison, carrying the
-selection-time narrowing through to execution.
-
-Three directions follow. The first concerns the representation, and
-the robust arm of Section~\ref{sec:ablations-interval} sharpens rather
-than settles it: paying for the width in the reward narrows the
-schedules the policy \emph{selects} without measurably changing the
-policy itself, so the proposal distribution stays as wide when the
-objective penalizes width as when it does not. Whether the gradient never reaches them, or whether a semiactive constructive decision
-determines the width before the policy has any say in it, separates
-two very different diagnoses and calls for a different experiment than
-any run here: a reward defined on the width alone would tell them
-apart. The second is deployment: a policy that
+Three directions follow. The first concerns the representation, which
+the width-penalizing arm sharpens rather than settles: paying for the
+width narrows the schedules the policy \emph{selects} without
+measurably changing the policy itself. Whether the gradient never
+reaches those features, or whether a semiactive constructive decision
+fixes the width before the policy has any say in it, separates two
+very different diagnoses, and a reward defined on the width alone
+would tell them apart. The second is deployment: a policy that
 schedules an instance in seconds is a candidate generator of initial
 solutions for population-based search, and the quality of its
-sampling distribution, documented here at a fixed budget, is the
-property such a use would exploit. The third turns the budget analysis of
-Section~\ref{sec:ablations-bon} inward. On the rollout deposit
-measured there, the network commits to a
-schedule at $17.0\%$ while its own thousand samples reach
-$12.9\%$: four points separate the decision the network makes from
-the best one it produces, and finding that one costs a thousand
-rollouts. The evolved rule shows the same separation, $17.7\%$ for
-its single pass against $14.1\%$ randomized to a thousand, so the
-gap belongs to randomized constructive search rather than to learning
-as such; what differs is the remedy, since the weights of a network
-can be moved onto its own best rollouts by retraining on them and
-iterating, the self-labeling strategy that \citet{Corsini2024}
-demonstrate on the crisp JSP, where a formula would have to be
-evolved anew. How much of
-the gap is learnable is open, and its shape is measurable: the
-sampled distribution has a standard deviation of $3.2$ points per
-instance, so its best draw of a thousand sits $2.6$ of them below the
-mean while the argmax sits $1.4$; part of that distance is the
-variance of the tail rather than any decision rule. Such retraining would
-also sharpen the distribution that best-of-$N$ exploits, so the
-greedy and the sampled ends have to be measured together.
-
+sampling distribution is the property such a use would exploit. The
+third turns the budget analysis inward. The network commits to a
+schedule at $17.0\%$ while its own thousand samples reach $12.9\%$,
+and the evolved rule shows the same separation, so the gap belongs to
+randomized constructive search rather than to learning as such. What
+differs is the remedy: the weights of a network can be moved onto its
+own best rollouts by retraining on them and iterating, the
+self-labeling strategy that \citet{Corsini2024} demonstrate on the
+crisp JSP, where a formula would have to be evolved anew.
 
 
 
