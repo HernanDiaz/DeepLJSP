@@ -1,0 +1,114 @@
+# -*- coding: utf-8 -*-
+"""Esqueleto del deposito Zenodo del paper DRL.
+
+Copia (nunca mueve) en zenodo_drl/ lo que la declaracion de
+disponibilidad promete: codigo, registros de experimento aceptados y
+rechazados, checkpoints finales y scripts de figuras. El criterio de
+inclusion de registros es el propio verificador: todo fichero de datos
+que paper/verify_numbers.py lee debe estar en el paquete, y con el se
+copia su campana entera (la carpeta), incluidas las cuarentenas.
+
+De outputs/ (2.5 GB) se extrae por tirada solo lo que el paper usa:
+el checkpoint final, los logs de entrenamiento y los schedules JSON de
+la evaluacion embebida (los PNG se regeneran y no viajan).
+
+Idempotente: lo ya copiado con el mismo tamano se salta.
+
+    python scripts/prepara_zenodo_drl.py
+"""
+import glob
+import os
+import re
+import shutil
+import sys
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+DESTINO = "zenodo_drl"
+# campanas del paper de GP que viven en este repo y NO van en este
+# deposito (ya estan publicadas en el suyo)
+EXCLUIR_BENCH = ("reevo_fixedfit", "pilot_robust", "lambda_sweep",
+                 "classic12_arm_bon", "clon_v2")
+EXCLUIR_SCRIPTS_PREFIJO = ("clon_",)
+
+
+def copia(origen, destino):
+    if os.path.isfile(destino) and \
+            os.path.getsize(destino) == os.path.getsize(origen):
+        return 0
+    os.makedirs(os.path.dirname(destino), exist_ok=True)
+    shutil.copy2(origen, destino)
+    return 1
+
+
+def main():
+    os.makedirs(DESTINO, exist_ok=True)
+    copiados, saltados = 0, 0
+
+    # --- registros: las carpetas de benchmarks/ que el verificador lee ---
+    ver = open("paper/verify_numbers.py", encoding="utf-8").read()
+    rutas = set(re.findall(r'"(benchmarks/[^"*]+?\.\w+)"', ver))
+    rutas |= set(re.findall(r'"(tuning/[^"*]+?\.\w+)"', ver))
+    carpetas = set()
+    for r in sorted(rutas):
+        if not os.path.exists(r):
+            continue
+        d = os.path.dirname(r)
+        carpetas.add(d if d not in ("benchmarks", "tuning") else None)
+        n = copia(r, os.path.join(DESTINO, "records", r))
+        copiados += n
+        saltados += 1 - n
+    # la campana entera de cada fichero citado, cuarentenas incluidas
+    for c in sorted(x for x in carpetas if x):
+        if any(e in c for e in EXCLUIR_BENCH):
+            continue
+        for f in glob.glob(os.path.join(c, "*")):
+            if os.path.isfile(f):
+                n = copia(f, os.path.join(DESTINO, "records", f))
+                copiados += n
+                saltados += 1 - n
+    print(f"registros: {copiados} copiados, {saltados} ya estaban")
+
+    # --- extractos de las tiradas de entrenamiento ---
+    c2, s2 = 0, 0
+    for d in sorted(glob.glob("outputs/bench_*")):
+        nombre = os.path.basename(d)
+        for patron in ("best_model.pt", "global_training_log.csv",
+                       "training_summary.csv", "training_stats.txt",
+                       "*_training_log.csv", "test_results.csv",
+                       "plots/test/*_schedule.json"):
+            for f in glob.glob(os.path.join(d, patron)):
+                rel = os.path.relpath(f, d)
+                n = copia(f, os.path.join(DESTINO, "training_runs",
+                                          nombre, rel))
+                c2 += n
+                s2 += 1 - n
+    print(f"tiradas: {c2} ficheros copiados, {s2} ya estaban")
+
+    # --- codigo ---
+    c3 = 0
+    for f in glob.glob("jobshop_rl/**/*.py", recursive=True):
+        if "__pycache__" in f:
+            continue
+        c3 += copia(f, os.path.join(DESTINO, "code", f))
+    for f in glob.glob("scripts/*.py"):
+        base = os.path.basename(f)
+        if any(base.startswith(p) for p in EXCLUIR_SCRIPTS_PREFIJO):
+            continue
+        c3 += copia(f, os.path.join(DESTINO, "code", f))
+    for f in ("paper/make_figures.py", "paper/verify_numbers.py"):
+        c3 += copia(f, os.path.join(DESTINO, "code", f))
+    print(f"codigo: {c3} ficheros")
+
+    # --- requisitos, con las versiones de la tabla de entorno ---
+    req = os.path.join(DESTINO, "code", "requirements.txt")
+    if not os.path.exists(req):
+        with open(req, "w", encoding="utf-8") as f:
+            f.write("torch==2.9.1\nnumpy==2.3.5\nscipy==1.17.0\n"
+                    "matplotlib==3.10.8\n")
+    print("hecho: revisar README.md y completar tras el barrido")
+
+
+if __name__ == "__main__":
+    main()

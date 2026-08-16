@@ -106,3 +106,5 @@ paper_gp/*.toc
 tuning/runner_logs_attn/
 tuning/rdata_backups_attn/
 paper/guide/
+zenodo_drl/
+!zenodo_drl/README.md
