@@ -1422,6 +1422,15 @@ else:
     check_exacto("3: y el texto declara ese reparto de convenciones",
                  "Every element of this section is shared with the genetic"
                  in TEX)
+    # 5.1 afirma ademas que el reparto de instancias es el mismo. Se lee
+    # de su fuente: evolucion en TA11-TA14, desarrollo en TA15-TA20
+    check_exacto("5.1: el estudio GP evoluciona en TA11-TA14",
+                 "evolved on TA11--TA14 ($20{\\times}15$)" in _g)
+    check_exacto("5.1: y toma sus decisiones en TA15-TA20",
+                 "TA15--TA20 form the\ndevelopment set" in _g)
+    check_exacto("5.1: el texto declara ese reparto compartido",
+                 "The genetic programming study splits the benchmark the\n"
+                 "same three ways" in TEX)
     # 7.5 compara nuestro brazo robusto con el barrido de lambda del
     # companero. Son afirmaciones sobre SU paper: se leen de su fuente.
     check_exacto("7.5: el companero usa el mismo f_lambda con lambda=1",

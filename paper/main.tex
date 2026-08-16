@@ -895,7 +895,11 @@ TA15--TA20, form the \emph{validation set}: never used for
 gradients, but every design and configuration decision was judged on
 their performance, so they are reported separately and excluded from
 claims about unseen data. The remaining 60 instances entered neither training nor
-validation. A second benchmark, consisting of interval
+validation. The genetic programming study splits the benchmark the
+same three ways~\citep{DiazGP2026}, evolving its rules on TA11--TA14
+and taking its design decisions on TA15--TA20, so the two families
+learned from the same four instances and were tuned against the same
+six. A second benchmark, consisting of interval
 versions of twelve classical instances (FT10, FT20, La21, La24, La25,
 La27, La29, La38, La40 and ABZ7--9) generated
 with the same symmetric scheme~\citep{DiazGA2020}, is reserved for
