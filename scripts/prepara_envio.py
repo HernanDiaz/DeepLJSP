@@ -24,7 +24,12 @@ DESTINO = "drl-jim"
 
 def copia(origen, destino):
     os.makedirs(os.path.dirname(destino), exist_ok=True)
-    shutil.copy2(origen, destino)
+    try:
+        shutil.copy2(origen, destino)
+    except PermissionError:
+        # tipico: el PDF abierto en un visor. Copiar contenido a mano
+        with open(origen, "rb") as a, open(destino, "wb") as b:
+            b.write(a.read())
 
 
 def main():
@@ -32,14 +37,22 @@ def main():
     copia("paper/main.pdf", os.path.join(DESTINO, "manuscript.pdf"))
     copia("paper/supplementary.pdf",
           os.path.join(DESTINO, "supplementary_material.pdf"))
-    planos = ["refs.bib", "main.bbl", "supplementary.bbl", "sn-jnl.cls",
-              "sn-apacite.bst", "cuted.sty", "stfloats.sty"]
+    planos = ["sn-jnl.cls", "cuted.sty", "stfloats.sty"]
     for f in planos:
         copia(os.path.join("paper", f), os.path.join(DESTINO, f))
-    # los .tex viajan con las rutas de figura aplanadas
-    for f in ("main.tex", "supplementary.tex"):
+    # los .tex viajan con las rutas de figura aplanadas y con la
+    # bibliografia EMBEBIDA: el contenido del .bbl sustituye a la orden
+    # \bibliography, de modo que ni refs.bib ni el .bst ni bibtex hacen
+    # falta en el sistema de la revista. Solo en la copia: el .tex de
+    # trabajo conserva \bibliography{refs} para seguir actualizandose
+    for f, bbl in (("main.tex", "main.bbl"),
+                   ("supplementary.tex", "supplementary.bbl")):
         t = open(os.path.join("paper", f), encoding="utf-8").read()
         t = t.replace("{figures/", "{")
+        cuerpo_bbl = open(os.path.join("paper", bbl),
+                          encoding="utf-8").read()
+        t = t.replace("\\bibliography{refs}", cuerpo_bbl)
+        assert "\\bibliography{refs}" not in t and "thebibliography" in t
         with open(os.path.join(DESTINO, f), "w", encoding="utf-8",
                   newline="") as out:
             out.write(t)
