@@ -1952,7 +1952,11 @@ schedule (Table~\ref{tab:cost}).
 The aggregate also hides a size effect, the policy leading near the
 class it trained on and trailing on the two largest. On the twelve
 classical instances, a family neither method was tuned for, it holds
-the lower figure at every budget (Q1).
+the lower figure at every budget. Margins under a point in either
+direction should finally be weighed against what the error metric
+does not register: the evolved rule carries less technical machinery,
+shorter development, training and inference times, and a decision
+function that remains a readable expression (Q1).
 
 The paradigms differ in where they handle the uncertainty. For the
 policy the interval widths are inert as inputs: they sit at the floor
@@ -1979,20 +1983,13 @@ either side. Bought deliberately, it reaches execution: the arm
 trained under that objective attains the lowest deviation between
 predicted and realized makespans of the whole comparison (Q2).
 
-Both learners leave the hand-crafted rules behind, and by a margin
-that dwarfs the one between them. At its deployed budget the policy
-improves on the strongest dispatching rule on every one of the
-seventy instances, six of the seven size classes never having been
-trained on, and on all twelve classical ones, at $13.9\%$ mean RE on
-its training class against $27.9\%$ for G\&T-MWKR. The per-instance
-metaheuristics retain the lead in solution quality, on their
-published figures rather than on a rerun under a common protocol
-($9.4\%$ for fEABC against $13.2\%$ for the policy at its largest
-budget), at the cost of a search on every new instance. Both learned
-constructive families therefore occupy the same ground, between the
-baselines they dominate and the search algorithms they do not attempt
-to replace, and the choice between them is the budget question of Q1
-rather than a difference in kind (Q3).
+Both learners leave the hand-crafted rules behind by a margin that
+dwarfs the one between them, and neither reaches the per-instance
+metaheuristics, which pay for their lead with a search on every new
+instance: the two learned constructive families occupy the same
+ground, between the baselines they dominate and the search algorithms
+they do not attempt to replace, and the choice between them is the
+budget question of Q1 rather than a difference in kind (Q3).
 
 Three directions follow. The first concerns the representation, which
 the width-penalizing arm sharpens rather than settles: paying for the

@@ -405,9 +405,10 @@ else:
           _vu["v2-full-1000ep"]["bo64"], tol=0.006)
     check("6.1: sd de las treinta (texto 0.60)", 0.60,
           _vu["v2-full-1000ep"]["sd"], tol=0.006)
-    check_exacto("6.3 y conclusiones citan el 13.9 de las treinta",
-                 "$13.9\\%$ in-size" in TEX
-                 and "$13.9\\%$ mean RE on" in TEX)
+    # las conclusiones resumidas (2026-08-16) ya no repiten la cifra;
+    # queda donde se argumenta, en 6.2
+    check_exacto("6.2 cita el 13.9 de las treinta",
+                 "$13.9\\%$ in-size" in TEX)
     # fig:scaling: la banda es el rango mejor-peor de cada presupuesto
     _BANDA = [("v2-full-100ep", 21.1, 39.2), ("v2-full-300ep", 14.5, 19.9),
               ("v2-full-1000ep-diez", 12.8, 14.0)]
