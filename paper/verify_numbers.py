@@ -227,6 +227,15 @@ check_exacto("abstract: politica, luego comparacion, luego mecanismo",
              and _abs_plano.index("a constructive deep reinforcement")
              < _abs_plano.index("thirty trained artifacts")
              < _abs_plano.index("sample selection"))
+# la guia de la revista (paper/guide): abstract de 150-250 palabras y
+# de 4 a 6 keywords. El abstract se cuenta plano, sin ordenes LaTeX
+_abs_palabras = len(re.sub(r"[\\${}]", " ", _abs_tex).split())
+check_exacto("guia: abstract de 150 a 250 palabras",
+             150 <= _abs_palabras <= 250, f"{_abs_palabras} palabras")
+_kw = TEX[TEX.index("\\keywords{") + 10:TEX.index("}", TEX.index(
+    "\\keywords{"))]
+check_exacto("guia: de 4 a 6 keywords",
+             4 <= _kw.count(",") + 1 <= 6, f"{_kw.count(',') + 1} keywords")
 # el titulo anuncia la comparacion desde el reencuadre del 2026-08-15,
 # acotada a las hiperheuristicas GP (no es una comparacion general).
 # Se normalizan los saltos de linea del .tex antes de buscar
