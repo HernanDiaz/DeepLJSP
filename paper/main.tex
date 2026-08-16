@@ -1958,9 +1958,12 @@ The paradigms differ in where they handle the uncertainty. For the
 policy the interval widths are inert as inputs: they sit at the floor
 of a permutation audit, and removing them from training costs nothing
 measurable on thirty instances no arm has seen ($-0.02$ points, the
-effect bounded within a third of a point either way), as the closed
-recursion for the worst-case makespan, which contains no lower
-endpoint, leads one to expect. As training data they are not inert,
+effect bounded within a third of a point either way), as the
+mechanism of Section~\ref{sec:ablations-interval} leads one to
+expect: the reward trains on the worst-case makespan, whose recursion
+contains no lower endpoint, and the ranking criterion consults the
+lower endpoints only on exact ties of the upper, none of which
+decided a selection in the measured pools. As training data they are not inert,
 but only where the policy samples: fitting it to the crisp midpoints
 instead costs $0.43$ points at the deployed budget ($p=0.045$) and
 nothing at one constructive pass. An objective that charges for the
