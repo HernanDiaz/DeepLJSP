@@ -1390,6 +1390,27 @@ else:
     check_exacto("5.5: la pasada de la regla cuesta 0.34 s (su fuente)",
                  "constructive pass takes $0.34$~s with the evolved rule"
                  in _g and "$0.34$~s" in TEX)
+    # 3 afirma que las cuatro convenciones del planteamiento son las
+    # mismas en los dos estudios. Es una afirmacion sobre SU paper, asi
+    # que cada una se contrasta contra su fuente: si el companero cambia
+    # el arithmetic, el decodificador, el ranking o la metrica, salta
+    check_exacto("3: la aritmetica de intervalos es componentwise en ambos",
+                 "both component-wise, the standard operations of interval"
+                 in _g)
+    check_exacto("3: el decodificador semiactivo es el mismo",
+                 "\\emph{semi-active}\nschedule" in _g
+                 and "\\mathbf{c}_o(\\pi) = \\mathbf{s}_o(\\pi) + "
+                     "\\mathbf{p}_o" in _g)
+    check_exacto("3: el ranking lexicografico es el mismo",
+                 "comparing upper bounds first and using the lower\n"
+                 "bound only to break ties" in _g)
+    check_exacto("3: la metrica RE y sus cotas son las mismas",
+                 "Taillard's bounds~\\cite{Taillard1993} for the" in _g
+                 and "the best known ones~\\cite{DiazFEABC2023} for\n"
+                     "the classical set" in _g)
+    check_exacto("3: y el texto declara ese reparto de convenciones",
+                 "Every element of this section is shared with the genetic"
+                 in TEX)
     # 7.5 compara nuestro brazo robusto con el barrido de lambda del
     # companero. Son afirmaciones sobre SU paper: se leen de su fuente.
     check_exacto("7.5: el companero usa el mismo f_lambda con lambda=1",
