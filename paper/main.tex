@@ -1643,14 +1643,17 @@ must be the true ones, which Eq.~\eqref{eq:upperclosed} does not
 settle, since midpoint training changes the upper endpoints
 themselves; and whether the policy would come to consult the widths
 under an objective that pays for them. Each ablation is paired against the main arm on the training seeds it
-shares. The first two retrain ten seeds each and are read on three
-sets under the standalone evaluator: the six validation instances at
-the deployed budget of $64$ samples, whose baseline is the $13.57\%$
-of those ten seeds; thirty instances of the test benchmark, five per
-size class, that no arm has seen, at that same budget; and the sixty
-unseen instances at one constructive pass. The third is confined to
-the three seeds of its rollout deposits, whose baseline is the
-$13.44\%$ mean of those three.
+shares, under the standalone evaluator. The first two retrain ten
+seeds each, and every figure below compares those ten with the same
+ten of the main arm on one of three sets: the six validation
+instances, thirty of the sixty unseen instances, or all sixty, the
+first two at the deployed budget of $64$ samples and the last at one
+constructive pass. The thirty are the first five of each unseen size
+class by benchmark index, a cut fixed before any result was seen that
+keeps the class balance at half the sampling cost. The third ablation
+predates the extension to ten seeds and keeps the three of its
+rollout deposits, whose baseline is the $13.44\%$ mean of those
+three.
 
 \paragraph{Widths as inputs.} The first ablation removes the
 information: the encoder collapses every interval to its worst case

@@ -2289,6 +2289,17 @@ if len(_abl) == 3:
     check_exacto("7.3: la confirmacion son treinta instancias",
                  _t30[_NW]["n_instancias"] == 30
                  and _t30[_MP]["n_instancias"] == 30)
+    # y son exactamente las cinco primeras por indice de cada clase no
+    # vista, el corte prefijado que declara el texto
+    _c64i = sorted({r["instance"] for r in __import__("csv").DictReader(
+        open("benchmarks/ext30/c64_v2-full-1000ep_1.csv",
+             encoding="utf-8"))})
+    _esp30 = sorted(f"int__{c}_{k:02d}"
+                    for c in ("tai15_15", "tai20_20", "tai30_15",
+                              "tai30_20", "tai50_15", "tai50_20")
+                    for k in range(1, 6))
+    check_exacto("7.3: las treinta son las cinco primeras por clase",
+                 _c64i == _esp30, f"{len(_c64i)} instancias")
 
     # --- anchuras como entrada: nulo en los tres conjuntos ---
     check("7.3 no-width: validacion, brazo (texto 13.98)", 13.98,
