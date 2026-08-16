@@ -466,14 +466,6 @@ counterpart~\citep{Taillard1993}, an indicative,
 hardware-independent yardstick rather than a strict optimality gap, since the crisp JSP and
 the IJSP are different problems.
 
-\begin{remark}
-For instances whose intervals are symmetric perturbations of a crisp
-instance, the midpoint scenario coincides with the original crisp
-durations; comparisons under Eq.~\eqref{eq:re} are therefore
-scenario-consistent (midpoint solution quality against the
-midpoint-scenario bound).
-\end{remark}
-
 Every element of this section is shared with the genetic programming
 study this paper compares against~\citep{DiazGP2026}.
 
@@ -1670,9 +1662,8 @@ a point in either direction.
 \paragraph{Intervals as training data.} The second ablation removes
 the uncertainty from training altogether. The benchmark perturbs each
 crisp duration symmetrically, so the original crisp instances
-\emph{are} the midpoint scenario of their interval counterparts
-(the coincidence noted after Eq.~\eqref{eq:re}): the policy is
-trained on them and evaluated, unchanged, on the interval
+\emph{are} the midpoint scenario of their interval counterparts: the
+policy is trained on them and evaluated, unchanged, on the interval
 instances. This is the case Eq.~\eqref{eq:upperclosed} leaves
 open, since midpoint training replaces the upper endpoints
 themselves, and both arms extend to ten seeds. Here the sets do not
