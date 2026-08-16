@@ -110,3 +110,5 @@ zenodo_drl/
 !zenodo_drl/README.md
 github_drl/
 !github_drl/README.md
+envio_revista/
+!envio_revista/CHECKLIST.md
