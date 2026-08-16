@@ -27,6 +27,8 @@ Abdullah, S.%
 \newblock
 \APACjournalVolNumPages{Information Sciences}{278}{}{380--407,}
 \newblock
+\begin{APACrefDOI} \doi{10.1016/j.ins.2014.03.060} \end{APACrefDOI}
+\newblock
 
 \newblock
 
@@ -597,7 +599,7 @@ Karunakaran%
 }{%
 Karunakaran%
 \ \protect \BOthers {.}}{%
-{\protect \APACyear {2016}}%
+{\protect \APACyear {2017}}%
 }]{%
 Karunakaran2016}
 \APACinsertmetastar {%
@@ -610,7 +612,7 @@ Karunakaran, D.%
 \end{APACrefauthors}%
 \unskip\
 \newblock
-\APACrefYearMonthDay{2016}{}{}.
+\APACrefYearMonthDay{2017}{}{}.
 \newblock
 {\BBOQ}\APACrefatitle {Dynamic job shop scheduling under uncertainty using
   genetic programming} {Dynamic job shop scheduling under uncertainty using
@@ -969,6 +971,8 @@ Nguyen, S.%
 \newblock
 \APACjournalVolNumPages{IEEE Transactions on Evolutionary
   Computation}{17}{5}{621--639,}
+\newblock
+\begin{APACrefDOI} \doi{10.1109/TEVC.2012.2227326} \end{APACrefDOI}
 \newblock
 
 \newblock
