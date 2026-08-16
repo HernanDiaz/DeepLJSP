@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
-"""Prepara envio_revista/: lo que se sube al sistema de la revista.
+﻿# -*- coding: utf-8 -*-
+"""Prepara drl-jim/: lo que se sube al sistema de la revista.
 
 Journal of Intelligent Manufacturing (Springer). Copia el PDF del
 manuscrito, el material suplementario y las fuentes LaTeX completas
@@ -16,7 +16,7 @@ import sys
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-DESTINO = "envio_revista"
+DESTINO = "drl-jim"
 
 
 def copia(origen, destino):
@@ -38,7 +38,7 @@ def main():
     for f in glob.glob("paper/figures/*.pdf"):
         copia(f, os.path.join(DESTINO, "fuente", "figures",
                               os.path.basename(f)))
-    print(f"envio_revista/ actualizado "
+    print(f"drl-jim/ actualizado "
           f"({len(fuentes) + 2} ficheros + figuras)")
 
 

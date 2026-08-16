@@ -1,4 +1,4 @@
-############################
+﻿############################
 # IDEs
 ############################
 
@@ -42,7 +42,7 @@ htmlcov/
 # Experimentos / resultados
 ############################
 
-# Logs, checkpoints, métricas, plots, resultados
+# Logs, checkpoints, mÃ©tricas, plots, resultados
 outputs/
 logs/
 runs/
@@ -110,5 +110,5 @@ zenodo_drl/
 !zenodo_drl/README.md
 github_drl/
 !github_drl/README.md
-envio_revista/
-!envio_revista/CHECKLIST.md
+drl-jim/
+!drl-jim/CHECKLIST.md
