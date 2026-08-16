@@ -872,7 +872,7 @@ adopted in this literature to let one candidate condition on another,
 which pooling cannot express. A variant with two pre-LN transformer
 blocks between the embedding and pooling stages was evaluated as a
 controlled ablation and yielded no improvement at either training
-budget, degrading the operating one by about a point while carrying
+budget, degrading the operating one by $1.4$ points while carrying
 3.2 times the parameters and 2.2 times the episode cost; its
 architecture and the full comparison are given in the supplementary material.
 
@@ -1601,12 +1601,6 @@ evaluation of a compact expression. The sample-matched protocol of
 Section~\ref{sec:positioning} charges for neither difference, which
 is the premium behind the sample-efficiency reading fixed in
 Section~\ref{sec:baselines}.
-
-A second standard component was evaluated the same way. Two
-self-attention blocks inserted before the pooling brought no
-improvement at either training budget and degraded the operating one
-by $1.4$ points, with $3.2$ times the parameters; the architecture
-and the full comparison are given in the supplementary material.
 
 \subsection{Where each paradigm handles the uncertainty}
 \label{sec:ablations-interval}
