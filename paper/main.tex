@@ -1908,16 +1908,15 @@ policy builds semiactive schedules, so the space it searches excludes
 the active schedules that the conflict-set restriction reaches and
 the insertion-based ones beyond them; the strongest constructive
 baseline of this paper exploits the first of those and the policy
-still leads it, but the ceiling is real. Third, every arm that carries a conclusion was extended to ten seeds,
-and the two interval ablations were further confirmed on instances no
-arm had seen, precisely because three seeds can mislead: read on
-three, the no-width arm looks $0.99$ points \emph{better} than the
-default arm, where ten turn that into a $0.42$-point deficit. What
-remains at three seeds is the $\lambda$-sweep and rollout-deposit
-machinery of Section~\ref{sec:ablations-interval}, whose role is to
-locate where the width--makespan trade is produced; its differences
-are paired effects on six instances rather than claims about the
-population of seeds. Fourth, the four training instances are
+still leads it, but the ceiling is real. Third, the width-penalizing arm, its $\lambda$-sweep and the
+rollout-deposit controls of Section~\ref{sec:ablations-interval} rest
+on three training seeds and six instances, so the findings drawn from
+them, the monotone frontier and the indistinguishability of the
+retrained weights under a fixed selection criterion, are paired
+effects at that scale rather than claims about the population of
+seeds. The risk is not hypothetical: among the arms that were
+extended to ten seeds, the no-width arm looks $0.99$ points
+\emph{better} than the default on three and $0.42$ worse on ten. Fourth, the four training instances are
 always presented in the same order, so the variability the seeds
 measure is that of a fixed curriculum; whether a different order
 would move the arm was not tested. Finally, the comparison with the rule evolved by
