@@ -1,4 +1,4 @@
-# DeepLJSP: Deep Reinforcement Learning for the Interval Job Shop
+# Deep Reinforcement Learning for the Interval Job Shop
 
 Training and evaluation code for the article *Deep Reinforcement
 Learning for the Interval Job Shop Scheduling Problem: A Comparison

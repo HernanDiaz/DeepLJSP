@@ -58,6 +58,10 @@ deposit (or adjust the base paths at the top of the script).
   this skeleton is written; its runs, deposits and reanalysis JSONs
   will be added before the deposit is published).
 
+## Code repository
+
+The code is also maintained at https://github.com/HernanDiaz/ijsp-drl.
+
 ## License and citation
 
 Code under MIT; data under CC BY 4.0 (LICENSE files at the root).
