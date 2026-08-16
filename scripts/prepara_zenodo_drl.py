@@ -106,6 +106,17 @@ def main():
         c3 += copia(f, os.path.join(DESTINO, "code", f))
     print(f"codigo: {c3} ficheros")
 
+    # --- el material suplementario del articulo, en PDF ---
+    try:
+        import shutil as _sh
+        destino_pdf = os.path.join(DESTINO, "supplementary_material.pdf")
+        _sh.copy2("paper/supplementary.pdf", destino_pdf)
+    except PermissionError:
+        with open("paper/supplementary.pdf", "rb") as a, \
+                open(destino_pdf, "wb") as b:
+            b.write(a.read())
+    print("suplementario: copiado")
+
     # --- requisitos, con las versiones de la tabla de entorno ---
     req = os.path.join(DESTINO, "code", "requirements.txt")
     if not os.path.exists(req):
