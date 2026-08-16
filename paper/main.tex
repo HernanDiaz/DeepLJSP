@@ -67,8 +67,9 @@ and is solved in the literature by per-instance metaheuristic
 search. This paper
 presents a constructive deep reinforcement learning policy
 for the problem. Its state features are dimensionless and its
-encoder is permutation-invariant, so a single trained network
-applies to instances of any size and returns a schedule in seconds.
+encoder is permutation-invariant, so one trained network applies to
+instances of any size, with no retraining and no change of
+architecture.
 Trained on instances of a single size class, the policy improves on
 every hand-crafted dispatching rule on all seventy benchmark
 instances, six of the seven size classes unseen. It is then compared
