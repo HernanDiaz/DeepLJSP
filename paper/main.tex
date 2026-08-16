@@ -1897,7 +1897,7 @@ Five limitations bound the scope of these conclusions. First, the
 benchmark follows the symmetric $\pm15\%$ generation scheme standard
 in the IJSP literature; asymmetric intervals, and distributions in
 which the uncertainty varies sharply from one operation to another,
-would separate the worst-case and expected-value criteria far more
+may separate the worst-case and expected-value criteria far more
 than they do here, and no policy was trained under them. The second
 benchmark changes the family of scheduling instances but not this
 scheme, so no result here speaks to a different uncertainty regime,
@@ -1908,18 +1908,16 @@ policy builds semiactive schedules, so the space it searches excludes
 the active schedules that the conflict-set restriction reaches and
 the insertion-based ones beyond them; the strongest constructive
 baseline of this paper exploits the first of those and the policy
-still leads it, but the ceiling is real. Third, the
-$\lambda$-sweep arms and the rollout-deposit controls of
-Section~\ref{sec:ablations-interval} are run over three training
-seeds, so their instance means rest on three runs each and the
-differences are paired effects on six instances rather than claims
-about the population of seeds. The three arms extended to ten
-seeds calibrate what a three-seed comparison can miss, and the answer
-is a great deal: read on three seeds the no-width arm looks $0.99$
-points \emph{better} than the default, where ten turn that into a
-$0.42$-point deficit; over the same step the midpoint gap widens from
-$0.18$ to $0.57$ points and the attention deficit (supplementary
-material) from $0.75$ to $1.36$. Fourth, the four training instances are
+still leads it, but the ceiling is real. Third, every arm that carries a conclusion was extended to ten seeds,
+and the two interval ablations were further confirmed on instances no
+arm had seen, precisely because three seeds can mislead: read on
+three, the no-width arm looks $0.99$ points \emph{better} than the
+default arm, where ten turn that into a $0.42$-point deficit. What
+remains at three seeds is the $\lambda$-sweep and rollout-deposit
+machinery of Section~\ref{sec:ablations-interval}, whose role is to
+locate where the width--makespan trade is produced; its differences
+are paired effects on six instances rather than claims about the
+population of seeds. Fourth, the four training instances are
 always presented in the same order, so the variability the seeds
 measure is that of a fixed curriculum; whether a different order
 would move the arm was not tested. Finally, the comparison with the rule evolved by
