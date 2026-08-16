@@ -923,11 +923,11 @@ Table~\ref{tab:environment} lists the machine and the software
 stack. One aspect bears on the costs reported later: every number in
 this paper (training, evaluation, the dispatching-rule baselines and
 the ablations) was produced on the CPU, with the single exception of
-the tuning campaign of Section~\ref{sec:hyperconfig}. The network is
-small enough (Section~\ref{sec:arch}) that a forward pass is
-negligible next to the environment step that follows it, so the GPU
-yields no speedup for a single rollout; it was used only for the vectorized
-batched rollouts of the operating-fidelity tuning campaign
+the tuning campaign of Section~\ref{sec:hyperconfig}. At the width of
+Section~\ref{sec:arch}, a forward pass is negligible next to the
+environment step that follows it, so the GPU yields no speedup for a
+single rollout; it was used only for the vectorized batched rollouts
+of the operating-fidelity tuning campaign
 (Section~\ref{sec:hyperconfig}), where many episodes advance in
 lockstep and the batched forward pass amortizes. The method therefore
 carries no dependence on specialized hardware.
