@@ -71,6 +71,6 @@ The code is also maintained at https://github.com/HernanDiaz/ijsp-drl.
 Code under MIT; data under CC BY 4.0 (LICENSE files at the root).
 Please cite the article and this deposit.
 
-Version note: v1 of this deposit precedes the ten-seed extension of
-the lambda sweep; its runs, deposits and reanalysis files are added
-in v2. The concept DOI always resolves to the latest version.
+Version note: v1 preceded the ten-seed extension of the lambda sweep
+and the ten-run budget-curve deposit; both are included from v2 on.
+The concept DOI always resolves to the latest version.

@@ -1516,7 +1516,8 @@ was not repeated on those arms.
   \includegraphics[width=.62\linewidth]{figures/fig_budget.pdf}
   \caption{RE against the \emph{inference} budget $B$ on a base-2
   logarithmic axis, as the mean over the 70 instances of the best of
-  $B$ samples. The band is the 10--90 percentile over resamplings.}
+  $B$ samples a run spends, averaged over the ten training runs. The
+  band spans the best and worst run.}
   \label{fig:budget}
 \end{figure}
 
@@ -1524,49 +1525,47 @@ Section~\ref{sec:positioning} samples the budget axis at three
 points, so it locates the reversal between the two learners no more
 precisely than between one pass and $64$. This section reconstructs
 the whole curve and finds the crossing near its left end: the policy
-overtakes the evolved rule at $B{=}6$ and its own greedy pass at
-$B{=}12$, so sampling becomes profitable at budgets far below the
+overtakes its own greedy pass at $B{=}3$ and the evolved rule at
+$B{=}8$, so sampling becomes profitable at budgets far below the
 $64$ used throughout, and the rule's advantage at one pass occupies a
 narrow initial segment of the budget axis. The reconstruction retains
-all $342$ rollouts of each of the first three training runs on each
-of the 70 instances ($71{,}820$ schedules), so that best-of-$B$ can
-be read off for arbitrary $B$ without further evaluation; the deposit
-predates the thirty-run campaign, so its absolute level corresponds
-to those three runs with the budget partitioned among them, slightly
-below their aggregated greedy reference, and it is the \emph{shape}
-that this section uses. Figure~\ref{fig:budget} plots the curve; its
-band is a dispersion over repetitions, not a confidence interval on
-the mean, and EST, at $42.3\%$, lies above the frame. A single
-\emph{sampled} rollout is substantially worse than the greedy one,
-$21.4\%$ against $17.0\%$: the argmax is a high-quality sequence
-within a broadly dispersed distribution. Past the crossing, the
-returns are near-logarithmic over three orders of magnitude,
-$14.9\%$ at $64$ and $12.9\%$ at $1023$ ($341$ per checkpoint, the
-reconstruction's closest point to the nominal $1024$), without an
-inflection: no budget within the tested range saturates.
+all $342$ rollouts of each of the ten training runs on each of the 70
+instances ($239{,}400$ schedules), so that best-of-$B$ can be read
+off for arbitrary $B$ without further evaluation. Each run spends its
+own budget, as a deployed policy does, and the curve is the mean over
+the ten; Figure~\ref{fig:budget} plots it with a band spanning the
+best and worst run, the dispersion a practitioner training once would
+face. EST, at $42.3\%$, lies above the frame. A single \emph{sampled}
+rollout is worse than the greedy one, $21.3\%$ against $19.5\%$: the
+argmax is a high-quality sequence within a broadly dispersed
+distribution. Past the crossing the returns are near-logarithmic,
+$15.2\%$ at $64$ and $14.0\%$ at $341$, without an inflection: no
+budget within the tested range saturates. The level agrees with the
+independent measurements of Table~\ref{tab:seventy}, where the
+selected run reaches $15.0\%$ at the same budget, slightly ahead of
+this ten-run mean as the best of thirty should be.
 
 The same reconstruction quantifies the marginal return of further
-sampling and its computational cost. The marginal
-return decays slowly but does not vanish, from $1.03$ points between
-$4$ and $8$ samples to $0.42$ between $512$ and $1023$, a log-linear
-rate of $0.46$ points per doubling over the last three octaves;
-wall-clock cost, by contrast, scales linearly in $B$. On the machine
-of Table~\ref{tab:environment} a sampled rollout requires $1.03$ s on
-a $20{\times}15$ instance and $6.4$ s on a $50{\times}20$ one, timed
-end to end over the episode, so that the figure covers the forward
-passes, the environment transitions and the interval arithmetic of
-the schedule builder, and excludes only the one-off loading of the
-model. Accordingly
-$B{=}1023$ amounts to $18$ minutes and $1.8$ hours per instance, and
-the four additional doublings needed to reach $11\%$ at the measured
-rate would amount to $4.7$ and $29$ hours. Sampling is therefore an
-inefficient route to the residual gap against fEABC's $9.4\%$, which
-its own study reports attaining in minutes per instance on the
-hardware of that study. One qualification
-bounds this extrapolation: budgets above $1023$ lie outside the
-measured range, and within it the marginal return is itself
-contracting, with each octave yielding approximately a tenth less
-than its predecessor, so a constant rate is the optimistic reading.
+sampling and its computational cost. The marginal return decays
+slowly but does not vanish, from $0.60$ points between $32$ and $64$
+samples to $0.48$ between $128$ and $256$, a rate of about half a
+point per doubling that is itself contracting by roughly a tenth per
+octave; wall-clock cost, by contrast, scales linearly in $B$. On the
+machine of Table~\ref{tab:environment} a sampled rollout requires
+$1.03$ s on a $20{\times}15$ instance and $6.4$ s on a
+$50{\times}20$ one, timed end to end over the episode, so that the
+figure covers the forward passes, the environment transitions and the
+interval arithmetic of the schedule builder, and excludes only the
+one-off loading of the model. Accordingly the $1024$ samples of the
+largest budget reported amount to $18$ minutes and $1.8$ hours per
+instance, and closing the residual gap to fEABC's $9.4\%$ would take
+some ten further doublings at the measured rate, which the same
+arithmetic prices in months. Sampling is therefore an inefficient
+route to that gap, which fEABC's own study reports attaining in
+minutes per instance on the hardware of that study. The extrapolation
+is the optimistic reading twice over: budgets above the measured
+range are outside it, and within it the return per doubling is
+already shrinking.
 
 \begin{table}[!htb]
 \centering\small
@@ -1913,15 +1912,11 @@ policy builds semiactive schedules, so the space it searches excludes
 the active schedules that the conflict-set restriction reaches and
 the insertion-based ones beyond them; the strongest constructive
 baseline of this paper exploits the first of those and the policy
-still leads it, but the ceiling is real. Third, two analyses keep a narrower base than the rest. The budget
-curve of Section~\ref{sec:ablations-bon} is reconstructed from the
-retained rollouts of the first three training runs, so the crossing
-points it locates carry that provenance and only the shape of the
-curve is used. And the frontier of
-Section~\ref{sec:ablations-interval}, though it runs on ten seeds
-per arm, is measured on the six validation instances, so where the
-width--makespan trade is produced is established on the class the
-policy was tuned on rather than on unseen instances. Fourth, the four training instances are
+still leads it, but the ceiling is real. Third, the frontier of Section~\ref{sec:ablations-interval}, though
+it runs on ten seeds per arm, is measured on the six validation
+instances, so where the width--makespan trade is produced is
+established on the class the policy was tuned on rather than on
+unseen instances. Fourth, the four training instances are
 always presented in the same order, so the variability the seeds
 measure is that of a fixed curriculum; whether a different order
 would move the arm was not tested. Finally, the comparison with the rule evolved by
@@ -2013,9 +2008,10 @@ schedules an instance in seconds is a candidate generator of initial
 solutions for population-based search, and the quality of its
 sampling distribution is the property such a use would exploit. The
 third turns the budget analysis inward. The network commits to a
-schedule at $17.0\%$ while its own thousand samples reach $12.9\%$,
-and the evolved rule shows the same separation, so the gap belongs to
-randomized constructive search rather than to learning as such. What
+schedule at $19.5\%$ while a few hundred of its own samples reach
+$14.0\%$, and the evolved rule shows the same separation, so the gap
+belongs to randomized constructive search rather than to learning as
+such. What
 differs is the remedy: the weights of a network can be moved onto its
 own best rollouts by retraining on them and iterating, the
 self-labeling strategy that \citet{Corsini2024} demonstrate on the

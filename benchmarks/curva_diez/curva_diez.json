@@ -1,0 +1,129 @@
+{
+  "tiradas": [
+    "seed10",
+    "seed11",
+    "seed5",
+    "seed6",
+    "seed7",
+    "seed8",
+    "seed9",
+    "v2_final_deepsets_1000ep_seed2.pt",
+    "v2_final_deepsets_1000ep_seed3.pt",
+    "v2_final_deepsets_1000ep_seed4.pt"
+  ],
+  "presupuestos": [
+    1,
+    2,
+    3,
+    4,
+    6,
+    8,
+    12,
+    16,
+    32,
+    64,
+    128,
+    256,
+    341
+  ],
+  "greedy_por_tirada": {
+    "seed10": 20.4343,
+    "seed11": 18.3107,
+    "seed5": 18.4938,
+    "seed6": 20.8569,
+    "seed7": 18.6832,
+    "seed8": 20.1644,
+    "seed9": 19.5466,
+    "v2_final_deepsets_1000ep_seed2.pt": 18.5147,
+    "v2_final_deepsets_1000ep_seed3.pt": 19.8374,
+    "v2_final_deepsets_1000ep_seed4.pt": 19.8809
+  },
+  "greedy_media": 19.4723,
+  "por_presupuesto": {
+    "1": {
+      "media": 21.271,
+      "sd": 0.8635,
+      "mejor": 20.1735,
+      "peor": 22.3846
+    },
+    "2": {
+      "media": 19.6273,
+      "sd": 0.7945,
+      "mejor": 18.5894,
+      "peor": 20.697
+    },
+    "3": {
+      "media": 18.8554,
+      "sd": 0.7603,
+      "mejor": 17.8588,
+      "peor": 19.9069
+    },
+    "4": {
+      "media": 18.3772,
+      "sd": 0.7523,
+      "mejor": 17.4023,
+      "peor": 19.4097
+    },
+    "6": {
+      "media": 17.7665,
+      "sd": 0.7215,
+      "mejor": 16.8207,
+      "peor": 18.7659
+    },
+    "8": {
+      "media": 17.3715,
+      "sd": 0.7088,
+      "mejor": 16.4661,
+      "peor": 18.3582
+    },
+    "12": {
+      "media": 16.8757,
+      "sd": 0.6883,
+      "mejor": 15.9921,
+      "peor": 17.8437
+    },
+    "16": {
+      "media": 16.5439,
+      "sd": 0.6751,
+      "mejor": 15.6769,
+      "peor": 17.519
+    },
+    "32": {
+      "media": 15.844,
+      "sd": 0.6666,
+      "mejor": 14.9836,
+      "peor": 16.8613
+    },
+    "64": {
+      "media": 15.2401,
+      "sd": 0.6677,
+      "mejor": 14.3767,
+      "peor": 16.3088
+    },
+    "128": {
+      "media": 14.7011,
+      "sd": 0.6691,
+      "mejor": 13.8335,
+      "peor": 15.7849
+    },
+    "256": {
+      "media": 14.2257,
+      "sd": 0.6741,
+      "mejor": 13.3613,
+      "peor": 15.3201
+    },
+    "341": {
+      "media": 14.0426,
+      "sd": 0.6774,
+      "mejor": 13.165,
+      "peor": 15.1232
+    }
+  },
+  "cruce_gp": 8,
+  "cruce_greedy": 3,
+  "ganancia_por_duplicacion": {
+    "32->64": 0.6039,
+    "64->128": 0.539,
+    "128->256": 0.4754
+  }
+}

@@ -5,14 +5,16 @@ El paper solo tenia dos puntos de la politica (greedy y 1024 muestras) y
 el lector no podia saber si el 1024 era necesario o si con 16 ya se
 alcanzaba a la regla GP. Aqui se reconstruye el mejor-de-N para cualquier
 N a partir de los rollouts individuales guardados por
-eval_budget_curve.py, sin volver a evaluar nada.
+eval_budget_curve.py (tres tiradas) y eval_curva_diez.py (siete mas),
+sin volver a evaluar nada.
 
-El reparto del presupuesto imita el protocolo desplegado: B rollouts se
-reparten lo mas uniformemente posible entre los tres checkpoints, y el
-mejor global se toma al agregar. Como el reparto concreto y las muestras
-elegidas son aleatorios, cada B se estima con R remuestreos SIN
-reemplazo del deposito de 341 muestras por checkpoint; se dibuja la
-media y la banda del 10 al 90 por ciento.
+Desde 2026-08-18 el reparto imita el protocolo DESPLEGADO de verdad:
+una politica gasta sus B muestras. Cada tirada da su curva, extraida
+sin reemplazo de su pool de 341, y la figura dibuja la media de las
+diez con la banda entre la mejor y la peor: la dispersion que
+afrontaria quien entrena una sola vez. El reparto anterior entre tres
+checkpoints era un artefacto del barrido bo1024 original y prestaba a
+la curva la diversidad de un comite que el despliegue no tiene.
 
     python scripts/make_budget_curve_figure.py
 
@@ -21,6 +23,7 @@ cruces con las referencias, que son lo que cita el texto.
 """
 import collections
 import csv
+import glob
 import sys
 
 import matplotlib
@@ -37,59 +40,56 @@ plt.rcParams.update({
     "axes.grid": True, "grid.alpha": 0.3, "grid.linewidth": 0.5,
 })
 
-CURVA = "benchmarks/eval_budget_curve.csv"
+CURVAS = (["benchmarks/eval_budget_curve.csv"]
+          + sorted(glob.glob("benchmarks/curva_diez/curva_*.csv")))
 GP_DESTACADA = "benchmarks/reevo_fixedfit/summary.csv"
 EST = "benchmarks/est_per_instance.csv"
 SALIDA = "paper/figures/fig_budget.pdf"
-N_POR_CKPT = 341          # muestras por checkpoint sin contar el greedy
-R = 300                   # remuestreos por presupuesto
+N_POOL = 341              # muestras por tirada sin contar el greedy
+R = 200                   # remuestreos por presupuesto y tirada
 PRESUPUESTOS = [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192,
-                256, 384, 512, 768, 1023]
+                256, 341]
 
 
 def lee_depositos():
-    """{instancia: {'lb':, 'greedy': [3], 'pools': [3 x 341]}}."""
+    """{tirada: {instancia: {'lb':, 'greedy':, 'pool': [341]}}}."""
     filas = collections.defaultdict(lambda: collections.defaultdict(list))
     lbs, greedy = {}, collections.defaultdict(dict)
-    with open(CURVA, encoding="utf-8") as f:
-        for r in csv.DictReader(f):
+    for ruta in CURVAS:
+        for r in csv.DictReader(open(ruta, encoding="utf-8")):
             inst, ck = r["instance"], r["checkpoint"]
             lbs[inst] = float(r["lb"])
             if int(r["sample_idx"]) == 0:
-                greedy[inst][ck] = float(r["mid_comp"])
+                greedy[ck][inst] = float(r["mid_comp"])
             else:
-                filas[inst][ck].append(float(r["mid_comp"]))
+                filas[ck][inst].append(float(r["mid_comp"]))
     out = {}
-    for inst, porck in filas.items():
-        cks = sorted(porck)
-        if len(cks) != 3 or any(len(porck[c]) < N_POR_CKPT for c in cks):
-            continue          # par a medias: el barrido sigue corriendo
-        out[inst] = {
-            "lb": lbs[inst],
-            "greedy": [greedy[inst][c] for c in cks],
-            "pools": np.array([porck[c][:N_POR_CKPT] for c in cks]),
-        }
+    for ck, porinst in filas.items():
+        completo = {i: v for i, v in porinst.items() if len(v) >= N_POOL}
+        if len(completo) != 70:
+            print(f"  AVISO: {ck} con {len(completo)}/70 instancias, fuera")
+            continue
+        out[ck] = {i: {"lb": lbs[i], "greedy": greedy[ck][i],
+                       "pool": np.array(v[:N_POOL])}
+                   for i, v in completo.items()}
     return out
 
 
-def curva(dep, rng):
-    """RE media sobre las instancias para cada presupuesto: (R, |B|)."""
-    re = np.zeros((R, len(PRESUPUESTOS)))
-    for datos in dep.values():
-        pools, lb = datos["pools"], datos["lb"]
+def curva_de(tirada, rng):
+    """RE media sobre las 70 instancias para cada presupuesto."""
+    re = np.zeros(len(PRESUPUESTOS))
+    for datos in tirada.values():
+        pool, lb = datos["pool"], datos["lb"]
         for j, b in enumerate(PRESUPUESTOS):
-            q, resto = divmod(b, 3)
-            for r in range(R):
-                cuenta = [q] * 3
-                for c in rng.choice(3, resto, replace=False):
-                    cuenta[c] += 1
-                mejor = np.inf
-                for c in range(3):
-                    if cuenta[c]:
-                        idx = rng.choice(N_POR_CKPT, cuenta[c], replace=False)
-                        mejor = min(mejor, pools[c, idx].min())
-                re[r, j] += (mejor - lb) / lb * 100
-    return re / len(dep)
+            if b >= N_POOL:
+                re[j] += (pool.min() - lb) / lb * 100
+                continue
+            tot = 0.0
+            for _ in range(R):
+                idx = rng.choice(N_POOL, b, replace=False)
+                tot += (pool[idx].min() - lb) / lb * 100
+            re[j] += tot / R
+    return re / len(tirada)
 
 
 def referencias(instancias):
@@ -100,17 +100,15 @@ def referencias(instancias):
     campana, y da 18.59 sobre las 70 en vez de 17.71. Todo el paper lee
     la destacada de reevo_fixedfit/summary.csv filtrando gp_tuned_seed1,
     y esta figura tiene que leer lo mismo o su linea de referencia
-    contradiria a la Tabla 9 sin que nadie lo note.
+    contradiria a la Tabla 7 sin que nadie lo note.
     """
     ta = {}
-    with open(EST, encoding="utf-8") as f:
-        for r in csv.DictReader(f):
-            ta[r["instance"]] = (r["ta"], float(r["est_re"]))
+    for r in csv.DictReader(open(EST, encoding="utf-8")):
+        ta[r["instance"]] = (r["ta"], float(r["est_re"]))
     gp = {}
-    with open(GP_DESTACADA, encoding="utf-8") as f:
-        for r in csv.DictReader(f):
-            if r["method"] == "gp_tuned_seed1":
-                gp[r["instance"]] = float(r["re"])
+    for r in csv.DictReader(open(GP_DESTACADA, encoding="utf-8")):
+        if r["method"] == "gp_tuned_seed1":
+            gp[r["instance"]] = float(r["re"])
     est_v = [ta[i][1] for i in instancias if i in ta]
     gp_v = [gp[i] for i in instancias if i in gp]
     return (float(np.mean(gp_v)) if gp_v else None,
@@ -128,50 +126,43 @@ def cruce(xs, ys, umbral):
 
 def main():
     dep = lee_depositos()
-    if not dep:
-        sys.exit("ABORTA: ningun par completo todavia")
-    instancias = sorted(dep)
-    print(f"{len(instancias)} instancias con las tres semillas completas")
+    if len(dep) < 2:
+        sys.exit("ABORTA: hacen falta varias tiradas completas")
+    print(f"{len(dep)} tiradas completas de 70 instancias")
 
-    rng = np.random.RandomState(20260803)
-    re = curva(dep, rng)
-    media = re.mean(axis=0)
-    p10, p90 = np.percentile(re, 10, axis=0), np.percentile(re, 90, axis=0)
-    greedy = float(np.mean([(min(d["greedy"]) - d["lb"]) / d["lb"] * 100
-                            for d in dep.values()]))
+    rng = np.random.RandomState(20260818)
+    curvas = np.array([curva_de(dep[ck], rng) for ck in sorted(dep)])
+    media = curvas.mean(axis=0)
+    mejor, peor = curvas.min(axis=0), curvas.max(axis=0)
+    greedy = float(np.mean([
+        np.mean([(d["greedy"] - d["lb"]) / d["lb"] * 100
+                 for d in dep[ck].values()]) for ck in dep]))
+    instancias = sorted(next(iter(dep.values())))
     gp, est, n_gp, n_est = referencias(instancias)
-    print(f"referencias sobre el mismo conjunto: GP {gp:.2f}% (n={n_gp}), "
-          f"EST {est:.2f}% (n={n_est}), greedy de 3 semillas {greedy:.2f}%")
+    print(f"referencias: GP {gp:.2f}% (n={n_gp}), EST {est:.2f}% "
+          f"(n={n_est}), greedy medio de las tiradas {greedy:.2f}%")
     for b, m in zip(PRESUPUESTOS, media):
         print(f"  B={b:5d}  RE={m:6.2f}%")
     print(f"cruza EST    con B={cruce(PRESUPUESTOS, media, est)}")
     print(f"cruza GP     con B={cruce(PRESUPUESTOS, media, gp)}")
     print(f"cruza greedy con B={cruce(PRESUPUESTOS, media, greedy)}")
-    if len(instancias) < 70:
-        print(f"AVISO: solo {len(instancias)}/70 instancias. Las que faltan "
-              "son las grandes, donde la politica es mas debil: estos "
-              "numeros son optimistas y la figura NO debe entrar al paper "
-              "hasta que el barrido termine.")
 
     fig, ax = plt.subplots(figsize=(3.4, 2.6))
-    ax.fill_between(PRESUPUESTOS, p10, p90, color="#1f77b4", alpha=0.18,
+    ax.fill_between(PRESUPUESTOS, mejor, peor, color="#1f77b4", alpha=0.18,
                     linewidth=0)
     ax.plot(PRESUPUESTOS, media, color="#1f77b4", linewidth=1.6,
-            label="policy, best of $B$ per instance")
+            label="policy, best of $B$ (mean of 10 runs)")
     # EST queda en el 42 por ciento: dibujarla aplastaria todo lo demas,
     # asi que el pie la nombra y el eje se reserva para la zona util.
     ax.axhline(gp, color="#d62728", linestyle="--", linewidth=1.1,
                label=f"GP rule ({gp:.1f}%)")
-    # el greedy se agrega como la curva, quedandose con el mejor de los
-    # tres checkpoints; el 19.4 de 6.4 es la MEDIA de las tres semillas,
-    # otra cosa, y la etiqueta lo dice para que no se confundan
     ax.axhline(greedy, color="#2ca02c", linestyle=":", linewidth=1.1,
-               label=f"greedy, best seed per instance ({greedy:.1f}%)")
+               label=f"greedy pass ({greedy:.1f}%)")
     ax.set_xscale("log", base=2)
     ax.set_xlabel("inference budget $B$ (rollouts)")
     ax.set_ylabel("mean RE (%)")
-    ax.set_xticks([1, 4, 16, 64, 256, 1024])
-    ax.set_xticklabels(["1", "4", "16", "64", "256", "1024"])
+    ax.set_xticks([1, 4, 16, 64, 256])
+    ax.set_xticklabels(["1", "4", "16", "64", "256"])
     ax.legend(frameon=False, fontsize=7.5, loc="upper right")
     fig.tight_layout(pad=0.3)
     fig.savefig(SALIDA)

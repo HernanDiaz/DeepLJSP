@@ -2970,7 +2970,56 @@ else:
                  < min(sum(a for a, _ in _pc[c]) / 10
                        for c in ("30x15", "30x20")))
 
-print("\n== fig:budget: la curva de presupuesto ==")
+print("\n== fig:budget: la curva a diez tiradas ==")
+# Desde 2026-08-18 la curva se reconstruye con el protocolo desplegado
+# (una tirada gasta sus B muestras) sobre las diez tiradas del brazo
+# principal. El bloque siguiente conserva el deposito de tres como
+# centinela del dato, pero sus cifras ya no se imprimen.
+_CD = "benchmarks/curva_diez/curva_diez.json"
+if not os.path.exists(_CD):
+    pendiente("curva a diez tiradas", "sin curva_diez.json")
+else:
+    _cd = json.load(open(_CD, encoding="utf-8"))
+    _pp = _cd["por_presupuesto"]
+    check_exacto("curva: diez tiradas completas",
+                 len(_cd["tiradas"]) == 10, f"{len(_cd['tiradas'])}")
+    check("curva: greedy medio de las diez (texto 19.5)", 19.47,
+          _cd["greedy_media"], tol=0.006)
+    check("curva: una muestra suelta (texto 21.3)", 21.27,
+          _pp["1"]["media"], tol=0.006)
+    check("curva: RE a 64 muestras (texto 15.2)", 15.24,
+          _pp["64"]["media"], tol=0.006)
+    check("curva: RE a 341 muestras (texto 14.0)", 14.04,
+          _pp["341"]["media"], tol=0.006)
+    check_exacto("curva: adelanta al greedy en B=3 y a la regla en B=8",
+                 _cd["cruce_greedy"] == 3 and _cd["cruce_gp"] == 8,
+                 f"greedy B={_cd['cruce_greedy']}, GP B={_cd['cruce_gp']}")
+    check_exacto("curva: monotona en el presupuesto",
+                 all(_pp[str(a)]["media"] > _pp[str(b)]["media"]
+                     for a, b in zip(_cd["presupuestos"],
+                                     _cd["presupuestos"][1:])))
+    # los retornos por duplicacion que cita 7.2
+    # las ganancias son estimadores Monte Carlo (remuestreo sin
+    # reemplazo del pool), asi que se comprueban a la precision que el
+    # texto imprime, no a la tercera cifra
+    _g = _cd["ganancia_por_duplicacion"]
+    check("curva: ganancia 32->64 (texto 0.60)", 0.60, _g["32->64"],
+          tol=0.02)
+    check("curva: ganancia 128->256 (texto 0.48)", 0.48, _g["128->256"],
+          tol=0.02)
+    check_exacto("curva: la ganancia se contrae octava a octava",
+                 _g["32->64"] > _g["64->128"] > _g["128->256"])
+    # coherencia con la medicion independiente de tab:seventy: el
+    # campeon a bo64 (15.02) queda por debajo de la media de las diez
+    check_exacto("curva: el campeon a bo64 mejora la media de las diez",
+                 15.02 < _pp["64"]["media"] < 15.5,
+                 f"{_pp['64']['media']:.2f} vs 15.02")
+    check_exacto("7.2 declara el deposito de diez y sus cifras",
+                 "each of the ten training runs" in TEX
+                 and "$239{,}400$ schedules" in TEX
+                 and "$15.2\\%$ at $64$ and $14.0\\%$ at $341$" in TEX)
+
+print("\n== centinela: la curva a tres tiradas (ya no impresa) ==")
 _POOL = "benchmarks/eval_budget_curve.csv"
 if not os.path.exists(_POOL):
     pendiente("curva de presupuesto", "sin eval_budget_curve.csv")
@@ -2982,7 +3031,7 @@ else:
             (int(r["sample_idx"]), float(r["mid_comp"])))
         _lbc[r["instance"]] = float(r["lb"])
     _inst_c = {i for i, _ in _cur}
-    check_exacto("la curva cubre las 70 con 3 checkpoints",
+    check_exacto("centinela: el deposito viejo cubre las 70 con 3",
                  len(_inst_c) == 70 and len(_cur) == 210
                  and all(len(v) == 342 for v in _cur.values()),
                  f"{len(_inst_c)} instancias, {len(_cur)} pares")
@@ -2991,7 +3040,8 @@ else:
     _gre_pool = {}
     for (i, ck), v in _cur.items():
         _gre_pool.setdefault(i, []).append(dict(v)[0])
-    check("fig:budget: greedy mejor de 3 semillas (texto 17.0)", 17.0,
+    check("centinela: greedy mejor de 3 en el deposito viejo (17.0)",
+          17.0,
           sum((min(v) - _lbc[i]) / _lbc[i] * 100
               for i, v in _gre_pool.items()) / 70, tol=0.051)
     # y que la referencia del GP de la figura sea la DESTACADA, no la
@@ -3004,7 +3054,7 @@ else:
                  "destacada", abs(sum(_gp_cpi.values()) / 70 - 17.71) > 0.5,
                  f"{sum(_gp_cpi.values()) / 70:.2f} vs 17.71")
 
-    print("\n== tab:budget-rate: rendimiento y coste por duplicacion ==")
+    print("\n== centinela: tasas del deposito viejo ==")
     # misma reconstruccion que la figura (reparto del presupuesto entre los
     # tres checkpoints, min del subconjunto), remuestreada con semilla fija
     import numpy as _np
@@ -3038,15 +3088,15 @@ else:
     _gan = {_POT[k]: _curva[k - 1] - _curva[k] for k in range(1, len(_POT))}
     # en B=1 la esperanza es exacta (la media de las 1023 muestras), no
     # hace falta remuestrear: es ademas el 21.4 que ya citaba el texto
-    check("tab:budget-rate RE en B=1 (exacta)", 21.4,
+    check("centinela viejo: RE en B=1 (21.4)", 21.4,
           sum((_pl.mean() - _lbc[_i]) / _lbc[_i] * 100
               for _i, _pl in _pools.items()) / len(_pools), tol=0.051)
     for _b, _esp in ((8, 17.1), (64, 14.9), (128, 14.3),
                      (256, 13.8), (512, 13.3), (1023, 12.9)):
-        check(f"tab:budget-rate RE en B={_b}", _esp, _re[_b], tol=0.11)
+        check(f"centinela viejo: RE en B={_b}", _esp, _re[_b], tol=0.11)
     for _b, _esp in ((8, 1.03), (64, 0.62), (128, 0.57), (256, 0.50),
                      (512, 0.46), (1023, 0.42)):
-        check(f"tab:budget-rate ganancia sobre B/2 en B={_b}", _esp,
+        check(f"centinela viejo: ganancia sobre B/2 en B={_b}", _esp,
               _gan[_b], tol=0.055)
     # la pendiente log-lineal de las tres ultimas octavas que cita el texto
     _x = [math.log2(_b) for _b in _POT[-4:]]
@@ -3054,13 +3104,13 @@ else:
     _mx, _my = sum(_x) / 4, sum(_y) / 4
     _pend = (sum((_a - _mx) * (_c - _my) for _a, _c in zip(_x, _y))
              / sum((_a - _mx) ** 2 for _a in _x))
-    check("7.2: pendiente 0.46 puntos por duplicacion", 0.46, -_pend,
+    check("centinela viejo: pendiente 0.46 por duplicacion", 0.46, -_pend,
           tol=0.03)
-    check("7.2: cuatro duplicaciones mas llegarian al 11%", 11.0,
+    check("centinela viejo: cuatro duplicaciones al 11%", 11.0,
           _curva[-1] + 4 * _pend, tol=0.15)
     # "cada octava rinde una decima parte menos que la anterior"
     _raz = [_gan[_POT[k]] / _gan[_POT[k - 1]] for k in range(6, len(_POT))]
-    check_exacto("7.2: la ganancia mengua ~10% por octava en la cola",
+    check_exacto("centinela viejo: la ganancia mengua ~10% por octava",
                  all(0.82 <= _r <= 0.98 for _r in _raz),
                  " ".join(f"{_r:.2f}" for _r in _raz))
     # el coste: lineal en B sobre el tiempo por muestra medido
@@ -3070,13 +3120,15 @@ else:
     _s5020 = float(_tie["50x20"]["bo64_s"]) / 64
     check("7.2: segundos por muestra en 20x15", 1.03, _s2015, tol=0.006)
     check("7.2: segundos por muestra en 50x20", 6.4, _s5020, tol=0.05)
-    check("7.2: B=1023 son 18 min en 20x15", 18.0, 1023 * _s2015 / 60,
+    check("7.2: 1024 muestras son 18 min en 20x15", 18.0,
+          1023 * _s2015 / 60,
           tol=0.5)
-    check("7.2: B=1023 son 1.8 h en 50x20", 1.8, 1023 * _s5020 / 3600,
+    check("7.2: 1024 muestras son 1.8 h en 50x20", 1.8,
+          1023 * _s5020 / 3600,
           tol=0.05)
-    check("7.2: x16 el presupuesto son 4.7 h en 20x15", 4.7,
+    check("centinela: x16 el presupuesto son 4.7 h en 20x15", 4.7,
           16 * 1023 * _s2015 / 3600, tol=0.05)
-    check("7.2: x16 el presupuesto son 29 h en 50x20", 29.0,
+    check("centinela: x16 el presupuesto son 29 h en 50x20", 29.0,
           16 * 1023 * _s5020 / 3600, tol=0.5)
 
     print("\n== 8: el hueco entre el argmax y la cola de su distribucion ==")
