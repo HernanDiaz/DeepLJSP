@@ -1529,7 +1529,7 @@ else:
     _re_gp = (23.27 - 19.20)
     check("7.5: el companero paga ~2.5 RE por punto de anchura", 2.5,
           _re_gp / _w_gp, tol=0.06)
-    check("7.5: nuestro brazo paga ~2.0 RE por punto de anchura", 2.0,
+    check("centinela: tasa a tres semillas (~2.0 RE/punto)", 2.0,
           (15.38 - 13.44) / (12.85 - 11.90), tol=0.06)
 
 # 6.3: el enfrentamiento a presupuesto igualado sobre las 12
@@ -2573,16 +2573,16 @@ if not _lam:
 else:
     check_exacto("lambda=1: 3 semillas x 6 instancias", len(_lam) == 18,
                  f"{len(_lam)} pares")
-    check("lambda=1: RE media (texto 15.38)", 15.38,
+    check("centinela lambda=1 a tres semillas: RE (15.38)", 15.38,
           sum(v[0] for v in _lam.values()) / len(_lam))
-    check("lambda=1: ancho medio (texto 11.90)", 11.90,
+    check("centinela lambda=1 a tres semillas: ancho (11.90)", 11.90,
           sum(v[1] for v in _lam.values()) / len(_lam))
-    check("brazo principal: ancho medio (texto 12.85)", 12.85,
+    check("centinela base a tres semillas: ancho (12.85)", 12.85,
           sum(v[1] for v in _base_a.values()) / len(_base_a))
     _com = sorted(set(_base_a) & set(_lam))
     _dre = [_lam[k][0] - _base_a[k][0] for k in _com]
     _dan = [_lam[k][1] - _base_a[k][1] for k in _com]
-    check("lambda=1: RE sube 1.94 puntos (texto)", 1.94,
+    check("centinela lambda=1 a tres semillas: +1.94", 1.94,
           sum(_dre) / len(_dre), tol=0.02)
     try:
         from scipy import stats as _st
@@ -2631,6 +2631,7 @@ else:
             anchos.append((up - lo) / ((lo + up) / 2) * 100)
         return sum(anchos) / len(anchos)
 
+    # (centinela: seleccion fijada a tres semillas, ya no impresa)
     for brazo, crit, v_tex in [("base", "up", 12.80), ("lam1", "up", 12.69),
                                ("base", "rob", 11.74), ("lam1", "rob", 12.20)]:
         check(f"seleccion fijada, {brazo} por {crit} (texto {v_tex})",
@@ -2674,6 +2675,107 @@ else:
         check_exacto("7.5: y aun asi los empates en general son comunes",
                      _con_alguno == 90, f"{_con_alguno}/90 pools")
 
+        # --- la ampliacion a diez semillas (2026-08-17): 300 pools ---
+        _pool300 = dict(_pool)
+        for _ruta in sorted(glob.glob(
+                "benchmarks/robust_lambda/rollouts_ext_*.csv")):
+            for r in _csv.DictReader(open(_ruta, encoding="utf-8")):
+                _pool300.setdefault((r["arm"], r["seed"], r["instance"]),
+                                    []).append((float(r["lower"]),
+                                                float(r["upper"])))
+        _pool300 = {k: v[:64] for k, v in _pool300.items()}
+        check_exacto("7.3: 300 pools con la ampliacion",
+                     len(_pool300) == 300
+                     and all(len(v) == 64 for v in _pool300.values()),
+                     f"{len(_pool300)} pools")
+        _emp300 = sum(1 for v in _pool300.values()
+                      if [u for _, u in v].count(min(u for _, u in v)) > 1)
+        check_exacto("7.3: el minimo empata en 7 de los 300",
+                     _emp300 == 7, f"{_emp300} pools")
+        check_exacto("7.3: el texto dice 7 de 300 y sus ecos",
+                     "in 7 of the 300 pools" in TEX
+                     and TEX.count("seven of the three hundred") == 2)
+
+        # --- la frontera a diez semillas, contra su artefacto ---
+        _FD = "benchmarks/robust_lambda/frontera_diez.json"
+        if not os.path.exists(_FD):
+            pendiente("frontera a diez semillas", "sin frontera_diez.json")
+        else:
+            _fd = json.load(open(_FD, encoding="utf-8"))
+            _pr = _fd["modos"]["propia"]
+            _fj = _fd["modos"]["fija"]
+            _rr = _fd["modos"]["rerank"]
+            check_exacto("frontera: 60 pools por brazo",
+                         all(v == 60 for v in
+                             _fd["pools_por_brazo"].values()))
+            check("frontera: base RE (texto 13.96)", 13.96,
+                  _pr["base"]["re"], tol=0.006)
+            check("frontera: base ancho (texto 13.05)", 13.05,
+                  _pr["base"]["ancho"], tol=0.006)
+            # el paquete desplegado a lambda=1, ahora a diez semillas
+            check("lambda=1 a diez: ancho (texto 12.18)", 12.18,
+                  _pr["lam1"]["ancho"], tol=0.006)
+            check("lambda=1 a diez: RE (texto 15.11)", 15.11,
+                  _pr["lam1"]["re"], tol=0.006)
+            check("lambda=1 a diez: +1.15 de RE", 1.15,
+                  _pr["lam1"]["d_re"], tol=0.006)
+            check_exacto("lambda=1 a diez: ambos efectos p=0.031",
+                         abs(_pr["lam1"]["p_re"] - 0.03125) < 1e-6
+                         and abs(_pr["lam1"]["p_ancho"] - 0.03125) < 1e-6)
+            # la frontera desplegada: monotona y significativa entera
+            check("frontera desplegada: lam4 ancho (texto 11.08)", 11.08,
+                  _pr["lam4"]["ancho"], tol=0.006)
+            check("frontera desplegada: lam4 +3.40 de RE", 3.40,
+                  _pr["lam4"]["d_re"], tol=0.006)
+            check_exacto("frontera desplegada: estrecha en 6/6 a toda "
+                         "lambda con p=0.031",
+                         all(_pr[b]["estrecho_en"] == 6
+                             and abs(_pr[b]["p_ancho"] - 0.03125) < 1e-6
+                             for b in ("lam0p5", "lam1", "lam2", "lam4")))
+            _anchos = sorted(_pr[b]["ancho"] for b in
+                             ("base", "lam0p5", "lam1", "lam2", "lam4"))
+            check_exacto("frontera desplegada: monotona en lambda",
+                         _anchos == [_pr[b]["ancho"] for b in
+                                     ("lam4", "lam2", "lam1", "lam0p5",
+                                      "base")])
+            # criterio fijado: el nulo, ahora a ocho centesimas
+            check_exacto("criterio fijado: anchos a una decima del base",
+                         all(abs(_fj[b]["d_ancho"]) <= 0.1
+                             for b in ("lam0p5", "lam1", "lam2", "lam4")),
+                         " ".join(f"{_fj[b]['d_ancho']:+.2f}"
+                                  for b in ("lam0p5", "lam1", "lam2",
+                                            "lam4")))
+            check("criterio fijado: lam1 ancho (texto 12.98)", 12.98,
+                  _fj["lam1"]["ancho"], tol=0.006)
+            check_exacto("criterio fijado: lam1 p=1.00 y minima p 0.44",
+                         abs(_fj["lam1"]["p_ancho"] - 1.0) < 1e-6
+                         and abs(min(_fj[b]["p_ancho"] for b in
+                                     ("lam0p5", "lam1", "lam2", "lam4"))
+                                 - 0.4375) < 1e-6)
+            _dre_f = [_fj[b]["d_re"] for b in ("lam0p5", "lam1", "lam2",
+                                               "lam4")]
+            check_exacto("criterio fijado: RE entre -0.07 y +0.47, "
+                         "p minima 0.16",
+                         min(_dre_f) >= -0.075 and max(_dre_f) <= 0.475
+                         and abs(min(_fj[b]["p_re"] for b in
+                                     ("lam0p5", "lam1", "lam2", "lam4"))
+                                 - 0.15625) < 1e-6,
+                         f"{min(_dre_f):+.2f} a {max(_dre_f):+.2f}")
+            # el rerank del deposito base
+            check("rerank: base bajo f_4, ancho (texto 11.04)", 11.04,
+                  _rr["lam4"]["ancho"], tol=0.006)
+            check("rerank: base bajo f_4, RE (texto 17.16)", 17.16,
+                  _rr["lam4"]["re"], tol=0.006)
+            # la tasa que citan 7.3 y las conclusiones
+            _tasa = ((_pr["lam4"]["re"] - _pr["base"]["re"])
+                     / (_pr["base"]["ancho"] - _pr["lam4"]["ancho"]))
+            check("7.3: tasa ~1.7 RE por punto de anchura", 1.7, _tasa,
+                  tol=0.06)
+            check_exacto("7.3: el texto declara la base 13.96 del "
+                         "deposito", "stand at $13.96\\%$" in TEX)
+            check_exacto("fig:frontier: el pie dice 60 pools",
+                         "over the 60 (instance, seed) pools" in TEX)
+
 
         def _sel64(v, lam):
             if lam == 0.0:
@@ -2711,9 +2813,9 @@ else:
         check_exacto("barrido: el ancho desplegado cae monotonamente",
                      all(_prop[a][1] > _prop[b][1] for (a, _, _), (b, _, _)
                          in zip(_BRAZOS, _BRAZOS[1:])))
-        check("barrido: RE de lam4 desplegado (texto 17.75)", 17.75,
+        check("centinela barrido a tres: RE lam4 (17.75)", 17.75,
               _prop["lam4"][0])
-        check("barrido: lam4 sube 3.49 puntos sobre base (texto)", 3.49,
+        check("centinela barrido a tres: lam4 +3.49", 3.49,
               _prop["lam4"][0] - _prop["base"][0], tol=0.02)
 
         # seleccion fijada por cota superior para los cuatro brazos
@@ -2752,9 +2854,9 @@ else:
 
         # la frontera gratis: el deposito del base bajo f_4
         _re_g, _anc_g, _, _, _ = _re_anc("base", 4.0)
-        check("frontera gratis: base bajo f_4, ancho (texto 11.09)",
+        check("centinela frontera gratis a tres: ancho (11.09)",
               11.09, _anc_g, tol=0.02)
-        check("frontera gratis: base bajo f_4, RE (texto 17.05)",
+        check("centinela frontera gratis a tres: RE (17.05)",
               17.05, _re_g, tol=0.02)
         check("precio del barrido: 1.9 RE por punto de ancho (texto)",
               1.9, (_prop["lam4"][0] - _prop["base"][0])
