@@ -75,10 +75,10 @@ every hand-crafted dispatching rule on all seventy benchmark
 instances, six of the seven size classes unseen. It is then compared
 against a dispatching rule evolved by genetic programming for the
 same benchmark, thirty trained artifacts per family evaluated in one
-harness at matched inference budgets. The two separate at every
-budget and the ordering is set by it: the rule leads by $0.8$ points
-of relative error given one constructive pass each, and the policy
-leads by the same margin once both draw samples; on twelve classical
+harness at matched inference budgets. Which of the two leads is decided
+by the budget, and at no budget do they tie: the rule leads by $0.8$
+points of relative error given one constructive pass each, and the
+policy leads by the same margin once both draw samples; on twelve classical
 instances outside the training family the policy leads at every
 budget. The paradigms also differ in where an objective that values
 robustness acts: retrained under a width-penalizing objective, the
@@ -201,8 +201,8 @@ per-instance metaheuristic state of the art?
   a single harness that fixes the instances, the interval arithmetic,
   the ranking criterion, the inference budgets and the execution
   realizations, with per-instance results reported in full
-  (supplementary material). The two separate at every budget and
-  the ordering is set by it.
+  (supplementary material). Which of the two leads is decided by the
+  budget, and at no budget do they tie.
 \item \emph{A localization of where each paradigm handles the
   uncertainty} (Section~\ref{sec:ablations-interval}), in three
   parts. An analytic observation: the reward and the primary key of
