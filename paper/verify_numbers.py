@@ -2185,8 +2185,13 @@ check_exacto("declaracion de datos: cita el deposito propio",
              "DiazDRLDataset2026" in TEX
              and "10.5281/zenodo.21970431" in open(
                  "paper/refs.bib", encoding="utf-8").read())
-check_exacto("declaracion de datos: y el repo de codigo",
-             "github.com/HernanDiaz/ijsp-drl" in TEX)
+# el deposito propio es la UNICA fuente que la declaracion cita desde
+# 2026-08-18: instancias incluidas, sin remitir al deposito GP ni a
+# GitHub
+check_exacto("declaracion de datos: solo el deposito propio",
+             "github.com" not in TEX
+             and "DiazDataset2026" not in TEX
+             and "The benchmark instances, the code," in TEX)
 
 # Marcadores \todo pendientes: se imprimen en rojo en el PDF (uno de
 # ellos llego a salir dentro de la bibliografia), asi que ninguno puede
@@ -2692,9 +2697,12 @@ else:
                       if [u for _, u in v].count(min(u for _, u in v)) > 1)
         check_exacto("7.3: el minimo empata en 7 de los 300",
                      _emp300 == 7, f"{_emp300} pools")
-        check_exacto("7.3: el texto dice 7 de 300 y sus ecos",
+        # 7.3 lo dice con cifras y 7.1 con letras; la contribucion 3
+        # dejo de repetirlo el 2026-08-18 (el autor: no es una
+        # observacion analitica, es una contingencia medida)
+        check_exacto("7.3: el texto dice 7 de 300 y su eco en 7.1",
                      "in 7 of the 300 pools" in TEX
-                     and TEX.count("seven of the three hundred") == 2)
+                     and TEX.count("seven of the three hundred") == 1)
 
         # --- la frontera a diez semillas, contra su artefacto ---
         _FD = "benchmarks/robust_lambda/frontera_diez.json"

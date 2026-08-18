@@ -205,11 +205,11 @@ per-instance metaheuristic state of the art?
   budget, and at no budget do they tie.
 \item \emph{A localization of where each paradigm handles the
   uncertainty} (Section~\ref{sec:ablations-interval}), in three
-  parts. An analytic observation: the reward and the primary key of
-  the lexicographic criterion read only the upper duration endpoints,
-  so interval widths can reach a decision only through exact ties of
-  that key, which decide the selection in seven of the three hundred
-  rollout pools measured here. Its examination on the trained policy: a permutation
+  parts. The mechanism the design offers: the reward trains on the
+  worst-case makespan, so an interval width can reach a decision only
+  through the secondary key of the ranking criterion, and how often
+  that key decides is measured rather than assumed. Its examination
+  on the trained policy: a permutation
   audit and two retraining ablations that probe the widths as inputs,
   which prove inert in this setting, and the intervals as training
   data. And the contrast between the paradigms: a width-penalizing
@@ -596,9 +596,10 @@ $w_{\bullet}\in[0,1]$ its fixed weight: terminal makespan
 criticality ($\mathrm{cr}$) and load balance ($\mathrm{ba}$), each
 defined below.
 
-Each component is divided by a magnitude of the instance, listed
-with it, which makes the reward dimensionless and comparable across
-instances and sizes. Several scales use $\LBi$, a lower bound on the
+Every component is dimensionless, and comparable across instances
+and sizes: five are divided by a magnitude of the instance, listed
+with them, and job progress is by construction a fraction of the
+episode. Several of those scales use $\LBi$, a lower bound on the
 makespan that the method computes from the instance itself as the
 larger of the two classical relaxations, the most loaded machine and
 the longest job, in worst-case durations:
@@ -891,7 +892,7 @@ $15{\times}15$ to $50{\times}20$,
 each crisp duration replaced by an integer interval symmetric around
 it, with half-width drawn uniformly up to $15\%$ of the original
 value~\citep{DiazGA2020}. The benchmark is openly
-available~\citep{DiazDataset2026}. Of the 70 instances, the final model is trained on four,
+available~\citep{DiazDRLDataset2026}. Of the 70 instances, the final model is trained on four,
 TA11--TA14 of the $20{\times}15$ class. Six more of the same class,
 TA15--TA20, form the \emph{validation set}: never used for
 gradients, but every design and configuration decision was judged on
@@ -1206,8 +1207,8 @@ table, is $20{\times}15$, which holds the four training and the six
 validation instances.
 Table~\ref{tab:seventy} reports RE over all seventy instances by size
 class, ten to a class, with its per-instance values in the supplementary material.
-Each learned family trains thirty artifacts, thirty evolutions and
-thirty runs, and appears as the one its study selects: the rule
+Each learned family trains thirty artifacts and appears as the one
+its study selects: the rule
 \citet{DiazGP2026} features and the policy of
 Section~\ref{sec:training}. Both were fitted on the $20{\times}15$
 instances, so the other six classes lie outside the training
@@ -1936,14 +1937,13 @@ well, which \citet{Xu2025} call for, remains open.
 
 The three questions posed in the introduction now have answers.
 
-Neither learned paradigm dominates the other: the two separate at
-every inference budget and the ordering is set by that budget. Given
-one constructive pass each the evolved rule leads by $0.78$ points of
-relative error, and the reading over the thirty artifacts of each
-family, which no selection touches, agrees at $0.83$; once both
-methods sample, the policy leads by $0.86$ at $64$ samples and $0.82$
-at $1024$, all four differences significant with the instance as the
-unit. What the network contributes over a compact formula is
+Neither learned paradigm dominates the other: which of the two leads
+is decided by the inference budget, and at no budget do they tie.
+Given one constructive pass each the evolved rule leads, and once
+both methods sample the policy leads by a margin of the same size;
+the reading over the thirty artifacts of each family, which no
+selection touches, agrees with the one over the selected pair, and
+every difference is significant with the instance as the unit. What the network contributes over a compact formula is
 therefore its sampling distribution rather than its argmax, and that
 contribution is not free: the budget those figures equalize is the
 number of schedules constructed, while a policy costs some four times
@@ -2030,12 +2030,11 @@ Science, Innovation and Universities
 \paragraph{Competing interests.} The author has no competing interests
 to declare that are relevant to the content of this article.
 
-\paragraph{Data availability.} The benchmark instances are openly
-available in a Zenodo repository~\citep{DiazDataset2026}. The code,
+\paragraph{Data availability.} The benchmark instances, the code,
 the benchmark harness, all experiment records (accepted and
 rejected), the final checkpoints and the figure-generation scripts
-are openly deposited~\citep{DiazDRLDataset2026}, and the code is also
-maintained at \url{https://github.com/HernanDiaz/ijsp-drl}.
+are openly available in a Zenodo
+repository~\citep{DiazDRLDataset2026}.
 
 % NOTA: declaración de uso de IA generativa pendiente de decisión del
 % autor antes del envío (política de Springer Nature: en métodos o

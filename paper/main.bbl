@@ -372,33 +372,6 @@ D{\'i}az~Rodr{\'i}guez%
 }{%
 {\protect \APACyear {2026}}%
 {\protect \APACexlab {{\protect \BCnt {2}}}}}]{%
-DiazDataset2026}
-\APACinsertmetastar {%
-DiazDataset2026}%
-\begin{APACrefauthors}%
-D{\'i}az~Rodr{\'i}guez, H.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2026{\protect \BCnt {2}}}{}{}.
-\newblock
-\APACrefbtitle {Genetic programming dispatching rules for the interval job
-  shop: instances, evolved rules, results and code.} {Genetic programming
-  dispatching rules for the interval job shop: instances, evolved rules,
-  results and code.}
-\newblock
-\APAChowpublished {Zenodo}.
-\newblock
-\APACrefnote{[dataset]. \doi{10.5281/zenodo.21716972}}
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-D{\'i}az~Rodr{\'i}guez%
-}{%
-D{\'i}az~Rodr{\'i}guez%
-}{%
-{\protect \APACyear {2026}}%
-{\protect \APACexlab {{\protect \BCnt {3}}}}}]{%
 DiazGP2026}
 \APACinsertmetastar {%
 DiazGP2026}%
@@ -407,7 +380,7 @@ D{\'i}az~Rodr{\'i}guez, H.%
 \end{APACrefauthors}%
 \unskip\
 \newblock
-\APACrefYearMonthDay{2026{\protect \BCnt {3}}}{}{}.
+\APACrefYearMonthDay{2026{\protect \BCnt {2}}}{}{}.
 \newblock
 \APACrefbtitle {Genetic programming hyper-heuristics for the job shop
   scheduling problem with interval durations: robustness-aware interpretable

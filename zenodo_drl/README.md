@@ -8,13 +8,17 @@ the primary result files behind every table and figure of the article,
 accepted and rejected experiment records alike, and the code that
 produced and verifies them.
 
-The benchmark instances and the thirty evolved GP rules the article
-compares against are published in the companion GP deposit
-(doi:10.5281/zenodo.21716972) and are not duplicated here.
+The thirty evolved GP rules the article compares against are
+published in the companion GP deposit (doi:10.5281/zenodo.21716972)
+and are not duplicated here.
 
 ## Contents
 
 ```
+instances/
+  interval_taillard/    the 70 interval Taillard instances (TA1-TA70)
+  interval_classical/   the 12 classical interval instances
+  crisp_taillard/       crisp counterparts of the training instances
 records/
   benchmarks/           primary CSV/JSON files of every campaign cited
                         by the article, quarantined files included

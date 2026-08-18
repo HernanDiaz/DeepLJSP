@@ -110,6 +110,16 @@ def main():
         c3 += copia(f, os.path.join(DESTINO, "code", f))
     print(f"codigo: {c3} ficheros")
 
+    # --- las instancias del benchmark ---
+    # el deposito es autocontenido desde 2026-08-18: la declaracion de
+    # datos del paper promete instancias Y codigo aqui, sin remitir al
+    # deposito del estudio GP
+    c_inst = 0
+    for f in glob.glob("zenodo_deposit/instances/**/*.txt", recursive=True):
+        rel = os.path.relpath(f, "zenodo_deposit")
+        c_inst += copia(f, os.path.join(DESTINO, rel))
+    print(f"instancias: {c_inst} copiadas")
+
     # --- el material suplementario del articulo, en PDF ---
     try:
         import shutil as _sh
