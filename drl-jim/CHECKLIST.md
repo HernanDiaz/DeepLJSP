@@ -1,14 +1,13 @@
 # Checklist de envío — Journal of Intelligent Manufacturing
 
 (Guía para el formulario; este fichero no se sube.)
-
 ## Antes de subir NADA — bloqueantes
 
-- [ ] El barrido de lambda a diez semillas cerrado y §7.3 reescrita
-      (los PDF de esta carpeta se regeneran después:
-      `python scripts/prepara_envio.py`).
-- [ ] DOI del depósito Zenodo propio en la declaración de datos
-      (sustituye el \todo en rojo de la última página).
+- [x] Barrido de lambda y curva de presupuesto a diez tiradas:
+      cerrados, §7.2/§7.3 reescritas y los PDF de esta carpeta al día.
+- [x] DOI del depósito propio en la declaración de datos (cerrado con
+      el DOI de concepto 10.5281/zenodo.21970431). Queda SUBIR LA V2
+      del zip, que añade barrido, curva e instancias.
 - [ ] Decisión sobre la declaración de LLM: documentar en Methods o
       acogerse a la exención de "AI assisted copy editing" (nota
       comentada junto a las Declarations). La guía no da término medio.
@@ -16,7 +15,7 @@
 
 ## Qué se sube
 
-- `zenodo_drl_v1.zip` va a ZENODO, no a la revista: no incluirlo en
+- `zenodo_drl_v2.zip` va a ZENODO, no a la revista: no incluirlo en
   el envío del manuscrito.
 - `manuscript.pdf` — el manuscrito (38 pp., una columna, sn-jnl).
 - `supplementary_material.pdf` — como Supplementary Information.
@@ -37,9 +36,9 @@
 - **Funding**: MCIN/AEI/10.13039/501100011033, grant
   PID2022-141746OB-I00 (nombre del organismo completo, lo pide la guía).
 - **Competing interests**: sin conflictos (ya en el PDF).
-- **Data availability**: instancias en doi:10.5281/zenodo.21716972;
-  checkpoints, registros y código en el depósito propio (DOI al subir)
-  y en https://github.com/HernanDiaz/ijsp-drl.
+- **Data availability**: todo (instancias, código, registros,
+  checkpoints) en el depósito propio, doi:10.5281/zenodo.21970431
+  (DOI de concepto; subir la v2 del zip antes de enviar).
 
 ## Verificaciones ya hechas (no repetir)
 
