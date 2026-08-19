@@ -1647,19 +1647,19 @@ the uncertainty at all; whether the upper bounds shown during training
 must be the true ones, which Eq.~\eqref{eq:upperclosed} does not
 settle, since midpoint training changes the upper endpoints
 themselves; and whether the policy would come to consult the widths
-under an objective that pays for them. Each ablation is paired against the main arm on the training seeds it
-shares, under the standalone evaluator. The first two retrain ten
-seeds each, and every figure below compares those ten with the same
-ten of the main arm on one of three sets: the six validation
-instances, thirty of the sixty unseen instances, or all sixty, the
-first two at the deployed budget of $64$ samples and the last at one
-constructive pass. The thirty are the first five of each unseen size
-class by benchmark index, a cut fixed before any result was seen that
-keeps the class balance at half the sampling cost. The third ablation
-is read on common rollout deposits of $64$ samples per (arm,
-instance, seed), also spanning those ten seeds; under the paper's
-selection criterion the main arm's deposits stand at $13.96\%$, the
-baseline of every figure in that analysis.
+under an objective that pays for them. All three share one design:
+ten retrained seeds per arm, each paired with the same ten seeds of
+the main arm, the standalone evaluator, and the instance as the
+experimental unit. What varies is only where the sampled evaluation,
+which costs $64$ rollouts per instance, can be afforded: at that
+budget the first two ablations are read on the six validation
+instances and on thirty unseen ones, five per size class fixed by
+benchmark index before any result was seen, while the cheap
+single-pass reading covers all sixty. The third ablation probes the
+selection stage itself, so it is read on deposits that retain all
+$64$ rollouts per (arm, instance, seed); under the paper's selection
+criterion the main arm's deposits stand at $13.96\%$, the baseline
+of every figure in that analysis.
 
 \paragraph{Widths as inputs.} The first ablation removes the
 information: the encoder collapses every interval to its worst case

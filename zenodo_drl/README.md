@@ -61,14 +61,8 @@ deposit (or adjust the base paths at the top of the script).
   of Section 7.3, ten seeds each.
 - `v2-attn-300ep`, `v2-attn-1000ep*`: the self-attention variant
   (supplementary material).
-- `v2-robust-lam*`: the width-penalizing arms of Section 7.3
-  (PENDIENTE: the extension of the lambda sweep to ten seeds trains as
-  this skeleton is written; its runs, deposits and reanalysis JSONs
-  will be added before the deposit is published).
-
-## Code repository
-
-The code is also maintained at https://github.com/HernanDiaz/ijsp-drl.
+- `v2-robust-lam*`: the width-penalizing arms of Section 7.3,
+  ten seeds each at lambda 0.5, 1, 2 and 4.
 
 ## License and citation
 
