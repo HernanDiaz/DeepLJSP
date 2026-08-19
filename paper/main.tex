@@ -1617,37 +1617,30 @@ c^{U}_{o}=\max\!\big(c^{U}_{JP(o)},\,c^{U}_{MP(o)}\big)+p^{U}_{o},
 makes $C^U_{\max}$ a deterministic function of the processing order
 and the upper endpoints alone, the lower half determining
 $C^L_{\max}$ without ever entering it. $C^U_{\max}$ is the primary
-key of the lexicographic criterion of Eq.~\eqref{eq:lex} under which
-every schedule in this paper is compared. Its secondary key, the lower
-endpoint, is consulted only on exact ties of the upper one. The
-criterion as defined therefore does depend on the lower endpoints,
-and everything below is conditional on ties deciding rarely; how
-rarely is measured rather than assumed. Ties of the upper endpoint
-as such are common, every one of the 300 (arm, instance, seed)
-rollout pools of this section containing rollouts that share one,
-but only a tie at the \emph{minimum} hands the selection to the
-secondary key, and that happens in 7 of the 300 pools. In the other
-293 the criterion operates through its primary key alone, and where
-the tie does occur it chooses among schedules with the same worst
-case, so what the secondary key ever sets is the width of the
-reported schedule, not the objective. The reward of
-Section~\ref{sec:mdp} trains on that primary key, and across its six
-components not one reads a lower bound, so there is no channel
-through which knowing an interval's width could reduce what the policy
-is being trained to reduce. A width feature can at best be an
-auxiliary signal for learning, or a tiebreaker for the two per cent
-of selections that tie; it cannot be information about the trained
-objective, because that objective does not contain it.
+key of the lexicographic criterion of Eq.~\eqref{eq:lex}, whose
+secondary key, the lower endpoint, is consulted only on exact ties of
+the upper one; everything below is therefore conditional on such ties
+deciding rarely, and how rarely is measured rather than assumed.
+Ties of the upper endpoint are common, every one of the 300 (arm,
+instance, seed) rollout pools of this section containing some, but
+only a tie at the \emph{minimum} hands the selection to the
+secondary key, and that happens in 7 of the 300 pools; where it
+does, the key chooses among schedules with the same worst case, so
+it sets the width of the reported schedule, never the objective. The
+reward of Section~\ref{sec:mdp} trains on the primary key and none
+of its six components reads a lower bound, so there is no channel
+through which knowing an interval's width could reduce what the
+policy is trained to reduce: a width feature can be an auxiliary
+signal, or the tiebreaker of that two per cent, but not information
+about the trained objective.
 
 The permutation audit of Section~\ref{sec:results-importance} found
 both width features at the floor of its ranking, consistent with this
 entailment. Three training-time ablations ask the causal questions the
 audit cannot: whether the policy would be any worse had it never seen
-the uncertainty at all; whether the upper bounds shown during training
-must be the true ones, which Eq.~\eqref{eq:upperclosed} does not
-settle, since midpoint training changes the upper endpoints
-themselves; and whether the policy would come to consult the widths
-under an objective that pays for them. All three share one design:
+the uncertainty at all; whether the upper bounds shown during
+training must be the true ones; and whether the policy would come to
+consult the widths under an objective that pays for them. All three share one design:
 ten retrained seeds per arm, each paired with the same ten seeds of
 the main arm, the standalone evaluator, and the instance as the
 experimental unit. What varies is only where the sampled evaluation,
@@ -1667,29 +1660,25 @@ before the features are computed, so the width features are
 identically zero and the bounds coincide, while the architecture, the
 hyperparameters and the schedule builder remain untouched and the
 environment still executes interval semantics. No set separates the
-two arms. On the validation instances the ablated arm reaches
-$13.98\%$ against $13.57\%$, a difference of $0.42$ points that does
-not reach significance ($p=0.094$); on the thirty unseen instances at
-the same budget the two are indistinguishable, $15.53\%$ against
-$15.55\%$, worse on 15 of the 30 ($p=0.90$); at one constructive pass
-over sixty unseen instances the ablated arm is nominally ahead by
-$0.24$ points ($p=0.10$). The measurement is not redundant with the
-prediction, because Eq.~\eqref{eq:upperclosed} concerns the objective
-while the widths could in principle have shaped the value function or
-the exploration as an auxiliary signal. They do not, and the thirty
-unseen instances bound what room remains: the difference there lies
-between $-0.34$ and $+0.29$ points with $95\%$ confidence, a third of
-a point in either direction.
+two arms: $13.98\%$ against $13.57\%$ on the validation instances
+($0.42$ points, $p=0.094$), an indistinguishable $15.53\%$ against
+$15.55\%$ on the thirty unseen ones (worse on 15 of the 30,
+$p=0.90$), and nominally ahead by $0.24$ points at one pass over the
+sixty ($p=0.10$). The measurement is not redundant with
+Eq.~\eqref{eq:upperclosed}, which constrains the objective but not
+the value function or the exploration the widths might have shaped;
+they shape neither, and the thirty unseen instances bound what room
+remains between $-0.34$ and $+0.29$ points with $95\%$ confidence.
 
 \paragraph{Intervals as training data.} The second ablation removes
 the uncertainty from training altogether. The benchmark perturbs each
 crisp duration symmetrically, so the original crisp instances
 \emph{are} the midpoint scenario of their interval counterparts: the
 policy is trained on them and evaluated, unchanged, on the interval
-instances. This is the case Eq.~\eqref{eq:upperclosed} leaves
+instances. This is the one case Eq.~\eqref{eq:upperclosed} leaves
 open, since midpoint training replaces the upper endpoints
-themselves, and both arms extend to ten seeds. Here the sets do not
-agree, and the disagreement is informative. At the deployed budget
+themselves. Here the sets do not agree, and the disagreement is
+informative. At the deployed budget
 the gap is present on both: $0.57$ points on the validation
 instances, from $13.57\%$ to $14.14\%$ ($p=0.063$), and $0.43$ points
 on the thirty unseen ones, from $15.55\%$ to $15.99\%$ ($95\%$ CI
@@ -1699,15 +1688,14 @@ constructive pass over sixty unseen instances it vanishes
 therefore better than training on their midpoints when the policy
 samples, and not measurably so when it constructs once, which places
 the contribution of the interval data at the same stage the objective
-ablation below identifies. As \emph{input features} the widths are
-inert here, and Eq.~\eqref{eq:upperclosed} suggests why in a way
-that reaches past this network: for any method that ranks semiactive
-schedules by the criterion of Eq.~\eqref{eq:lex}, the widths can
-enter only through the secondary key, which the pools of this
-section show deciding two per cent of selections. As \emph{training
-distribution} the intervals are not inert. The boundary of the claim
-is the reward, the data and the measured rarity of ties, not the
-architecture.
+ablation below identifies. The two halves have different reach: the
+inertness of widths as \emph{inputs} follows from
+Eq.~\eqref{eq:upperclosed} for any method that ranks semiactive
+schedules by Eq.~\eqref{eq:lex}, up to the two per cent of tied
+selections, whatever the model class; the value of intervals as
+\emph{training distribution} is an empirical fact about this reward
+and this benchmark. The boundary of the claim is the reward, the
+data and the measured rarity of ties, not the architecture.
 
 \paragraph{A width-penalizing objective.} The third ablation changes
 the objective so that the width enters it. The policy is retrained,
@@ -1759,42 +1747,37 @@ deposit by each $f_\lambda$ in turn retraces the frontier almost
 point for point, ending at $11.04\%$ width and $17.16\%$ RE where
 the arm trained on $f_4$ lands at $11.08\%$ and $17.36\%$. What
 narrows the interval is which sample is kept, not which weights
-produced it: the network is not merely indifferent to the width
-features in its input; its proposal distribution does not become
-narrower when the objective penalizes width, and the retrained
-weights propose samples as wide as the default's. The
-predictability--performance trade is real, tunable and monotone, and
-it arises entirely at selection time.
+produced it: the retrained weights propose samples as wide as the
+default's, and the default's own samples suffice to trace the
+frontier. The predictability--performance trade is real, tunable and
+monotone, and it arises entirely at selection time.
 
 \paragraph{Contrast with the evolved rule.} The GP study runs
 the same objective at the same $\lambda$ and reaches the opposite
-finding, which makes the two studies informative read together. There,
-penalizing width narrows the schedules only when the rule has width
-terminals to act through: sweeping $\lambda$ from $0$ to $4$ moves the
-relative width by $1.64$ points for rules that have them and by
-$0.13$ points for rules that do not, from which that study concludes
-that the objective works \emph{through} the
-representation~\citep{DiazGP2026}. The network of this paper has both
-the terminals' equivalent and the objective, and still its weights do
-not move at any $\lambda$; what moves is the ranking among its
-samples. The same reward therefore reaches the decision function of an
-evolved rule and does not reach the decision function of a trained
-policy, at least at this training scale. The rate of the trade is
-comparable on the two sides, about $2.5$ points of RE per point of
-width across that study's sweep and about $1.7$ across ours, so what
-separates the paradigms is not the magnitude of the cost but the stage
-at which it is incurred. In GP that stage is the decision function:
-the evolved rule becomes width-averse, and every schedule it
-constructs carries the bias. In DRL it is the selection: the weights
-are unchanged, and the cost arises sample by sample, whenever the
-ranking passes over a rollout with a better expected makespan in favor
-of a narrower one. The difference is operational at deployment: changing the
-trade-off of a width-averse rule requires evolving a new rule, whereas
-the policy's trade-off is a parameter of the ranking, adjustable at
-inference time over the same samples. Two explanations remain open:
-that no training signal reaches these features, or that the semiactive
-constructive setting fixes the width independently of the policy's
-decisions.
+finding. There, penalizing width narrows the schedules only when the
+rule has width terminals to act through: sweeping $\lambda$ from $0$
+to $4$ moves the relative width by $1.64$ points for rules that have
+them and by $0.13$ for rules that do not, from which that study
+concludes that the objective works \emph{through} the
+representation~\citep{DiazGP2026}. The network of this paper has
+both the terminals' equivalent and the objective, and still its
+weights do not move at any $\lambda$; what moves is the ranking
+among its samples. The same reward therefore reaches the decision
+function of an evolved rule and not that of a trained policy, at
+least at this training scale. The rate of the trade is comparable on
+the two sides, about $2.5$ points of RE per point of width across
+that study's sweep and about $1.7$ across ours, so what separates
+the paradigms is the stage at which the cost is incurred: in GP the
+decision function, the evolved rule becoming width-averse in every
+schedule it constructs; in DRL the selection, the cost arising
+whenever the ranking passes over a rollout with a better expected
+makespan in favor of a narrower one. At deployment the difference is
+operational: retuning a width-averse rule means evolving a new one,
+whereas the policy's trade-off is a parameter of the ranking,
+adjustable at inference time over the same samples. Two explanations
+remain open: that no training signal reaches these features, or that
+the semiactive constructive setting fixes the width independently of
+the policy's decisions.
 
 \FloatBarrier
 \subsection{Executional robustness}
