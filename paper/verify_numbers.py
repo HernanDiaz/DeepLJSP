@@ -2178,9 +2178,10 @@ else:
     else:
         pendiente("campeon a 1024 muestras", "carriles en curso")
 
-# El deposito propio, publicado el 2026-08-16: la declaracion de datos
-# cita el DOI de CONCEPTO (21970431), que resuelve siempre a la ultima
-# version; la v1 subida lleva el DOI de version 21970432
+# El deposito propio: la declaracion de datos cita el DOI de CONCEPTO
+# (21970431), que resuelve siempre a la ultima version. Versiones:
+# v1 = 21970432 (2026-08-16), v2 = 22010213 (2026-08-19, con barrido y
+# curva a diez semillas e instancias)
 check_exacto("declaracion de datos: cita el deposito propio",
              "DiazDRLDataset2026" in TEX
              and "10.5281/zenodo.21970431" in open(

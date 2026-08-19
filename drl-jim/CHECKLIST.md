@@ -6,8 +6,8 @@
 - [x] Barrido de lambda y curva de presupuesto a diez tiradas:
       cerrados, §7.2/§7.3 reescritas y los PDF de esta carpeta al día.
 - [x] DOI del depósito propio en la declaración de datos (cerrado con
-      el DOI de concepto 10.5281/zenodo.21970431). Queda SUBIR LA V2
-      del zip, que añade barrido, curva e instancias.
+      el DOI de concepto 10.5281/zenodo.21970431). La v2 esta subida
+      (DOI de version 22010213): el deposito esta CERRADO.
 - [ ] Decisión sobre la declaración de LLM: documentar en Methods o
       acogerse a la exención de "AI assisted copy editing" (nota
       comentada junto a las Declarations). La guía no da término medio.
