@@ -92,7 +92,22 @@ article, matter for reproduction: each block starts from the weights
 of the best block so far, judged by the lowest best-episode makespan
 in raw time units, and the serialized artifact of a run is the
 network as it stands at the end of that best block (`best_model.pt`),
-not the weights of the best individual episode.
+not the weights of the best individual episode. One caveat: the
+`test_results.csv` that the batch pipeline writes at the end of a run
+comes from `evaluate_on_test_set`, which restores the best-episode
+snapshot instead; every table of the article uses the standalone
+evaluators on `best_model.pt`, and so should any reproduction.
+
+Two provenance notes. The reward weights the batch entry point
+supplies are the ones Section 4.1 of the article prints (the
+generator in `utils/problem_analyzer.py` is bypassed and unused).
+`records/benchmarks/fair_gp_eps.csv`, the sampled evaluation of the
+GP rules, was produced by the evaluation harness of the companion GP
+study (doi:10.5281/zenodo.21716972) under the shared schedule builder
+with epsilon=0.1; `code/scripts/eval_eps_gp_bo64.py` implements the
+same protocol per seed. The deployed champion of the article (main
+arm, seed 5) is exported as `code/models/v2_full_1000ep_seed5_deployed.pt`,
+byte-identical to `best_model.pt` of its run folder.
 
 ## Arms and campaigns
 

@@ -42,7 +42,7 @@ this document; all other references are to the paper.}
 The values of Table~5 of the paper were fixed by hand during
 development, most of them at the defaults customary in the PPO
 literature. To assess whether automatic tuning would improve on them,
-two configuration studies were run with
+three configuration studies were run with
 irace~\citep{LopezIbanez2016}. The first raced $330$ experiments
 ($309$ used) over the 8-parameter space of Table~\ref{sup:tab-irace}
 at reduced fidelity: one training instance, $300$ episodes,
@@ -87,7 +87,14 @@ A third campaign raced the reward instead of the optimizer: the six
 weights of Eq.~(5) of the paper, each free in $[0,1]$, over $299$
 experiments at operating fidelity. Its winner did not improve the
 deployed weights either, $14.04\%$ against $13.55\%$ under the same
-confirmation protocol (Wilcoxon signed-rank, $p=0.21$). Two
+confirmation protocol. Its pre-registered adoption rule tested the
+$18$ (instance, seed) pairs directly (Wilcoxon signed-rank,
+$p=0.21$); under the convention of the main paper, seeds averaged
+within each of the six instances before an exact test, the verdict is
+the same ($p=0.31$). Two departures of this confirmation from the
+main protocol should be noted: the statistical unit just given, and
+that both of its arms transfer weights from the immediately preceding
+block rather than from the best block so far, symmetrically. Two
 by-products of that campaign are more informative than its verdict. A
 seeded terminal-only vector $(1,0,0,0,0,0)$ was eliminated in the
 first round, so the dense shaping is not dispensable; and four elites

@@ -70,9 +70,10 @@ for the problem. Its state features are dimensionless and its
 encoder is permutation-invariant, so one trained network applies to
 instances of any size, with no retraining and no change of
 architecture.
-Trained on instances of a single size class, the policy improves on
-every hand-crafted dispatching rule on all seventy benchmark
-instances, six of the seven size classes unseen. It is then compared
+Trained on instances of a single size class, the
+validation-selected policy improves on every hand-crafted dispatching
+rule on all seventy benchmark instances, six of the seven size
+classes unseen. It is then compared
 against a dispatching rule evolved by genetic programming for the
 same benchmark, thirty trained artifacts per family evaluated in one
 harness at matched inference budgets. Which of the two leads is decided
@@ -463,7 +464,11 @@ ranking criteria found the lexicographic order the most robust for
 this problem~\citep{DiazGA2020}, and it is kept fixed throughout so
 that every method in this paper is judged by the same
 criterion. For reporting we follow the field
-convention~\citep{DiazGA2020,DiazICAE2023}:
+convention~\citep{DiazGA2020,DiazICAE2023}, which writes the interval
+midpoint as $\ECmax$ and uses it as the scalar summary of an interval
+makespan; the notation is conventional, as under an interval-only
+model of uncertainty no distribution is specified and the midpoint is
+a proxy rather than a derived expectation:
 \begin{equation}
 \mathrm{RE}(\%)=\frac{\ECmax-\mathrm{LB}}{\mathrm{LB}}\times100,
 \qquad \ECmax=\tfrac12\big(C^L_{\max}+C^U_{\max}\big),
@@ -632,14 +637,17 @@ independent of the instance's size and time scale, and a schedule of
 the same relative quality receives the same reward on any instance.
 The robust arms of Section~\ref{sec:ablations-interval} replace
 $C^{U}_{\max}$ here by $f_\lambda$.
-\item \emph{Job progress} ($w_{\mathrm{pr}}{=}0.26$):
+\item \emph{Job progress} ($w_{\mathrm{pr}}{=}0.05$):
 \begin{equation*}
 r^{\mathrm{pr}}_t=\frac{1}{nm}.
 \end{equation*}
-A constant per operation scheduled, a uniform progress signal that
-sums to one over any episode.
-\item \emph{Machine idleness} ($w_{\mathrm{id}}{\approx}0.24$,
-per instance; see below): when the job predecessor decides the start
+A constant per operation scheduled, on every step but the terminal
+one, where the terminal component replaces it; the episode sum is
+$(nm-1)/nm$. With $\gamma=1$ and the fixed $nm$-step horizon this
+term is the same for every complete schedule, so it stabilizes value
+estimation rather than shaping the policy's preferences.
+\item \emph{Machine idleness} ($w_{\mathrm{id}}{=}0.15$): when the
+job predecessor decides the start
 of $o_{jk}$ under the ranking of Eq.~\eqref{eq:lex},
 \begin{equation*}
 r^{\mathrm{id}}_t=
@@ -654,7 +662,7 @@ earliest, so the worst case of an idle interval reads the machine's
 \emph{lower} completion endpoint; this is the one place where the
 training signal consults a lower endpoint, a fact
 Section~\ref{sec:ablations-interval} returns to.
-\item \emph{Local improvement} ($w_{\mathrm{li}}{=}0.15$):
+\item \emph{Local improvement} ($w_{\mathrm{li}}{=}0.30$):
 \begin{equation*}
 r^{\mathrm{li}}_t=
 \kappa_t\,\frac{M^{U}_{t-1}-M^{U}_{t}}{s_{\mathrm{mk}}/10},
@@ -664,8 +672,9 @@ r^{\mathrm{li}}_t=
 \end{equation*}
 the step change of the projected makespan, with deteriorations
 penalized twice as strongly: a dense signal so that early decisions
-are not credited only $nm$ steps later.
-\item \emph{Operation criticality} ($w_{\mathrm{cr}}{=}0.1$):
+are not credited only $nm$ steps later. On the first step of an
+episode the component is zero, as no previous projection exists.
+\item \emph{Operation criticality} ($w_{\mathrm{cr}}{=}0.05$):
 \begin{equation*}
 r^{\mathrm{cr}}_t=\frac{\sum_{k'>k}p^{U}_{jk'}}{s_{\mathrm{cr}}},
 \qquad s_{\mathrm{cr}}=\frac{W^{U}}{2n},
@@ -674,7 +683,7 @@ with $W^{U}$ the instance's total worst-case work: the worst-case
 work remaining in the scheduled operation's job. Favoring jobs with
 much work remaining is a standard proxy for the emerging critical
 path.
-\item \emph{Load balance} ($w_{\mathrm{ba}}{=}0.1$):
+\item \emph{Load balance} ($w_{\mathrm{ba}}{=}0.10$; see below):
 \begin{equation*}
 r^{\mathrm{ba}}_t=
 -\frac{\sigma_{\mu}\big(c^{U}_{\mu}\big)}{s_{\mathrm{ba}}},
@@ -690,25 +699,30 @@ instance's own loads exhibit discourages lopsided machine loads
 without penalizing an instance for being intrinsically unbalanced.
 \end{itemize}
 
-Four of the six weights are fixed constants. The other two are set
-per instance by fixed deterministic rules of the instance's own
-statistics: $w_{\mathrm{id}} = 0.2 + 0.2\,(\rho-1)$ capped at
-$0.3$, with $\rho$ the load of the most loaded machine over the mean
-machine load, which gives $0.237$--$0.243$ on the four training
-instances; and $w_{\mathrm{ba}}$, which grows with the dispersion of
-the machine loads and sat at its $0.1$ cap on all four. The base
-progress weight $0.2$ is raised by a fixed factor $1.3$ on interval
-instances, giving the $0.26$ above. These rules and the internal
-constants were fixed during early development and carried unchanged
-into every experiment of this paper; no claim of optimality is
-attached to them. For completeness, the implementation also carries
-two dormant elements: floors on the scales that never bound on these
-instances, and a discontinuous terminal bonus below a $5\%$ gap that
-no recorded training episode reached. The configuration campaign of
-Section~\ref{sec:hyperconfig} later raced the six weights, each free
-in $[0,1]$ (explicit weights bypass the per-instance rules), and did
-not improve on the deployed vector within the protocol's resolution;
-the internal constants were not raced.
+The training entry point sets the six weights as fixed constants,
+with $w_{\mathrm{ba}}$ nominally $0.15$. A per-instance adjustment
+layer can then override three of them by fixed deterministic
+threshold rules of the instance's own statistics; on the four
+training instances the only rule that fires is the one lowering the
+balance weight to $0.10$ under high dispersion of the machine loads,
+and it fires on all four, so the effective vector is the one printed
+with the components above, identical across the training set. The
+implementation also contains a generator that would derive all six
+weights from instance statistics, but the training entry point
+supplies its explicit vector and the generator is bypassed; it played
+no part in any experiment of this paper. These constants were fixed
+during early development and carried unchanged into every experiment;
+no claim of optimality is attached to them, and, like the transfer
+rule of Section~\ref{sec:training}, this account of their provenance
+was established by a post-hoc code review. For completeness, the
+implementation carries two dormant elements: floors on the scales
+that never bound on these instances, and a discontinuous terminal
+bonus below a $5\%$ gap that no recorded training episode reached.
+The configuration campaign of Section~\ref{sec:hyperconfig} later
+raced the six weights, each free in $[0,1]$ (explicit weights bypass
+the adjustment layer), and did not improve on the deployed vector
+within the protocol's resolution; the internal constants were not
+raced.
 
 \subsection{State representation}
 \label{sec:features}
@@ -938,7 +952,8 @@ policies trained under different seeds are evaluated on the same
 instances, so their results are averaged over seeds before any
 instance is entered into a paired test. Tests are two-sided exact Wilcoxon
 signed-rank tests over the instances of the set in question, reported
-with the mean difference and its $95\%$ confidence interval, and the
+with the mean difference and its $95\%$ confidence interval
+(Student~$t$ over the instance differences), and the
 smallest attainable $p$-value is $0.031$ on the six validation
 instances and below $10^{-3}$ on the seventy. No correction for
 multiple comparisons is applied: each test is reported as an
@@ -1052,7 +1067,8 @@ than TA13's in 26 of the 30 runs. Every block receives the same
 number of episodes, and the instances are presented in their
 benchmark order, TA11 to TA14, which the seed does not permute: it
 governs network initialization, action sampling and minibatch
-composition.
+composition, and the random streams are reseeded with it at the start
+of every block, not only once per run.
 A \emph{rollout} is one complete construction episode
 played by the current policy: \emph{sampled} when each operation is
 drawn from $\pi$, as during training, and \emph{greedy} when every
@@ -1761,7 +1777,15 @@ which charges the schedule for the width of the interval it predicts
 and is the analogue of the robust objective of the GP study~\citep{DiazGP2026};
 since optimizing one quantity and selecting by another would be
 incoherent, the best-of-$N$ inference of this arm ranks its samples by
-$f_\lambda$ as well. Deployed as that package, the objective delivers
+$f_\lambda$ as well. One caveat from the post-hoc code review of
+Section~\ref{sec:training} is specific to these arms: the training-side
+tracking key that judges the best block reads the lower endpoint of
+the lexicographically largest job completion rather than the
+componentwise maximum of the lower endpoints, so the $f_\lambda$ it
+tracks can differ from Eq.~\eqref{eq:robust} (the upper endpoint, and
+with it every $\lambda=0$ arm, is unaffected); all reported
+evaluations and every number in this section use the componentwise
+makespan. Deployed as that package, the objective delivers
 what it promises: over the ten seeds the predicted interval narrows
 from $13.05\%$ to $12.18\%$ of the expected makespan (narrower on all
 six instances, $p=0.031$) while the expected makespan rises by

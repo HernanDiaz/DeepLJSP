@@ -136,7 +136,13 @@ def main():
     for f in glob.glob("zenodo_deposit/rules/main_arm/*.json"):
         c_m += copia(f, os.path.join(DESTINO, "rules", "gp_main_arm",
                                      os.path.basename(f)))
-    print(f"revision M7: {c_m} ficheros (modelos, irace, reglas GP)")
+    # los registros idea-* de las modificaciones probadas y rechazadas
+    # (7.4 cuenta trece): el verificador los lee por os.listdir, que la
+    # captura de rutas entre comillas de arriba no ve (R2-7)
+    for f in glob.glob("benchmarks/idea-*.json"):
+        c_m += copia(f, os.path.join(DESTINO, "records", f))
+    print(f"revision M7: {c_m} ficheros (modelos, irace, reglas GP, "
+          f"idea-*)")
 
     # --- el material suplementario del articulo, en PDF ---
     try:

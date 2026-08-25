@@ -2007,45 +2007,18 @@ check_exacto("y ese unico .lower esta dentro de la rama de lambda",
              0 < _j - _i < 200 and "if lam" in _ms_cod[_i:_j],
              f"{_j - _i} caracteres tras el env var")
 
-# 4.1 imprime los pesos EFECTIVOS del reward en las instancias de
-# entrenamiento. Se recomputan con el propio generador de la factoria
-# (la clase AdaptiveRewardStrategy tiene otros defaults que NO rigen:
-# el generador los sobreescribe, y eso es lo que confundio al borrador)
-try:
-    sys.path.insert(0, ".")
-    from jobshop_rl.data import PROBLEM_REGISTRY as _REG
-    from jobshop_rl.utils.problem_analyzer import (ProblemAnalyzer as _PA,
-                                                   AdaptiveConfigGenerator
-                                                   as _ACG)
-    _ws = []
-    for _k in range(1, 5):
-        _pd = _REG[f"int__tai20_15_{_k:02d}"]()
-        _an = _PA.analyze_problem(_pd["sequences"], _pd["durations"])
-        _ws.append(_ACG.generate_reward_config(_an))
-    for _clave, _v_tex in [("makespan_weight", 1.0),
-                           ("progress_weight", 0.26),
-                           ("local_improvement_weight", 0.15),
-                           ("critical_weight", 0.1),
-                           ("balance_weight", 0.1)]:
-        _vals = [w[_clave] for w in _ws]
-        check_exacto(f"4.1: {_clave} efectivo (texto {_v_tex})",
-                     all(abs(v - _v_tex) < 0.005 for v in _vals),
-                     f"{min(_vals):.3f}..{max(_vals):.3f}")
-    _idle = [w["idle_weight"] for w in _ws]
-    check_exacto("4.1: idle_weight efectivo ~0.24 (texto)",
-                 all(0.23 <= v <= 0.25 for v in _idle),
-                 f"{min(_idle):.3f}..{max(_idle):.3f}")
-    # La descomposicion 0.2 x 1.3 del peso de progreso se retiro del
-    # texto el 2026-08-13 (constante sin justificacion propia): el 0.26
-    # efectivo queda verificado arriba recomputando con el generador.
-except Exception as _e:
-    pendiente("pesos efectivos del reward", f"{type(_e).__name__}: {_e}")
+# Los pesos del reward se verifican mas abajo por la RUTA REAL
+# (main.py -> factory -> AdaptiveRewardStrategy); el check que
+# vivia aqui recomputaba el generador AdaptiveConfigGenerator,
+# una ruta que el punto de entrada batch anula (R2-1).
 # El bonus terminal (rampa bajo el 5% de gap) existe en el codigo pero
 # se omite del texto porque nunca se activo: el mejor episodio de todo
 # el entrenamiento quedo al 19.5% de LBi (medido el 2026-08-13 sobre
 # los logs de las siete semillas ext-c). Se comprueba que sigue asi.
 try:
     import csv as _csv
+    sys.path.insert(0, ".")
+    from jobshop_rl.data import PROBLEM_REGISTRY as _REG
     _g_min = 1e9
     for _k in range(1, 5):
         _pd = _REG[f"int__tai20_15_{_k:02d}"]()
@@ -2247,27 +2220,53 @@ check_exacto("4.1: el texto imprime el idle implementado (c^L)",
 check_exacto("7.3: el canal del extremo inferior se declara",
              "does\nexist" in TEX or "does exist" in " ".join(TEX.split()))
 
-# (3) Los pesos adaptativos por instancia: la regla del texto contra el
-# codigo, sobre las cuatro instancias de entrenamiento
+# (3) Los pesos de la recompensa por la RUTA REAL (R2-1, revision del
+# 2026-08-25): run_benchmark.py -> main.py --mode batch pasa un vector
+# explicito que anula el generador; AdaptiveRewardStrategy reajusta el
+# balance por instancia. Se reproduce la cadena entera, no una ruta
+# plausible: el vector se extrae del propio main.py.
 try:
+    _src = open("jobshop_rl/main.py", encoding="utf-8").read()
+    # el dict del modo batch (el de las campanas), no el del modo single
+    _src = _src[_src.index("def run_batch_experiment"):]
+    _m = re.search(r"reward_params = \{(.*?)\}", _src, re.S)
+    _entrada = dict(re.findall(r'"(\w+)":\s*([\d.]+)', _m.group(1)))
+    _entrada = {k: float(v) for k, v in _entrada.items()}
+    check_exacto("4.1: main.py entrega el vector explicito (ba 0.15)",
+                 _entrada == {"makespan_weight": 1.0, "idle_weight": 0.15,
+                              "critical_weight": 0.05,
+                              "balance_weight": 0.15,
+                              "progress_weight": 0.05,
+                              "local_improvement_weight": 0.3})
+    import os as _os
+    _os.environ.pop("DEEPLJSP_REWARD_WEIGHTS", None)
     from jobshop_rl.data import PROBLEM_REGISTRY as _REG
-    from jobshop_rl.utils.problem_analyzer import (
-        ProblemAnalyzer as _PA, AdaptiveConfigGenerator as _ACG)
-    _ids, _bas = [], []
+    from jobshop_rl.utils.problem_analyzer import ProblemAnalyzer as _PA
+    from jobshop_rl.rewards.strategies.adaptive import (
+        AdaptiveRewardStrategy as _ARS)
+    _efectivos = []
     for _pid in [f"int__tai20_15_{k:02d}" for k in (1, 2, 3, 4)]:
         _pr = _REG[_pid]()
-        _w = _ACG.generate_reward_config(
-            _PA.analyze_problem(_pr["sequences"], _pr["durations"]))
-        _ids.append(_w["idle_weight"])
-        _bas.append(_w["balance_weight"])
-    check_exacto("4.1: w_id en 0.237-0.243 sobre TA11-14 (texto)",
-                 0.2365 <= min(_ids) and max(_ids) <= 0.2431
-                 and "$0.237$--$0.243$" in TEX,
-                 f"{min(_ids):.4f}-{max(_ids):.4f}")
-    check_exacto("4.1: w_ba en su tope 0.1 en las cuatro",
-                 all(abs(b - 0.1) < 1e-9 for b in _bas))
+        _pa = _PA.analyze_problem(_pr["sequences"], _pr["durations"])
+        _s = _ARS(problem_analysis=_pa, **_entrada)
+        _efectivos.append(tuple(_s.weights[k] for k in (
+            "makespan_weight", "idle_weight", "critical_weight",
+            "balance_weight", "progress_weight",
+            "local_improvement_weight")))
+    _esper = (1.0, 0.15, 0.05, 0.1, 0.05, 0.3)
+    check_exacto("4.1: efectivos (1,.15,.05,.10,.05,.30) en TA11-14",
+                 all(_e == _esper for _e in _efectivos),
+                 str(sorted(set(_efectivos))))
+    check_exacto("4.1: el texto imprime los efectivos y el reajuste",
+                 r"$w_{\mathrm{pr}}{=}0.05$" in TEX
+                 and r"$w_{\mathrm{id}}{=}0.15$" in TEX
+                 and r"$w_{\mathrm{li}}{=}0.30$" in TEX
+                 and r"$w_{\mathrm{cr}}{=}0.05$" in TEX
+                 and r"$w_{\mathrm{ba}}{=}0.10$" in TEX
+                 and "nominally $0.15$" in TEX
+                 and "the generator is bypassed" in TEX)
 except Exception as _e:
-    pendiente("pesos adaptativos", type(_e).__name__)
+    pendiente("pesos ruta real", f"{type(_e).__name__}: {_e}")
 
 # (4) M5: la seleccion de la regla GP sobre validacion elige la misma
 _val6 = {f"int__tai20_15_{k:02d}" for k in range(5, 11)}
@@ -2321,22 +2320,25 @@ else:
 # los numeros literales con que el suplementario cita al principal,
 # contrastados contra main.aux: si una renumeracion los mueve, esto
 # salta en vez de dejar el suplementario apuntando a la tabla equivocada
-_aux = open("paper/main.aux", encoding="utf-8", errors="replace").read()
+if os.path.exists("paper/main.aux"):
+    _aux = open("paper/main.aux", encoding="utf-8",
+                errors="replace").read()
 
+    def _num_de(etiqueta):
+        _m = re.search(r"newlabel\{" + re.escape(etiqueta)
+                       + r"\}\{\{(\d+)\}", _aux)
+        return int(_m.group(1)) if _m else -1
 
-def _num_de(etiqueta):
-    _m = re.search(r"newlabel\{" + re.escape(etiqueta) + r"\}\{\{(\d+)\}",
-                   _aux)
-    return int(_m.group(1)) if _m else -1
-
-
-for _etq, _num, _uso in [("tab:hyper", 5, "Table~5 of the paper"),
-                         ("eq:reward", 5, "Eq.~(5) of the paper"),
-                         ("fig:arch", 1, "Figure~1 of the paper"),
-                         ("tab:classics", 8, "Table~8 of")]:
-    check_exacto(f"sup cita {_etq} como numero {_num}",
-                 _num_de(_etq) == _num and _uso in SUP,
-                 f"aux dice {_num_de(_etq)}")
+    for _etq, _num, _uso in [("tab:hyper", 5, "Table~5 of the paper"),
+                             ("eq:reward", 5, "Eq.~(5) of the paper"),
+                             ("fig:arch", 1, "Figure~1 of the paper"),
+                             ("tab:classics", 8, "Table~8 of")]:
+        check_exacto(f"sup cita {_etq} como numero {_num}",
+                     _num_de(_etq) == _num and _uso in SUP,
+                     f"aux dice {_num_de(_etq)}")
+else:
+    pendiente("citas literales del suplementario",
+              "sin paper/main.aux (paquete)")
 # y el bloque de autor es identico en los dos documentos
 check_exacto("la afiliacion coincide entre paper y suplementario",
              "\\orgdiv{Department of Computing}" in TEX
@@ -3454,6 +3456,22 @@ check("5.3: Wilcoxon de la confirmacion (texto 0.21)", 0.21,
       tol=0.005)
 check_exacto("5.3: el veredicto es la regla 1 del plan",
              "sin mejora significativa" in _t3)
+# el reanalisis bajo la convencion 5.1 (R2-3, revision 2026-08-25):
+# reevaluacion determinista de los seis checkpoints, 6 medias por
+# instancia, Wilcoxon exacto
+_re3 = json.load(open("benchmarks/confirm_reward/reanalisis.json",
+                      encoding="utf-8"))
+check("5.3: el reanalisis reproduce la media ganadora", 14.04,
+      _re3["media_ganadora_18"], tol=0.005)
+check("5.3: el reanalisis reproduce la media default", 13.55,
+      _re3["media_default_18"], tol=0.005)
+check("5.3: reanalisis, p pre-registrado reproducido", 0.2097,
+      _re3["p_18pares_preregistrado"], tol=0.0005)
+check("5.3: reanalisis, p exacto sobre 6 medias (texto 0.31)", 0.3125,
+      _re3["p_6medias_exacto"], tol=0.0005)
+check_exacto("5.3: el suplementario da ambos p y la divulgacion",
+             "$p=0.21$" in SUP and "$p=0.31$" in SUP
+             and "immediately preceding" in SUP)
 # el espacio que se corrio: seis pesos, cada uno en [0,1]
 _p3 = _espacio("tuning/parameters_reward.txt")
 check_exacto("5.3: seis pesos, todos en [0, 1]",

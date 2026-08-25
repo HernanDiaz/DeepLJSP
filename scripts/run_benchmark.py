@@ -42,10 +42,9 @@ TIERS = {
         "eval": [
             "int__tai20_15_05", "int__tai20_15_06", "int__tai20_15_07",
             "int__tai20_15_08", "int__tai20_15_09", "int__tai20_15_10",
-            # NOTA: la evaluación zero-shot en otros tamaños (p.ej. 15x15) no es
-            # posible hoy: la entrada de la red de valor depende de num_jobs y
-            # num_machines, así que los pesos no cargan entre tamaños distintos.
-            # Requeriría una representación de estado independiente del tamaño.
+            # la evaluacion en otros tamanos corre aparte, con los
+            # evaluadores autonomos (scripts/eval_val_brazos.py y
+            # scripts/eval_treinta_semillas.py) sobre el checkpoint
         ],
         "episodes": 100,
         "seeds": [2, 3, 4],
