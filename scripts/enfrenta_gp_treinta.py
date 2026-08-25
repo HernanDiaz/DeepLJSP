@@ -78,7 +78,7 @@ def contrasta(nombre, a, b, tas):
     """a menos b instancia a instancia; a favor de a si negativo."""
     d = [a[t] - b[t] for t in tas]
     gana = sum(1 for x in d if x < 0)
-    p = float(stats.wilcoxon(d).pvalue)
+    p = float(stats.wilcoxon(d, method="exact").pvalue)
     print(f"  {nombre:<34} {statistics.mean(a[t] for t in tas):6.2f} vs "
           f"{statistics.mean(b[t] for t in tas):6.2f}   gana en {gana}/70   "
           f"mediana {statistics.median(d):+.2f}   p={p:.2g}")

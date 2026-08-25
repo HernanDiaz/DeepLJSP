@@ -47,7 +47,7 @@ def main():
         dif = [a[i] - b[i] for i in inst]
         md, sd = statistics.mean(dif), statistics.stdev(dif)
         semi = stats.t.ppf(0.975, len(dif) - 1) * sd / math.sqrt(len(dif))
-        p = float(stats.wilcoxon(dif).pvalue)
+        p = float(stats.wilcoxon(dif, method="exact").pvalue)
         peor = sum(1 for x in dif if x > 0)
         print(f"\n  {etq} ({arm}, {len(sem)} semillas)")
         print(f"    base {statistics.mean(b.values()):.2f}   "

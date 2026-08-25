@@ -101,8 +101,8 @@ def main():
                     "d_re": round(statistics.mean(d_re), 4),
                     "d_ancho": round(statistics.mean(d_anc), 4),
                     "estrecho_en": sum(1 for x in d_anc if x < 0),
-                    "p_re": float(stats.wilcoxon(d_re).pvalue),
-                    "p_ancho": float(stats.wilcoxon(d_anc).pvalue)})
+                    "p_re": float(stats.wilcoxon(d_re, method="exact").pvalue),
+                    "p_ancho": float(stats.wilcoxon(d_anc, method="exact").pvalue)})
             res["modos"][modo][brazo] = entrada
             extra = ""
             if brazo != "base":

@@ -91,7 +91,7 @@ def main():
                 ha="center", va="top", fontsize=7, color="#555555")
     ax.set_xlabel("training episode (blocks of 1000 per instance, "
                   "weights carried over)")
-    ax.set_ylabel("RE (%)")
+    ax.set_ylabel("worst-case gap (%)")
     ax.set_xlim(0, 4 * EP)
     ax.legend(frameon=False, fontsize=7, loc="upper right",
               bbox_to_anchor=(1.0, 0.88))

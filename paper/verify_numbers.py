@@ -1840,10 +1840,10 @@ else:
     import json as _jenf
     _enf = _jenf.load(open(_enf_j, encoding="utf-8"))
     for _k, _ma, _mb, _gana, _med, _p in [
-            ("1pass_media", 19.82, 18.99, 26, 0.72, 0.007),
-            ("1pass_elegido", 18.49, 17.71, 26, 1.06, 0.029),
-            ("bo64_elegido", 15.02, 15.88, 42, -0.59, 0.021),
-            ("bo1024_elegido", 13.25, 14.07, 42, -0.82, 0.011)]:
+            ("1pass_media", 19.82, 18.99, 26, 0.72, 0.006),
+            ("1pass_elegido", 18.49, 17.71, 26, 1.06, 0.028),
+            ("bo64_elegido", 15.02, 15.88, 42, -0.59, 0.020),
+            ("bo1024_elegido", 13.25, 14.07, 42, -0.82, 0.010)]:
         _e = _enf[_k]
         check(f"6.2 {_k}: politica (texto {_ma})", _ma, _e["media_a"],
               tol=0.006)
@@ -2194,6 +2194,110 @@ check_exacto("declaracion de datos: solo el deposito propio",
              and "DiazDataset2026" not in TEX
              and "The benchmark instances, the code," in TEX)
 
+
+# =========================================================================
+print("\n== codigo vs texto: lo que la revision Codex destapo (2026-08-25) ==")
+# La leccion: 800 checks numericos no vigilaban que el TEXTO describiera
+# el CODIGO. Estos si. Fuentes: paper/revisiones/2026-08-25_*.md.
+
+# (1) El regimen de transferencia real: cada bloque arranca del mejor
+# bloque previo por makespan BRUTO; en 26 de 30 tiradas TA14 arranco de
+# TA12, y TA14 gano en las 30 (el artefacto es su red final)
+_rotas, _gana14, _tot = 0, 0, 0
+for _d in sorted(glob.glob("outputs/bench_v2-full-1000ep*")):
+    if "ext__" in _d or "ext-b" in _d:
+        continue
+    try:
+        _fs = list(__import__("csv").DictReader(
+            open(_d + "/training_summary.csv", encoding="utf-8")))
+    except OSError:
+        continue
+    if len(_fs) != 4:
+        continue
+    _tot += 1
+    _mk = [float(r["best_makespan"]) for r in _fs]
+    if min(range(3), key=lambda i: _mk[i]) != 2:
+        _rotas += 1
+    if min(range(4), key=lambda i: _mk[i]) == 3:
+        _gana14 += 1
+if _tot != 30:
+    pendiente("regimen de transferencia", f"{_tot} tiradas")
+else:
+    check_exacto("5.4: TA14 arranca de TA12 en 26 de 30 (texto)",
+                 _rotas == 26 and "in 26 of the 30 runs" in TEX,
+                 f"{_rotas}/30")
+    check_exacto("5.4: TA14 es el mejor bloque en las 30 (texto)",
+                 _gana14 == 30 and "in all 30 runs" in TEX,
+                 f"{_gana14}/30")
+    check_exacto("5.4: el texto declara el regimen y el artefacto reales",
+                 "best block so far" in TEX
+                 and "post-hoc code review" in TEX
+                 and "the stored weights are the" not in TEX)
+
+# (2) La semantica del idle: la resta intervalar hace que el peor caso
+# del hueco lea el extremo INFERIOR de la maquina, y 4.1 lo imprime
+from jobshop_rl.models.interval import Interval as _Iv
+_res = (_Iv(5, 9) - _Iv(2, 4))
+check_exacto("4.1: la resta intervalar da s^U - c^L en el upper",
+             float(_res.upper) == 9 - 2,
+             f"upper={_res.upper}")
+check_exacto("4.1: el texto imprime el idle implementado (c^L)",
+             "s^{U}_{o_{jk}}-c^{L}_{\\mu}" in TEX
+             and "reads the machine's" in TEX)
+check_exacto("7.3: el canal del extremo inferior se declara",
+             "does\nexist" in TEX or "does exist" in " ".join(TEX.split()))
+
+# (3) Los pesos adaptativos por instancia: la regla del texto contra el
+# codigo, sobre las cuatro instancias de entrenamiento
+try:
+    from jobshop_rl.data import PROBLEM_REGISTRY as _REG
+    from jobshop_rl.utils.problem_analyzer import (
+        ProblemAnalyzer as _PA, AdaptiveConfigGenerator as _ACG)
+    _ids, _bas = [], []
+    for _pid in [f"int__tai20_15_{k:02d}" for k in (1, 2, 3, 4)]:
+        _pr = _REG[_pid]()
+        _w = _ACG.generate_reward_config(
+            _PA.analyze_problem(_pr["sequences"], _pr["durations"]))
+        _ids.append(_w["idle_weight"])
+        _bas.append(_w["balance_weight"])
+    check_exacto("4.1: w_id en 0.237-0.243 sobre TA11-14 (texto)",
+                 0.2365 <= min(_ids) and max(_ids) <= 0.2431
+                 and "$0.237$--$0.243$" in TEX,
+                 f"{min(_ids):.4f}-{max(_ids):.4f}")
+    check_exacto("4.1: w_ba en su tope 0.1 en las cuatro",
+                 all(abs(b - 0.1) < 1e-9 for b in _bas))
+except Exception as _e:
+    pendiente("pesos adaptativos", type(_e).__name__)
+
+# (4) M5: la seleccion de la regla GP sobre validacion elige la misma
+_val6 = {f"int__tai20_15_{k:02d}" for k in range(5, 11)}
+_pv, _p70 = {}, {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/reevo_fixedfit/summary.csv", encoding="utf-8")):
+    if not r["method"].startswith("gp_tuned"):
+        continue
+    _p70.setdefault(r["method"], []).append(float(r["re"]))
+    if r["instance"] in _val6:
+        _pv.setdefault(r["method"], []).append(float(r["re"]))
+_mv = {m: sum(v) / 6 for m, v in _pv.items() if len(v) == 6}
+_regla_val = min(_mv, key=_mv.get)
+_orden = sorted(_mv.values())
+check_exacto("6.2: la seleccion en validacion da la misma regla",
+             _regla_val == "gp_tuned_seed1"
+             and abs(_orden[0] - 17.45) < 0.005
+             and abs(_orden[1] - 18.13) < 0.005
+             and "$17.45\\%$" in TEX and "$18.13\\%$" in TEX,
+             f"{_regla_val}: {_orden[0]:.2f} vs {_orden[1]:.2f}")
+
+# (5) La figura 2 declara su eje real
+check_exacto("fig 2: el pie dice peor caso, no RE del punto medio",
+             "worst-case gap to" in TEX
+             and "not the midpoint RE" in TEX)
+check_exacto("fig 2: el script etiqueta el eje como peor caso",
+             'worst-case gap' in open(
+                 "scripts/make_training_curve_figure.py",
+                 encoding="utf-8").read())
+
 # Marcadores \todo pendientes: se imprimen en rojo en el PDF (uno de
 # ellos llego a salir dentro de la bibliografia), asi que ninguno puede
 # sobrevivir al envio. Se listan en cada pasada hasta que desaparezcan.
@@ -2205,9 +2309,14 @@ for _f in ("paper/main.tex", "paper/refs.bib"):
 # revision r1) se escribio y se retiro el mismo dia por decision del
 # autor: se repondra solo si un revisor la pide. El .log no debe traer
 # citas ni referencias sin resolver
-_log = open("paper/main.log", encoding="utf-8", errors="replace").read()
-check_exacto("tex: sin citas ni referencias sin resolver",
-             "undefined" not in _log.lower().replace("undefined control", ""))
+if os.path.exists("paper/main.log"):
+    _log = open("paper/main.log", encoding="utf-8",
+                errors="replace").read()
+    check_exacto("tex: sin citas ni referencias sin resolver",
+                 "undefined" not in _log.lower().replace(
+                     "undefined control", ""))
+else:
+    pendiente("log de compilacion", "sin paper/main.log (paquete)")
 
 # los numeros literales con que el suplementario cita al principal,
 # contrastados contra main.aux: si una renumeracion los mueve, esto
@@ -3267,7 +3376,7 @@ else:
 
     def _par70(a, b):
         d = [a[i] - b[i] for i in _i70]
-        return (sum(1 for x in d if x < 0), _w70(d).pvalue)
+        return (sum(1 for x in d if x < 0), _w70(d, method="exact").pvalue)
 
     _n, _p = _par70(_pb, _mor)
     check_exacto("eps70: politica mas fiel que MOR en 63/70, p<1e-10",
@@ -3276,13 +3385,13 @@ else:
     check_exacto("eps70: y que GT-MWKR en 65/70, p<1e-10",
                  _n == 65 and _p < 1e-10, f"{_n}/70 p={_p:.1e}")
     _n, _p = _par70(_pb, _est)
-    check_exacto("eps70: y que EST en 45/70, p=0.011",
+    check_exacto("eps70: y que EST en 45/70, p=0.010",
                  _n == 45 and 0.008 <= _p <= 0.014, f"{_n}/70 p={_p:.3f}")
     _n, _p = _par70(_pb, _gp1)
     check_exacto("eps70: nivelada con GP a una pasada (p=0.069)",
                  0.06 <= _p <= 0.08, f"{_n}/70 p={_p:.3f}")
     _n, _p = _par70(_pb, _gpb)
-    check_exacto("eps70: y con GP bo64 (p=0.38)",
+    check_exacto("eps70: y con GP bo64 (p=0.39)",
                  0.35 <= _p <= 0.42, f"p={_p:.2f}")
     _n, _p = _par70(_pb, _pg)
     check_exacto("eps70: muestrear no degrada a la politica (p=0.29)",
