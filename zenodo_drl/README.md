@@ -9,8 +9,10 @@ accepted and rejected experiment records alike, and the code that
 produced and verifies them.
 
 The thirty evolved GP rules the article compares against are
-published in the companion GP deposit (doi:10.5281/zenodo.21716972)
-and are not duplicated here.
+published in the companion GP deposit (doi:10.5281/zenodo.21716972);
+from v3 on, the thirty rule files of the main arm are also mirrored
+here under `rules/gp_main_arm/` so the shared evaluation can be rerun
+from this deposit alone.
 
 ## Contents
 
@@ -24,7 +26,11 @@ records/
                         by the article, quarantined files included
                         (CUARENTENA_* prefix marks data withdrawn for
                         cause, kept for the record)
-  tuning/               irace campaign states and scenarios (Section 5.3)
+  tuning/               irace campaign states, scenarios and the
+                        target-runner scripts they invoke (Section 5.3)
+rules/
+  gp_main_arm/          the thirty GP rules of the shared evaluation
+                        (mirrored from doi:10.5281/zenodo.21716972)
 training_runs/
   bench_<arm>__<git>__<stamp>_seed<k>/
                         one folder per training run: final checkpoint
@@ -37,6 +43,7 @@ supplementary_material.pdf
 code/
   jobshop_rl/           the training and evaluation package
   scripts/              evaluation, analysis and campaign scripts
+  models/               exported checkpoints referenced by scripts
   paper/make_figures.py     regenerates every figure from records/
   paper/verify_numbers.py   recomputes every number the article prints
                             from the primary files in this deposit
@@ -49,6 +56,43 @@ code/
 article prints from the files in `records/` and `training_runs/`, one
 named check per claim. Run it from a checkout whose layout mirrors this
 deposit (or adjust the base paths at the top of the script).
+
+## Reproducing training
+
+Training runs from `code/` with the pinned requirements. The entry
+point is `scripts/run_benchmark.py`; the size-invariant agent the
+article uses is selected with the environment variable
+`DEEPLJSP_AGENT=v2`. One representative command per arm (Windows
+syntax; on Linux replace `set` with `export`):
+
+```
+:: main arm (Section 5.4), thirty seeds in total
+set DEEPLJSP_AGENT=v2
+python scripts/run_benchmark.py --tier full --tag v2-full-1000ep --episodes 1000 --seeds 2,3,4,5,6
+
+:: training-budget ladder (Table 6)
+python scripts/run_benchmark.py --tier full --tag v2-full-100ep  --episodes 100  --seeds 2,3,4,5,6
+python scripts/run_benchmark.py --tier full --tag v2-full-300ep  --episodes 300  --seeds 2,3,4,5,6
+
+:: no-width ablation (Section 7.3): the encoder collapses each
+:: interval to its worst case
+set DEEPLJSP_V2_WORSTCASE_ONLY=1
+python scripts/run_benchmark.py --tier full --tag v2-nowidth-1000ep --episodes 1000 --seeds 2,3,4
+
+:: midpoint control (Section 7.3): crisp midpoint instances
+python scripts/run_benchmark.py --tier midpoint --tag v2-midpoint-1000ep --episodes 1000 --seeds 2,3,4
+
+:: width-penalized arms (Section 7.3), one value per run
+set DEEPLJSP_V2_LAMBDA=0.5
+python scripts/run_benchmark.py --tier full --tag v2-robust-lam0p5 --episodes 1000 --seeds 2,3,4
+```
+
+Two conventions of the trainer, both described in Section 5.4 of the
+article, matter for reproduction: each block starts from the weights
+of the best block so far, judged by the lowest best-episode makespan
+in raw time units, and the serialized artifact of a run is the
+network as it stands at the end of that best block (`best_model.pt`),
+not the weights of the best individual episode.
 
 ## Arms and campaigns
 
@@ -71,4 +115,8 @@ Please cite the article and this deposit.
 
 Version note: v1 preceded the ten-seed extension of the lambda sweep
 and the ten-run budget-curve deposit; both are included from v2 on.
+v3 adds the exported checkpoints under `code/models/`, the irace
+target-runner scripts, the mirrored GP rules and this reproduction
+section, and carries the manuscript revision that describes the
+block-transfer rule and the deployed artifact as implemented.
 The concept DOI always resolves to the latest version.

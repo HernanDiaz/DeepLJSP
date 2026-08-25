@@ -120,6 +120,24 @@ def main():
         c_inst += copia(f, os.path.join(DESTINO, rel))
     print(f"instancias: {c_inst} copiadas")
 
+    # --- lo que la revision de 2026-08-25 echo en falta ---
+    # los checkpoints exportados que referencian scripts y tests
+    c_m = 0
+    for f in glob.glob("models/*.pt"):
+        c_m += copia(f, os.path.join(DESTINO, "code", f))
+    # los target-runner de irace que tuning/scenario*.txt referencia;
+    # solo esos: los lanzadores run_*.bat son utileria local
+    for f in glob.glob("tuning/target_runner*.bat") + \
+            glob.glob("tuning/*.txt"):
+        c_m += copia(f, os.path.join(DESTINO, "records", f))
+    # las 30 reglas GP del brazo principal: sin ellas la evaluacion
+    # compartida no es reejecutable (siguen publicadas en su deposito;
+    # aqui viajan como conveniencia CC-BY del mismo autor)
+    for f in glob.glob("zenodo_deposit/rules/main_arm/*.json"):
+        c_m += copia(f, os.path.join(DESTINO, "rules", "gp_main_arm",
+                                     os.path.basename(f)))
+    print(f"revision M7: {c_m} ficheros (modelos, irace, reglas GP)")
+
     # --- el material suplementario del articulo, en PDF ---
     try:
         import shutil as _sh
