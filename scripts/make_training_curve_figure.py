@@ -19,7 +19,7 @@ import numpy as np
 sys.path.insert(0, ".")
 import matplotlib
 matplotlib.use("Agg")
-matplotlib.rcParams.update({"font.family": "serif", "font.size": 8,
+matplotlib.rcParams.update({"font.family": "serif", "font.size": 10,
                             "pdf.fonttype": 42})
 import matplotlib.pyplot as plt                                # noqa: E402
 
@@ -73,7 +73,7 @@ def main():
     B = np.vstack(curvas_b)     # (10, 4000) mejor-hasta-ahora
 
     x = np.arange(C.shape[1])
-    fig, ax = plt.subplots(figsize=(4.8, 2.5))
+    fig, ax = plt.subplots(figsize=(6.01, 3.13))
     # episodio suavizado: media entre semillas, banda min-max
     Cs = np.vstack([suaviza(c) for c in C])
     ax.fill_between(x, Cs.min(0), Cs.max(0), color="#1f77b4", alpha=0.15,

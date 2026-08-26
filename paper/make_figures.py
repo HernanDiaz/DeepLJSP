@@ -24,7 +24,7 @@ os.makedirs(FIG_DIR, exist_ok=True)
 
 # fonttype 42 (TrueType): por defecto matplotlib incrusta el texto de los
 # PDF como Type 3 (mapa de bits), que produccion de Springer rechaza
-plt.rcParams.update({"font.size": 11, "figure.dpi": 150,
+plt.rcParams.update({"font.size": 10, "figure.dpi": 150,
                      "pdf.fonttype": 42, "ps.fonttype": 42})
 
 
@@ -46,7 +46,7 @@ def fig_scaling():
     # esta curva ya tiene diez, asi que ponerlas juntas invitaria a una
     # comparacion no pareada. Su contraste vive en tab:insize-attn.
 
-    fig, ax = plt.subplots(figsize=(6, 4))
+    fig, ax = plt.subplots(figsize=(4.57, 3.05))
     ax.fill_between(episodes, ds_best, ds_worst, color="seagreen",
                     alpha=0.15, linewidth=0,
                     label="best-to-worst seed range")
@@ -273,7 +273,7 @@ def fig_importance():
     colores = ["indianred" if r["feature"].endswith("width_rel")
                else "steelblue" for r in filas]
 
-    fig, ax = plt.subplots(figsize=(5.6, 4.4))
+    fig, ax = plt.subplots(figsize=(4.7, 3.69))
     y = range(len(nombres))
     ax.barh(list(y), valores, color=colores, height=0.7,
             xerr=errores, error_kw={"ecolor": "0.3", "elinewidth": 0.9,
@@ -333,7 +333,7 @@ def fig_eps():
     orden = ["MOR", "GT-MWKR", "EST", "GP\n(one pass)", "GP\n(best-of-64)",
              "Policy\n(greedy)",
              "Policy\n(best-of-64)", "Policy $f_\\lambda$\n(best-of-64)"]
-    fig, ax = plt.subplots(figsize=(8.0, 3.4))
+    fig, ax = plt.subplots(figsize=(6.53, 2.78))
     datos = [list(med[g].values()) for g in orden]
     bp = ax.boxplot(datos, positions=list(range(len(orden))), widths=0.52,
                     whis=1.5, showfliers=False, patch_artist=True,
@@ -408,7 +408,7 @@ def fig_byclass():
               ("Policy, 1024 samples", bo, "seagreen")]
     # Caja con los puntos superpuestos: los cuartiles y bigotes resumen,
     # y con n=10 por clase ningun punto queda escondido.
-    fig, ax = plt.subplots(figsize=(8.0, 3.7))
+    fig, ax = plt.subplots(figsize=(6.53, 3.02))
     ancho = 0.21
     rng = np.random.default_rng(11)
     for k, (nombre, datos, color) in enumerate(series):
@@ -538,7 +538,7 @@ def fig_ladder():
             "learned1024": "learned, 1024 samples",
             "search": "per-instance search, 30 runs"}
 
-    fig, ax = plt.subplots(figsize=(6.4, 4.5))
+    fig, ax = plt.subplots(figsize=(5.09, 3.58))
     vistos = set()
     for k, (nombre, valor, clase) in enumerate(filas):
         etiqueta = ETIQ[clase] if clase not in vistos else None
@@ -610,7 +610,7 @@ def fig_frontier():
     libre = [punto("base", lam) for _, lam, _ in BRAZOS]
     fija = [punto(b, None) for b, _, _ in BRAZOS]
 
-    fig, ax = plt.subplots(figsize=(5.4, 3.8))
+    fig, ax = plt.subplots(figsize=(4.31, 3.03))
     ax.plot([w for w, _ in despl], [r for _, r in despl], "o-",
             color="steelblue", label="retrained at $\\lambda$, deployed",
             zorder=3)

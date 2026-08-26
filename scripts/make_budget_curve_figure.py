@@ -36,7 +36,7 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 plt.rcParams.update({
-    "font.family": "serif", "font.size": 9, "pdf.fonttype": 42,
+    "font.family": "serif", "font.size": 10, "pdf.fonttype": 42,
     "axes.grid": True, "grid.alpha": 0.3, "grid.linewidth": 0.5,
 })
 
@@ -169,7 +169,7 @@ def main():
     print(f"cruza GP     con B={cruce(PRESUPUESTOS, media, gp)}")
     print(f"cruza greedy con B={cruce(PRESUPUESTOS, media, greedy)}")
 
-    fig, ax = plt.subplots(figsize=(3.4, 2.6))
+    fig, ax = plt.subplots(figsize=(4.05, 3.1))
     ax.fill_between(PRESUPUESTOS, mejor, peor, color="#1f77b4", alpha=0.18,
                     linewidth=0)
     ax.plot(PRESUPUESTOS, media, color="#1f77b4", linewidth=1.6,

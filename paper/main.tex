@@ -5,6 +5,9 @@
 % T1: la clase no lo carga y \DJ (Đurašević) no existe en OT1.
 % lmodern ANTES: sin el, T1 cae en las EC de mapa de bits (Type 3) y el
 % PDF de envio deja de ser vectorial.
+% elsarticle a 12pt deja 390pt de linea, demasiado
+% estrecho para las tablas anchas de este paper
+\usepackage[margin=2.5cm]{geometry}
 \usepackage{lmodern}
 \usepackage[T1]{fontenc}
 \usepackage{graphicx}
@@ -103,9 +106,10 @@ genetic programming hyper-heuristics \sep size invariance
 \section{Introduction}
 \label{sec:intro}
 
-The job shop scheduling problem (JSP) asks for a sequencing of a set
-of jobs, each of which visits the machines of a shop in its own
-prescribed order, that minimizes the overall completion time. The
+In the job shop scheduling problem (JSP), every job visits the
+machines of a shop in its own prescribed order, and the task is to
+sequence the operations on each machine so that the overall
+completion time is as small as possible. The
 problem lies at the core of manufacturing operations planning:
 NP-hard~\citep{GareyJohnson1976}
 and industrially ubiquitous, it is studied predominantly under the
