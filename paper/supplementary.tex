@@ -1,6 +1,8 @@
-%% Online Resource 1 del paper DRL-vs-GP para el IJSP.
+%% Material suplementario del paper DRL-vs-GP para el IJSP.
 %% Mismo ciclo de compilacion que main.tex (paper/compila.bat lo cubre).
-\documentclass[pdflatex,sn-apa]{sn-jnl}
+%% Anonimo: EAAI publica el suplementario tal cual se recibe y la
+%% revision es doblemente anonima, asi que no lleva bloque de autor.
+\documentclass[preprint,12pt]{elsarticle}
 
 \usepackage{lmodern}
 \usepackage[T1]{fontenc}
@@ -8,33 +10,31 @@
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
 
+\usepackage[hidelinks]{hyperref}
 \providecommand{\doi}[1]{\href{https://doi.org/#1}{\nolinkurl{https://doi.org/#1}}}
 
 \raggedbottom
 
 \begin{document}
 
-\title[Supplementary material]{Supplementary material for: Deep
-Reinforcement Learning for the Interval Job Shop Scheduling Problem:
-A Comparison with Genetic Programming Hyper-Heuristics across
-Inference Budgets}
+\begin{frontmatter}
 
-\author*[1]{\fnm{Hern\'an} \sur{D\'iaz Rodr\'iguez}}\email{diazhernan@uniovi.es}
+\title{Supplementary material for: Deep Reinforcement Learning for
+the Interval Job Shop Scheduling Problem: A Comparison with Genetic
+Programming Hyper-Heuristics across Inference Budgets}
 
-\affil*[1]{\orgdiv{Department of Computing},
-\orgname{University of Oviedo}, \orgaddress{\city{Gij\'on},
-\country{Spain}}}
-
-\abstract{This supplementary material contains three blocks
+\begin{abstract}
+This supplementary material contains three blocks
 referenced from the paper: the automatic
 hyperparameter-configuration campaigns and their search spaces
 (Section~\ref{sup:config}), the architecture and controlled ablation
 of the self-attention variant (Section~\ref{sup:attention}), and the
 per-instance results on the 70-instance benchmark
 (Section~\ref{sup:perinstance}). Table and equation numbers refer to
-this document; all other references are to the paper.}
+this document; all other references are to the paper.
+\end{abstract}
 
-\maketitle
+\end{frontmatter}
 
 \section{The hyperparameter-configuration campaigns}
 \label{sup:config}
@@ -289,6 +289,7 @@ TA35 & 2007 & 30.3 & 24.1 & 8.4 & 7.9 & 4.1 & TA70 & 2995 & 42.9 & 23.4 & 16.7 &
 \end{table}
 
 % el estilo lo fija la opcion de clase (sn-apa -> sn-apacite.bst)
+\bibliographystyle{elsarticle-harv}
 \bibliography{refs}
 
 \end{document}

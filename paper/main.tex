@@ -1,6 +1,6 @@
-%% Plantilla oficial Springer Nature (sn-jnl v3.1, dic. 2024).
-%% JIM pide referencias APA autor-anyo -> opcion sn-apa.
-\documentclass[pdflatex,sn-apa]{sn-jnl}
+%% Plantilla Elsevier (elsarticle) para EAAI: una columna,
+%% autor-anyo (elsarticle-harv), revision doblemente anonima.
+\documentclass[preprint,12pt]{elsarticle}
 
 % T1: la clase no lo carga y \DJ (Đurašević) no existe en OT1.
 % lmodern ANTES: sin el, T1 cae en las EC de mapa de bits (Type 3) y el
@@ -31,7 +31,8 @@
 % (tikz ya no se usa: la figura de arquitectura viene como PDF vectorial
 % generado por fig_arch_svg.py, con la fuente Times registrada)
 
-% la clase carga hyperref; DOIs como enlaces completos, como pide la guia
+% elsarticle no carga hyperref; DOIs como enlaces completos
+\usepackage[hidelinks]{hyperref}
 \providecommand{\doi}[1]{\href{https://doi.org/#1}{\nolinkurl{https://doi.org/#1}}}
 
 \newcommand{\ECmax}{E[\mathbf{C}_{\max}]}
@@ -39,29 +40,31 @@
 \newcommand{\LBi}{\widehat{\mathrm{LB}}}
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
 
-\theoremstyle{thmstylethree}%
+\theoremstyle{definition}
 \newtheorem{definition}{Definition}
-\theoremstyle{thmstyletwo}%
+\theoremstyle{remark}
 \newtheorem{remark}{Remark}
 
 \raggedbottom
 
 \begin{document}
 
-\title[DRL for the Interval Job Shop: A Comparison with GP]{Deep
-Reinforcement Learning for the Interval Job Shop Scheduling Problem:
-A Comparison with Genetic Programming Hyper-Heuristics across
-Inference Budgets}
+\begin{frontmatter}
 
-% ORCID: se introduce en Editorial Manager al enviar (obligatorio para
-% el autor de correspondencia); la clase no lo compone en la portada.
-\author*[1]{\fnm{Hern\'an} \sur{D\'iaz Rodr\'iguez}}\email{diazhernan@uniovi.es}
+\title{Deep Reinforcement Learning for the Interval Job Shop
+Scheduling Problem: A Comparison with Genetic Programming
+Hyper-Heuristics across Inference Budgets}
 
-\affil*[1]{\orgdiv{Department of Computing},
-\orgname{University of Oviedo}, \orgaddress{\city{Gij\'on},
-\country{Spain}}}
+%<<IDENTIDAD (el generador del envio anonimo elimina este bloque;
+% ORCID se introduce en Editorial Manager al enviar)
+\author[1]{Hern\'an D\'iaz Rodr\'iguez}
+\ead{diazhernan@uniovi.es}
+\address[1]{Department of Computing, University of Oviedo,
+Gij\'on, Spain}
+%IDENTIDAD>>
 
-\abstract{The interval job shop scheduling problem (IJSP) models
+\begin{abstract}
+The interval job shop scheduling problem (IJSP) models
 each uncertain processing time as an interval between known bounds
 and is solved in the literature by per-instance metaheuristic
 search. This paper
@@ -86,13 +89,16 @@ budget. The paradigms also differ in where an objective that values
 robustness acts: retrained under a width-penalizing objective, the
 policy narrows its schedules through sample selection, its weights
 unmoved, whereas the same objective acts through the evolved
-representation in the rules.}
+representation in the rules.
+\end{abstract}
 
-\keywords{job shop scheduling, interval uncertainty, deep reinforcement
-learning, neural combinatorial optimization, genetic programming
-hyper-heuristics, size invariance}
+\begin{keyword}
+job shop scheduling \sep interval uncertainty \sep deep
+reinforcement learning \sep neural combinatorial optimization \sep
+genetic programming hyper-heuristics \sep size invariance
+\end{keyword}
 
-\maketitle
+\end{frontmatter}
 
 \section{Introduction}
 \label{sec:intro}
@@ -2076,28 +2082,38 @@ crisp JSP, where a formula would have to be evolved anew.
 
 
 
-\backmatter
-
-\section*{Statements and Declarations}
-
-\paragraph{Funding.} This work was supported by the Spanish Ministry of
+%<<IDENTIDAD (en el envio anonimo, financiacion y conflictos viven
+% en la title page; el generador elimina este bloque)
+\section*{Funding}
+This work was supported by the Spanish Ministry of
 Science, Innovation and Universities
 (MCIN/AEI/10.13039/501100011033) under grant PID2022-141746OB-I00.
 
-\paragraph{Competing interests.} The author has no competing interests
+\section*{Declaration of competing interest}
+The author has no competing interests
 to declare that are relevant to the content of this article.
+%IDENTIDAD>>
 
-\paragraph{Data availability.} The benchmark instances, the code,
+\section*{Data availability}
+The benchmark instances, the code,
 the benchmark harness, all experiment records (accepted and
 rejected), the final checkpoints and the figure-generation scripts
 are openly available in a Zenodo
 repository~\citep{DiazDRLDataset2026}.
 
-% NOTA: declaración de uso de IA generativa pendiente de decisión del
-% autor antes del envío (política de Springer Nature: en métodos o
-% agradecimientos).
+% BORRADOR pendiente de aprobacion del autor antes del envio
+% (obligatoria en EAAI si se uso IA; plantilla literal de la guia)
+\section*{Declaration of generative AI and AI-assisted technologies
+in the manuscript preparation process}
+During the preparation of this work the author used Claude
+(Anthropic) in order to assist with the drafting and editing of the
+manuscript and with the development and verification of the analysis
+scripts that recompute the reported numbers from the primary data.
+After using this tool, the author reviewed and edited the content as
+needed and takes full responsibility for the content of the
+published article.
 
-% el estilo lo fija la opcion de clase (sn-apa -> sn-apacite.bst)
+\bibliographystyle{elsarticle-harv}
 \bibliography{refs}
 
 \end{document}

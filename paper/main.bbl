@@ -1,1539 +1,432 @@
-\begin{thebibliography}{}
-\renewcommand{\doi}[1]{\url{https://doi.org/#1}}
-\bibcommenthead
-
-\bibitem [\protect \citeauthoryear {%
-Abdullah%
-\ \BBA {} Abdolrazzagh-Nezhad%
-}{%
-Abdullah%
-\ \BBA {} Abdolrazzagh-Nezhad%
-}{%
-{\protect \APACyear {2014}}%
-}]{%
-Abdullah2014}
-\APACinsertmetastar {%
-Abdullah2014}%
-\begin{APACrefauthors}%
-Abdullah, S.%
-\BCBT {}\ \BBA {} Abdolrazzagh-Nezhad, M.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2014}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Fuzzy job-shop scheduling problems: A review} {Fuzzy
-  job-shop scheduling problems: A review}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Information Sciences}{278}{}{380--407,}
-\newblock
-\begin{APACrefDOI} \doi{10.1016/j.ins.2014.03.060} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Bello%
-, Pham%
-, Le%
-, Norouzi%
-\BCBL {}\ \BBA {} Bengio%
-}{%
-Bello%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2016}}%
-}]{%
-Bello2016}
-\APACinsertmetastar {%
-Bello2016}%
-\begin{APACrefauthors}%
-Bello, I.%
-, Pham, H.%
-, Le, Q.V.%
-, Norouzi, M.%
-\BCBL {} Bengio, S.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2016}{}{}.
-\newblock
-\APACrefbtitle {Neural combinatorial optimization with reinforcement learning.}
-  {Neural combinatorial optimization with reinforcement learning.}
-\newblock
-\APACrefnote{arXiv:1611.09940}
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Bertsimas%
-\ \BBA {} Sim%
-}{%
-Bertsimas%
-\ \BBA {} Sim%
-}{%
-{\protect \APACyear {2004}}%
-}]{%
-Bertsimas2004}
-\APACinsertmetastar {%
-Bertsimas2004}%
-\begin{APACrefauthors}%
-Bertsimas, D.%
-\BCBT {}\ \BBA {} Sim, M.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2004}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {The price of robustness} {The price of
-  robustness}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Operations Research}{52}{1}{35--53,}
-\newblock
-\begin{APACrefDOI} \doi{10.1287/opre.1030.0065} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Branke%
-, Nguyen%
-, Pickardt%
-\BCBL {}\ \BBA {} Zhang%
-}{%
-Branke%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2016}}%
-}]{%
-Branke2016}
-\APACinsertmetastar {%
-Branke2016}%
-\begin{APACrefauthors}%
-Branke, J.%
-, Nguyen, S.%
-, Pickardt, C.W.%
-\BCBL {} Zhang, M.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2016}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Automated design of production scheduling heuristics: a
-  review} {Automated design of production scheduling heuristics: a
-  review}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{IEEE Transactions on Evolutionary
-  Computation}{20}{1}{110--124,}
-\newblock
-\begin{APACrefDOI} \doi{10.1109/tevc.2015.2429314} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Breiman%
-}{%
-Breiman%
-}{%
-{\protect \APACyear {2001}}%
-}]{%
-Breiman2001}
-\APACinsertmetastar {%
-Breiman2001}%
-\begin{APACrefauthors}%
-Breiman, L.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2001}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Random forests} {Random forests}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Machine Learning}{45}{1}{5--32,}
-\newblock
-\begin{APACrefDOI} \doi{10.1023/A:1010933404324} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Corsini%
-, Porrello%
-, Calderara%
-\BCBL {}\ \BBA {} Dell'Amico%
-}{%
-Corsini%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2024}}%
-}]{%
-Corsini2024}
-\APACinsertmetastar {%
-Corsini2024}%
-\begin{APACrefauthors}%
-Corsini, A.%
-, Porrello, A.%
-, Calderara, S.%
-\BCBL {} Dell'Amico, M.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2024}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Self-labeling the job shop scheduling problem}
-  {Self-labeling the job shop scheduling problem}.{\BBCQ}
-\newblock
- \APACrefbtitle {Advances in Neural Information Processing Systems (NeurIPS).}
-  {Advances in neural information processing systems (neurips).}
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-D{\'i}az%
-, Gonz{\'a}lez-Rodr{\'i}guez%
-, Palacios%
-, D{\'i}az%
-\BCBL {}\ \BBA {} Vela%
-}{%
-D{\'i}az%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2020}}%
-}]{%
-DiazGA2020}
-\APACinsertmetastar {%
-DiazGA2020}%
-\begin{APACrefauthors}%
-D{\'i}az, H.%
-, Gonz{\'a}lez-Rodr{\'i}guez, I.%
-, Palacios, J.J.%
-, D{\'i}az, I.%
-\BCBL {} Vela, C.R.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2020}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {A genetic approach to the job shop scheduling problem
-  with interval uncertainty} {A genetic approach to the job shop scheduling
-  problem with interval uncertainty}.{\BBCQ}
-\newblock
- \APACrefbtitle {Information Processing and Management of Uncertainty in
-  Knowledge-Based Systems ({IPMU})} {Information processing and management of
-  uncertainty in knowledge-based systems ({IPMU})}\ (\BPGS\ 663--676).
-\newblock
-\APACaddressPublisher{}{Springer}.
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-D{\'i}az%
-, Palacios%
-, D{\'i}az%
-, Vela%
-\BCBL {}\ \BBA {} Gonz{\'a}lez-Rodr{\'i}guez%
-}{%
-D{\'i}az%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2022}}%
-}]{%
-DiazTardiness2022}
-\APACinsertmetastar {%
-DiazTardiness2022}%
-\begin{APACrefauthors}%
-D{\'i}az, H.%
-, Palacios, J.J.%
-, D{\'i}az, I.%
-, Vela, C.R.%
-\BCBL {} Gonz{\'a}lez-Rodr{\'i}guez, I.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2022}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Robust schedules for tardiness optimization in job shop
-  with interval uncertainty} {Robust schedules for tardiness optimization in
-  job shop with interval uncertainty}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Logic Journal of the IGPL}{31}{2}{240--254,}
-\newblock
-\begin{APACrefDOI} \doi{10.1093/jigpal/jzac016} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-D{\'i}az%
-, Palacios%
-, Gonz{\'a}lez-Rodr{\'i}guez%
-\BCBL {}\ \BBA {} Vela%
-}{%
-D{\'i}az%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2023}}%
-{\protect \APACexlab {{\protect \BCnt {1}}}}}]{%
-DiazICAE2023}
-\APACinsertmetastar {%
-DiazICAE2023}%
-\begin{APACrefauthors}%
-D{\'i}az, H.%
-, Palacios, J.J.%
-, Gonz{\'a}lez-Rodr{\'i}guez, I.%
-\BCBL {} Vela, C.R.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2023{\protect \BCnt {1}}}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {An elitist seasonal artificial bee colony algorithm for
-  the interval job shop} {An elitist seasonal artificial bee colony algorithm
-  for the interval job shop}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Integrated Computer-Aided
-  Engineering}{30}{3}{223--242,}
-\newblock
-\begin{APACrefDOI} \doi{10.3233/ica-230705} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-D{\'i}az%
-, Palacios%
-, Gonz{\'a}lez-Rodr{\'i}guez%
-\BCBL {}\ \BBA {} Vela%
-}{%
-D{\'i}az%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2023}}%
-{\protect \APACexlab {{\protect \BCnt {2}}}}}]{%
-DiazFEABC2023}
-\APACinsertmetastar {%
-DiazFEABC2023}%
-\begin{APACrefauthors}%
-D{\'i}az, H.%
-, Palacios, J.J.%
-, Gonz{\'a}lez-Rodr{\'i}guez, I.%
-\BCBL {} Vela, C.R.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2023{\protect \BCnt {2}}}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Fast elitist {ABC} for makespan optimisation in interval
-  {JSP}} {Fast elitist {ABC} for makespan optimisation in interval
-  {JSP}}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Natural Computing}{22}{4}{645--657,}
-\newblock
-\begin{APACrefDOI} \doi{10.1007/s11047-023-09953-2} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-D{\'i}az~Rodr{\'i}guez%
-}{%
-D{\'i}az~Rodr{\'i}guez%
-}{%
-{\protect \APACyear {2026}}%
-{\protect \APACexlab {{\protect \BCnt {1}}}}}]{%
-DiazDRLDataset2026}
-\APACinsertmetastar {%
-DiazDRLDataset2026}%
-\begin{APACrefauthors}%
-D{\'i}az~Rodr{\'i}guez, H.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2026{\protect \BCnt {1}}}{}{}.
-\newblock
-\APACrefbtitle {Deep reinforcement learning for the interval job shop:
-  checkpoints, records and code.} {Deep reinforcement learning for the interval
-  job shop: checkpoints, records and code.}
-\newblock
-\APAChowpublished {Zenodo}.
-\newblock
-\APACrefnote{[dataset]. \doi{10.5281/zenodo.21970431}}
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-D{\'i}az~Rodr{\'i}guez%
-}{%
-D{\'i}az~Rodr{\'i}guez%
-}{%
-{\protect \APACyear {2026}}%
-{\protect \APACexlab {{\protect \BCnt {2}}}}}]{%
-DiazGP2026}
-\APACinsertmetastar {%
-DiazGP2026}%
-\begin{APACrefauthors}%
-D{\'i}az~Rodr{\'i}guez, H.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2026{\protect \BCnt {2}}}{}{}.
-\newblock
-\APACrefbtitle {Genetic programming hyper-heuristics for the job shop
+\begin{thebibliography}{47}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\href}[2]{#2}
+\providecommand{\path}[1]{#1}
+\providecommand{\DOIprefix}{doi:}
+\providecommand{\ArXivprefix}{arXiv:}
+\providecommand{\URLprefix}{URL: }
+\providecommand{\Pubmedprefix}{pmid:}
+\providecommand{\doi}[1]{\href{http://dx.doi.org/#1}{\path{#1}}}
+\providecommand{\Pubmed}[1]{\href{pmid:#1}{\path{#1}}}
+\providecommand{\bibinfo}[2]{#2}
+\ifx\xfnm\relax \def\xfnm[#1]{\unskip,\space#1}\fi
+%Type = Article
+\bibitem[{Abdullah and Abdolrazzagh-Nezhad(2014)}]{Abdullah2014}
+\bibinfo{author}{Abdullah, S.}, \bibinfo{author}{Abdolrazzagh-Nezhad, M.},
+  \bibinfo{year}{2014}.
+\newblock \bibinfo{title}{Fuzzy job-shop scheduling problems: A review}.
+\newblock \bibinfo{journal}{Information Sciences} \bibinfo{volume}{278},
+  \bibinfo{pages}{380--407}.
+\newblock \DOIprefix\doi{10.1016/j.ins.2014.03.060}.
+%Type = Misc
+\bibitem[{Bello et~al.(2016)Bello, Pham, Le, Norouzi and Bengio}]{Bello2016}
+\bibinfo{author}{Bello, I.}, \bibinfo{author}{Pham, H.}, \bibinfo{author}{Le,
+  Q.V.}, \bibinfo{author}{Norouzi, M.}, \bibinfo{author}{Bengio, S.},
+  \bibinfo{year}{2016}.
+\newblock \bibinfo{title}{Neural combinatorial optimization with reinforcement
+  learning}.
+\newblock \bibinfo{note}{ArXiv:1611.09940}.
+%Type = Article
+\bibitem[{Bertsimas and Sim(2004)}]{Bertsimas2004}
+\bibinfo{author}{Bertsimas, D.}, \bibinfo{author}{Sim, M.},
+  \bibinfo{year}{2004}.
+\newblock \bibinfo{title}{The price of robustness}.
+\newblock \bibinfo{journal}{Operations Research} \bibinfo{volume}{52},
+  \bibinfo{pages}{35--53}.
+\newblock \DOIprefix\doi{10.1287/opre.1030.0065}.
+%Type = Article
+\bibitem[{Branke et~al.(2016)Branke, Nguyen, Pickardt and Zhang}]{Branke2016}
+\bibinfo{author}{Branke, J.}, \bibinfo{author}{Nguyen, S.},
+  \bibinfo{author}{Pickardt, C.W.}, \bibinfo{author}{Zhang, M.},
+  \bibinfo{year}{2016}.
+\newblock \bibinfo{title}{Automated design of production scheduling heuristics:
+  a review}.
+\newblock \bibinfo{journal}{IEEE Transactions on Evolutionary Computation}
+  \bibinfo{volume}{20}, \bibinfo{pages}{110--124}.
+\newblock \DOIprefix\doi{10.1109/tevc.2015.2429314}.
+%Type = Article
+\bibitem[{Breiman(2001)}]{Breiman2001}
+\bibinfo{author}{Breiman, L.}, \bibinfo{year}{2001}.
+\newblock \bibinfo{title}{Random forests}.
+\newblock \bibinfo{journal}{Machine Learning} \bibinfo{volume}{45},
+  \bibinfo{pages}{5--32}.
+\newblock \DOIprefix\doi{10.1023/A:1010933404324}.
+%Type = Inproceedings
+\bibitem[{Corsini et~al.(2024)Corsini, Porrello, Calderara and
+  Dell'Amico}]{Corsini2024}
+\bibinfo{author}{Corsini, A.}, \bibinfo{author}{Porrello, A.},
+  \bibinfo{author}{Calderara, S.}, \bibinfo{author}{Dell'Amico, M.},
+  \bibinfo{year}{2024}.
+\newblock \bibinfo{title}{Self-labeling the job shop scheduling problem}, in:
+  \bibinfo{booktitle}{Advances in Neural Information Processing Systems
+  (NeurIPS)}.
+%Type = Inproceedings
+\bibitem[{D{\'i}az et~al.(2020)D{\'i}az, Gonz{\'a}lez-Rodr{\'i}guez, Palacios,
+  D{\'i}az and Vela}]{DiazGA2020}
+\bibinfo{author}{D{\'i}az, H.}, \bibinfo{author}{Gonz{\'a}lez-Rodr{\'i}guez,
+  I.}, \bibinfo{author}{Palacios, J.J.}, \bibinfo{author}{D{\'i}az, I.},
+  \bibinfo{author}{Vela, C.R.}, \bibinfo{year}{2020}.
+\newblock \bibinfo{title}{A genetic approach to the job shop scheduling problem
+  with interval uncertainty}, in: \bibinfo{booktitle}{Information Processing
+  and Management of Uncertainty in Knowledge-Based Systems ({IPMU})},
+  \bibinfo{publisher}{Springer}. pp. \bibinfo{pages}{663--676}.
+\newblock \DOIprefix\doi{10.1007/978-3-030-50143-3_52}.
+%Type = Article
+\bibitem[{D{\'i}az et~al.(2022)D{\'i}az, Palacios, D{\'i}az, Vela and
+  Gonz{\'a}lez-Rodr{\'i}guez}]{DiazTardiness2022}
+\bibinfo{author}{D{\'i}az, H.}, \bibinfo{author}{Palacios, J.J.},
+  \bibinfo{author}{D{\'i}az, I.}, \bibinfo{author}{Vela, C.R.},
+  \bibinfo{author}{Gonz{\'a}lez-Rodr{\'i}guez, I.}, \bibinfo{year}{2022}.
+\newblock \bibinfo{title}{Robust schedules for tardiness optimization in job
+  shop with interval uncertainty}.
+\newblock \bibinfo{journal}{Logic Journal of the IGPL} \bibinfo{volume}{31},
+  \bibinfo{pages}{240--254}.
+\newblock \DOIprefix\doi{10.1093/jigpal/jzac016}.
+%Type = Article
+\bibitem[{D{\'i}az et~al.(2023a)D{\'i}az, Palacios, Gonz{\'a}lez-Rodr{\'i}guez
+  and Vela}]{DiazICAE2023}
+\bibinfo{author}{D{\'i}az, H.}, \bibinfo{author}{Palacios, J.J.},
+  \bibinfo{author}{Gonz{\'a}lez-Rodr{\'i}guez, I.}, \bibinfo{author}{Vela,
+  C.R.}, \bibinfo{year}{2023}a.
+\newblock \bibinfo{title}{An elitist seasonal artificial bee colony algorithm
+  for the interval job shop}.
+\newblock \bibinfo{journal}{Integrated Computer-Aided Engineering}
+  \bibinfo{volume}{30}, \bibinfo{pages}{223--242}.
+\newblock \DOIprefix\doi{10.3233/ica-230705}.
+%Type = Article
+\bibitem[{D{\'i}az et~al.(2023b)D{\'i}az, Palacios, Gonz{\'a}lez-Rodr{\'i}guez
+  and Vela}]{DiazFEABC2023}
+\bibinfo{author}{D{\'i}az, H.}, \bibinfo{author}{Palacios, J.J.},
+  \bibinfo{author}{Gonz{\'a}lez-Rodr{\'i}guez, I.}, \bibinfo{author}{Vela,
+  C.R.}, \bibinfo{year}{2023}b.
+\newblock \bibinfo{title}{Fast elitist {ABC} for makespan optimisation in
+  interval {JSP}}.
+\newblock \bibinfo{journal}{Natural Computing} \bibinfo{volume}{22},
+  \bibinfo{pages}{645--657}.
+\newblock \DOIprefix\doi{10.1007/s11047-023-09953-2}.
+%Type = Misc
+\bibitem[{D{\'i}az~Rodr{\'i}guez(2026a)}]{DiazDRLDataset2026}
+\bibinfo{author}{D{\'i}az~Rodr{\'i}guez, H.}, \bibinfo{year}{2026}a.
+\newblock \bibinfo{title}{Deep reinforcement learning for the interval job
+  shop: checkpoints, records and code}.
+\newblock \bibinfo{howpublished}{Zenodo}.
+\newblock \DOIprefix\doi{10.5281/zenodo.21970431}. \bibinfo{note}{[dataset].
+  \doi{10.5281/zenodo.21970431}}.
+%Type = Misc
+\bibitem[{D{\'i}az~Rodr{\'i}guez(2026b)}]{DiazGP2026}
+\bibinfo{author}{D{\'i}az~Rodr{\'i}guez, H.}, \bibinfo{year}{2026}b.
+\newblock \bibinfo{title}{Genetic programming hyper-heuristics for the job shop
   scheduling problem with interval durations: robustness-aware interpretable
-  rules that generalize across instance sizes.} {Genetic programming
-  hyper-heuristics for the job shop scheduling problem with interval durations:
-  robustness-aware interpretable rules that generalize across instance sizes.}
-\newblock
-\APAChowpublished {SSRN}.
-\newblock
-\APACrefnote{Preprint. \doi{10.2139/ssrn.7214286}}
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Gabel%
-\ \BBA {} Riedmiller%
-}{%
-Gabel%
-\ \BBA {} Riedmiller%
-}{%
-{\protect \APACyear {2008}}%
-}]{%
-Gabel2008}
-\APACinsertmetastar {%
-Gabel2008}%
-\begin{APACrefauthors}%
-Gabel, T.%
-\BCBT {}\ \BBA {} Riedmiller, M.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2008}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Adaptive reactive job-shop scheduling with reinforcement
-  learning agents} {Adaptive reactive job-shop scheduling with reinforcement
-  learning agents}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{International Journal of Information Technology and
-  Intelligent Computing}{24}{4}{14--18,}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Garey%
-, Johnson%
-\BCBL {}\ \BBA {} Sethi%
-}{%
-Garey%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {1976}}%
-}]{%
-GareyJohnson1976}
-\APACinsertmetastar {%
-GareyJohnson1976}%
-\begin{APACrefauthors}%
-Garey, M.R.%
-, Johnson, D.S.%
-\BCBL {} Sethi, R.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{1976}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {The complexity of flowshop and jobshop scheduling} {The
-  complexity of flowshop and jobshop scheduling}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Mathematics of Operations Research}{1}{2}{117--129,}
-\newblock
-\begin{APACrefDOI} \doi{10.1287/moor.1.2.117} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Giffler%
-\ \BBA {} Thompson%
-}{%
-Giffler%
-\ \BBA {} Thompson%
-}{%
-{\protect \APACyear {1960}}%
-}]{%
-GifflerThompson1960}
-\APACinsertmetastar {%
-GifflerThompson1960}%
-\begin{APACrefauthors}%
-Giffler, B.%
-\BCBT {}\ \BBA {} Thompson, G.L.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{1960}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Algorithms for solving production-scheduling problems}
-  {Algorithms for solving production-scheduling problems}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Operations Research}{8}{4}{487--503,}
-\newblock
-\begin{APACrefDOI} \doi{10.1287/opre.8.4.487} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Gonz{\'a}lez-Rodr{\'i}guez%
-, Vela%
-\BCBL {}\ \BBA {} Puente%
-}{%
-Gonz{\'a}lez-Rodr{\'i}guez%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2010}}%
-}]{%
-GonzalezRodriguez2010}
-\APACinsertmetastar {%
-GonzalezRodriguez2010}%
-\begin{APACrefauthors}%
-Gonz{\'a}lez-Rodr{\'i}guez, I.%
-, Vela, C.R.%
-\BCBL {} Puente, J.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2010}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {A genetic solution based on lexicographical goal
-  programming for a multiobjective job shop with uncertainty} {A genetic
-  solution based on lexicographical goal programming for a multiobjective job
-  shop with uncertainty}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Journal of Intelligent Manufacturing}{21}{1}{65--73,}
-\newblock
-\begin{APACrefDOI} \doi{10.1007/s10845-008-0161-x} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Grumbach%
-, M{\"u}ller%
-, Reusch%
-\BCBL {}\ \BBA {} Trojahn%
-}{%
-Grumbach%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2024}}%
-}]{%
-Grumbach2024}
-\APACinsertmetastar {%
-Grumbach2024}%
-\begin{APACrefauthors}%
-Grumbach, F.%
-, M{\"u}ller, A.%
-, Reusch, P.%
-\BCBL {} Trojahn, S.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2024}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Robust-stable scheduling in dynamic flow shops based on
-  deep reinforcement learning} {Robust-stable scheduling in dynamic flow shops
-  based on deep reinforcement learning}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Journal of Intelligent Manufacturing}{35}{2}{667--686,}
-\newblock
-\begin{APACrefDOI} \doi{10.1007/s10845-022-02069-x} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Haupt%
-}{%
-Haupt%
-}{%
-{\protect \APACyear {1989}}%
-}]{%
-Haupt1989}
-\APACinsertmetastar {%
-Haupt1989}%
-\begin{APACrefauthors}%
-Haupt, R.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{1989}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {A survey of priority rule-based scheduling} {A survey of
-  priority rule-based scheduling}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{OR Spektrum}{11}{1}{3--16,}
-\newblock
-\begin{APACrefDOI} \doi{10.1007/bf01721162} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Karunakaran%
-, Mei%
-, Chen%
-\BCBL {}\ \BBA {} Zhang%
-}{%
-Karunakaran%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2017}}%
-}]{%
-Karunakaran2016}
-\APACinsertmetastar {%
-Karunakaran2016}%
-\begin{APACrefauthors}%
-Karunakaran, D.%
-, Mei, Y.%
-, Chen, G.%
-\BCBL {} Zhang, M.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2017}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Dynamic job shop scheduling under uncertainty using
-  genetic programming} {Dynamic job shop scheduling under uncertainty using
-  genetic programming}.{\BBCQ}
-\newblock
- \APACrefbtitle {Intelligent and Evolutionary Systems} {Intelligent and
-  evolutionary systems}\ (\BPGS\ 195--210).
-\newblock
-\APACaddressPublisher{}{Springer}.
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Kasperski%
-\ \BBA {} Zieli{\'n}ski%
-}{%
-Kasperski%
-\ \BBA {} Zieli{\'n}ski%
-}{%
-{\protect \APACyear {2016}}%
-}]{%
-Kasperski2016}
-\APACinsertmetastar {%
-Kasperski2016}%
-\begin{APACrefauthors}%
-Kasperski, A.%
-\BCBT {}\ \BBA {} Zieli{\'n}ski, P.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2016}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Robust discrete optimization under discrete and interval
-  uncertainty: A survey} {Robust discrete optimization under discrete and
-  interval uncertainty: A survey}.{\BBCQ}
-\newblock
- \APACrefbtitle {Robustness Analysis in Decision Aiding, Optimization, and
-  Analytics.} {Robustness analysis in decision aiding, optimization, and
-  analytics.}
-\newblock
-\APACaddressPublisher{}{Springer}.
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Kayhan%
-\ \BBA {} Yildiz%
-}{%
-Kayhan%
-\ \BBA {} Yildiz%
-}{%
-{\protect \APACyear {2023}}%
-}]{%
-Kayhan2023}
-\APACinsertmetastar {%
-Kayhan2023}%
-\begin{APACrefauthors}%
-Kayhan, B.M.%
-\BCBT {}\ \BBA {} Yildiz, G.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2023}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Reinforcement learning applications to machine
-  scheduling problems: a comprehensive literature review} {Reinforcement
-  learning applications to machine scheduling problems: a comprehensive
-  literature review}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Journal of Intelligent Manufacturing}{34}{}{905--929,}
-\newblock
-\begin{APACrefDOI} \doi{10.1007/s10845-021-01847-3} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Kool%
-, van Hoof%
-\BCBL {}\ \BBA {} Welling%
-}{%
-Kool%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2019}}%
-}]{%
-Kool2019}
-\APACinsertmetastar {%
-Kool2019}%
-\begin{APACrefauthors}%
-Kool, W.%
-, van Hoof, H.%
-\BCBL {} Welling, M.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2019}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Attention, learn to solve routing problems!} {Attention,
-  learn to solve routing problems!}{\BBCQ}
-\newblock
- \APACrefbtitle {International Conference on Learning Representations
-  ({ICLR}).} {International conference on learning representations ({ICLR}).}
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Kouvelis%
-\ \BBA {} Yu%
-}{%
-Kouvelis%
-\ \BBA {} Yu%
-}{%
-{\protect \APACyear {1997}}%
-}]{%
-Kouvelis1997}
-\APACinsertmetastar {%
-Kouvelis1997}%
-\begin{APACrefauthors}%
-Kouvelis, P.%
-\BCBT {}\ \BBA {} Yu, G.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYear{1997}.
-\newblock
-\APACrefbtitle {Robust Discrete Optimization and Its Applications} {Robust
-  discrete optimization and its applications}.
-\newblock
-\APACaddressPublisher{Dordrecht}{Kluwer Academic Publishers}.
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Kwon%
-\ \protect \BOthers {.}}{%
-Kwon%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2020}}%
-}]{%
-Kwon2020}
-\APACinsertmetastar {%
-Kwon2020}%
-\begin{APACrefauthors}%
-Kwon, Y\BHBI D.%
-, Choo, J.%
-, Kim, B.%
-, Yoon, I.%
-, Gwon, Y.%
-\BCBL {} Min, S.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2020}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {{POMO}: Policy optimization with multiple optima for
-  reinforcement learning} {{POMO}: Policy optimization with multiple optima for
-  reinforcement learning}.{\BBCQ}
-\newblock
- \APACrefbtitle {Advances in Neural Information Processing Systems (NeurIPS).}
-  {Advances in neural information processing systems (neurips).}
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Lei%
-}{%
-Lei%
-}{%
-{\protect \APACyear {2011}}%
-}]{%
-Lei2011}
-\APACinsertmetastar {%
-Lei2011}%
-\begin{APACrefauthors}%
-Lei, D.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2011}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Population-based neighborhood search for job shop
-  scheduling with interval processing time} {Population-based neighborhood
-  search for job shop scheduling with interval processing time}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Computers \& Industrial
-  Engineering}{61}{4}{1200--1208,}
-\newblock
-\begin{APACrefDOI} \doi{10.1016/j.cie.2011.07.010} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Leon%
-, Wu%
-\BCBL {}\ \BBA {} Storer%
-}{%
-Leon%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {1994}}%
-}]{%
-Leon1994}
-\APACinsertmetastar {%
-Leon1994}%
-\begin{APACrefauthors}%
-Leon, V.J.%
-, Wu, S.D.%
-\BCBL {} Storer, R.H.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{1994}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Robustness measures and robust scheduling for job shops}
-  {Robustness measures and robust scheduling for job shops}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{IIE Transactions}{26}{5}{32--43,}
-\newblock
-\begin{APACrefDOI} \doi{10.1080/07408179408966626} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-L{\'o}pez-Ib{\'a}{\~n}ez%
-, Dubois-Lacoste%
-, P{\'e}rez~C{\'a}ceres%
-, Birattari%
-\BCBL {}\ \BBA {} St{\"u}tzle%
-}{%
-L{\'o}pez-Ib{\'a}{\~n}ez%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2016}}%
-}]{%
-LopezIbanez2016}
-\APACinsertmetastar {%
-LopezIbanez2016}%
-\begin{APACrefauthors}%
-L{\'o}pez-Ib{\'a}{\~n}ez, M.%
-, Dubois-Lacoste, J.%
-, P{\'e}rez~C{\'a}ceres, L.%
-, Birattari, M.%
-\BCBL {} St{\"u}tzle, T.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2016}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {The irace package: Iterated racing for automatic
-  algorithm configuration} {The irace package: Iterated racing for automatic
-  algorithm configuration}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Operations Research Perspectives}{3}{}{43--58,}
-\newblock
-\begin{APACrefDOI} \doi{10.1016/j.orp.2016.09.002} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Nazari%
-, Oroojlooy%
-, Snyder%
-\BCBL {}\ \BBA {} Tak{\'a}{\v{c}}%
-}{%
-Nazari%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2018}}%
-}]{%
-Nazari2018}
-\APACinsertmetastar {%
-Nazari2018}%
-\begin{APACrefauthors}%
-Nazari, M.%
-, Oroojlooy, A.%
-, Snyder, L.%
-\BCBL {} Tak{\'a}{\v{c}}, M.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2018}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Reinforcement learning for solving the vehicle routing
-  problem} {Reinforcement learning for solving the vehicle routing
-  problem}.{\BBCQ}
-\newblock
- \APACrefbtitle {Advances in Neural Information Processing Systems
-  ({NeurIPS}).} {Advances in neural information processing systems
-  ({NeurIPS}).}
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Nguyen%
-, Mei%
-\BCBL {}\ \BBA {} Zhang%
-}{%
-Nguyen%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2017}}%
-}]{%
-Nguyen2017}
-\APACinsertmetastar {%
-Nguyen2017}%
-\begin{APACrefauthors}%
-Nguyen, S.%
-, Mei, Y.%
-\BCBL {} Zhang, M.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2017}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Genetic programming for production scheduling: a survey
-  with a unified framework} {Genetic programming for production scheduling: a
-  survey with a unified framework}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Complex \& Intelligent Systems}{3}{1}{41--66,}
-\newblock
-\begin{APACrefDOI} \doi{10.1007/s40747-017-0036-x} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Nguyen%
-, Zhang%
-, Johnston%
-\BCBL {}\ \BBA {} Tan%
-}{%
-Nguyen%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2013}}%
-}]{%
-Nguyen2013}
-\APACinsertmetastar {%
-Nguyen2013}%
-\begin{APACrefauthors}%
-Nguyen, S.%
-, Zhang, M.%
-, Johnston, M.%
-\BCBL {} Tan, K.C.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2013}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {A computational study of representations in genetic
-  programming to evolve dispatching rules for the job shop scheduling problem}
-  {A computational study of representations in genetic programming to evolve
-  dispatching rules for the job shop scheduling problem}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{IEEE Transactions on Evolutionary
-  Computation}{17}{5}{621--639,}
-\newblock
-\begin{APACrefDOI} \doi{10.1109/TEVC.2012.2227326} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Palacios%
-, Gonz{\'a}lez-Rodr{\'i}guez%
-, Vela%
-\BCBL {}\ \BBA {} Puente%
-}{%
-Palacios%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2015}}%
-}]{%
-Palacios2015}
-\APACinsertmetastar {%
-Palacios2015}%
-\begin{APACrefauthors}%
-Palacios, J.J.%
-, Gonz{\'a}lez-Rodr{\'i}guez, I.%
-, Vela, C.R.%
-\BCBL {} Puente, J.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2015}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Coevolutionary makespan optimisation through different
-  ranking methods for the fuzzy flexible job shop} {Coevolutionary makespan
-  optimisation through different ranking methods for the fuzzy flexible job
-  shop}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Fuzzy Sets and Systems}{278}{}{81--97,}
-\newblock
-\begin{APACrefDOI} \doi{10.1016/j.fss.2014.12.003} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Panwalkar%
-\ \BBA {} Iskander%
-}{%
-Panwalkar%
-\ \BBA {} Iskander%
-}{%
-{\protect \APACyear {1977}}%
-}]{%
-Panwalkar1977}
-\APACinsertmetastar {%
-Panwalkar1977}%
-\begin{APACrefauthors}%
-Panwalkar, S.S.%
-\BCBT {}\ \BBA {} Iskander, W.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{1977}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {A survey of scheduling rules} {A survey of scheduling
-  rules}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Operations Research}{25}{1}{45--61,}
-\newblock
-\begin{APACrefDOI} \doi{10.1287/opre.25.1.45} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Park%
-, Chun%
-, Kim%
-, Kim%
-\BCBL {}\ \BBA {} Park%
-}{%
-Park%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2021}}%
-}]{%
-Park2021GNN}
-\APACinsertmetastar {%
-Park2021GNN}%
-\begin{APACrefauthors}%
-Park, J.%
-, Chun, J.%
-, Kim, S.H.%
-, Kim, Y.%
-\BCBL {} Park, J.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2021}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Learning to schedule job-shop problems: representation
-  and policy learning using graph neural network and reinforcement learning}
-  {Learning to schedule job-shop problems: representation and policy learning
-  using graph neural network and reinforcement learning}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{International Journal of Production
-  Research}{59}{11}{3360--3377,}
-\newblock
-\begin{APACrefDOI} \doi{10.1080/00207543.2020.1870013} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Schulman%
-, Wolski%
-, Dhariwal%
-, Radford%
-\BCBL {}\ \BBA {} Klimov%
-}{%
-Schulman%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2017}}%
-}]{%
-Schulman2017}
-\APACinsertmetastar {%
-Schulman2017}%
-\begin{APACrefauthors}%
-Schulman, J.%
-, Wolski, F.%
-, Dhariwal, P.%
-, Radford, A.%
-\BCBL {} Klimov, O.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2017}{}{}.
-\newblock
-\APACrefbtitle {Proximal policy optimization algorithms.} {Proximal policy
-  optimization algorithms.}
-\newblock
-\APACrefnote{arXiv:1707.06347}
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Smit%
-, Wu%
-, Troubil%
-, Zhang%
-\BCBL {}\ \BBA {} Nuijten%
-}{%
-Smit%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2024}}%
-}]{%
-Smit2024Stochastic}
-\APACinsertmetastar {%
-Smit2024Stochastic}%
-\begin{APACrefauthors}%
-Smit, I.G.%
-, Wu, Y.%
-, Troubil, P.%
-, Zhang, Y.%
-\BCBL {} Nuijten, W.P.M.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2024}{}{}.
-\newblock
-\APACrefbtitle {Neural combinatorial optimization for stochastic flexible job
-  shop scheduling problems.} {Neural combinatorial optimization for stochastic
-  flexible job shop scheduling problems.}
-\newblock
-\APACrefnote{arXiv:2412.14052}
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Song%
-, Chen%
-, Li%
-\BCBL {}\ \BBA {} Cao%
-}{%
-Song%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2023}}%
-}]{%
-Song2023FJSP}
-\APACinsertmetastar {%
-Song2023FJSP}%
-\begin{APACrefauthors}%
-Song, W.%
-, Chen, X.%
-, Li, Q.%
-\BCBL {} Cao, Z.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2023}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Flexible job-shop scheduling via graph neural network
-  and deep reinforcement learning} {Flexible job-shop scheduling via graph
-  neural network and deep reinforcement learning}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{IEEE Transactions on Industrial
-  Informatics}{19}{2}{1600--1610,}
-\newblock
-\begin{APACrefDOI} \doi{10.1109/TII.2022.3189725} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Sotskov%
-, Matsveichuk%
-\BCBL {}\ \BBA {} Hatsura%
-}{%
-Sotskov%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2020}}%
-}]{%
-Sotskov2020}
-\APACinsertmetastar {%
-Sotskov2020}%
-\begin{APACrefauthors}%
-Sotskov, Y.N.%
-, Matsveichuk, N.M.%
-\BCBL {} Hatsura, V.D.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2020}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Schedule execution for two-machine job-shop to minimize
-  makespan with uncertain processing times} {Schedule execution for two-machine
-  job-shop to minimize makespan with uncertain processing times}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Mathematics}{8}{8}{1314,}
-\newblock
-\begin{APACrefDOI} \doi{10.3390/math8081314} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Taillard%
-}{%
-Taillard%
-}{%
-{\protect \APACyear {1993}}%
-}]{%
-Taillard1993}
-\APACinsertmetastar {%
-Taillard1993}%
-\begin{APACrefauthors}%
-Taillard, E.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{1993}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Benchmarks for basic scheduling problems} {Benchmarks
-  for basic scheduling problems}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{European Journal of Operational
-  Research}{64}{2}{278--285,}
-\newblock
-\begin{APACrefDOI} \doi{10.1016/0377-2217(93)90182-M} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Tassel%
-, Gebser%
-\BCBL {}\ \BBA {} Schekotihin%
-}{%
-Tassel%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2021}}%
-}]{%
-Tassel2021}
-\APACinsertmetastar {%
-Tassel2021}%
-\begin{APACrefauthors}%
-Tassel, P.%
-, Gebser, M.%
-\BCBL {} Schekotihin, K.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2021}{}{}.
-\newblock
-\APACrefbtitle {A reinforcement learning environment for job-shop scheduling.}
-  {A reinforcement learning environment for job-shop scheduling.}
-\newblock
-\APACrefnote{arXiv:2104.03760}
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-{\DJ}ura{\v{s}}evi{\'c}%
-\ \BBA {} Jakobovi{\'c}%
-}{%
-{\DJ}ura{\v{s}}evi{\'c}%
-\ \BBA {} Jakobovi{\'c}%
-}{%
-{\protect \APACyear {2018}}%
-}]{%
-Durasevic2018}
-\APACinsertmetastar {%
-Durasevic2018}%
-\begin{APACrefauthors}%
-{\DJ}ura{\v{s}}evi{\'c}, M.%
-\BCBT {}\ \BBA {} Jakobovi{\'c}, D.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2018}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {A survey of dispatching rules for the dynamic unrelated
-  machines environment} {A survey of dispatching rules for the dynamic
-  unrelated machines environment}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Expert Systems with Applications}{113}{}{555--569,}
-\newblock
-\begin{APACrefDOI} \doi{10.1016/j.eswa.2018.06.053} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Vinyals%
-, Fortunato%
-\BCBL {}\ \BBA {} Jaitly%
-}{%
-Vinyals%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2015}}%
-}]{%
-Vinyals2015}
-\APACinsertmetastar {%
-Vinyals2015}%
-\begin{APACrefauthors}%
-Vinyals, O.%
-, Fortunato, M.%
-\BCBL {} Jaitly, N.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2015}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Pointer networks} {Pointer networks}.{\BBCQ}
-\newblock
- \APACrefbtitle {Advances in Neural Information Processing Systems
-  ({NeurIPS}).} {Advances in neural information processing systems
-  ({NeurIPS}).}
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Wang%
-, Guo%
-\BCBL {}\ \BBA {} Liu%
-}{%
-Wang%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2025}}%
-}]{%
-Wang2025FuzzyAR}
-\APACinsertmetastar {%
-Wang2025FuzzyAR}%
-\begin{APACrefauthors}%
-Wang, Y.%
-, Guo, T.%
-\BCBL {} Liu, Z.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2025}{}{}.
-\newblock
-\APACrefbtitle {An expectation-maximization algorithm-based autoregressive
-  model for the fuzzy job shop scheduling problem.} {An
-  expectation-maximization algorithm-based autoregressive model for the fuzzy
-  job shop scheduling problem.}
-\newblock
-\APACrefnote{arXiv:2502.00018}
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Xu%
-, Mei%
-, Zhang%
-\BCBL {}\ \BBA {} Zhang%
-}{%
-Xu%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2025}}%
-}]{%
-Xu2025}
-\APACinsertmetastar {%
-Xu2025}%
-\begin{APACrefauthors}%
-Xu, M.%
-, Mei, Y.%
-, Zhang, F.%
-\BCBL {} Zhang, M.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2025}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Learn to optimise for job shop scheduling: a survey with
-  comparison between genetic programming and reinforcement learning} {Learn to
-  optimise for job shop scheduling: a survey with comparison between genetic
-  programming and reinforcement learning}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Artificial Intelligence Review}{58}{}{160,}
-\newblock
-\begin{APACrefDOI} \doi{10.1007/s10462-024-11059-9} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Zaheer%
-\ \protect \BOthers {.}}{%
-Zaheer%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2017}}%
-}]{%
-Zaheer2017}
-\APACinsertmetastar {%
-Zaheer2017}%
-\begin{APACrefauthors}%
-Zaheer, M.%
-, Kottur, S.%
-, Ravanbakhsh, S.%
-, P{\'o}czos, B.%
-, Salakhutdinov, R.%
-\BCBL {} Smola, A.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2017}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Deep sets} {Deep sets}.{\BBCQ}
-\newblock
- \APACrefbtitle {Advances in Neural Information Processing Systems
-  ({NeurIPS}).} {Advances in neural information processing systems
-  ({NeurIPS}).}
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Zhang%
-, Cao%
-, Song%
-, Wu%
-\BCBL {}\ \BBA {} Zhang%
-}{%
-Zhang%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2024}}%
-}]{%
-Zhang2024L2S}
-\APACinsertmetastar {%
-Zhang2024L2S}%
-\begin{APACrefauthors}%
-Zhang, C.%
-, Cao, Z.%
-, Song, W.%
-, Wu, Y.%
-\BCBL {} Zhang, J.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2024}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Deep reinforcement learning guided improvement heuristic
-  for job shop scheduling} {Deep reinforcement learning guided improvement
-  heuristic for job shop scheduling}.{\BBCQ}
-\newblock
- \APACrefbtitle {International Conference on Learning Representations (ICLR).}
-  {International conference on learning representations (iclr).}
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Zhang%
-\ \protect \BOthers {.}}{%
-Zhang%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2020}}%
-}]{%
-Zhang2020L2D}
-\APACinsertmetastar {%
-Zhang2020L2D}%
-\begin{APACrefauthors}%
-Zhang, C.%
-, Song, W.%
-, Cao, Z.%
-, Zhang, J.%
-, Tan, P.S.%
-\BCBL {} Xu, C.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2020}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Learning to dispatch for job shop scheduling via deep
-  reinforcement learning} {Learning to dispatch for job shop scheduling via
-  deep reinforcement learning}.{\BBCQ}
-\newblock
- \APACrefbtitle {Advances in Neural Information Processing Systems
-  ({NeurIPS}).} {Advances in neural information processing systems
-  ({NeurIPS}).}
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Zheng%
-, Xiao%
-, Zhang%
-\BCBL {}\ \BBA {} Lv%
-}{%
-Zheng%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2024}}%
-}]{%
-Zheng2024}
-\APACinsertmetastar {%
-Zheng2024}%
-\begin{APACrefauthors}%
-Zheng, P.%
-, Xiao, S.%
-, Zhang, P.%
-\BCBL {} Lv, Y.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2024}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {A two-individual-based evolutionary algorithm for
+  rules that generalize across instance sizes}.
+\newblock \bibinfo{howpublished}{SSRN}.
+\newblock \DOIprefix\doi{10.2139/ssrn.7214286}. \bibinfo{note}{preprint.
+  \doi{10.2139/ssrn.7214286}}.
+%Type = Article
+\bibitem[{Gabel and Riedmiller(2008)}]{Gabel2008}
+\bibinfo{author}{Gabel, T.}, \bibinfo{author}{Riedmiller, M.},
+  \bibinfo{year}{2008}.
+\newblock \bibinfo{title}{Adaptive reactive job-shop scheduling with
+  reinforcement learning agents}.
+\newblock \bibinfo{journal}{International Journal of Information Technology and
+  Intelligent Computing} \bibinfo{volume}{24}, \bibinfo{pages}{14--18}.
+%Type = Article
+\bibitem[{Garey et~al.(1976)Garey, Johnson and Sethi}]{GareyJohnson1976}
+\bibinfo{author}{Garey, M.R.}, \bibinfo{author}{Johnson, D.S.},
+  \bibinfo{author}{Sethi, R.}, \bibinfo{year}{1976}.
+\newblock \bibinfo{title}{The complexity of flowshop and jobshop scheduling}.
+\newblock \bibinfo{journal}{Mathematics of Operations Research}
+  \bibinfo{volume}{1}, \bibinfo{pages}{117--129}.
+\newblock \DOIprefix\doi{10.1287/moor.1.2.117}.
+%Type = Article
+\bibitem[{Giffler and Thompson(1960)}]{GifflerThompson1960}
+\bibinfo{author}{Giffler, B.}, \bibinfo{author}{Thompson, G.L.},
+  \bibinfo{year}{1960}.
+\newblock \bibinfo{title}{Algorithms for solving production-scheduling
+  problems}.
+\newblock \bibinfo{journal}{Operations Research} \bibinfo{volume}{8},
+  \bibinfo{pages}{487--503}.
+\newblock \DOIprefix\doi{10.1287/opre.8.4.487}.
+%Type = Article
+\bibitem[{Gonz{\'a}lez-Rodr{\'i}guez et~al.(2010)Gonz{\'a}lez-Rodr{\'i}guez,
+  Vela and Puente}]{GonzalezRodriguez2010}
+\bibinfo{author}{Gonz{\'a}lez-Rodr{\'i}guez, I.}, \bibinfo{author}{Vela, C.R.},
+  \bibinfo{author}{Puente, J.}, \bibinfo{year}{2010}.
+\newblock \bibinfo{title}{A genetic solution based on lexicographical goal
+  programming for a multiobjective job shop with uncertainty}.
+\newblock \bibinfo{journal}{Journal of Intelligent Manufacturing}
+  \bibinfo{volume}{21}, \bibinfo{pages}{65--73}.
+\newblock \DOIprefix\doi{10.1007/s10845-008-0161-x}.
+%Type = Article
+\bibitem[{Grumbach et~al.(2024)Grumbach, M{\"u}ller, Reusch and
+  Trojahn}]{Grumbach2024}
+\bibinfo{author}{Grumbach, F.}, \bibinfo{author}{M{\"u}ller, A.},
+  \bibinfo{author}{Reusch, P.}, \bibinfo{author}{Trojahn, S.},
+  \bibinfo{year}{2024}.
+\newblock \bibinfo{title}{Robust-stable scheduling in dynamic flow shops based
+  on deep reinforcement learning}.
+\newblock \bibinfo{journal}{Journal of Intelligent Manufacturing}
+  \bibinfo{volume}{35}, \bibinfo{pages}{667--686}.
+\newblock \DOIprefix\doi{10.1007/s10845-022-02069-x}.
+%Type = Article
+\bibitem[{Haupt(1989)}]{Haupt1989}
+\bibinfo{author}{Haupt, R.}, \bibinfo{year}{1989}.
+\newblock \bibinfo{title}{A survey of priority rule-based scheduling}.
+\newblock \bibinfo{journal}{OR Spektrum} \bibinfo{volume}{11},
+  \bibinfo{pages}{3--16}.
+\newblock \DOIprefix\doi{10.1007/bf01721162}.
+%Type = Inproceedings
+\bibitem[{Karunakaran et~al.(2017)Karunakaran, Mei, Chen and
+  Zhang}]{Karunakaran2016}
+\bibinfo{author}{Karunakaran, D.}, \bibinfo{author}{Mei, Y.},
+  \bibinfo{author}{Chen, G.}, \bibinfo{author}{Zhang, M.},
+  \bibinfo{year}{2017}.
+\newblock \bibinfo{title}{Dynamic job shop scheduling under uncertainty using
+  genetic programming}, in: \bibinfo{booktitle}{Intelligent and Evolutionary
+  Systems}, \bibinfo{publisher}{Springer}. pp. \bibinfo{pages}{195--210}.
+\newblock \DOIprefix\doi{10.1007/978-3-319-49049-6_14}.
+%Type = Incollection
+\bibitem[{Kasperski and Zieli{\'n}ski(2016)}]{Kasperski2016}
+\bibinfo{author}{Kasperski, A.}, \bibinfo{author}{Zieli{\'n}ski, P.},
+  \bibinfo{year}{2016}.
+\newblock \bibinfo{title}{Robust discrete optimization under discrete and
+  interval uncertainty: A survey}, in: \bibinfo{booktitle}{Robustness Analysis
+  in Decision Aiding, Optimization, and Analytics}.
+  \bibinfo{publisher}{Springer}.
+\newblock \DOIprefix\doi{10.1007/978-3-319-33121-8_6}.
+%Type = Article
+\bibitem[{Kayhan and Yildiz(2023)}]{Kayhan2023}
+\bibinfo{author}{Kayhan, B.M.}, \bibinfo{author}{Yildiz, G.},
+  \bibinfo{year}{2023}.
+\newblock \bibinfo{title}{Reinforcement learning applications to machine
+  scheduling problems: a comprehensive literature review}.
+\newblock \bibinfo{journal}{Journal of Intelligent Manufacturing}
+  \bibinfo{volume}{34}, \bibinfo{pages}{905--929}.
+\newblock \DOIprefix\doi{10.1007/s10845-021-01847-3}.
+%Type = Inproceedings
+\bibitem[{Kool et~al.(2019)Kool, van Hoof and Welling}]{Kool2019}
+\bibinfo{author}{Kool, W.}, \bibinfo{author}{van Hoof, H.},
+  \bibinfo{author}{Welling, M.}, \bibinfo{year}{2019}.
+\newblock \bibinfo{title}{Attention, learn to solve routing problems!}, in:
+  \bibinfo{booktitle}{International Conference on Learning Representations
+  ({ICLR})}.
+%Type = Book
+\bibitem[{Kouvelis and Yu(1997)}]{Kouvelis1997}
+\bibinfo{author}{Kouvelis, P.}, \bibinfo{author}{Yu, G.}, \bibinfo{year}{1997}.
+\newblock \bibinfo{title}{Robust Discrete Optimization and Its Applications}.
+\newblock \bibinfo{publisher}{Kluwer Academic Publishers},
+  \bibinfo{address}{Dordrecht}.
+\newblock \DOIprefix\doi{10.1007/978-1-4757-2620-6}.
+%Type = Inproceedings
+\bibitem[{Kwon et~al.(2020)Kwon, Choo, Kim, Yoon, Gwon and Min}]{Kwon2020}
+\bibinfo{author}{Kwon, Y.D.}, \bibinfo{author}{Choo, J.}, \bibinfo{author}{Kim,
+  B.}, \bibinfo{author}{Yoon, I.}, \bibinfo{author}{Gwon, Y.},
+  \bibinfo{author}{Min, S.}, \bibinfo{year}{2020}.
+\newblock \bibinfo{title}{{POMO}: Policy optimization with multiple optima for
+  reinforcement learning}, in: \bibinfo{booktitle}{Advances in Neural
+  Information Processing Systems (NeurIPS)}.
+%Type = Article
+\bibitem[{Lei(2011)}]{Lei2011}
+\bibinfo{author}{Lei, D.}, \bibinfo{year}{2011}.
+\newblock \bibinfo{title}{Population-based neighborhood search for job shop
+  scheduling with interval processing time}.
+\newblock \bibinfo{journal}{Computers \& Industrial Engineering}
+  \bibinfo{volume}{61}, \bibinfo{pages}{1200--1208}.
+\newblock \DOIprefix\doi{10.1016/j.cie.2011.07.010}.
+%Type = Article
+\bibitem[{Leon et~al.(1994)Leon, Wu and Storer}]{Leon1994}
+\bibinfo{author}{Leon, V.J.}, \bibinfo{author}{Wu, S.D.},
+  \bibinfo{author}{Storer, R.H.}, \bibinfo{year}{1994}.
+\newblock \bibinfo{title}{Robustness measures and robust scheduling for job
+  shops}.
+\newblock \bibinfo{journal}{IIE Transactions} \bibinfo{volume}{26},
+  \bibinfo{pages}{32--43}.
+\newblock \DOIprefix\doi{10.1080/07408179408966626}.
+%Type = Article
+\bibitem[{L{\'o}pez-Ib{\'a}{\~n}ez et~al.(2016)L{\'o}pez-Ib{\'a}{\~n}ez,
+  Dubois-Lacoste, P{\'e}rez~C{\'a}ceres, Birattari and
+  St{\"u}tzle}]{LopezIbanez2016}
+\bibinfo{author}{L{\'o}pez-Ib{\'a}{\~n}ez, M.},
+  \bibinfo{author}{Dubois-Lacoste, J.}, \bibinfo{author}{P{\'e}rez~C{\'a}ceres,
+  L.}, \bibinfo{author}{Birattari, M.}, \bibinfo{author}{St{\"u}tzle, T.},
+  \bibinfo{year}{2016}.
+\newblock \bibinfo{title}{The irace package: Iterated racing for automatic
+  algorithm configuration}.
+\newblock \bibinfo{journal}{Operations Research Perspectives}
+  \bibinfo{volume}{3}, \bibinfo{pages}{43--58}.
+\newblock \DOIprefix\doi{10.1016/j.orp.2016.09.002}.
+%Type = Inproceedings
+\bibitem[{Nazari et~al.(2018)Nazari, Oroojlooy, Snyder and
+  Tak{\'a}{\v{c}}}]{Nazari2018}
+\bibinfo{author}{Nazari, M.}, \bibinfo{author}{Oroojlooy, A.},
+  \bibinfo{author}{Snyder, L.}, \bibinfo{author}{Tak{\'a}{\v{c}}, M.},
+  \bibinfo{year}{2018}.
+\newblock \bibinfo{title}{Reinforcement learning for solving the vehicle
+  routing problem}, in: \bibinfo{booktitle}{Advances in Neural Information
+  Processing Systems ({NeurIPS})}.
+%Type = Article
+\bibitem[{Nguyen et~al.(2017)Nguyen, Mei and Zhang}]{Nguyen2017}
+\bibinfo{author}{Nguyen, S.}, \bibinfo{author}{Mei, Y.},
+  \bibinfo{author}{Zhang, M.}, \bibinfo{year}{2017}.
+\newblock \bibinfo{title}{Genetic programming for production scheduling: a
+  survey with a unified framework}.
+\newblock \bibinfo{journal}{Complex \& Intelligent Systems}
+  \bibinfo{volume}{3}, \bibinfo{pages}{41--66}.
+\newblock \DOIprefix\doi{10.1007/s40747-017-0036-x}.
+%Type = Article
+\bibitem[{Nguyen et~al.(2013)Nguyen, Zhang, Johnston and Tan}]{Nguyen2013}
+\bibinfo{author}{Nguyen, S.}, \bibinfo{author}{Zhang, M.},
+  \bibinfo{author}{Johnston, M.}, \bibinfo{author}{Tan, K.C.},
+  \bibinfo{year}{2013}.
+\newblock \bibinfo{title}{A computational study of representations in genetic
+  programming to evolve dispatching rules for the job shop scheduling problem}.
+\newblock \bibinfo{journal}{IEEE Transactions on Evolutionary Computation}
+  \bibinfo{volume}{17}, \bibinfo{pages}{621--639}.
+\newblock \DOIprefix\doi{10.1109/TEVC.2012.2227326}.
+%Type = Article
+\bibitem[{Palacios et~al.(2015)Palacios, Gonz{\'a}lez-Rodr{\'i}guez, Vela and
+  Puente}]{Palacios2015}
+\bibinfo{author}{Palacios, J.J.}, \bibinfo{author}{Gonz{\'a}lez-Rodr{\'i}guez,
+  I.}, \bibinfo{author}{Vela, C.R.}, \bibinfo{author}{Puente, J.},
+  \bibinfo{year}{2015}.
+\newblock \bibinfo{title}{Coevolutionary makespan optimisation through
+  different ranking methods for the fuzzy flexible job shop}.
+\newblock \bibinfo{journal}{Fuzzy Sets and Systems} \bibinfo{volume}{278},
+  \bibinfo{pages}{81--97}.
+\newblock \DOIprefix\doi{10.1016/j.fss.2014.12.003}.
+%Type = Article
+\bibitem[{Panwalkar and Iskander(1977)}]{Panwalkar1977}
+\bibinfo{author}{Panwalkar, S.S.}, \bibinfo{author}{Iskander, W.},
+  \bibinfo{year}{1977}.
+\newblock \bibinfo{title}{A survey of scheduling rules}.
+\newblock \bibinfo{journal}{Operations Research} \bibinfo{volume}{25},
+  \bibinfo{pages}{45--61}.
+\newblock \DOIprefix\doi{10.1287/opre.25.1.45}.
+%Type = Article
+\bibitem[{Park et~al.(2021)Park, Chun, Kim, Kim and Park}]{Park2021GNN}
+\bibinfo{author}{Park, J.}, \bibinfo{author}{Chun, J.}, \bibinfo{author}{Kim,
+  S.H.}, \bibinfo{author}{Kim, Y.}, \bibinfo{author}{Park, J.},
+  \bibinfo{year}{2021}.
+\newblock \bibinfo{title}{Learning to schedule job-shop problems:
+  representation and policy learning using graph neural network and
+  reinforcement learning}.
+\newblock \bibinfo{journal}{International Journal of Production Research}
+  \bibinfo{volume}{59}, \bibinfo{pages}{3360--3377}.
+\newblock \DOIprefix\doi{10.1080/00207543.2020.1870013}.
+%Type = Misc
+\bibitem[{Schulman et~al.(2017)Schulman, Wolski, Dhariwal, Radford and
+  Klimov}]{Schulman2017}
+\bibinfo{author}{Schulman, J.}, \bibinfo{author}{Wolski, F.},
+  \bibinfo{author}{Dhariwal, P.}, \bibinfo{author}{Radford, A.},
+  \bibinfo{author}{Klimov, O.}, \bibinfo{year}{2017}.
+\newblock \bibinfo{title}{Proximal policy optimization algorithms}.
+\newblock \bibinfo{note}{ArXiv:1707.06347}.
+%Type = Misc
+\bibitem[{Smit et~al.(2024)Smit, Wu, Troubil, Zhang and
+  Nuijten}]{Smit2024Stochastic}
+\bibinfo{author}{Smit, I.G.}, \bibinfo{author}{Wu, Y.},
+  \bibinfo{author}{Troubil, P.}, \bibinfo{author}{Zhang, Y.},
+  \bibinfo{author}{Nuijten, W.P.M.}, \bibinfo{year}{2024}.
+\newblock \bibinfo{title}{Neural combinatorial optimization for stochastic
+  flexible job shop scheduling problems}.
+\newblock \bibinfo{note}{ArXiv:2412.14052}.
+%Type = Article
+\bibitem[{Song et~al.(2023)Song, Chen, Li and Cao}]{Song2023FJSP}
+\bibinfo{author}{Song, W.}, \bibinfo{author}{Chen, X.}, \bibinfo{author}{Li,
+  Q.}, \bibinfo{author}{Cao, Z.}, \bibinfo{year}{2023}.
+\newblock \bibinfo{title}{Flexible job-shop scheduling via graph neural network
+  and deep reinforcement learning}.
+\newblock \bibinfo{journal}{IEEE Transactions on Industrial Informatics}
+  \bibinfo{volume}{19}, \bibinfo{pages}{1600--1610}.
+\newblock \DOIprefix\doi{10.1109/TII.2022.3189725}.
+%Type = Article
+\bibitem[{Sotskov et~al.(2020)Sotskov, Matsveichuk and Hatsura}]{Sotskov2020}
+\bibinfo{author}{Sotskov, Y.N.}, \bibinfo{author}{Matsveichuk, N.M.},
+  \bibinfo{author}{Hatsura, V.D.}, \bibinfo{year}{2020}.
+\newblock \bibinfo{title}{Schedule execution for two-machine job-shop to
+  minimize makespan with uncertain processing times}.
+\newblock \bibinfo{journal}{Mathematics} \bibinfo{volume}{8},
+  \bibinfo{pages}{1314}.
+\newblock \DOIprefix\doi{10.3390/math8081314}.
+%Type = Article
+\bibitem[{Taillard(1993)}]{Taillard1993}
+\bibinfo{author}{Taillard, E.}, \bibinfo{year}{1993}.
+\newblock \bibinfo{title}{Benchmarks for basic scheduling problems}.
+\newblock \bibinfo{journal}{European Journal of Operational Research}
+  \bibinfo{volume}{64}, \bibinfo{pages}{278--285}.
+\newblock \DOIprefix\doi{10.1016/0377-2217(93)90182-M}.
+%Type = Misc
+\bibitem[{Tassel et~al.(2021)Tassel, Gebser and Schekotihin}]{Tassel2021}
+\bibinfo{author}{Tassel, P.}, \bibinfo{author}{Gebser, M.},
+  \bibinfo{author}{Schekotihin, K.}, \bibinfo{year}{2021}.
+\newblock \bibinfo{title}{A reinforcement learning environment for job-shop
+  scheduling}.
+\newblock \bibinfo{note}{ArXiv:2104.03760}.
+%Type = Article
+\bibitem[{{\DJ}ura{\v{s}}evi{\'c} and Jakobovi{\'c}(2018)}]{Durasevic2018}
+\bibinfo{author}{{\DJ}ura{\v{s}}evi{\'c}, M.}, \bibinfo{author}{Jakobovi{\'c},
+  D.}, \bibinfo{year}{2018}.
+\newblock \bibinfo{title}{A survey of dispatching rules for the dynamic
+  unrelated machines environment}.
+\newblock \bibinfo{journal}{Expert Systems with Applications}
+  \bibinfo{volume}{113}, \bibinfo{pages}{555--569}.
+\newblock \DOIprefix\doi{10.1016/j.eswa.2018.06.053}.
+%Type = Inproceedings
+\bibitem[{Vinyals et~al.(2015)Vinyals, Fortunato and Jaitly}]{Vinyals2015}
+\bibinfo{author}{Vinyals, O.}, \bibinfo{author}{Fortunato, M.},
+  \bibinfo{author}{Jaitly, N.}, \bibinfo{year}{2015}.
+\newblock \bibinfo{title}{Pointer networks}, in: \bibinfo{booktitle}{Advances
+  in Neural Information Processing Systems ({NeurIPS})}.
+%Type = Misc
+\bibitem[{Wang et~al.(2025)Wang, Guo and Liu}]{Wang2025FuzzyAR}
+\bibinfo{author}{Wang, Y.}, \bibinfo{author}{Guo, T.}, \bibinfo{author}{Liu,
+  Z.}, \bibinfo{year}{2025}.
+\newblock \bibinfo{title}{An expectation-maximization algorithm-based
+  autoregressive model for the fuzzy job shop scheduling problem}.
+\newblock \bibinfo{note}{ArXiv:2502.00018}.
+%Type = Article
+\bibitem[{Xu et~al.(2025)Xu, Mei, Zhang and Zhang}]{Xu2025}
+\bibinfo{author}{Xu, M.}, \bibinfo{author}{Mei, Y.}, \bibinfo{author}{Zhang,
+  F.}, \bibinfo{author}{Zhang, M.}, \bibinfo{year}{2025}.
+\newblock \bibinfo{title}{Learn to optimise for job shop scheduling: a survey
+  with comparison between genetic programming and reinforcement learning}.
+\newblock \bibinfo{journal}{Artificial Intelligence Review}
+  \bibinfo{volume}{58}, \bibinfo{pages}{160}.
+\newblock \DOIprefix\doi{10.1007/s10462-024-11059-9}.
+%Type = Inproceedings
+\bibitem[{Zaheer et~al.(2017)Zaheer, Kottur, Ravanbakhsh, P{\'o}czos,
+  Salakhutdinov and Smola}]{Zaheer2017}
+\bibinfo{author}{Zaheer, M.}, \bibinfo{author}{Kottur, S.},
+  \bibinfo{author}{Ravanbakhsh, S.}, \bibinfo{author}{P{\'o}czos, B.},
+  \bibinfo{author}{Salakhutdinov, R.}, \bibinfo{author}{Smola, A.},
+  \bibinfo{year}{2017}.
+\newblock \bibinfo{title}{Deep sets}, in: \bibinfo{booktitle}{Advances in
+  Neural Information Processing Systems ({NeurIPS})}.
+%Type = Inproceedings
+\bibitem[{Zhang et~al.(2024)Zhang, Cao, Song, Wu and Zhang}]{Zhang2024L2S}
+\bibinfo{author}{Zhang, C.}, \bibinfo{author}{Cao, Z.}, \bibinfo{author}{Song,
+  W.}, \bibinfo{author}{Wu, Y.}, \bibinfo{author}{Zhang, J.},
+  \bibinfo{year}{2024}.
+\newblock \bibinfo{title}{Deep reinforcement learning guided improvement
+  heuristic for job shop scheduling}, in: \bibinfo{booktitle}{International
+  Conference on Learning Representations (ICLR)}.
+%Type = Inproceedings
+\bibitem[{Zhang et~al.(2020)Zhang, Song, Cao, Zhang, Tan and Xu}]{Zhang2020L2D}
+\bibinfo{author}{Zhang, C.}, \bibinfo{author}{Song, W.}, \bibinfo{author}{Cao,
+  Z.}, \bibinfo{author}{Zhang, J.}, \bibinfo{author}{Tan, P.S.},
+  \bibinfo{author}{Xu, C.}, \bibinfo{year}{2020}.
+\newblock \bibinfo{title}{Learning to dispatch for job shop scheduling via deep
+  reinforcement learning}, in: \bibinfo{booktitle}{Advances in Neural
+  Information Processing Systems ({NeurIPS})}.
+%Type = Article
+\bibitem[{Zheng et~al.(2024)Zheng, Xiao, Zhang and Lv}]{Zheng2024}
+\bibinfo{author}{Zheng, P.}, \bibinfo{author}{Xiao, S.},
+  \bibinfo{author}{Zhang, P.}, \bibinfo{author}{Lv, Y.}, \bibinfo{year}{2024}.
+\newblock \bibinfo{title}{A two-individual-based evolutionary algorithm for
   flexible assembly job shop scheduling problem with uncertain interval
-  processing times} {A two-individual-based evolutionary algorithm for flexible
-  assembly job shop scheduling problem with uncertain interval processing
-  times}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Applied Sciences}{14}{22}{10304,}
-\newblock
-\begin{APACrefDOI} \doi{10.3390/app142210304} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
+  processing times}.
+\newblock \bibinfo{journal}{Applied Sciences} \bibinfo{volume}{14},
+  \bibinfo{pages}{10304}.
+\newblock \DOIprefix\doi{10.3390/app142210304}.
 
 \end{thebibliography}

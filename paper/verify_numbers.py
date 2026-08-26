@@ -164,16 +164,19 @@ check_exacto("5.5: las tres que siguen son MOR, EST y G&T-MWKR",
              all(f"{r} &" in TEX or f"{r} " in TEX
                  for r in ("MOR", "EST", "G\\&T-MWKR")))
 
-# el resumen tiene un limite duro de la revista: 150-250 palabras
-# ("Please provide an abstract of 150 to 250 words", guia de JIM). Se
-# cuenta sobre el texto renderizado, no sobre las ordenes de LaTeX.
-_ab = TEX[TEX.index("\\abstract{") + len("\\abstract{"):
-           TEX.index("\\keywords")].strip().rstrip("}")
+# el resumen tiene un limite duro de la revista: <=250 palabras (guia
+# de EAAI). Se cuenta sobre el texto renderizado, no sobre LaTeX.
+_ab = TEX[TEX.index("\\begin{abstract}") + len("\\begin{abstract}"):
+           TEX.index("\\end{abstract}")].strip()
 _ab = _ab.replace("{\\times}", "x").replace("\\%", "%")
 _ab = re.sub(r"\\[a-zA-Z]+|[{}$]", " ", _ab).replace("---", " ")
 _n_ab = len([w for w in _ab.split() if any(ch.isalnum() for ch in w)])
-check_exacto("el resumen cabe en las 150-250 palabras de JIM",
+check_exacto("el resumen cabe en las 250 palabras de EAAI",
              150 <= _n_ab <= 250, f"{_n_ab} palabras")
+# y sus siglas estan definidas (condicion de desk-reject de EAAI)
+_sig = sorted(set(re.findall(r"\b[A-Z]{2,}\b", _ab)))
+check_exacto("abstract: toda sigla definida entre parentesis",
+             all(f"({s})" in _ab for s in _sig), ", ".join(_sig))
 
 # EST en desarrollo es PEOR que MOR: el ~46 de las conclusiones (MOR)
 # sigue siendo la mejor regla simple en la clase de entrenamiento. El
@@ -203,7 +206,8 @@ mor_dev = sum(MOR_RE[t] for t in DEV) / len(DEV)
 check("MOR medio en desarrollo (conclusiones ~46)", 46.0, mor_dev,
       tol=0.55)
 # El abstract cita ahora la linea base fuerte, no la simple
-_abs_tex = re.search(r"\\abstract\{(.*?)\n\n", TEX, re.S).group(1)
+_abs_tex = re.search(r"\\begin\{abstract\}(.*?)\\end\{abstract\}",
+                     TEX, re.S).group(1)
 # Orden fijado por el autor el 2026-08-15: primero la politica (la
 # primera DRL invariante al tamano para el IJSP), despues la
 # comparacion, despues el mecanismo. El 0.63 del punto medio salio del
@@ -232,14 +236,15 @@ check_exacto("abstract: politica, luego comparacion, luego mecanismo",
 _abs_palabras = len(re.sub(r"[\\${}]", " ", _abs_tex).split())
 check_exacto("guia: abstract de 150 a 250 palabras",
              150 <= _abs_palabras <= 250, f"{_abs_palabras} palabras")
-_kw = TEX[TEX.index("\\keywords{") + 10:TEX.index("}", TEX.index(
-    "\\keywords{"))]
-check_exacto("guia: de 4 a 6 keywords",
-             4 <= _kw.count(",") + 1 <= 6, f"{_kw.count(',') + 1} keywords")
+_kw = re.search(r"\\begin\{keyword\}(.*?)\\end\{keyword\}", TEX,
+                re.S).group(1)
+_nkw = _kw.count("\\sep") + 1
+check_exacto("guia EAAI: de 1 a 6 keywords",
+             1 <= _nkw <= 6, f"{_nkw} keywords")
 # el titulo anuncia la comparacion desde el reencuadre del 2026-08-15,
 # acotada a las hiperheuristicas GP (no es una comparacion general).
 # Se normalizan los saltos de linea del .tex antes de buscar
-_titulo = re.sub(r"\s+", " ", TEX[:TEX.index("\\author")])
+_titulo = re.sub(r"\s+", " ", TEX[:TEX.index("%<<IDENTIDAD")])
 # la primacia se reclama en la contribucion 1, y solo se sostiene si
 # 2.4 sigue documentando el hueco: la literatura neuronal llega a lo
 # estocastico y lo difuso, no a lo intervalar
@@ -980,9 +985,9 @@ try:
 except Exception as e:
     pendiente("estructura de la red", f"no medible aqui ({type(e).__name__})")
 
-# el abstract de Journal of Intelligent Manufacturing va limitado a
-# 150-250 palabras; llego a estar en 250 justas
-_abs = TEX.split("\\abstract{")[1].split("\\keywords")[0].rsplit("}", 1)[0]
+# el abstract de EAAI va limitado a 250 palabras; llego a estar en
+# 250 justas con la guia de JIM
+_abs = TEX.split("\\begin{abstract}")[1].split("\\end{abstract}")[0]
 _abs = re.sub(r"\\[a-zA-Z]+", " ", _abs)
 _abs = re.sub(r"[{}$\\]", " ", _abs)
 _npal = len([x for x in _abs.split() if any(c.isalnum() for c in x)])
@@ -2297,6 +2302,39 @@ check_exacto("fig 2: el script etiqueta el eje como peor caso",
                  "scripts/make_training_curve_figure.py",
                  encoding="utf-8").read())
 
+
+# =========================================================================
+print("\n== conformidad con EAAI (guia en drl-eaai/NORMAS.md) ==")
+# limite duro de la revista: 50 paginas por envio
+if os.path.exists("paper/main.log"):
+    _m50 = re.search(r"Output written on .*\((\d+) pages",
+                     open("paper/main.log", encoding="utf-8",
+                          errors="replace").read())
+    check_exacto("EAAI: manuscrito dentro de las 50 paginas",
+                 _m50 and int(_m50.group(1)) <= 50,
+                 f"{_m50.group(1) if _m50 else '?'} paginas")
+# la declaracion de IA es obligatoria y va antes de las referencias
+check_exacto("EAAI: seccion de declaracion de IA presente",
+             "Declaration of generative AI" in TEX
+             and TEX.index("Declaration of generative AI")
+             < TEX.index("\\bibliography{refs}"))
+# los highlights: de 3 a 5 puntos de <=85 caracteres
+if os.path.exists("drl-eaai/highlights.tex"):
+    _hl = re.findall(r"\\item (.+)", open("drl-eaai/highlights.tex",
+                                            encoding="utf-8").read())
+    check_exacto("EAAI: de 3 a 5 highlights", 3 <= len(_hl) <= 5,
+                 f"{len(_hl)}")
+    check_exacto("EAAI: highlights de 85 caracteres o menos",
+                 all(len(h.strip()) <= 85 for h in _hl),
+                 f"max {max(len(h.strip()) for h in _hl)}")
+    # la title page lleva la financiacion y el CRediT
+    _tp = open("drl-eaai/title_page.tex", encoding="utf-8").read()
+    check_exacto("EAAI: title page con beca y CRediT",
+                 "PID2022-141746OB-I00" in _tp and "CRediT" in _tp
+                 and "diazhernan@uniovi.es" in _tp)
+else:
+    pendiente("EAAI highlights", "sin drl-eaai/ (repo de trabajo)")
+
 # Marcadores \todo pendientes: se imprimen en rojo en el PDF (uno de
 # ellos llego a salir dentro de la bibliografia), asi que ninguno puede
 # sobrevivir al envio. Se listan en cada pasada hasta que desaparezcan.
@@ -2339,11 +2377,13 @@ if os.path.exists("paper/main.aux"):
 else:
     pendiente("citas literales del suplementario",
               "sin paper/main.aux (paquete)")
-# y el bloque de autor es identico en los dos documentos
-check_exacto("la afiliacion coincide entre paper y suplementario",
-             "\\orgdiv{Department of Computing}" in TEX
-             and "\\orgdiv{Department of Computing}" in SUP
-             and TEXSUP.count("diazhernan@uniovi.es") == 2)
+# el bloque de identidad vive SOLO en el principal (el suplementario
+# es anonimo: EAAI lo publica tal cual y la revision es doble anonima)
+check_exacto("identidad en el principal, suplementario anonimo",
+             "Department of Computing, University of Oviedo" in TEX
+             and "%<<IDENTIDAD" in TEX and "%IDENTIDAD>>" in TEX
+             and TEXSUP.count("diazhernan@uniovi.es") == 1
+             and "Oviedo" not in SUP)
 
 
 def _por_par(*tags):
