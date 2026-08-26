@@ -91,10 +91,12 @@ confirmation protocol. Its pre-registered adoption rule tested the
 $18$ (instance, seed) pairs directly (Wilcoxon signed-rank,
 $p=0.21$); under the convention of the main paper, seeds averaged
 within each of the six instances before an exact test, the verdict is
-the same ($p=0.31$). Two departures of this confirmation from the
+the same ($p=0.31$). Two departures of these confirmations from the
 main protocol should be noted: the statistical unit just given, and
-that both of its arms transfer weights from the immediately preceding
-block rather than from the best block so far, symmetrically. Two
+that the retrained challenger arms transfer weights from the
+immediately preceding block, whereas the incumbent checkpoints they
+are compared against come from the main campaign and its best-block
+rule (Section~5.4 of the paper). Two
 by-products of that campaign are more informative than its verdict. A
 seeded terminal-only vector $(1,0,0,0,0,0)$ was eliminated in the
 first round, so the dense shaping is not dispensable; and four elites
