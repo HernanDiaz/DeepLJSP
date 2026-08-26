@@ -71,30 +71,31 @@ The interval job shop scheduling problem (IJSP) models
 each uncertain processing time as an interval between known bounds
 and is solved in the literature by per-instance metaheuristic
 search. This paper contributes a constructive deep reinforcement
-learning policy for the problem, and a controlled comparison of it
-against genetic programming hyper-heuristics, thirty trained
+learning policy for the problem and a controlled comparison against
+genetic programming hyper-heuristics, thirty trained
 artifacts per family evaluated in one harness at matched inference
-budgets. The policy and that comparison are the contribution in
+budgets. The policy and the comparison are the contribution in
 artificial intelligence; the engineering application is production
 scheduling under such uncertainty. The policy's state features are
 dimensionless and its
 encoder is permutation-invariant, so one trained network applies to
-instances of any size, with no retraining and no change of
-architecture.
-Trained on instances of a single size class, the
+any instance size, with no retraining and no architectural
+change.
+Trained on a single size class, the
 validation-selected policy improves on every hand-crafted dispatching
 rule on all seventy benchmark instances, six of the seven size
-classes unseen. Which of the two leads is decided
-by the budget, and they differ significantly at every budget
-evaluated: the rule leads by $0.8$
-points of relative error given one constructive pass each, and the
-policy leads by the same margin once both draw samples; on twelve classical
-instances outside the training family the policy leads at every
-budget. The paradigms also differ in where an objective that values
+classes unseen. Which of the two learners leads is decided
+by the inference budget, and they differ significantly at every
+budget evaluated: the rule leads by $0.8$
+points of relative error at one constructive pass each, and the
+policy leads by the same margin once both draw samples; on twelve
+classical instances outside the training family the policy holds the
+lower mean error at every budget, significantly once both sample.
+The paradigms also differ in where an objective that values
 robustness acts: retrained under a width-penalizing objective, the
-policy narrows its schedules through sample selection, its weights
-unmoved, whereas the same objective acts through the evolved
-representation in the rules.
+policy narrows its schedules through sample selection, not through
+measurably changed weights, whereas the same objective acts through
+the evolved representation in the rules.
 \end{abstract}
 
 \begin{keyword}
