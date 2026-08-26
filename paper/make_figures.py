@@ -273,7 +273,7 @@ def fig_importance():
     colores = ["indianred" if r["feature"].endswith("width_rel")
                else "steelblue" for r in filas]
 
-    fig, ax = plt.subplots(figsize=(4.7, 3.69))
+    fig, ax = plt.subplots(figsize=(6.53, 3.9))
     y = range(len(nombres))
     ax.barh(list(y), valores, color=colores, height=0.7,
             xerr=errores, error_kw={"ecolor": "0.3", "elinewidth": 0.9,
@@ -294,7 +294,8 @@ def fig_importance():
     ax.set_xlim(min(valores) - 6, max(valores) + 9)
     ax.grid(axis="x", alpha=0.3, linestyle="--")
     fig.tight_layout()
-    fig.savefig(os.path.join(FIG_DIR, "fig_importance.pdf"))
+    fig.savefig(os.path.join(FIG_DIR, "fig_importance.pdf"),
+                bbox_inches="tight")
     plt.close(fig)
 
 
@@ -330,9 +331,15 @@ def fig_eps():
     med = {g: {i: sum(v) / len(v) for i, v in d.items()}
            for g, d in por.items()}
 
-    orden = ["MOR", "GT-MWKR", "EST", "GP\n(one pass)", "GP\n(best-of-64)",
-             "Policy\n(greedy)",
+    orden = ["MOR", "GT-MWKR", "EST", "GP\n(one pass)",
+             "GP\n(best-of-64)", "Policy\n(greedy)",
              "Policy\n(best-of-64)", "Policy $f_\\lambda$\n(best-of-64)"]
+    # los rotulos del eje son mas cortos que las claves de los datos:
+    # ocho categorias en 6.53 pulgadas dejan ~50pt por hueco y
+    # "(best-of-64)" a 8.5pt mide mas que eso, asi que se solapaban
+    rotulos = ["MOR", "GT-MWKR", "EST", "GP\n(1)", "GP\n(64)",
+               "Policy\n(greedy)", "Policy\n(64)",
+               "Policy $f_\\lambda$\n(64)"]
     fig, ax = plt.subplots(figsize=(6.53, 2.78))
     datos = [list(med[g].values()) for g in orden]
     bp = ax.boxplot(datos, positions=list(range(len(orden))), widths=0.52,
@@ -348,7 +355,7 @@ def fig_eps():
         ax.text(k + 0.33, m, "%.2f" % m, va="center", ha="left",
                 fontsize=8.5, color=color)
     ax.set_xticks(range(len(orden)))
-    ax.set_xticklabels(orden, fontsize=8.5)
+    ax.set_xticklabels(rotulos, fontsize=8.5)
     ax.set_ylabel("$\\bar\\varepsilon \\times 10^{3}$")
     ax.grid(axis="y", alpha=0.3, linestyle="--")
     ax.set_xlim(-0.55, len(orden) - 0.25)
