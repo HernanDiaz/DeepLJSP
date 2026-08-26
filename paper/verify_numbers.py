@@ -3130,54 +3130,73 @@ else:
                  < min(sum(a for a, _ in _pc[c]) / 10
                        for c in ("30x15", "30x20")))
 
-print("\n== fig:budget: la curva a diez tiradas ==")
-# Desde 2026-08-18 la curva se reconstruye con el protocolo desplegado
-# (una tirada gasta sus B muestras) sobre las diez tiradas del brazo
-# principal. El bloque siguiente conserva el deposito de tres como
-# centinela del dato, pero sus cifras ya no se imprimen.
-_CD = "benchmarks/curva_diez/curva_diez.json"
-if not os.path.exists(_CD):
-    pendiente("curva a diez tiradas", "sin curva_diez.json")
+print("\n== fig:budget: la curva con el decodificador desplegado ==")
+# Desde 2026-08-26 (revision R2-2) la curva se reconstruye del deposito
+# con extremos: greedy incluido en el pool y retencion por (U, L), el
+# protocolo de 5.4. El deposito de puntos medios de agosto queda como
+# centinela mas abajo.
+_CI = "benchmarks/curva_intervalo/curva_intervalo.json"
+if not os.path.exists(_CI):
+    pendiente("curva con extremos", "sin curva_intervalo.json")
 else:
-    _cd = json.load(open(_CD, encoding="utf-8"))
-    _pp = _cd["por_presupuesto"]
+    _ci = json.load(open(_CI, encoding="utf-8"))
+    _pp = _ci["por_presupuesto"]
     check_exacto("curva: diez tiradas completas",
-                 len(_cd["tiradas"]) == 10, f"{len(_cd['tiradas'])}")
+                 len(_ci["tiradas"]) == 10, f"{len(_ci['tiradas'])}")
+    check_exacto("curva: el protocolo es el desplegado",
+                 "(U, L)" in _ci["protocolo"])
     check("curva: greedy medio de las diez (texto 19.5)", 19.47,
-          _cd["greedy_media"], tol=0.006)
-    check("curva: una muestra suelta (texto 21.3)", 21.27,
-          _pp["1"]["media"], tol=0.006)
-    check("curva: RE a 64 muestras (texto 15.2)", 15.24,
+          _ci["greedy_media"], tol=0.006)
+    check("curva: RE a 64 muestras (texto 15.3)", 15.34,
           _pp["64"]["media"], tol=0.006)
-    check("curva: RE a 341 muestras (texto 14.0)", 14.04,
+    check("curva: RE a 341 muestras (texto 14.2)", 14.19,
           _pp["341"]["media"], tol=0.006)
-    check_exacto("curva: adelanta al greedy en B=3 y a la regla en B=8",
-                 _cd["cruce_greedy"] == 3 and _cd["cruce_gp"] == 8,
-                 f"greedy B={_cd['cruce_greedy']}, GP B={_cd['cruce_gp']}")
+    check_exacto("curva: mejora al greedy desde B=2 y a la regla en B=6",
+                 _ci["cruce_greedy"] == 2 and _ci["cruce_gp"] == 6,
+                 f"greedy B={_ci['cruce_greedy']}, GP B={_ci['cruce_gp']}")
     check_exacto("curva: monotona en el presupuesto",
                  all(_pp[str(a)]["media"] > _pp[str(b)]["media"]
-                     for a, b in zip(_cd["presupuestos"],
-                                     _cd["presupuestos"][1:])))
-    # los retornos por duplicacion que cita 7.2
-    # las ganancias son estimadores Monte Carlo (remuestreo sin
-    # reemplazo del pool), asi que se comprueban a la precision que el
-    # texto imprime, no a la tercera cifra
-    _g = _cd["ganancia_por_duplicacion"]
-    check("curva: ganancia 32->64 (texto 0.60)", 0.60, _g["32->64"],
-          tol=0.02)
-    check("curva: ganancia 128->256 (texto 0.48)", 0.48, _g["128->256"],
-          tol=0.02)
+                     for a, b in zip(_ci["presupuestos"],
+                                     _ci["presupuestos"][1:])))
+    # la clave de seleccion es inmaterial: mid rebaja <=0.17 puntos
+    _difs = [_pp[str(b)]["media"]
+             - _ci["por_presupuesto_mid"][str(b)]["media"]
+             for b in _ci["presupuestos"]]
+    check_exacto("curva: lex vs mid dentro de 0.17 puntos (texto)",
+                 0 <= max(_difs) <= 0.17
+                 and "$0.17$ points" in TEX,
+                 f"max {max(_difs):.3f}")
+    # los retornos por duplicacion que cita 7.2 (estimadores Monte
+    # Carlo: precision de lo impreso)
+    _g = _ci["ganancia_por_duplicacion"]
+    check("curva: ganancia 32->64 (texto 0.57)", 0.57, _g["32->64"],
+          tol=0.011)
+    check("curva: ganancia 128->256 (texto 0.46)", 0.46, _g["128->256"],
+          tol=0.011)
     check_exacto("curva: la ganancia se contrae octava a octava",
                  _g["32->64"] > _g["64->128"] > _g["128->256"])
-    # coherencia con la medicion independiente de tab:seventy: el
-    # campeon a bo64 (15.02) queda por debajo de la media de las diez
+    # coherencia con la medicion independiente de tab:seventy
     check_exacto("curva: el campeon a bo64 mejora la media de las diez",
                  15.02 < _pp["64"]["media"] < 15.5,
                  f"{_pp['64']['media']:.2f} vs 15.02")
-    check_exacto("7.2 declara el deposito de diez y sus cifras",
+    check_exacto("7.2 declara el deposito, el protocolo y sus cifras",
                  "each of the ten training runs" in TEX
                  and "$239{,}400$ schedules" in TEX
-                 and "$15.2\\%$ at $64$ and $14.0\\%$ at $341$" in TEX)
+                 and "retained by the criterion"
+                 in " ".join(TEX.split()))
+    check_exacto("7.2 imprime 15.3 a 64 y 14.2 a 341",
+                 "$15.3\\%$ at $64$ and $14.2\\%$ at $341$" in TEX)
+
+print("\n== centinela: la curva de puntos medios (ya no impresa) ==")
+_CD = "benchmarks/curva_diez/curva_diez.json"
+if not os.path.exists(_CD):
+    pendiente("centinela curva_diez", "sin curva_diez.json")
+else:
+    _cd = json.load(open(_CD, encoding="utf-8"))
+    check("centinela viejo: curva_diez a 64 (15.24)", 15.24,
+          _cd["por_presupuesto"]["64"]["media"], tol=0.006)
+    check("centinela viejo: curva_diez a 341 (14.04)", 14.04,
+          _cd["por_presupuesto"]["341"]["media"], tol=0.006)
 
 print("\n== centinela: la curva a tres tiradas (ya no impresa) ==")
 _POOL = "benchmarks/eval_budget_curve.csv"

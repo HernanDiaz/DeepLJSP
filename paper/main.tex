@@ -1586,9 +1586,10 @@ was not repeated on those arms.
   \centering
   \includegraphics[width=.62\linewidth]{figures/fig_budget.pdf}
   \caption{RE against the \emph{inference} budget $B$ on a base-2
-  logarithmic axis, as the mean over the 70 instances of the best of
-  $B$ samples a run spends, averaged over the ten training runs. The
-  band spans the best and worst run.}
+  logarithmic axis: the mean over the 70 instances of the schedule a
+  run retains under the deployed protocol, its greedy pass plus $B-1$
+  samples kept by the criterion of Eq.~\eqref{eq:lex}, averaged over
+  the ten training runs. The band spans the best and worst run.}
   \label{fig:budget}
 \end{figure}
 
@@ -1596,12 +1597,16 @@ Section~\ref{sec:positioning} samples the budget axis at three
 points, so it locates the reversal between the two learners no more
 precisely than between one pass and $64$. This section reconstructs
 the whole curve and finds the crossing near its left end: the policy
-overtakes its own greedy pass at $B{=}3$ and the evolved rule at
-$B{=}8$, so sampling becomes profitable at budgets far below the
+improves on its own greedy pass from $B{=}2$ and overtakes the
+evolved rule at $B{=}6$, so sampling becomes profitable at budgets
+far below the
 $64$ used throughout, and the rule's advantage at one pass occupies a
 narrow initial segment of the budget axis. The reconstruction retains
+both endpoints of
 all $342$ rollouts of each of the ten training runs on each of the 70
-instances ($239{,}400$ schedules), so that best-of-$B$ can be read
+instances ($239{,}400$ schedules), so that best-of-$B$ under the
+deployed protocol, the greedy pass plus $B-1$ samples retained by the
+criterion of Eq.~\eqref{eq:lex}, can be read
 off for arbitrary $B$ without further evaluation. Each run spends its
 own budget, as a deployed policy does, and the curve is the mean over
 the ten; Figure~\ref{fig:budget} plots it with a band spanning the
@@ -1609,8 +1614,12 @@ best and worst run, the dispersion a practitioner training once would
 face. EST, at $42.3\%$, lies above the frame. A single \emph{sampled}
 rollout is worse than the greedy one, $21.3\%$ against $19.5\%$: the
 argmax is a high-quality sequence within a broadly dispersed
-distribution. Past the crossing the returns are near-logarithmic,
-$15.2\%$ at $64$ and $14.0\%$ at $341$, without an inflection: no
+distribution. The selection key is immaterial to the level of the
+curve: retaining by the midpoint instead of the lexicographic key
+lowers the reported RE by at most $0.17$ points anywhere on the
+axis, so the curve measures the budget and not the tiebreaking
+convention. Past the crossing the returns are near-logarithmic,
+$15.3\%$ at $64$ and $14.2\%$ at $341$, without an inflection: no
 budget within the tested range saturates. The level agrees with the
 independent measurements of Table~\ref{tab:seventy}, where the
 selected run reaches $15.0\%$ at the same budget, slightly ahead of
@@ -1618,8 +1627,8 @@ this ten-run mean as the best of thirty should be.
 
 The same reconstruction quantifies the marginal return of further
 sampling and its computational cost. The marginal return decays
-slowly but does not vanish, from $0.60$ points between $32$ and $64$
-samples to $0.48$ between $128$ and $256$, a rate of about half a
+slowly but does not vanish, from $0.57$ points between $32$ and $64$
+samples to $0.46$ between $128$ and $256$, a rate of about half a
 point per doubling that is itself contracting by roughly a tenth per
 octave; wall-clock cost, by contrast, scales linearly in $B$. On the
 machine of Table~\ref{tab:environment} a sampled rollout requires
@@ -2072,7 +2081,7 @@ solutions for population-based search, and the quality of its
 sampling distribution is the property such a use would exploit. The
 third turns the budget analysis inward. The network commits to a
 schedule at $19.5\%$ while a few hundred of its own samples reach
-$14.0\%$, and the evolved rule shows the same separation, so the gap
+$14.2\%$, and the evolved rule shows the same separation, so the gap
 belongs to randomized constructive search rather than to learning as
 such. What
 differs is the remedy: the weights of a network can be moved onto its

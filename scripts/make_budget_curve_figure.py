@@ -40,8 +40,9 @@ plt.rcParams.update({
     "axes.grid": True, "grid.alpha": 0.3, "grid.linewidth": 0.5,
 })
 
-CURVAS = (["benchmarks/eval_budget_curve.csv"]
-          + sorted(glob.glob("benchmarks/curva_diez/curva_*.csv")))
+# deposito con extremos (2026-08-26): las diez tiradas, greedy
+# incluido en el pool y seleccion por (U, L), el protocolo de 5.4
+CURVAS = sorted(glob.glob("benchmarks/curva_intervalo/curva_*.csv"))
 GP_DESTACADA = "benchmarks/reevo_fixedfit/summary.csv"
 EST = "benchmarks/est_per_instance.csv"
 SALIDA = "paper/figures/fig_budget.pdf"
@@ -59,35 +60,56 @@ def lee_depositos():
         for r in csv.DictReader(open(ruta, encoding="utf-8")):
             inst, ck = r["instance"], r["checkpoint"]
             lbs[inst] = float(r["lb"])
+            par = (float(r["lo"]), float(r["up"]))
             if int(r["sample_idx"]) == 0:
-                greedy[ck][inst] = float(r["mid_comp"])
+                greedy[ck][inst] = par
             else:
-                filas[ck][inst].append(float(r["mid_comp"]))
+                filas[ck][inst].append(par)
     out = {}
     for ck, porinst in filas.items():
         completo = {i: v for i, v in porinst.items() if len(v) >= N_POOL}
         if len(completo) != 70:
             print(f"  AVISO: {ck} con {len(completo)}/70 instancias, fuera")
             continue
-        out[ck] = {i: {"lb": lbs[i], "greedy": greedy[ck][i],
-                       "pool": np.array(v[:N_POOL])}
-                   for i, v in completo.items()}
+        out[ck] = {}
+        for i, v in completo.items():
+            lo = np.array([x[0] for x in v[:N_POOL]])
+            up = np.array([x[1] for x in v[:N_POOL]])
+            g_lo, g_up = greedy[ck][i]
+            out[ck][i] = {
+                "lb": lbs[i],
+                # clave lexicografica (U, L): los datos llevan un
+                # decimal, asi que 1e6 preserva el orden sin colision
+                "g_clave": g_up * 1e6 + g_lo,
+                "g_mid": (g_lo + g_up) / 2,
+                "clave": up * 1e6 + lo,
+                "mid": (lo + up) / 2,
+            }
     return out
 
 
 def curva_de(tirada, rng):
-    """RE media sobre las 70 instancias para cada presupuesto."""
+    """RE media (punto medio) para cada presupuesto, con el
+    decodificador desplegado: la pasada greedy mas B-1 muestras,
+    retenidas por la clave lexicografica (U, L)."""
     re = np.zeros(len(PRESUPUESTOS))
     for datos in tirada.values():
-        pool, lb = datos["pool"], datos["lb"]
+        lb = datos["lb"]
+        clave, mid = datos["clave"], datos["mid"]
+        g_clave, g_mid = datos["g_clave"], datos["g_mid"]
         for j, b in enumerate(PRESUPUESTOS):
-            if b >= N_POOL:
-                re[j] += (pool.min() - lb) / lb * 100
+            if b == 1:
+                re[j] += (g_mid - lb) / lb * 100
                 continue
             tot = 0.0
             for _ in range(R):
-                idx = rng.choice(N_POOL, b, replace=False)
-                tot += (pool[idx].min() - lb) / lb * 100
+                idx = rng.choice(N_POOL, b - 1, replace=False)
+                k = clave[idx].argmin()
+                if clave[idx][k] < g_clave:
+                    m = mid[idx][k]
+                else:
+                    m = g_mid
+                tot += (m - lb) / lb * 100
             re[j] += tot / R
     return re / len(tirada)
 
@@ -135,7 +157,7 @@ def main():
     media = curvas.mean(axis=0)
     mejor, peor = curvas.min(axis=0), curvas.max(axis=0)
     greedy = float(np.mean([
-        np.mean([(d["greedy"] - d["lb"]) / d["lb"] * 100
+        np.mean([(d["g_mid"] - d["lb"]) / d["lb"] * 100
                  for d in dep[ck].values()]) for ck in dep]))
     instancias = sorted(next(iter(dep.values())))
     gp, est, n_gp, n_est = referencias(instancias)

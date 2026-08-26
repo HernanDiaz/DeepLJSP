@@ -73,9 +73,14 @@ def main():
                                    os.path.basename(f)))
     print(f"{n} ficheros de codigo copiados")
 
-    # el escaner: ninguna mencion de IA puede viajar en el paquete
+    # el escaner: ninguna mencion de IA puede viajar en el paquete.
+    # Excepcion unica: el titulo de la seccion de declaracion que EAAI
+    # exige en el manuscrito ("Declaration of generative AI..."), que
+    # el verificador comprueba literalmente; esa linea es terminologia
+    # de la revista, no un rastro de herramienta
     patron = re.compile(r"claude|anthropic|copilot|chatgpt|co-authored|"
                         r"generative ai|ai-generated|llm", re.I)
+    permitida = re.compile(r"declaration of generative ai", re.I)
     malos = []
     for f in glob.glob(os.path.join(DESTINO, "**", "*"), recursive=True):
         if not os.path.isfile(f) or os.path.basename(f) == "escaneo.txt":
@@ -84,8 +89,11 @@ def main():
             texto = open(f, encoding="utf-8", errors="ignore").read()
         except OSError:
             continue
+        lineas = texto.splitlines()
         for m in patron.finditer(texto):
             linea = texto[:m.start()].count("\n") + 1
+            if permitida.search(lineas[linea - 1]):
+                continue
             malos.append(f"{f}:{linea}: {m.group(0)}")
     if malos:
         print("ABORTADO: menciones encontradas:")
