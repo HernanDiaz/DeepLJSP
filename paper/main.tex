@@ -70,19 +70,21 @@ Gij\'on, Spain}
 The interval job shop scheduling problem (IJSP) models
 each uncertain processing time as an interval between known bounds
 and is solved in the literature by per-instance metaheuristic
-search. This paper
-presents a constructive deep reinforcement learning policy
-for the problem. Its state features are dimensionless and its
+search. This paper contributes a constructive deep reinforcement
+learning policy for the problem, and a controlled comparison of it
+against genetic programming hyper-heuristics, thirty trained
+artifacts per family evaluated in one harness at matched inference
+budgets. The policy and that comparison are the contribution in
+artificial intelligence; the engineering application is production
+scheduling under such uncertainty. The policy's state features are
+dimensionless and its
 encoder is permutation-invariant, so one trained network applies to
 instances of any size, with no retraining and no change of
 architecture.
 Trained on instances of a single size class, the
 validation-selected policy improves on every hand-crafted dispatching
 rule on all seventy benchmark instances, six of the seven size
-classes unseen. It is then compared
-against a dispatching rule evolved by genetic programming for the
-same benchmark, thirty trained artifacts per family evaluated in one
-harness at matched inference budgets. Which of the two leads is decided
+classes unseen. Which of the two leads is decided
 by the budget, and they differ significantly at every budget
 evaluated: the rule leads by $0.8$
 points of relative error given one constructive pass each, and the
@@ -2031,11 +2033,15 @@ class it trained on and trailing on the two largest. On the twelve
 classical instances, a family neither method was tuned for, it holds
 the lower figure at every budget. Margins under a point in either
 direction should finally be weighed against what the error metric
-does not register: the evolved rule carries less technical machinery,
-shorter development, training and inference times, a decision
-function that remains a readable expression and, on the evidence of
-the two largest classes, the more graceful transfer to instances far
-above the training size (Q1).
+does not register. On the rule's side stand less technical machinery,
+shorter training and inference times, a decision function that
+remains a readable expression and, on the evidence of the two largest
+classes, the more graceful transfer to instances far above the
+training size. On the policy's side stand a sampling distribution
+that turns additional budget into quality at a rate the randomized
+rule does not match, so that the ordering between them moves with the
+budget rather than against it, and weights that further training can
+still move (Q1).
 
 The paradigms differ in where they handle the uncertainty. For the
 policy the interval widths are inert as inputs: they sit at the floor
