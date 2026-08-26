@@ -343,7 +343,7 @@ def fig_eps():
         parche.set_edgecolor("0.35")
     rng = __import__("numpy").random.default_rng(7)
     for k, (g, vals) in enumerate(zip(orden, datos)):
-        ax.scatter(rng.normal(k, 0.05, len(vals)), vals, s=14, alpha=0.5,
+        ax.scatter(rng.normal(k, 0.05, len(vals)), vals, s=14, alpha=0.28,
                    color="gray", zorder=3)
         m = sum(vals) / len(vals)
         color = "seagreen" if "Policy" in g else "steelblue"
