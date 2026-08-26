@@ -348,12 +348,18 @@ def fig_eps():
     for parche, g in zip(bp["boxes"], orden):
         parche.set_facecolor("#D8EFD8" if "Policy" in g else "#D5E5F0")
         parche.set_edgecolor("0.35")
+    # la media va rotulada ENCIMA de su bigote y centrada en la
+    # categoria: a la derecha del diamante invadia la caja siguiente,
+    # que empieza a 0.74 del centro
+    topes = [bp["caps"][2 * k + 1].get_ydata()[0]
+             for k in range(len(orden))]
     for k, (g, vals) in enumerate(zip(orden, datos)):
         m = sum(vals) / len(vals)
         color = "seagreen" if "Policy" in g else "steelblue"
         ax.scatter([k], [m], marker="D", s=26, color=color, zorder=4)
-        ax.text(k + 0.33, m, "%.2f" % m, va="center", ha="left",
+        ax.text(k, topes[k] + 0.12, "%.2f" % m, va="bottom", ha="center",
                 fontsize=8.5, color=color)
+    ax.set_ylim(top=max(topes) + 0.75)
     ax.set_xticks(range(len(orden)))
     ax.set_xticklabels(rotulos, fontsize=8.5)
     ax.set_ylabel("$\\bar\\varepsilon \\times 10^{3}$")
