@@ -965,8 +965,9 @@ policies trained under different seeds are evaluated on the same
 instances, so their results are averaged over seeds before any
 instance is entered into a paired test. Tests are two-sided exact Wilcoxon
 signed-rank tests over the instances of the set in question, reported
-with the mean difference and its $95\%$ confidence interval
-(Student~$t$ over the instance differences), and the
+with the mean difference and, as a descriptive summary of spread
+rather than a second inferential statement, its $95\%$ Student~$t$
+interval over the instance differences. The
 smallest attainable $p$-value is $0.031$ on the six validation
 instances and below $10^{-3}$ on the seventy. No correction for
 multiple comparisons is applied: each test is reported as an
@@ -1238,7 +1239,8 @@ per-instance search.
   \includegraphics[width=.92\linewidth]{figures/fig_training.pdf}
   \caption{Training dynamics of the deployed arm: worst-case gap to
   the instance bound of the sampled training episodes (smoothed over
-  $25$ episodes; the band spans the seeds) and of the best schedule
+  $25$ episodes; the band spans the best and worst seed) and of the
+  best schedule
   found so far, over the four training blocks TA11--TA14. The
   training logs record the worst-case makespan, the quantity the
   reward optimizes, so the axis is not the midpoint RE of
@@ -1514,7 +1516,7 @@ Three questions remain about the policy itself: which of its inputs
 it consults, which of its design choices earn their cost, and how far
 the makespans it predicts survive execution.
 
-\subsection{What the policy attends to}
+\subsection{Which inputs the decisions depend on}
 \label{sec:results-importance}
 
 The policy is not interpretable the way a priority expression is, but
@@ -1812,8 +1814,8 @@ does not reach the figures below, since the evaluations of this
 section load the checkpoint of the final block and compute the
 componentwise makespan. Deployed as that package, the objective delivers
 what it promises: over the ten seeds the predicted interval narrows
-from $13.05\%$ to $12.18\%$ of the expected makespan (narrower on all
-six instances, $p=0.031$) while the expected makespan rises by
+from $13.05\%$ to $12.18\%$ of the midpoint makespan (narrower on all
+six instances, $p=0.031$) while the midpoint makespan rises by
 $1.15$ points, to $15.11\%$ (higher on all six, $p=0.031$). Unlike
 the two ablations above, both effects are significant: a
 width-rewarding objective is available, at a price of about one point
@@ -1835,7 +1837,7 @@ retrained from scratch at $\lambda=0.5$, $2$ and $4$, ten seeds each.
 When deployed, with each arm's samples ranked by its own
 $f_\lambda$, the five arms trace a monotone frontier, from $13.05\%$
 relative width at the default end to $11.08\%$ at $\lambda=4$, with
-the expected makespan climbing by $3.40$ points and every step of
+the midpoint makespan climbing by $3.40$ points and every step of
 the narrowing significant ($p=0.031$, all six instances at every
 $\lambda$). Under a common selection criterion the frontier
 vanishes: no retrained arm proposes narrower rollouts than the
@@ -1964,10 +1966,10 @@ objective charges for the width, and it attains the lowest deviation
 of the pool, $\bar\varepsilon\times10^{3}=5.23$ against $5.48$ for
 the default arm, more faithful on 49 of the seventy instances
 ($p<0.001$) and with the narrowest predictions ($11.2\%$ of the
-expected makespan against $11.8\%$). This is the direction the
+midpoint makespan against $11.8\%$). This is the direction the
 argument predicts, demonstrated at benchmark scale, and it comes at
 the price Section~\ref{sec:ablations-interval} measured: about one
-point of expected makespan at this $\lambda$. The result completes the chain begun there: the
+point of midpoint makespan at this $\lambda$. The result completes the chain begun there: the
 narrowing that Section~\ref{sec:ablations-interval} traced to sample
 selection is not confined to the predicted interval but carries
 through to execution, as schedules whose realized makespans stay
