@@ -19,7 +19,7 @@ import torch.nn as nn
 from jobshop_rl.agents_v2.networks import PolicyValueNetV2
 from jobshop_rl.agents_v2.ppo_trainer import PPOTrainerV2, RolloutBuffer
 from jobshop_rl.agents_v2.state_encoder import StateEncoder
-from jobshop_rl.models.interval import Interval
+from jobshop_rl.models.interval import Interval, final_makespan
 from jobshop_rl.utils.seed_utils import set_random_seed
 
 
@@ -127,12 +127,30 @@ class AgentV2:
         que premia la recompensa: optimizar una cosa y elegir por otra
         seria un experimento incoherente.
         """
-        max_time = max(self.env.job_completion_time)
+        # componente a componente: el max lexicografico de Python
+        # devuelve el intervalo de UN trabajo, cuyo extremo
+        # inferior no tiene por que ser max_j C_j^L
+        max_time = final_makespan(self.env.job_completion_time)
         if not isinstance(max_time, Interval):
             return float(max_time)
         up, lo = float(max_time.upper), float(max_time.lower)
         lam = float(os.environ.get("DEEPLJSP_V2_LAMBDA", "0") or 0)
         return up + lam * (up - lo) if lam else up
+
+    def _clave_retencion(self, makespan: float):
+        """Clave con la que el best-of-N retiene un rollout.
+
+        Con lambda=0 es la del criterio del paper: peor caso primero y
+        extremo inferior SOLO en empate exacto del superior. Con
+        lambda>0 el brazo robusto ordena por su propio f_lambda, que ya
+        es el escalar que devuelve _episode_makespan.
+        """
+        if float(os.environ.get("DEEPLJSP_V2_LAMBDA", "0") or 0):
+            return (makespan,)
+        m = final_makespan(self.env.job_completion_time)
+        if isinstance(m, Interval):
+            return (float(m.upper), float(m.lower))
+        return (float(m),)
 
     def _run_episode(self, sample: bool, store: bool) -> Tuple[float, float]:
         """Ejecuta un episodio; devuelve (makespan, recompensa acumulada)."""
@@ -220,9 +238,12 @@ class AgentV2:
         best_schedule: List[Dict] = []
         best_history: List[float] = []
 
+        best_key = None
         for i in range(max(1, n_samples)):
             makespan, _ = self._run_episode(sample=(i > 0), store=False)
-            if makespan < best_makespan or i == 0:
+            key = self._clave_retencion(makespan)
+            if best_key is None or key < best_key:
+                best_key = key
                 best_makespan = makespan
                 best_schedule = self.env.schedule_history
                 best_history = self.env.makespan_history

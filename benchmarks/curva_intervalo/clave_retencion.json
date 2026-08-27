@@ -1,0 +1,10 @@
+{
+ "presupuesto": 64,
+ "repeticiones": 40,
+ "unidades": 700,
+ "sorteos": 28000,
+ "sorteos_que_difieren": 412,
+ "pct_que_difieren": 1.4714,
+ "delta_re_medio": 0.009,
+ "delta_re_max": 0.1264
+}

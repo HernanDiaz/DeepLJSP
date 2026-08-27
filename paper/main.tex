@@ -1805,9 +1805,12 @@ tracking key that judges the best block reads the lower endpoint of
 the lexicographically largest job completion rather than the
 componentwise maximum of the lower endpoints, so the $f_\lambda$ it
 tracks can differ from Eq.~\eqref{eq:robust} (the upper endpoint, and
-with it every $\lambda=0$ arm, is unaffected); all reported
-evaluations and every number in this section use the componentwise
-makespan. Deployed as that package, the objective delivers
+with it every $\lambda=0$ arm, is unaffected). The key governs which
+block transfers its weights during training, a rule already described
+in Section~\ref{sec:training} and applied identically to every arm; it
+does not reach the figures below, since the evaluations of this
+section load the checkpoint of the final block and compute the
+componentwise makespan. Deployed as that package, the objective delivers
 what it promises: over the ten seeds the predicted interval narrows
 from $13.05\%$ to $12.18\%$ of the expected makespan (narrower on all
 six instances, $p=0.031$) while the expected makespan rises by

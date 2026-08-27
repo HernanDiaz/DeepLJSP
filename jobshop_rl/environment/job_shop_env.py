@@ -13,7 +13,8 @@ from typing import List, Dict, Tuple, Optional, Any, Union
 from copy import deepcopy
 
 from jobshop_rl.models.data_models import SchedulingStep, OperationFeatures
-from jobshop_rl.models.interval import Interval, ensure_interval
+from jobshop_rl.models.interval import (Interval, ensure_interval,
+                                        final_makespan)
 from jobshop_rl.rewards.base import RewardStrategy
 from jobshop_rl.rewards.strategies.basic import BasicRewardStrategy
 from jobshop_rl.utils.problem_analyzer import ProblemAnalyzer, MakespanBoundCalculator
@@ -491,7 +492,9 @@ class JobShopEnv:
                     max_time_value = max(max_time_value, float(end))
             
             # Find max using lexicographic ordering
-            makespan = max(end_times)
+            # componente a componente, igual que la evaluacion:
+            # el max lexicografico daba el intervalo de UN trabajo
+            makespan = final_makespan(end_times)
             
             if isinstance(makespan, Interval):
                 title_text = f"{title}\nMakespan: [{makespan.lower:.1f}, {makespan.upper:.1f}]"

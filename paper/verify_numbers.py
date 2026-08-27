@@ -2335,6 +2335,32 @@ if os.path.exists("drl-eaai/highlights.tex"):
 else:
     pendiente("EAAI highlights", "sin drl-eaai/ (repo de trabajo)")
 
+# =========================================================================
+print("\n== la clave de retencion del best-of-N (revision r3) ==")
+# evaluate_policy retenia por el extremo superior y rompia empates por
+# orden de aparicion; corregido a la clave (U, L) de la Eq. (3), con
+# regresion en tests/test_seleccion_lexicografica.py. Aqui se guarda
+# cuanto habria cambiado, medido sobre el deposito de la curva.
+_CR = "benchmarks/curva_intervalo/clave_retencion.json"
+if not os.path.exists(_CR):
+    pendiente("clave de retencion", "sin clave_retencion.json")
+else:
+    _cr = json.load(open(_CR, encoding="utf-8"))
+    check_exacto("la eleccion difiere en menos del 2% de los sorteos",
+                 _cr["pct_que_difieren"] < 2.0,
+                 f"{_cr['pct_que_difieren']}% de {_cr['sorteos']}")
+    check_exacto("el efecto en RE es menor que una centesima de punto",
+                 0 <= _cr["delta_re_medio"] < 0.01,
+                 f"{_cr['delta_re_medio']:+.4f} puntos")
+    _src = open("jobshop_rl/agents_v2/agent.py", encoding="utf-8").read()
+    check_exacto("agent.py retiene por (upper, lower) con lambda=0",
+                 "_clave_retencion" in _src
+                 and "(float(m.upper), float(m.lower))" in _src)
+    check_exacto("el rastreador usa el makespan componente a componente",
+                 "max_time = final_makespan(" in _src
+                 and "max_time = max(self.env.job_completion_time)"
+                 not in _src)
+
 # Marcadores \todo pendientes: se imprimen en rojo en el PDF (uno de
 # ellos llego a salir dentro de la bibliografia), asi que ninguno puede
 # sobrevivir al envio. Se listan en cada pasada hasta que desaparezcan.
@@ -3642,3 +3668,8 @@ for fichero, v_tex in [("tuning/scenario.txt", 330),
 
 print(f"\n{ok_n} comprobaciones correctas, {fallo_n} fallos, "
       f"{pend_n} pendientes de fuente")
+
+# codigo de salida distinto de cero si algo fallo: sin esto el
+# verificador no sirve como comprobacion automatizable
+# (revision del 2026-08-26)
+sys.exit(1 if fallo_n else 0)
