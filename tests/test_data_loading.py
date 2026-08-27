@@ -490,19 +490,27 @@ class TestValidation:
                 os.unlink(temp_path)
     
     def test_interval_validation(self):
-        """Test _validate_problem_intervals method."""
+        """La invariante lower <= upper vive ya en el constructor.
+
+        Antes la comprobaba _validate_problem_intervals sobre el
+        problema ya cargado; ahora Interval la impone al construirse,
+        que es antes y en un solo sitio, y por eso el problema
+        invalido de este test ni siquiera puede fabricarse.
+        """
+        with pytest.raises(ValueError, match="lower bound"):
+            Interval(10, 5)
+
+        # y el validador acepta un problema bien formado
         problem = {
             'num_jobs': 2,
             'num_machines': 2,
             'sequences': [[0, 1], [1, 0]],
             'durations': [
                 [Interval(5, 7), Interval(3, 5)],
-                [Interval(6, 8), Interval(10, 5)]  # Invalid!
+                [Interval(6, 8), Interval(4, 9)]
             ]
         }
-        
-        with pytest.raises(ValueError, match="Intervalo inválido"):
-            ProblemLoader._validate_problem_intervals(problem)
+        ProblemLoader._validate_problem_intervals(problem)
 
 
 class TestRandomGeneration:

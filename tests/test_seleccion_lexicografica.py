@@ -62,3 +62,48 @@ def test_el_brazo_robusto_ordena_por_su_objetivo():
         assert len(k) == 1
     finally:
         os.environ.pop("DEEPLJSP_V2_LAMBDA", None)
+
+
+def test_la_bandera_de_compatibilidad_restituye_la_semantica_vieja():
+    """DEEPLJSP_V2_LEGACY_TRACKING=1 vuelve al max lexicografico.
+
+    Las tiradas robustas depositadas se entrenaron con esa semantica.
+    El extremo superior coincide en ambas, de modo que ningun brazo
+    lambda=0 depende de la bandera; lo que cambia es el inferior, y con
+    el el f_lambda que decide que bloque transfiere sus pesos.
+    """
+    comps = [Interval(40, 100), Interval(90, 95)]
+    agente = AgentV2.__new__(AgentV2)
+    agente.env = _EnvFalso(comps)
+
+    os.environ["DEEPLJSP_V2_LAMBDA"] = "1"
+    try:
+        os.environ.pop("DEEPLJSP_V2_LEGACY_TRACKING", None)
+        correcto = AgentV2._episode_makespan(agente)
+        os.environ["DEEPLJSP_V2_LEGACY_TRACKING"] = "1"
+        historico = AgentV2._episode_makespan(agente)
+    finally:
+        os.environ.pop("DEEPLJSP_V2_LAMBDA", None)
+        os.environ.pop("DEEPLJSP_V2_LEGACY_TRACKING", None)
+
+    # componentwise da [90, 100] -> 100 + 1*(100-90) = 110
+    assert correcto == 110.0
+    # el max lexicografico da [40, 100] -> 100 + 1*(100-40) = 160
+    assert historico == 160.0
+    assert historico > correcto
+
+
+def test_la_bandera_no_afecta_a_lambda_cero():
+    """Con lambda=0 solo cuenta el extremo superior, igual en las dos."""
+    comps = [Interval(40, 100), Interval(90, 95)]
+    agente = AgentV2.__new__(AgentV2)
+    agente.env = _EnvFalso(comps)
+    os.environ.pop("DEEPLJSP_V2_LAMBDA", None)
+    try:
+        os.environ.pop("DEEPLJSP_V2_LEGACY_TRACKING", None)
+        a = AgentV2._episode_makespan(agente)
+        os.environ["DEEPLJSP_V2_LEGACY_TRACKING"] = "1"
+        b = AgentV2._episode_makespan(agente)
+    finally:
+        os.environ.pop("DEEPLJSP_V2_LEGACY_TRACKING", None)
+    assert a == b == 100.0

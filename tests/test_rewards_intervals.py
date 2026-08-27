@@ -58,9 +58,20 @@ class TestMakespanRewardComponent:
         reward_not_done = component.calculate(env, state, next_state, 0, done=False, info=info)
         assert reward_not_done == 0
         
-        # When done, should give negative reward (we want to minimize makespan)
+        # El termino base es negativo, -makespan/escala, pero el
+        # componente lleva ademas un bonus por quedar a menos del 5%
+        # del limite inferior (4.1 lo declara: existe y nunca se
+        # activo en el benchmark). En una instancia de juguete SI se
+        # activa, asi que el signo del total no es el contrato; el
+        # contrato es que empeorar el makespan reduce la recompensa
         reward_done = component.calculate(env, state, next_state, 0, done=True, info=info)
-        assert reward_done < 0
+
+        class MockEnvPeor:
+            job_completion_time = [10, 15, 40]
+
+        reward_peor = component.calculate(MockEnvPeor(), state, next_state, 0,
+                                          done=True, info=info)
+        assert reward_peor < reward_done
     
     def test_makespan_reward_interval(self):
         """Makespan reward with interval problem."""
@@ -85,9 +96,22 @@ class TestMakespanRewardComponent:
         next_state = {}
         info = {}
         
-        # When done, should give negative reward based on upper bound
+        # Se puntua por el extremo SUPERIOR: dos finales con el mismo
+        # peor caso valen igual, y subirlo empeora la recompensa
         reward_done = component.calculate(env, state, next_state, 0, done=True, info=info)
-        assert reward_done < 0
+
+        class MockEnvMismoUpper:
+            job_completion_time = [Interval(10, 12), Interval(15, 18),
+                                   Interval(5, 25)]
+
+        class MockEnvUpperMayor:
+            job_completion_time = [Interval(10, 12), Interval(15, 18),
+                                   Interval(20, 40)]
+
+        assert component.calculate(MockEnvMismoUpper(), state, next_state, 0,
+                                   done=True, info=info) == reward_done
+        assert component.calculate(MockEnvUpperMayor(), state, next_state, 0,
+                                   done=True, info=info) < reward_done
     
     def test_makespan_improvement_tracking(self):
         """Makespan component tracks best seen makespan."""
@@ -223,10 +247,11 @@ class TestLocalImprovementRewardComponent:
         reward2 = component.calculate(None, state, next_state2, 0, done=False, info={})
         assert reward2 > 0  # Reward for improvement
         
-        # Third call - no improvement
+        # Tercera llamada: empeora. 4.1 penaliza los deterioros con el
+        # doble de peso, asi que la recompensa es NEGATIVA, no cero
         next_state3 = {'machine_completion_time': [10, 15, 19]}
         reward3 = component.calculate(None, state, next_state3, 0, done=False, info={})
-        assert reward3 == 0  # No reward when worse
+        assert reward3 < 0
     
     def test_local_improvement_interval(self):
         """Local improvement with interval values."""

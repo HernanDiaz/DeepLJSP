@@ -129,8 +129,18 @@ class AgentV2:
         """
         # componente a componente: el max lexicografico de Python
         # devuelve el intervalo de UN trabajo, cuyo extremo
-        # inferior no tiene por que ser max_j C_j^L
-        max_time = final_makespan(self.env.job_completion_time)
+        # inferior no tiene por que ser max_j C_j^L.
+        #
+        # DEEPLJSP_V2_LEGACY_TRACKING=1 restituye ese max lexicografico,
+        # que es la semantica con la que se entrenaron las tiradas
+        # robustas depositadas: sin el, reentrenar un brazo lambda>0
+        # puede seguir otra cadena de transferencia entre bloques y dar
+        # otros pesos. El extremo SUPERIOR es identico en ambas, asi que
+        # ningun brazo lambda=0 se ve afectado.
+        if os.environ.get("DEEPLJSP_V2_LEGACY_TRACKING") == "1":
+            max_time = max(self.env.job_completion_time)
+        else:
+            max_time = final_makespan(self.env.job_completion_time)
         if not isinstance(max_time, Interval):
             return float(max_time)
         up, lo = float(max_time.upper), float(max_time.lower)

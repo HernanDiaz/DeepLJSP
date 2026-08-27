@@ -2356,10 +2356,13 @@ else:
     check_exacto("agent.py retiene por (upper, lower) con lambda=0",
                  "_clave_retencion" in _src
                  and "(float(m.upper), float(m.lower))" in _src)
-    check_exacto("el rastreador usa el makespan componente a componente",
+    check_exacto("el rastreador usa el componente a componente por defecto",
                  "max_time = final_makespan(" in _src
-                 and "max_time = max(self.env.job_completion_time)"
-                 not in _src)
+                 and _src.index("DEEPLJSP_V2_LEGACY_TRACKING")
+                 < _src.index("max_time = max(self.env"))
+    check_exacto("la semantica historica vive tras su bandera",
+                 "DEEPLJSP_V2_LEGACY_TRACKING" in
+                 open("README.md", encoding="utf-8").read())
 
 # =========================================================================
 print("\n== 6.2 sobre las 60 no vistas, por tamano (revision r4) ==")

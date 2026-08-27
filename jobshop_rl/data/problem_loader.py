@@ -91,7 +91,9 @@ class ProblemLoader:
         value_str = value_str.strip()
         
         # Check for interval format: (min,max) or [min,max]
-        interval_match = re.match(r'[\(\[](\d+\.?\d*)\s*,\s*(\d+\.?\d*)[\)\]]', value_str)
+        interval_match = re.match(
+            r'[\(\[]\s*(\d+\.?\d*)\s*,\s*(\d+\.?\d*)\s*[\)\]]',
+            value_str)
         
         if interval_match:
             # Parse as interval

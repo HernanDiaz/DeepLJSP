@@ -194,6 +194,18 @@ class TestFeatureExtraction:
         assert first_op[4] == duration.upper
 
 
+def _extremos(v):
+    """(lower, upper) de un tiempo del entorno.
+
+    Interval.max colapsa a escalar cuando el resultado es degenerado
+    (lower == upper), por compatibilidad con los problemas crisp, asi
+    que el origen de la programacion llega como 0.0 y no como
+    Interval(0, 0). Esa es la razon de los isinstance repartidos por
+    los evaluadores, y este ayudante hace explicito el contrato.
+    """
+    return (float(v.lower), float(v.upper)) if isinstance(v, Interval)         else (float(v), float(v))
+
+
 class TestScheduleConstruction:
     """Test schedule construction with interval arithmetic."""
     
@@ -244,9 +256,12 @@ class TestScheduleConstruction:
         
         # All times should be intervals
         for op in env.schedule_history:
-            assert isinstance(op['start'], Interval)
-            assert isinstance(op['end'], Interval)
-    
+            lo_s, up_s = _extremos(op['start'])
+            lo_e, up_e = _extremos(op['end'])
+            assert lo_s <= up_s and lo_e <= up_e
+            # toda operacion dura algo, y la duracion es intervalar
+            assert up_e > up_s
+
     def test_interval_arithmetic_correctness(self):
         """Verify interval arithmetic is correctly applied."""
         # Create simple 2x2 problem
@@ -276,8 +291,11 @@ class TestScheduleConstruction:
         assert env.machine_completion_time[0].lower == 5
         assert env.machine_completion_time[0].upper == 7
         
-        # Schedule Job 1, Op 0 (M1, duration [4,6])
-        state, reward, done, info = env.step(0)  # Now Job 1 is eligible
+        # Schedule Job 1, Op 0 (M1, duration [4,6]). La accion es un
+        # INDICE en la lista de elegibles, que sigue siendo [0, 1]: con
+        # step(0) se programaria la segunda operacion del trabajo 0
+        state, reward, done, info = env.step(
+            list(env.eligible_ops).index(1))
         
         # Job 1 completes at [4,6]
         assert env.job_completion_time[1].lower == 4
@@ -583,10 +601,11 @@ class TestCompleteScheduling:
         
         # All times should be valid intervals
         for op in env.schedule_history:
-            assert isinstance(op['start'], Interval)
-            assert isinstance(op['end'], Interval)
-            assert op['start'].lower <= op['start'].upper
-            assert op['end'].lower <= op['end'].upper
+            lo_s, up_s = _extremos(op['start'])
+            lo_e, up_e = _extremos(op['end'])
+            assert lo_s <= up_s
+            assert lo_e <= up_e
+            assert lo_e >= lo_s and up_e >= up_s
 
 
 # Simple runner for manual testing
