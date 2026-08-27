@@ -69,31 +69,27 @@ Gij\'on, Spain}
 \begin{abstract}
 The interval job shop scheduling problem (IJSP) models
 each uncertain processing time as an interval between known bounds
-and is solved in the literature by per-instance metaheuristic
-search. This paper contributes a constructive deep reinforcement
+and is solved in the literature by per-instance metaheuristic search. This paper contributes a constructive deep reinforcement
 learning policy for the problem and a controlled comparison against
 genetic programming hyper-heuristics, thirty trained
 artifacts per family evaluated in one harness at matched inference
-budgets. The policy and the comparison are the contribution in
-artificial intelligence; the engineering application is production
-scheduling under such uncertainty. The policy's state features are
-dimensionless and its
-encoder is permutation-invariant, so one trained network applies to
-any instance size, with no retraining and no architectural
-change.
-Trained on a single size class, the
-validation-selected policy improves on every hand-crafted dispatching
-rule on all seventy benchmark instances, six of the seven size
-classes unseen. Which of the two learners leads is decided
-by the inference budget, and they differ significantly at every
-budget evaluated: the rule leads by $0.8$
-points of relative error at one constructive pass each, and the
-policy leads by the same margin once both draw samples; on twelve
-classical instances outside the training family the policy holds the
-lower mean error at every budget, significantly once both sample.
+budgets. The contribution in artificial intelligence is the policy and
+the comparison; the engineering application is production scheduling
+under such uncertainty. The policy's features are dimensionless and
+its encoder permutation-invariant, so one trained network applies to
+any instance size without retraining or architectural change.
+Trained on a single size class, the validation-selected policy
+improves on every hand-crafted dispatching rule on all seventy
+instances, six of the seven size classes unseen. Which learner leads is decided by the inference
+budget: the rule leads by $0.8$ points of relative error at one
+constructive pass each, and the policy by the same margin once both
+sample. That sampled lead is significant on unseen instances up to
+$30{\times}20$ and on twelve classical
+instances outside the training family; it reverses only on the two
+largest size classes, where the rule leads at every budget.
 The paradigms also differ in where an objective that values
 robustness acts: retrained under a width-penalizing objective, the
-policy narrows its schedules through sample selection, not through
+policy narrows its schedules through sample selection rather than
 measurably changed weights, whereas the same objective acts through
 the evolved representation in the rules.
 \end{abstract}
@@ -216,8 +212,13 @@ per-instance metaheuristic state of the art?
   a single harness that fixes the instances, the interval arithmetic,
   the ranking criterion, the inference budgets and the execution
   realizations, with per-instance results reported in full
-  (supplementary material). Which of the two leads is decided by the
-  budget, and they differ significantly at every budget evaluated.
+  (supplementary material). Thirty meet thirty at one constructive
+  pass; at the sampled budgets the contrast is between the artifact
+  each family selects on the validation instances. Which of the two
+  leads is decided by the inference budget and by the size class:
+  on instances neither family has seen, the policy leads
+  significantly once both sample up to $30{\times}20$, and the rule
+  leads at every budget on the two largest classes.
 \item \emph{A localization of where each paradigm handles the
   uncertainty} (Section~\ref{sec:ablations-interval}), in three
   parts. The mechanism the design offers: schedule selection ranks
@@ -1342,10 +1343,29 @@ $17.71\%$ against the policy's $18.49\%$, which is ahead on only
 against $15.88\%$ and ahead on 42 of the 70, and $1024$ samples widen
 nothing, $13.25\%$ against $14.07\%$ and again 42. With the instance
 as the experimental unit (Section~\ref{sec:instances}), every one of
-these differences is significant ($p=0.028$, $0.020$ and $0.010$): the two
-learners are statistically distinguishable at every budget, in
-opposite directions, and the advantage the policy gains by sampling
-is of the same size as the one it concedes at a single pass.
+these differences is significant ($p=0.028$, $0.020$ and $0.010$), the
+advantage the policy gains by sampling being of the same size as the
+one it concedes at a single pass.
+
+Ten of the seventy instances, the $20{\times}15$ class, are the ones
+on which both families were trained and selected, so the contrast is
+read again over the sixty neither has seen. The one-pass deficit
+survives the restriction ($18.68\%$ against $17.89\%$, $p=0.034$; over
+the thirty artifacts of each family, $20.02\%$ against $19.15\%$,
+$p=0.006$), while the sampled contrasts do not ($15.40\%$ against
+$15.88\%$, $p=0.261$ at $64$ samples; $13.59\%$ against $14.08\%$,
+$p=0.231$ at $1024$). That aggregate, however, aggregates two
+significant effects of opposite sign. On the forty unseen instances up
+to $30{\times}20$ the two are level at one pass ($p=0.94$) and the
+policy leads once both sample, by $1.37$ and $1.21$ points, ahead on
+29 and 28 of the 40 ($p<0.002$ in both). On the twenty of
+$50{\times}15$ and $50{\times}20$ the rule leads at every budget, by
+$2.41$ points at one pass and by $1.29$ and $0.94$ when both sample,
+ahead on 18 and 16 of the 20 ($p\le0.005$ throughout). What the
+budget decides on unseen instances is therefore the \emph{margin};
+what decides the \emph{direction} is the size class, and the boundary
+between the two regimes falls between $30{\times}20$ and
+$50{\times}15$.
 
 The deficit does not depend on which run each side put forward. The
 means over the thirty, which no choice touches, stand $18.99\%$
@@ -2022,8 +2042,8 @@ well, which \citet{Xu2025} call for, remains open.
 The three questions posed in the introduction now have answers.
 
 Neither learned paradigm dominates the other: which of the two leads
-is decided by the inference budget, and they differ significantly
-at every budget evaluated.
+is decided by the inference budget and, on instances neither has
+seen, by the size class.
 Given one constructive pass each the evolved rule leads, and once
 both methods sample the policy leads by a margin of the same size;
 the reading over the thirty artifacts of each family, which no
@@ -2034,8 +2054,13 @@ contribution is not free: the budget those figures equalize is the
 number of schedules constructed, while a policy costs some four times
 an evolved rule to train and about seven to eleven times as much per
 schedule (Table~\ref{tab:cost}).
-The aggregate also hides a size effect, the policy leading near the
-class it trained on and trailing on the two largest. On the twelve
+That aggregate covers the ten instances both families trained and
+were selected on. Over the sixty they have never seen, the one-pass
+deficit survives ($p=0.034$) but the sampled advantage does not, and
+the reason is a cancellation: up to $30{\times}20$ the policy leads
+by more than a point once both sample ($p<0.002$), and on
+$50{\times}15$ and $50{\times}20$ the rule leads at every budget
+($p\le0.005$), by a margin that sampling narrows without closing. On the twelve
 classical instances, a family neither method was tuned for, it holds
 the lower figure at every budget. Margins under a point in either
 direction should finally be weighed against what the error metric

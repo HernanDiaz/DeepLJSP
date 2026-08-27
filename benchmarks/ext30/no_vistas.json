@@ -1,0 +1,104 @@
+{
+  "sesenta_no_vistas": {
+    "1pass_medias30": {
+      "n": 60,
+      "media_politica": 20.0218,
+      "media_gp": 19.1529,
+      "dif_media": 0.8689,
+      "gana_politica": 21,
+      "p": 0.0059222391950477515
+    },
+    "1pass_elegido": {
+      "n": 60,
+      "media_politica": 18.6757,
+      "media_gp": 17.8939,
+      "dif_media": 0.7818,
+      "gana_politica": 23,
+      "p": 0.034259334240003936
+    },
+    "bo64_elegido": {
+      "n": 60,
+      "media_politica": 15.4007,
+      "media_gp": 15.8843,
+      "dif_media": -0.4836,
+      "gana_politica": 33,
+      "p": 0.2612544946704784
+    },
+    "bo1024_elegido": {
+      "n": 60,
+      "media_politica": 13.5855,
+      "media_gp": 14.0788,
+      "dif_media": -0.4933,
+      "gana_politica": 32,
+      "p": 0.23048475671112545
+    }
+  },
+  "hasta_30x20": {
+    "1pass_medias30": {
+      "n": 40,
+      "media_politica": 21.4075,
+      "media_gp": 21.5182,
+      "dif_media": -0.1107,
+      "gana_politica": 20,
+      "p": 0.6655508074145473
+    },
+    "1pass_elegido": {
+      "n": 40,
+      "media_politica": 19.7162,
+      "media_gp": 19.7469,
+      "dif_media": -0.0307,
+      "gana_politica": 21,
+      "p": 0.9417240968323313
+    },
+    "bo64_elegido": {
+      "n": 40,
+      "media_politica": 16.1911,
+      "media_gp": 17.5631,
+      "dif_media": -1.3719,
+      "gana_politica": 29,
+      "p": 0.0007984068197401939
+    },
+    "bo1024_elegido": {
+      "n": 40,
+      "media_politica": 14.242,
+      "media_gp": 15.4501,
+      "dif_media": -1.2081,
+      "gana_politica": 28,
+      "p": 0.0009973891355912201
+    }
+  },
+  "cincuenta_xN": {
+    "1pass_medias30": {
+      "n": 20,
+      "media_politica": 17.2504,
+      "media_gp": 14.4225,
+      "dif_media": 2.8279,
+      "gana_politica": 1,
+      "p": 1.9073486328125e-05
+    },
+    "1pass_elegido": {
+      "n": 20,
+      "media_politica": 16.5948,
+      "media_gp": 14.1881,
+      "dif_media": 2.4067,
+      "gana_politica": 2,
+      "p": 0.0002613067626953125
+    },
+    "bo64_elegido": {
+      "n": 20,
+      "media_politica": 13.8199,
+      "media_gp": 12.5267,
+      "dif_media": 1.2932,
+      "gana_politica": 4,
+      "p": 0.003917694091796875
+    },
+    "bo1024_elegido": {
+      "n": 20,
+      "media_politica": 12.2723,
+      "media_gp": 11.336,
+      "dif_media": 0.9363,
+      "gana_politica": 4,
+      "p": 0.00485992431640625
+    }
+  }
+}

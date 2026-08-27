@@ -2361,6 +2361,56 @@ else:
                  and "max_time = max(self.env.job_completion_time)"
                  not in _src)
 
+# =========================================================================
+print("\n== 6.2 sobre las 60 no vistas, por tamano (revision r4) ==")
+# el contraste agregado de las 70 incluye las diez de entrenamiento y
+# validacion de AMBAS familias; el de las 60 restantes esconde una
+# cancelacion entre dos regimenes de tamano opuestos
+_NV = "benchmarks/ext30/no_vistas.json"
+if not os.path.exists(_NV):
+    pendiente("no vistas por tamano", "sin no_vistas.json")
+else:
+    _nv = json.load(open(_NV, encoding="utf-8"))
+    _s, _p, _g = (_nv["sesenta_no_vistas"], _nv["hasta_30x20"],
+                  _nv["cincuenta_xN"])
+    check_exacto("las 60 no vistas excluyen la clase 20x15",
+                 _s["bo64_elegido"]["n"] == 60
+                 and _p["bo64_elegido"]["n"] == 40
+                 and _g["bo64_elegido"]["n"] == 20)
+    check("6.2: una pasada sobre las 60, elegido (texto 18.68)", 18.68,
+          _s["1pass_elegido"]["media_politica"], tol=0.006)
+    check("6.2: p de una pasada sobre las 60 (texto 0.034)", 0.0343,
+          _s["1pass_elegido"]["p"], tol=0.0006)
+    check("6.2: p a 64 sobre las 60 (texto 0.261)", 0.2613,
+          _s["bo64_elegido"]["p"], tol=0.0006)
+    check("6.2: p a 1024 sobre las 60 (texto 0.231)", 0.2305,
+          _s["bo1024_elegido"]["p"], tol=0.0006)
+    check("6.2: ventaja a 64 hasta 30x20 (texto 1.37)", -1.37,
+          _p["bo64_elegido"]["dif_media"], tol=0.006)
+    check("6.2: ventaja a 1024 hasta 30x20 (texto 1.21)", -1.21,
+          _p["bo1024_elegido"]["dif_media"], tol=0.006)
+    check_exacto("6.2: ambas significativas hasta 30x20 (texto <0.002)",
+                 _p["bo64_elegido"]["p"] < 0.002
+                 and _p["bo1024_elegido"]["p"] < 0.002,
+                 f"{_p['bo64_elegido']['p']:.4f} y "
+                 f"{_p['bo1024_elegido']['p']:.4f}")
+    check_exacto("6.2: hasta 30x20 empatan a una pasada (texto 0.94)",
+                 _p["1pass_elegido"]["p"] > 0.9,
+                 f"{_p['1pass_elegido']['p']:.2f}")
+    check("6.2: deficit a una pasada en 50xN (texto 2.41)", 2.41,
+          _g["1pass_elegido"]["dif_media"], tol=0.006)
+    check("6.2: deficit a 64 en 50xN (texto 1.29)", 1.29,
+          _g["bo64_elegido"]["dif_media"], tol=0.006)
+    check("6.2: deficit a 1024 en 50xN (texto 0.94)", 0.94,
+          _g["bo1024_elegido"]["dif_media"], tol=0.006)
+    check_exacto("6.2: las tres de 50xN significativas (texto <=0.005)",
+                 all(_g[k]["p"] <= 0.005 for k in
+                     ("1pass_elegido", "bo64_elegido", "bo1024_elegido")))
+    check_exacto("6.2 y el abstract declaran la frontera de tamano",
+                 "$30{\\times}20$" in TEX
+                 and "reverses only on the two" in TEX
+                 and "they differ significantly at every" not in TEX)
+
 # Marcadores \todo pendientes: se imprimen en rojo en el PDF (uno de
 # ellos llego a salir dentro de la bibliografia), asi que ninguno puede
 # sobrevivir al envio. Se listan en cada pasada hasta que desaparezcan.
