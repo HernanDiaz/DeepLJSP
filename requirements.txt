@@ -1,24 +1,7 @@
-# DeepLearningJSP Requirements
-# Core dependencies
-torch>=2.0.0
-numpy>=1.22.0
-matplotlib>=3.5.0
-tqdm>=4.64.0
-pandas>=1.4.0
-
-# Operations Research tools
-ortools>=9.4.0
-
-# Graph-based dependencies
-networkx>=2.8.0
-torch-geometric>=2.3.0
-
-# Utilities
-joblib>=1.2.0
-scikit-learn>=1.0.0
-gymnasium>=0.26.0
-pyyaml>=6.0.0
-
-# Development tools
-pytest>=7.0.0
-jupyter>=1.0.0
+# versiones fijadas de la Tabla 4 del articulo
+torch==2.9.1
+numpy==2.3.5
+scipy==1.17.0
+matplotlib==3.10.8
+pandas==2.3.3
+pytest==8.4.2

@@ -1634,13 +1634,18 @@ both curves. Sampling starts paying for the policy at once: it
 improves on its own greedy pass from $B{=}2$, and by $B{=}6$ it is
 already below the figure the evolved rule reaches in a single
 deterministic pass. Against the rule's own curve the ascent is
-slower. The rule begins $1.8$ points ahead and stays ahead while
-both sample, by $0.75$ points at $B{=}8$ and $0.13$ at $B{=}64$; the
-policy draws level at $B{=}96$, and from there to the largest budget
-measured the two curves run together within $0.05$ points. What the
-budget buys the policy on this benchmark is therefore parity with the
-rule rather than a lead over it, reached at a budget an order of
-magnitude above the one at which it passes the rule's single pass. The reconstruction retains
+slower. Both curves are reconstructed alike, as the mean over $200$
+random subsets of each pool, and the rule's points carry a dispersion
+of about $0.11$ points across those subsets, which sets the
+resolution of any comparison between them. The rule begins $1.8$
+points ahead, and the gap closes monotonically: $0.54$ points at
+$B{=}8$, $0.15$ at $B{=}32$, and from $B{=}48$ onwards it stays below
+that dispersion, so the two curves are indistinguishable over the
+upper half of the axis. What the budget buys the policy on this
+benchmark is therefore parity with the rule rather than a lead over
+it, and the sampling budget at which parity arrives cannot be located
+more finely than the interval in which the difference sinks below the
+noise, between $B{=}32$ and $B{=}64$. The reconstruction retains
 both endpoints of
 all $342$ rollouts of each of the ten training runs on each of the 70
 instances ($239{,}400$ schedules), so that best-of-$B$ under the

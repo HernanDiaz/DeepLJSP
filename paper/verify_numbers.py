@@ -2442,25 +2442,54 @@ def _gp_en(b):
 
 _pol = json.load(open("benchmarks/curva_intervalo/curva_intervalo.json",
                       encoding="utf-8"))["por_presupuesto"]
+# la curva de la regla se reconstruye IGUAL que la de la politica,
+# como media de 200 subconjuntos, y su dispersion entre repeticiones
+# es la que fija hasta donde puede afinarse la comparacion
+import numpy as _np
+_rng72 = _np.random.RandomState(20260818)
+_nm = min(len(v) for v in _gpp.values()) - 1
+
+
+def _gp_curva(b, reps):
+    _out = []
+    for _ in range(reps):
+        _acc = []
+        for _i, _v in _gpp.items():
+            _lb = _gplb[_i]
+            if b == 1:
+                _m = _v[0]
+            else:
+                _ix = _rng72.choice(_nm, b - 1, replace=False)
+                _m = min([_v[0]] + [_v[int(_k) + 1] for _k in _ix],
+                         key=lambda p: (p[1], p[0]))
+            _acc.append(((_m[0] + _m[1]) / 2 - _lb) / _lb * 100)
+        _out.append(sum(_acc) / len(_acc))
+    return sum(_out) / len(_out), float(_np.std(_out)) if reps > 1 else 0.0
+
+
+_pol = json.load(open("benchmarks/curva_intervalo/curva_intervalo.json",
+                      encoding="utf-8"))["por_presupuesto"]
+_g1, _ = _gp_curva(1, 1)
+_g8, _sd8 = _gp_curva(8, 30)
+_g32, _sd32 = _gp_curva(32, 30)
+_g48, _sd48 = _gp_curva(48, 30)
 check("7.2: la regla arranca 1.8 por delante (texto)", 1.76,
-      _pol["1"]["media"] - _gp_en(1), tol=0.06)
-check("7.2: 0.75 por delante en B=8 (texto)", 0.75,
-      _pol["8"]["media"] - _gp_en(8), tol=0.006)
-check("7.2: 0.13 en B=64 (texto)", 0.13,
-      _pol["64"]["media"] - _gp_en(64), tol=0.006)
-check_exacto("7.2: la politica alcanza a la regla en B=96 (texto)",
-             _pol["96"]["media"] <= _gp_en(96)
-             and _pol["64"]["media"] > _gp_en(64),
-             f"B=96: {_pol['96']['media']:.2f} vs {_gp_en(96):.2f}")
-check_exacto("7.2: de ahi al final corren juntas bajo 0.05 (texto)",
-             all(abs(_pol[str(_b)]["media"] - _gp_en(_b)) <= 0.055
-                 for _b in (96, 128, 192, 256, 341)),
-             ", ".join(f"{_b}:{_pol[str(_b)]['media'] - _gp_en(_b):+.3f}"
-                       for _b in (96, 128, 192, 256, 341)))
-check_exacto("7.2 declara la paridad y no una ventaja",
+      _pol["1"]["media"] - _g1, tol=0.06)
+check("7.2: 0.54 por delante en B=8 (texto)", 0.54,
+      _pol["8"]["media"] - _g8, tol=0.08)
+check("7.2: 0.15 en B=32 (texto)", 0.15,
+      _pol["32"]["media"] - _g32, tol=0.08)
+check_exacto("7.2: la dispersion del GP ronda 0.11 (texto)",
+             0.06 <= max(_sd8, _sd32, _sd48) <= 0.16,
+             f"sd {_sd8:.3f}, {_sd32:.3f}, {_sd48:.3f}")
+check_exacto("7.2: desde B=48 la diferencia cae bajo la dispersion",
+             abs(_pol["48"]["media"] - _g48) < max(_sd48, 0.11)
+             and abs(_pol["32"]["media"] - _g32) > 0.10,
+             f"B=48: {_pol['48']['media'] - _g48:+.3f}")
+check_exacto("7.2 declara la paridad sin fijar un cruce exacto",
              "parity with the" in TEX
-             and "draws level at $B{=}96$" in TEX
-             and "overtakes the" + chr(10) + "evolved rule" not in TEX)
+             and "cannot be located" in TEX
+             and "draws level at" not in TEX)
 
 # Marcadores \todo pendientes: se imprimen en rojo en el PDF (uno de
 # ellos llego a salir dentro de la bibliografia), asi que ninguno puede

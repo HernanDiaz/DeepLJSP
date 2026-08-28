@@ -15,6 +15,7 @@ Salida: benchmarks/classic12.csv + tabla comparativa.
 
 import argparse
 import json
+import os
 import random
 import re
 import sys
@@ -28,7 +29,11 @@ from jobshop_rl.heuristics.gp_rule import GPRuleHeuristic
 from jobshop_rl.heuristics.strategies import MORHeuristic, GTHeuristic
 from jobshop_rl.models.interval import Interval, final_makespan
 
-DIR = r"E:\Experimentos\Selectos"
+# las doce clasicas viajan en el paquete; la ruta del autor queda
+# como respaldo para el arbol de trabajo
+DIR = ("instances/interval_classical"
+       if os.path.isdir("instances/interval_classical")
+       else r"E:\Experimentos\Selectos")
 FILES = {
     "FT10": "F0.15.0.ft10_10.txt", "FT20": "F0.15.0.ft20_05.txt",
     "La21": "F0.15.0.la21_04.txt", "La24": "F0.15.0.la24_03.txt",

@@ -74,9 +74,15 @@ def test_transfer_decoder_matches_env():
     """decode_interval (transfer) reproduce el makespan del entorno."""
     from jobshop_rl.data import PROBLEM_REGISTRY
     from jobshop_rl.experiments.factory import EnvironmentFactory
-    sys.path.insert(0, os.path.join(
+    # transfer_experiment/ es material de trabajo y no viaja en el
+    # paquete publicado: alli este test se salta en vez de fallar
+    _dir = os.path.join(
         os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-        "transfer_experiment"))
+        "transfer_experiment")
+    if not os.path.exists(os.path.join(_dir, "decode.py")):
+        import pytest
+        pytest.skip("transfer_experiment/ no forma parte del paquete")
+    sys.path.insert(0, _dir)
     from decode import decode_interval  # noqa: E402
 
     pid = next((p for p in PROBLEM_REGISTRY

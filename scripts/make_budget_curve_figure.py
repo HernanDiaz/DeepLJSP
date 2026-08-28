@@ -142,24 +142,45 @@ def referencias(instancias):
             len(gp_v), len(est_v))
 
 
-def curva_gp():
-    """RE media de la regla para cada presupuesto, mismo decodificador."""
+def curva_gp(rng):
+    """RE media de la regla para cada presupuesto, mismo decodificador
+    y MISMO remuestreo que la curva de la politica.
+
+    Tomar el prefijo del pool en vez de remuestrear daria un solo
+    sorteo por presupuesto, con lo que la curva de la regla llevaria
+    ruido que la de la politica no tiene y la comparacion entre ambas
+    seria asimetrica en precision Monte Carlo. Se devuelve tambien la
+    dispersion entre repeticiones, que es lo que acota hasta donde
+    puede afinarse el cruce.
+    """
     pools, lbs = collections.defaultdict(dict), {}
     for ruta in GP_POOL:
         for r in csv.DictReader(open(ruta, encoding="utf-8")):
             pools[r["instance"]][int(r["sample_idx"])] = (float(r["lo"]),
                                                           float(r["up"]))
             lbs[r["instance"]] = float(r["lb"])
-    out = []
+    n_muestras = min(len(v) for v in pools.values()) - 1
+    media, sd = [], []
     for b in PRESUPUESTOS:
-        acc = []
-        for inst, v in pools.items():
-            lb = lbs[inst]
-            pool = [v[0]] + [v[i] for i in range(1, b)]
-            m = min(pool, key=lambda p: (p[1], p[0]))
-            acc.append(((m[0] + m[1]) / 2 - lb) / lb * 100)
-        out.append(sum(acc) / len(acc))
-    return np.array(out)
+        reps = []
+        for _ in range(R if 1 < b < n_muestras else 1):
+            acc = []
+            for inst, v in pools.items():
+                lb = lbs[inst]
+                if b == 1:
+                    m = v[0]
+                elif b > n_muestras:
+                    m = min([v[0]] + [v[i] for i in range(1, n_muestras + 1)],
+                            key=lambda p: (p[1], p[0]))
+                else:
+                    ix = rng.choice(n_muestras, b - 1, replace=False)
+                    m = min([v[0]] + [v[int(i) + 1] for i in ix],
+                            key=lambda p: (p[1], p[0]))
+                acc.append(((m[0] + m[1]) / 2 - lb) / lb * 100)
+            reps.append(sum(acc) / len(acc))
+        media.append(sum(reps) / len(reps))
+        sd.append(float(np.std(reps)) if len(reps) > 1 else 0.0)
+    return np.array(media), np.array(sd)
 
 
 def cruce(xs, ys, umbral):
@@ -185,7 +206,7 @@ def main():
                  for d in dep[ck].values()]) for ck in dep]))
     instancias = sorted(next(iter(dep.values())))
     gp, est, n_gp, n_est = referencias(instancias)
-    gp_curva = curva_gp()
+    gp_curva, gp_sd = curva_gp(rng)
     print(f"referencias: GP {gp:.2f}% (n={n_gp}), EST {est:.2f}% "
           f"(n={n_est}), greedy medio de las tiradas {greedy:.2f}%")
     for b, m in zip(PRESUPUESTOS, media):
@@ -194,9 +215,9 @@ def main():
     print(f"cruza GP     con B={cruce(PRESUPUESTOS, media, gp)}")
     print(f"cruza greedy con B={cruce(PRESUPUESTOS, media, greedy)}")
     print("")
-    print("      B   politica     GP     dif")
-    for b, m, g in zip(PRESUPUESTOS, media, gp_curva):
-        print(f"  {b:5d} {m:8.2f} {g:7.2f} {m - g:+7.2f}")
+    print("      B   politica     GP  sd_GP     dif")
+    for b, m, g, s in zip(PRESUPUESTOS, media, gp_curva, gp_sd):
+        print(f"  {b:5d} {m:8.2f} {g:7.2f} {s:6.3f} {m - g:+7.2f}")
     _alcanza = next((b for b, m, g in zip(PRESUPUESTOS, media, gp_curva)
                      if m <= g), None)
     print(f"  a presupuesto igualado, la politica alcanza a la regla "
