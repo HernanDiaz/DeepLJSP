@@ -19,18 +19,18 @@
     "bo64_elegido": {
       "n": 60,
       "media_politica": 15.4007,
-      "media_gp": 15.8843,
-      "dif_media": -0.4836,
-      "gana_politica": 33,
-      "p": 0.2612544946704784
+      "media_gp": 15.2662,
+      "dif_media": 0.1345,
+      "gana_politica": 28,
+      "p": 0.5511642854527605
     },
     "bo1024_elegido": {
       "n": 60,
       "media_politica": 13.5855,
-      "media_gp": 14.0788,
-      "dif_media": -0.4933,
+      "media_gp": 13.9028,
+      "dif_media": -0.3173,
       "gana_politica": 32,
-      "p": 0.23048475671112545
+      "p": 0.34296436825527477
     }
   },
   "hasta_30x20": {
@@ -53,18 +53,18 @@
     "bo64_elegido": {
       "n": 40,
       "media_politica": 16.1911,
-      "media_gp": 17.5631,
-      "dif_media": -1.3719,
-      "gana_politica": 29,
-      "p": 0.0007984068197401939
+      "media_gp": 16.7937,
+      "dif_media": -0.6026,
+      "gana_politica": 24,
+      "p": 0.1423485195809917
     },
     "bo1024_elegido": {
       "n": 40,
       "media_politica": 14.242,
-      "media_gp": 15.4501,
-      "dif_media": -1.2081,
-      "gana_politica": 28,
-      "p": 0.0009973891355912201
+      "media_gp": 15.2122,
+      "dif_media": -0.9702,
+      "gana_politica": 29,
+      "p": 0.002638970910993521
     }
   },
   "cincuenta_xN": {
@@ -87,18 +87,18 @@
     "bo64_elegido": {
       "n": 20,
       "media_politica": 13.8199,
-      "media_gp": 12.5267,
-      "dif_media": 1.2932,
+      "media_gp": 12.2112,
+      "dif_media": 1.6087,
       "gana_politica": 4,
-      "p": 0.003917694091796875
+      "p": 0.0014324188232421875
     },
     "bo1024_elegido": {
       "n": 20,
       "media_politica": 12.2723,
-      "media_gp": 11.336,
-      "dif_media": 0.9363,
-      "gana_politica": 4,
-      "p": 0.00485992431640625
+      "media_gp": 11.2839,
+      "dif_media": 0.9884,
+      "gana_politica": 3,
+      "p": 0.0031528472900390625
     }
   }
 }

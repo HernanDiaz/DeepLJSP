@@ -117,12 +117,12 @@ def curva_de(tirada, rng):
 def referencias(instancias):
     """RE media de la regla DESTACADA y de EST sobre estas instancias.
 
-    OJO con la fuente del GP. constructive_per_instance.csv tiene una
-    columna GP_re que NO es la regla destacada: es gp_seed1, de otra
-    campana, y da 18.59 sobre las 70 en vez de 17.71. Todo el paper lee
-    la destacada de reevo_fixedfit/summary.csv filtrando gp_tuned_seed1,
-    y esta figura tiene que leer lo mismo o su linea de referencia
-    contradiria a la Tabla 7 sin que nadie lo note.
+    OJO con la fuente del GP: la unica valida es la regla PUBLICADA,
+    reevo_fixedfit/summary.csv filtrando gp_tuned_seed1, cuya pasada
+    determinista da 17.71 sobre las 70. La columna GP_re de
+    constructive_per_instance.csv NO es esa regla y no debe usarse: si
+    esta figura la leyera, su linea de referencia contradiria a la
+    Tabla 7 sin que nadie lo note.
     """
     ta = {}
     for r in csv.DictReader(open(EST, encoding="utf-8")):

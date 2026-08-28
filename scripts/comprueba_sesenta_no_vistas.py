@@ -35,7 +35,7 @@ for etq in ("bo64", "bo1024"):
         camp[etq] = v
 import csv
 gp_bon = {}
-for r in csv.DictReader(open("benchmarks/fair_gp_eps.csv", encoding="utf-8")):
+for r in csv.DictReader(open("benchmarks/gp_destacada/gp_destacada_presupuestos.csv", encoding="utf-8")):
     gp_bon[eg.ta_de(r["instance"])] = {"bo64": float(r["best_at_64"]),
                                        "bo1024": float(r["best_at_1024"])}
 gp_dest = {"1": {t: gp[t][1] for t in todas},

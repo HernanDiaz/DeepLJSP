@@ -197,7 +197,7 @@ def fig_headtohead():
                                encoding="utf-8"))
            if r["method"] == "gp_tuned_seed1"}
     gp1024 = {_ta(r["instance"]): float(r["best_at_1024"]) for r in
-              csv.DictReader(open("benchmarks/fair_gp_eps.csv",
+              csv.DictReader(open("benchmarks/gp_destacada/gp_destacada_presupuestos.csv",
                                   encoding="utf-8"))}
     gre = defaultdict(list)
     for r in csv.DictReader(open("benchmarks/fair_v2_greedy.csv",
@@ -394,7 +394,7 @@ def fig_byclass():
                               encoding="utf-8"))
           if r["method"] == "gp_tuned_seed1"}
     gp1024 = {_n2(r["instance"]): float(r["best_at_1024"]) for r in
-              csv.DictReader(open("benchmarks/fair_gp_eps.csv",
+              csv.DictReader(open("benchmarks/gp_destacada/gp_destacada_presupuestos.csv",
                                   encoding="utf-8"))}
     gre = defaultdict(list)
     for r in csv.DictReader(open("benchmarks/fair_v2_greedy.csv",

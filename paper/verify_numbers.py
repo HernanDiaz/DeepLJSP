@@ -1805,10 +1805,10 @@ for c, v_tex in enumerate([15.7, 16.6, 18.1, 21.1, 24.1, 13.8, 14.6]):
 # pasada, y 1024 muestras contra 1024 (comparar 1 contra 1024 sesgaba)
 _gp1024 = {ta_de(r["instance"]): float(r["best_at_1024"]) for r in
            __import__("csv").DictReader(
-               open("benchmarks/fair_gp_eps.csv", encoding="utf-8"))}
+               open("benchmarks/gp_destacada/gp_destacada_presupuestos.csv", encoding="utf-8"))}
 check("GP una pasada sobre las 70 (texto 17.7)", 17.7,
       sum(_gp.values()) / 70)
-check("GP con 1024 muestras (texto 14.1)", 14.1,
+check("GP con 1024 muestras (texto 13.8)", 13.8,
       sum(_gp1024.values()) / 70)
 
 # tab:seventy: las dos filas de best-of-64 que la tabla fusionada anade.
@@ -1817,20 +1817,18 @@ check("GP con 1024 muestras (texto 14.1)", 14.1,
 # columna sino la regla determinista, que es lo que la caption declara
 _gp_bon = {}
 for _r in __import__("csv").DictReader(
-        open("benchmarks/fair_gp_eps.csv", encoding="utf-8")):
+        open("benchmarks/gp_destacada/gp_destacada_presupuestos.csv", encoding="utf-8")):
     _gp_bon[ta_de(_r["instance"])] = (float(_r["best_at_1"]),
                                       float(_r["best_at_64"]))
 _gp64_clases = [sum(_gp_bon[f"TA{i * 10 + j + 1}"][1] for j in range(10)) / 10
                 for i in range(7)]
-TAB70_GP64 = [12.6, 15.9, 16.8, 17.4, 23.4, 11.7, 13.4]
+TAB70_GP64 = [11.7, 14.9, 16.0, 17.6, 21.9, 11.3, 13.1]
 for c, (v_tex, v_dat) in enumerate(zip(TAB70_GP64, _gp64_clases)):
     check(f"tab:seventy GP-64 clase {c + 1} (texto {v_tex})", v_tex, v_dat)
-check("tab:seventy GP con 64 sobre las 70 (texto 15.9)", 15.9,
+check("tab:seventy GP con 64 sobre las 70 (texto 15.2)", 15.2,
       sum(v[1] for v in _gp_bon.values()) / 70)
-check_exacto("aviso: el 1-sample de fair_gp_eps NO es la pasada "
-             "determinista (18.5 vs 17.7)",
-             abs(sum(v[0] for v in _gp_bon.values()) / 70 - 17.7) > 0.5,
-             f"{sum(v[0] for v in _gp_bon.values()) / 70:.1f} vs 17.7")
+check("el B=1 del brazo muestreado ES la pasada publicada", 17.7142,
+      sum(v[0] for v in _gp_bon.values()) / 70, tol=0.006)
 # centinela: el greedy de las TRES semillas desplegadas, que ya no es
 # lo que reporta tab:seventy (ahora van la media de 30 y el campeon)
 check("centinela: greedy de las 3 desplegadas (era 19.4)", 19.4,
@@ -1847,8 +1845,8 @@ else:
     for _k, _ma, _mb, _gana, _med, _p in [
             ("1pass_media", 19.82, 18.99, 26, 0.72, 0.006),
             ("1pass_elegido", 18.49, 17.71, 26, 1.06, 0.028),
-            ("bo64_elegido", 15.02, 15.88, 42, -0.59, 0.020),
-            ("bo1024_elegido", 13.25, 14.07, 42, -0.82, 0.010)]:
+            ("bo64_elegido", 15.02, 15.21, 36, -0.13, 0.629),
+            ("bo1024_elegido", 13.25, 13.85, 42, -0.57, 0.028)]:
         _e = _enf[_k]
         check(f"6.2 {_k}: politica (texto {_ma})", _ma, _e["media_a"],
               tol=0.006)
@@ -2384,17 +2382,17 @@ else:
           _s["1pass_elegido"]["media_politica"], tol=0.006)
     check("6.2: p de una pasada sobre las 60 (texto 0.034)", 0.0343,
           _s["1pass_elegido"]["p"], tol=0.0006)
-    check("6.2: p a 64 sobre las 60 (texto 0.261)", 0.2613,
+    check("6.2: p a 64 sobre las 60 (texto 0.55)", 0.5512,
           _s["bo64_elegido"]["p"], tol=0.0006)
-    check("6.2: p a 1024 sobre las 60 (texto 0.231)", 0.2305,
+    check("6.2: p a 1024 sobre las 60 (texto 0.343)", 0.3430,
           _s["bo1024_elegido"]["p"], tol=0.0006)
-    check("6.2: ventaja a 64 hasta 30x20 (texto 1.37)", -1.37,
+    check("6.2: a 64 hasta 30x20 no separan (texto 0.14)", -0.60,
           _p["bo64_elegido"]["dif_media"], tol=0.006)
-    check("6.2: ventaja a 1024 hasta 30x20 (texto 1.21)", -1.21,
+    check("6.2: ventaja a 1024 hasta 30x20 (texto 0.97)", -0.97,
           _p["bo1024_elegido"]["dif_media"], tol=0.006)
-    check_exacto("6.2: ambas significativas hasta 30x20 (texto <0.002)",
-                 _p["bo64_elegido"]["p"] < 0.002
-                 and _p["bo1024_elegido"]["p"] < 0.002,
+    check_exacto("6.2: hasta 30x20 empatan a 64 y separan a 1024",
+                 _p["bo64_elegido"]["p"] > 0.05
+                 and _p["bo1024_elegido"]["p"] < 0.005,
                  f"{_p['bo64_elegido']['p']:.4f} y "
                  f"{_p['bo1024_elegido']['p']:.4f}")
     check_exacto("6.2: hasta 30x20 empatan a una pasada (texto 0.94)",
@@ -2402,16 +2400,16 @@ else:
                  f"{_p['1pass_elegido']['p']:.2f}")
     check("6.2: deficit a una pasada en 50xN (texto 2.41)", 2.41,
           _g["1pass_elegido"]["dif_media"], tol=0.006)
-    check("6.2: deficit a 64 en 50xN (texto 1.29)", 1.29,
+    check("6.2: deficit a 64 en 50xN (texto 1.61)", 1.61,
           _g["bo64_elegido"]["dif_media"], tol=0.006)
-    check("6.2: deficit a 1024 en 50xN (texto 0.94)", 0.94,
+    check("6.2: deficit a 1024 en 50xN (texto 0.99)", 0.99,
           _g["bo1024_elegido"]["dif_media"], tol=0.006)
     check_exacto("6.2: las tres de 50xN significativas (texto <=0.005)",
                  all(_g[k]["p"] <= 0.005 for k in
                      ("1pass_elegido", "bo64_elegido", "bo1024_elegido")))
     check_exacto("6.2 y el abstract declaran la frontera de tamano",
                  "$30{\\times}20$" in TEX
-                 and "reverses only on the two" in TEX
+                 and "the rule leads at" in TEX
                  and "they differ significantly at every" not in TEX)
 
 # Marcadores \todo pendientes: se imprimen en rojo en el PDF (uno de
@@ -3302,14 +3300,15 @@ else:
           17.0,
           sum((min(v) - _lbc[i]) / _lbc[i] * 100
               for i, v in _gre_pool.items()) / 70, tol=0.051)
-    # y que la referencia del GP de la figura sea la DESTACADA, no la
-    # columna GP_re de constructive_per_instance (que es otra regla)
+    # y que la referencia del GP de la figura sea la regla PUBLICADA,
+    # no la columna GP_re de constructive_per_instance, que no lo es
     _gp_cpi = {r["ta"]: float(r["GP_re"]) for r in
                __import__("csv").DictReader(
                    open("benchmarks/constructive_per_instance.csv",
                         encoding="utf-8"))}
     check_exacto("aviso: GP_re de constructive_per_instance NO es la "
-                 "destacada", abs(sum(_gp_cpi.values()) / 70 - 17.71) > 0.5,
+                 "regla publicada",
+                 abs(sum(_gp_cpi.values()) / 70 - 17.71) > 0.5,
                  f"{sum(_gp_cpi.values()) / 70:.2f} vs 17.71")
 
     print("\n== centinela: tasas del deposito viejo ==")
@@ -3412,11 +3411,11 @@ else:
           tol=0.051)
     # y el mismo hueco en la regla evolucionada, desde su propio deposito
     _gp = list(__import__("csv").DictReader(
-        open("benchmarks/fair_gp_eps.csv", encoding="utf-8")))
+        open("benchmarks/gp_destacada/gp_destacada_presupuestos.csv", encoding="utf-8")))
     check_exacto("8: fair_gp_eps cubre las 70", len(_gp) == 70, str(len(_gp)))
-    check("8: la regla a 1024 muestras (tab:seventy 14.1)", 14.1,
+    check("8: la regla a 1024 muestras (tab:seventy 13.8)", 13.8,
           sum(float(r["best_at_1024"]) for r in _gp) / 70, tol=0.051)
-    check("8: y a 64, para identificar que es la destacada (15.9)", 15.9,
+    check("8: y a 64, para identificar que es la publicada (15.2)", 15.2,
           sum(float(r["best_at_64"]) for r in _gp) / 70, tol=0.051)
     # la tabla lleva ahora cuatro filas "GP rule": la media de las 30 a
     # una pasada y la regla destacada a los tres presupuestos. La de una

@@ -108,7 +108,7 @@ def main():
             camp[etq] = v
 
     gp_bon = {}
-    for r in csv.DictReader(open("benchmarks/fair_gp_eps.csv",
+    for r in csv.DictReader(open("benchmarks/gp_destacada/gp_destacada_presupuestos.csv",
                                  encoding="utf-8")):
         gp_bon[ta_de(r["instance"])] = {
             "bo64": float(r["best_at_64"]),
