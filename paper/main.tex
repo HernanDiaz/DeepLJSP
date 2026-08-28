@@ -1618,22 +1618,29 @@ was not repeated on those arms.
   \centering
   \includegraphics[width=.62\linewidth]{figures/fig_budget.pdf}
   \caption{RE against the \emph{inference} budget $B$ on a base-2
-  logarithmic axis: the mean over the 70 instances of the schedule a
-  run retains under the deployed protocol, its greedy pass plus $B-1$
-  samples kept by the criterion of Eq.~\eqref{eq:lex}, averaged over
-  the ten training runs. The band spans the best and worst run.}
+  logarithmic axis, for both learners under the same decoder: the
+  schedule each retains from its deterministic pass plus $B-1$
+  samples, kept by the criterion of Eq.~\eqref{eq:lex} and averaged
+  over the 70 instances. The policy curve is the mean over the ten
+  training runs and the band spans the best and worst of them; the
+  dotted line marks the rule's single deterministic pass.}
   \label{fig:budget}
 \end{figure}
 
 Section~\ref{sec:positioning} samples the budget axis at three
-points, so it locates the reversal between the two learners no more
-precisely than between one pass and $64$. This section reconstructs
-the whole curve and finds the crossing near its left end: the policy
-improves on its own greedy pass from $B{=}2$ and overtakes the
-evolved rule at $B{=}6$, so sampling becomes profitable at budgets
-far below the
-$64$ used throughout, and the rule's advantage at one pass occupies a
-narrow initial segment of the budget axis. The reconstruction retains
+points, so it locates the meeting of the two learners no more
+precisely than between $64$ and $1024$. This section reconstructs
+both curves. Sampling starts paying for the policy at once: it
+improves on its own greedy pass from $B{=}2$, and by $B{=}6$ it is
+already below the figure the evolved rule reaches in a single
+deterministic pass. Against the rule's own curve the ascent is
+slower. The rule begins $1.8$ points ahead and stays ahead while
+both sample, by $0.75$ points at $B{=}8$ and $0.13$ at $B{=}64$; the
+policy draws level at $B{=}96$, and from there to the largest budget
+measured the two curves run together within $0.05$ points. What the
+budget buys the policy on this benchmark is therefore parity with the
+rule rather than a lead over it, reached at a budget an order of
+magnitude above the one at which it passes the rule's single pass. The reconstruction retains
 both endpoints of
 all $342$ rollouts of each of the ten training runs on each of the 70
 instances ($239{,}400$ schedules), so that best-of-$B$ under the
@@ -1659,7 +1666,7 @@ this ten-run mean as the best of thirty should be.
 
 The same reconstruction quantifies the marginal return of further
 sampling and its computational cost. The marginal return decays
-slowly but does not vanish, from $0.57$ points between $32$ and $64$
+slowly but does not vanish, from $0.56$ points between $32$ and $64$
 samples to $0.46$ between $128$ and $256$, a rate of about half a
 point per doubling that is itself contracting by roughly a tenth per
 octave; wall-clock cost, by contrast, scales linearly in $B$. On the

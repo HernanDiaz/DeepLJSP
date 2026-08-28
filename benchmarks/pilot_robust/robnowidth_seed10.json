@@ -1,0 +1,36 @@
+{
+  "fitness_re": 36.950037167783506,
+  "rule": "(SLACK - (WKR / max(max(SLACK, SLACK), max((-PT), (PT - SLACK)))))",
+  "tree": [
+    "sub",
+    "SLACK",
+    [
+      "div",
+      "WKR",
+      [
+        "max",
+        [
+          "max",
+          "SLACK",
+          "SLACK"
+        ],
+        [
+          "max",
+          [
+            "neg",
+            "PT"
+          ],
+          [
+            "sub",
+            "PT",
+            "SLACK"
+          ]
+        ]
+      ]
+    ]
+  ],
+  "pop": 100,
+  "gens": 50,
+  "seed": 10,
+  "train_ids": "int__tai20_15_01,int__tai20_15_02,int__tai20_15_03,int__tai20_15_04"
+}

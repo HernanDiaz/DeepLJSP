@@ -1,0 +1,64 @@
+{
+  "fitness_re": 13.612425987897254,
+  "rule": "(min(((((SLACK + (SLACK / min(SLACK, ((EST + (WKR - max(max(SLACK, EST), WKR))) / PT)))) * SLACK) - WKR) - (-NOR)), PT) / PT)",
+  "tree": [
+    "div",
+    [
+      "min",
+      [
+        "sub",
+        [
+          "sub",
+          [
+            "mul",
+            [
+              "add",
+              "SLACK",
+              [
+                "div",
+                "SLACK",
+                [
+                  "min",
+                  "SLACK",
+                  [
+                    "div",
+                    [
+                      "add",
+                      "EST",
+                      [
+                        "sub",
+                        "WKR",
+                        [
+                          "max",
+                          [
+                            "max",
+                            "SLACK",
+                            "EST"
+                          ],
+                          "WKR"
+                        ]
+                      ]
+                    ],
+                    "PT"
+                  ]
+                ]
+              ]
+            ],
+            "SLACK"
+          ],
+          "WKR"
+        ],
+        [
+          "neg",
+          "NOR"
+        ]
+      ],
+      "PT"
+    ],
+    "PT"
+  ],
+  "pop": 100,
+  "gens": 50,
+  "seed": 9,
+  "train_ids": "int__tai20_15_01,int__tai20_15_02,int__tai20_15_03,int__tai20_15_04"
+}

@@ -1,132 +1,59 @@
-\begin{thebibliography}{}
-\renewcommand{\doi}[1]{\url{https://doi.org/#1}}
-\bibcommenthead
-
-\bibitem [\protect \citeauthoryear {%
-D{\'i}az~Rodr{\'i}guez%
-}{%
-D{\'i}az~Rodr{\'i}guez%
-}{%
-{\protect \APACyear {2026}}%
-}]{%
-DiazGP2026}
-\APACinsertmetastar {%
-DiazGP2026}%
-\begin{APACrefauthors}%
-D{\'i}az~Rodr{\'i}guez, H.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2026}{}{}.
-\newblock
-\APACrefbtitle {Genetic programming hyper-heuristics for the job shop
+\begin{thebibliography}{4}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\href}[2]{#2}
+\providecommand{\path}[1]{#1}
+\providecommand{\DOIprefix}{doi:}
+\providecommand{\ArXivprefix}{arXiv:}
+\providecommand{\URLprefix}{URL: }
+\providecommand{\Pubmedprefix}{pmid:}
+\providecommand{\doi}[1]{\href{http://dx.doi.org/#1}{\path{#1}}}
+\providecommand{\Pubmed}[1]{\href{pmid:#1}{\path{#1}}}
+\providecommand{\bibinfo}[2]{#2}
+\ifx\xfnm\relax \def\xfnm[#1]{\unskip,\space#1}\fi
+%Type = Misc
+\bibitem[{D{\'i}az~Rodr{\'i}guez(2026)}]{DiazGP2026}
+\bibinfo{author}{D{\'i}az~Rodr{\'i}guez, H.}, \bibinfo{year}{2026}.
+\newblock \bibinfo{title}{Genetic programming hyper-heuristics for the job shop
   scheduling problem with interval durations: robustness-aware interpretable
-  rules that generalize across instance sizes.} {Genetic programming
-  hyper-heuristics for the job shop scheduling problem with interval durations:
-  robustness-aware interpretable rules that generalize across instance sizes.}
-\newblock
-\APAChowpublished {SSRN}.
-\newblock
-\APACrefnote{Preprint. \doi{10.2139/ssrn.7214286}}
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-L{\'o}pez-Ib{\'a}{\~n}ez%
-, Dubois-Lacoste%
-, P{\'e}rez~C{\'a}ceres%
-, Birattari%
-\BCBL {}\ \BBA {} St{\"u}tzle%
-}{%
-L{\'o}pez-Ib{\'a}{\~n}ez%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2016}}%
-}]{%
-LopezIbanez2016}
-\APACinsertmetastar {%
-LopezIbanez2016}%
-\begin{APACrefauthors}%
-L{\'o}pez-Ib{\'a}{\~n}ez, M.%
-, Dubois-Lacoste, J.%
-, P{\'e}rez~C{\'a}ceres, L.%
-, Birattari, M.%
-\BCBL {} St{\"u}tzle, T.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2016}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {The irace package: Iterated racing for automatic
-  algorithm configuration} {The irace package: Iterated racing for automatic
-  algorithm configuration}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Operations Research Perspectives}{3}{}{43--58,}
-\newblock
-\begin{APACrefDOI} \doi{10.1016/j.orp.2016.09.002} \end{APACrefDOI}
-\newblock
-
-\newblock
-
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Vaswani%
-\ \protect \BOthers {.}}{%
-Vaswani%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2017}}%
-}]{%
-Vaswani2017}
-\APACinsertmetastar {%
-Vaswani2017}%
-\begin{APACrefauthors}%
-Vaswani, A.%
-, Shazeer, N.%
-, Parmar, N.%
-, Uszkoreit, J.%
-, Jones, L.%
-, Gomez, A.N.%
-\BDBL {}Polosukhin, I.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2017}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Attention is all you need} {Attention is all you
-  need}.{\BBCQ}
-\newblock
- \APACrefbtitle {Advances in Neural Information Processing Systems
-  ({NeurIPS}).} {Advances in neural information processing systems
-  ({NeurIPS}).}
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Xiong%
-\ \protect \BOthers {.}}{%
-Xiong%
-\ \protect \BOthers {.}}{%
-{\protect \APACyear {2020}}%
-}]{%
-Xiong2020}
-\APACinsertmetastar {%
-Xiong2020}%
-\begin{APACrefauthors}%
-Xiong, R.%
-, Yang, Y.%
-, He, D.%
-, Zheng, K.%
-, Zheng, S.%
-, Xing, C.%
-\BDBL {}Liu, T\BHBI Y.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2020}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {On layer normalization in the transformer architecture}
-  {On layer normalization in the transformer architecture}.{\BBCQ}
-\newblock
- \APACrefbtitle {International Conference on Machine Learning ({ICML}).}
-  {International conference on machine learning ({ICML}).}
-\PrintBackRefs{\CurrentBib}
+  rules that generalize across instance sizes}.
+\newblock \bibinfo{howpublished}{SSRN}.
+\newblock \DOIprefix\doi{10.2139/ssrn.7214286}. \bibinfo{note}{preprint.
+  \doi{10.2139/ssrn.7214286}}.
+%Type = Article
+\bibitem[{L{\'o}pez-Ib{\'a}{\~n}ez et~al.(2016)L{\'o}pez-Ib{\'a}{\~n}ez,
+  Dubois-Lacoste, P{\'e}rez~C{\'a}ceres, Birattari and
+  St{\"u}tzle}]{LopezIbanez2016}
+\bibinfo{author}{L{\'o}pez-Ib{\'a}{\~n}ez, M.},
+  \bibinfo{author}{Dubois-Lacoste, J.}, \bibinfo{author}{P{\'e}rez~C{\'a}ceres,
+  L.}, \bibinfo{author}{Birattari, M.}, \bibinfo{author}{St{\"u}tzle, T.},
+  \bibinfo{year}{2016}.
+\newblock \bibinfo{title}{The irace package: Iterated racing for automatic
+  algorithm configuration}.
+\newblock \bibinfo{journal}{Operations Research Perspectives}
+  \bibinfo{volume}{3}, \bibinfo{pages}{43--58}.
+\newblock \DOIprefix\doi{10.1016/j.orp.2016.09.002}.
+%Type = Inproceedings
+\bibitem[{Vaswani et~al.(2017)Vaswani, Shazeer, Parmar, Uszkoreit, Jones,
+  Gomez, Kaiser and Polosukhin}]{Vaswani2017}
+\bibinfo{author}{Vaswani, A.}, \bibinfo{author}{Shazeer, N.},
+  \bibinfo{author}{Parmar, N.}, \bibinfo{author}{Uszkoreit, J.},
+  \bibinfo{author}{Jones, L.}, \bibinfo{author}{Gomez, A.N.},
+  \bibinfo{author}{Kaiser, {\L}.}, \bibinfo{author}{Polosukhin, I.},
+  \bibinfo{year}{2017}.
+\newblock \bibinfo{title}{Attention is all you need}, in:
+  \bibinfo{booktitle}{Advances in Neural Information Processing Systems
+  ({NeurIPS})}.
+%Type = Inproceedings
+\bibitem[{Xiong et~al.(2020)Xiong, Yang, He, Zheng, Zheng, Xing, Zhang, Lan,
+  Wang and Liu}]{Xiong2020}
+\bibinfo{author}{Xiong, R.}, \bibinfo{author}{Yang, Y.}, \bibinfo{author}{He,
+  D.}, \bibinfo{author}{Zheng, K.}, \bibinfo{author}{Zheng, S.},
+  \bibinfo{author}{Xing, C.}, \bibinfo{author}{Zhang, H.},
+  \bibinfo{author}{Lan, Y.}, \bibinfo{author}{Wang, L.}, \bibinfo{author}{Liu,
+  T.Y.}, \bibinfo{year}{2020}.
+\newblock \bibinfo{title}{On layer normalization in the transformer
+  architecture}, in: \bibinfo{booktitle}{International Conference on Machine
+  Learning ({ICML})}.
 
 \end{thebibliography}

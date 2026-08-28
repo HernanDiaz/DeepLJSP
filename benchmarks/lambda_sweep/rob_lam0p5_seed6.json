@@ -1,0 +1,40 @@
+{
+  "fitness_re": 30.676247184659733,
+  "rule": "(max(PTW, (EST + (ESTW - (WKR / PT)))) - (((-ONE) - SLACK) - EST))",
+  "tree": [
+    "sub",
+    [
+      "max",
+      "PTW",
+      [
+        "add",
+        "EST",
+        [
+          "sub",
+          "ESTW",
+          [
+            "div",
+            "WKR",
+            "PT"
+          ]
+        ]
+      ]
+    ],
+    [
+      "sub",
+      [
+        "sub",
+        [
+          "neg",
+          "ONE"
+        ],
+        "SLACK"
+      ],
+      "EST"
+    ]
+  ],
+  "pop": 100,
+  "gens": 50,
+  "seed": 6,
+  "train_ids": "int__tai20_15_01,int__tai20_15_02,int__tai20_15_03,int__tai20_15_04"
+}

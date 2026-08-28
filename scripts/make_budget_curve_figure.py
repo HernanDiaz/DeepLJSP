@@ -44,6 +44,10 @@ plt.rcParams.update({
 # incluido en el pool y seleccion por (U, L), el protocolo de 5.4
 CURVAS = sorted(glob.glob("benchmarks/curva_intervalo/curva_*.csv"))
 GP_DESTACADA = "benchmarks/reevo_fixedfit/summary.csv"
+# el deposito muestreado de la MISMA regla publicada, con los dos
+# extremos de sus 1024 rollouts por instancia: permite trazar su
+# curva a presupuesto igualado en vez de una sola linea horizontal
+GP_POOL = sorted(glob.glob("benchmarks/gp_destacada/pool_*.csv"))
 EST = "benchmarks/est_per_instance.csv"
 SALIDA = "paper/figures/fig_budget.pdf"
 N_POOL = 341              # muestras por tirada sin contar el greedy
@@ -138,6 +142,26 @@ def referencias(instancias):
             len(gp_v), len(est_v))
 
 
+def curva_gp():
+    """RE media de la regla para cada presupuesto, mismo decodificador."""
+    pools, lbs = collections.defaultdict(dict), {}
+    for ruta in GP_POOL:
+        for r in csv.DictReader(open(ruta, encoding="utf-8")):
+            pools[r["instance"]][int(r["sample_idx"])] = (float(r["lo"]),
+                                                          float(r["up"]))
+            lbs[r["instance"]] = float(r["lb"])
+    out = []
+    for b in PRESUPUESTOS:
+        acc = []
+        for inst, v in pools.items():
+            lb = lbs[inst]
+            pool = [v[0]] + [v[i] for i in range(1, b)]
+            m = min(pool, key=lambda p: (p[1], p[0]))
+            acc.append(((m[0] + m[1]) / 2 - lb) / lb * 100)
+        out.append(sum(acc) / len(acc))
+    return np.array(out)
+
+
 def cruce(xs, ys, umbral):
     """Primer presupuesto cuya RE media baja del umbral."""
     for x, y in zip(xs, ys):
@@ -161,6 +185,7 @@ def main():
                  for d in dep[ck].values()]) for ck in dep]))
     instancias = sorted(next(iter(dep.values())))
     gp, est, n_gp, n_est = referencias(instancias)
+    gp_curva = curva_gp()
     print(f"referencias: GP {gp:.2f}% (n={n_gp}), EST {est:.2f}% "
           f"(n={n_est}), greedy medio de las tiradas {greedy:.2f}%")
     for b, m in zip(PRESUPUESTOS, media):
@@ -168,6 +193,14 @@ def main():
     print(f"cruza EST    con B={cruce(PRESUPUESTOS, media, est)}")
     print(f"cruza GP     con B={cruce(PRESUPUESTOS, media, gp)}")
     print(f"cruza greedy con B={cruce(PRESUPUESTOS, media, greedy)}")
+    print("")
+    print("      B   politica     GP     dif")
+    for b, m, g in zip(PRESUPUESTOS, media, gp_curva):
+        print(f"  {b:5d} {m:8.2f} {g:7.2f} {m - g:+7.2f}")
+    _alcanza = next((b for b, m, g in zip(PRESUPUESTOS, media, gp_curva)
+                     if m <= g), None)
+    print(f"  a presupuesto igualado, la politica alcanza a la regla "
+          f"en B={_alcanza}")
 
     fig, ax = plt.subplots(figsize=(4.05, 3.1))
     ax.fill_between(PRESUPUESTOS, mejor, peor, color="#1f77b4", alpha=0.18,
@@ -176,8 +209,10 @@ def main():
             label="policy, best of $B$ (mean of 10 runs)")
     # EST queda en el 42 por ciento: dibujarla aplastaria todo lo demas,
     # asi que el pie la nombra y el eje se reserva para la zona util.
-    ax.axhline(gp, color="#d62728", linestyle="--", linewidth=1.1,
-               label=f"GP rule ({gp:.1f}%)")
+    ax.plot(PRESUPUESTOS, gp_curva, color="#d62728", linewidth=1.6,
+            linestyle="--", label="GP rule, best of $B$")
+    ax.axhline(gp, color="#d62728", linestyle=":", linewidth=0.9,
+               alpha=0.7, label=f"GP rule, one pass ({gp:.1f}%)")
     ax.axhline(greedy, color="#2ca02c", linestyle=":", linewidth=1.1,
                label=f"greedy pass ({greedy:.1f}%)")
     ax.set_xscale("log", base=2)

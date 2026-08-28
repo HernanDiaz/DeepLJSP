@@ -2412,6 +2412,56 @@ else:
                  and "the rule leads at" in TEX
                  and "they differ significantly at every" not in TEX)
 
+# =========================================================================
+print("\n== 7.2: las dos curvas a presupuesto igualado ==")
+# la regla y la politica bajo el MISMO decodificador, cada una con su
+# pasada determinista mas B-1 muestras retenidas por (U, L)
+import collections as _col
+import csv as _csvmod
+_gpp, _gplb = _col.defaultdict(dict), {}
+for _r in sorted(glob.glob("benchmarks/gp_destacada/pool_*.csv")):
+    for _f in _csvmod.DictReader(open(_r, encoding="utf-8")):
+        _gpp[_f["instance"]][int(_f["sample_idx"])] = (float(_f["lo"]),
+                                                       float(_f["up"]))
+        _gplb[_f["instance"]] = float(_f["lb"])
+check_exacto("7.2: el pool del GP cubre las 70 con 1024 rollouts",
+             len(_gpp) == 70
+             and all(len(v) == 1024 for v in _gpp.values()),
+             f"{len(_gpp)} instancias")
+
+
+def _gp_en(b):
+    _acc = []
+    for _i, _v in _gpp.items():
+        _lb = _gplb[_i]
+        _pool = [_v[0]] + [_v[_k] for _k in range(1, b)]
+        _m = min(_pool, key=lambda p: (p[1], p[0]))
+        _acc.append(((_m[0] + _m[1]) / 2 - _lb) / _lb * 100)
+    return sum(_acc) / len(_acc)
+
+
+_pol = json.load(open("benchmarks/curva_intervalo/curva_intervalo.json",
+                      encoding="utf-8"))["por_presupuesto"]
+check("7.2: la regla arranca 1.8 por delante (texto)", 1.76,
+      _pol["1"]["media"] - _gp_en(1), tol=0.06)
+check("7.2: 0.75 por delante en B=8 (texto)", 0.75,
+      _pol["8"]["media"] - _gp_en(8), tol=0.006)
+check("7.2: 0.13 en B=64 (texto)", 0.13,
+      _pol["64"]["media"] - _gp_en(64), tol=0.006)
+check_exacto("7.2: la politica alcanza a la regla en B=96 (texto)",
+             _pol["96"]["media"] <= _gp_en(96)
+             and _pol["64"]["media"] > _gp_en(64),
+             f"B=96: {_pol['96']['media']:.2f} vs {_gp_en(96):.2f}")
+check_exacto("7.2: de ahi al final corren juntas bajo 0.05 (texto)",
+             all(abs(_pol[str(_b)]["media"] - _gp_en(_b)) <= 0.055
+                 for _b in (96, 128, 192, 256, 341)),
+             ", ".join(f"{_b}:{_pol[str(_b)]['media'] - _gp_en(_b):+.3f}"
+                       for _b in (96, 128, 192, 256, 341)))
+check_exacto("7.2 declara la paridad y no una ventaja",
+             "parity with the" in TEX
+             and "draws level at $B{=}96$" in TEX
+             and "overtakes the" + chr(10) + "evolved rule" not in TEX)
+
 # Marcadores \todo pendientes: se imprimen en rojo en el PDF (uno de
 # ellos llego a salir dentro de la bibliografia), asi que ninguno puede
 # sobrevivir al envio. Se listan en cada pasada hasta que desaparezcan.
@@ -3246,7 +3296,7 @@ else:
     # los retornos por duplicacion que cita 7.2 (estimadores Monte
     # Carlo: precision de lo impreso)
     _g = _ci["ganancia_por_duplicacion"]
-    check("curva: ganancia 32->64 (texto 0.57)", 0.57, _g["32->64"],
+    check("curva: ganancia 32->64 (texto 0.56)", 0.56, _g["32->64"],
           tol=0.011)
     check("curva: ganancia 128->256 (texto 0.46)", 0.46, _g["128->256"],
           tol=0.011)
