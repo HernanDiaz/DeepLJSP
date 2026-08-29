@@ -84,7 +84,7 @@ python scripts/run_benchmark.py --tier midpoint --tag v2-midpoint-1000ep --episo
 
 :: width-penalized arms (Section 7.3), one value per run
 set DEEPLJSP_V2_LAMBDA=0.5
-python scripts/run_benchmark.py --tier full --tag v2-robust-lam0p5 --episodes 1000 --seeds 2,3,4
+python scripts/run_benchmark.py --tier full --tag v2-robust-lam0p5-fix --episodes 1000 --seeds 2,3,4
 ```
 
 Two conventions of the trainer, both described in Section 5.4 of the
@@ -100,14 +100,17 @@ evaluators on `best_model.pt`, and so should any reproduction.
 
 Two provenance notes. The reward weights the batch entry point
 supplies are the ones Section 4.1 of the article prints (the
-generator in `utils/problem_analyzer.py` is bypassed and unused).
-`records/benchmarks/fair_gp_eps.csv`, the sampled evaluation of the
-GP rules, was produced by the evaluation harness of the companion GP
-study (doi:10.5281/zenodo.21716972) under the shared schedule builder
-with epsilon=0.1; `code/scripts/eval_eps_gp_bo64.py` implements the
-same protocol per seed. The deployed champion of the article (main
-arm, seed 5) is exported as `code/models/v2_full_1000ep_seed5_deployed.pt`,
-byte-identical to `best_model.pt` of its run folder.
+generator in `utils/problem_analyzer.py` is bypassed and unused). The
+sampled GP arm is regenerated here rather than imported: the featured
+rule of `rules/gp_main_arm/`, whose deterministic pass reproduces the
+article's one-pass figure exactly, run under the deployed protocol of
+Section 5.4 by `code/scripts/eval_gp_destacada_pool.py`, which writes
+both endpoints of 1024 rollouts per instance to
+`records/benchmarks/gp_destacada/`;
+`code/scripts/analiza_gp_destacada.py` reads the budgets off them.
+The deployed champion of the article (main arm, seed 5) is exported
+as `code/models/v2_full_1000ep_seed5_deployed.pt`, byte-identical to
+`best_model.pt` of its run folder.
 
 ## Arms and campaigns
 
@@ -120,8 +123,11 @@ byte-identical to `best_model.pt` of its run folder.
   of Section 7.3, ten seeds each.
 - `v2-attn-300ep`, `v2-attn-1000ep*`: the self-attention variant
   (supplementary material).
-- `v2-robust-lam*`: the width-penalizing arms of Section 7.3,
-  ten seeds each at lambda 0.5, 1, 2 and 4.
+- `v2-robust-lam*-fix`: the width-penalizing arms of Section 7.3,
+  ten seeds each at lambda 0.5, 1, 2 and 4, and the runs the article
+  reports. The `v2-robust-lam*` and `v2-robust-lam*-ext` folders are
+  an earlier sweep of the same arms, kept as a record and not used by
+  any reported figure.
 
 ## License and citation
 
@@ -131,7 +137,10 @@ Please cite the article and this deposit.
 Version note: v1 preceded the ten-seed extension of the lambda sweep
 and the ten-run budget-curve deposit; both are included from v2 on.
 v3 adds the exported checkpoints under `code/models/`, the irace
-target-runner scripts, the mirrored GP rules and this reproduction
-section, and carries the manuscript revision that describes the
-block-transfer rule and the deployed artifact as implemented.
+target-runner scripts and the mirrored GP rules; the per-rollout
+deposits behind the budget curve (`records/benchmarks/curva_intervalo/`),
+the sampled GP arm (`gp_destacada/`, both endpoints of 1024 rollouts
+per instance) and the width-penalizing arms (`robust_lambda_fix/`);
+the forty `v2-robust-lam*-fix` training runs; and this reproduction
+section.
 The concept DOI always resolves to the latest version.
