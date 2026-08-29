@@ -2605,6 +2605,10 @@ if _tp:
                                         "jesus.gil@universidadeuropea.es"))
                  and all(x in _tptxt for x in ("Gil Ruiz",
                                                "0000-0003-0675-2038")))
+    check_exacto("los dos ORCID en la title page",
+                 "0000-0003-2615-0042" in _tptxt
+                 and "0000-0003-0675-2038" in _tptxt
+                 and "pendiente de que el autor" not in _tptxt)
     check_exacto("CRediT cubre a los dos autores",
                  _tptxt.count("textbf{") == 2 and "CRediT" in _tptxt)
     check_exacto("las declaraciones van en plural",

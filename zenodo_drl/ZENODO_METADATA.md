@@ -10,8 +10,8 @@ Deep Reinforcement Learning for the Interval Job Shop:
 Checkpoints, Records and Code
 
 **Autores** (en este orden):
-1. Díaz Rodríguez, Hernán — University of Oviedo (añadir ORCID en el
-   formulario)
+1. Díaz Rodríguez, Hernán — University of Oviedo —
+   ORCID 0000-0003-2615-0042
 2. Gil Ruiz, Jesús — Universidad Europea de Madrid —
    ORCID 0000-0003-0675-2038
 
