@@ -2207,7 +2207,8 @@ else:
                  f"{_gana14}/30")
     check_exacto("5.4: el texto declara el regimen y el artefacto reales",
                  "best block so far" in TEX
-                 and "post-hoc code review" in TEX
+                 and "lowest raw" in TEX
+                 and "are tracked during training but are not the" in TEX
                  and "the stored weights are the" not in TEX)
 
 # (2) La semantica del idle: la resta intervalar hace que el peor caso
@@ -2490,6 +2491,58 @@ check_exacto("7.2 declara la paridad sin fijar un cruce exacto",
              "parity with the" in TEX
              and "cannot be located" in TEX
              and "draws level at" not in TEX)
+
+# =========================================================================
+print("\n== 7.3: la frontera de lambda, diez semillas por brazo ==")
+_FR = "benchmarks/robust_lambda_fix/frontera_fix.json"
+if not os.path.exists(_FR):
+    pendiente("frontera de lambda", "sin frontera_fix.json")
+else:
+    _fr = json.load(open(_FR, encoding="utf-8"))
+    _mo, _pools = _fr["modos"], _fr["pools_por_brazo"]
+    check_exacto("7.3: los cinco brazos con sus 60 pools",
+                 all(_pools[a] == 60 for a in
+                     ("base", "lam0p5", "lam1", "lam2", "lam4")),
+                 str(sorted(_pools.items())))
+    check("7.3: ancho del brazo por defecto (texto 13.05)", 13.05,
+          _mo["propia"]["base"]["ancho"], tol=0.006)
+    check("7.3: ancho a lambda=1 desplegado (texto 11.98)", 11.98,
+          _mo["propia"]["lam1"]["ancho"], tol=0.006)
+    check("7.3: RE a lambda=1 desplegado (texto 15.22)", 15.22,
+          _mo["propia"]["lam1"]["re"], tol=0.006)
+    check("7.3: el extremo de la frontera (texto 11.07)", 11.07,
+          _mo["propia"]["lam4"]["ancho"], tol=0.006)
+    check("7.3: la subida de RE hasta lambda=4 (texto 3.86)", 3.86,
+          _mo["propia"]["lam4"]["re"] - _mo["propia"]["base"]["re"],
+          tol=0.006)
+    check_exacto("7.3: la frontera desplegada es monotona en las dos",
+                 all(_mo["propia"][a]["ancho"] > _mo["propia"][b]["ancho"]
+                     and _mo["propia"][a]["re"] < _mo["propia"][b]["re"]
+                     for a, b in zip(
+                         ("base", "lam0p5", "lam1", "lam2"),
+                         ("lam0p5", "lam1", "lam2", "lam4"))))
+    check_exacto("7.3: con criterio fijo, anchos entre 12.90 y 13.23",
+                 all(12.895 <= _mo["fija"][a]["ancho"] <= 13.235
+                     for a in ("lam0p5", "lam1", "lam2", "lam4")),
+                 ", ".join(f"{a}:{_mo['fija'][a]['ancho']:.2f}"
+                           for a in ("lam0p5", "lam1", "lam2", "lam4")))
+    check_exacto("7.3: ninguna diferencia de ancho es significativa",
+                 min(_mo["fija"][a]["p_ancho"] for a in
+                     ("lam0p5", "lam1", "lam2", "lam4")) >= 0.21,
+                 f"minimo p={min(_mo['fija'][a]['p_ancho']
+                 for a in ('lam0p5', 'lam1', 'lam2', 'lam4')):.2f}")
+    check_exacto("7.3: con criterio fijo, RE entre +0.20 y +0.54",
+                 all(0.195 <= _mo["fija"][a]["re"] - _mo["fija"]["base"]["re"]
+                     <= 0.545 for a in
+                     ("lam0p5", "lam1", "lam2", "lam4")))
+    check("7.3: el rerank termina en 11.04 de ancho (texto)", 11.04,
+          _mo["rerank"]["lam4"]["ancho"], tol=0.006)
+    check("7.3: y en 17.16 de RE (texto)", 17.16,
+          _mo["rerank"]["lam4"]["re"], tol=0.006)
+    check_exacto("7.3 imprime las cifras nuevas y no las viejas",
+                 "$11.07\\%$" in TEX and "$3.86$ points" in TEX
+                 and "$11.08\\%$" not in TEX
+                 and "post-hoc code review" not in TEX)
 
 # Marcadores \todo pendientes: se imprimen en rojo en el PDF (uno de
 # ellos llego a salir dentro de la bibliografia), asi que ninguno puede

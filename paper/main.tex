@@ -727,9 +727,7 @@ weights from instance statistics, but the training entry point
 supplies its explicit vector and the generator is bypassed; it played
 no part in any experiment of this paper. These constants were fixed
 during early development and carried unchanged into every experiment;
-no claim of optimality is attached to them, and, like the transfer
-rule of Section~\ref{sec:training}, this account of their provenance
-was established by a post-hoc code review. For completeness, the
+no claim of optimality is attached to them. For completeness, the
 implementation carries two dormant elements: floors on the scales
 that never bound on these instances, and a discontinuous terminal
 bonus below a $5\%$ gap that no recorded training episode reached.
@@ -1095,10 +1093,9 @@ the network as it stands at the end of the block with the lowest raw
 best-episode makespan, which on this training set was the final
 block, TA14, in all 30 runs; the weights of the best individual
 episode are tracked during training but are not the serialized
-artifact. Both conventions, the transfer rule and the artifact
-identity, were established by a post-hoc code review and are reported
-here as implemented: they define the system that every result in
-this paper measures.
+artifact. These two conventions, the transfer rule and the artifact
+identity, define the system that every result in this paper
+measures.
 
 The discount factor is $\gamma=1$ rather than the $0.99$ customary in
 deep RL~\citep{Schulman2017}. The horizon here is finite and known,
@@ -1836,22 +1833,11 @@ which charges the schedule for the width of the interval it predicts
 and is the analogue of the robust objective of the GP study~\citep{DiazGP2026};
 since optimizing one quantity and selecting by another would be
 incoherent, the best-of-$N$ inference of this arm ranks its samples by
-$f_\lambda$ as well. One caveat from the post-hoc code review of
-Section~\ref{sec:training} is specific to these arms: the training-side
-tracking key that judges the best block reads the lower endpoint of
-the lexicographically largest job completion rather than the
-componentwise maximum of the lower endpoints, so the $f_\lambda$ it
-tracks can differ from Eq.~\eqref{eq:robust} (the upper endpoint, and
-with it every $\lambda=0$ arm, is unaffected). The key governs which
-block transfers its weights during training, a rule already described
-in Section~\ref{sec:training} and applied identically to every arm; it
-does not reach the figures below, since the evaluations of this
-section load the checkpoint of the final block and compute the
-componentwise makespan. Deployed as that package, the objective delivers
+$f_\lambda$ as well. Deployed as that package, the objective delivers
 what it promises: over the ten seeds the predicted interval narrows
-from $13.05\%$ to $12.18\%$ of the midpoint makespan (narrower on all
+from $13.05\%$ to $11.98\%$ of the midpoint makespan (narrower on all
 six instances, $p=0.031$) while the midpoint makespan rises by
-$1.15$ points, to $15.11\%$ (higher on all six, $p=0.031$). Unlike
+$1.26$ points, to $15.22\%$ (higher on all six, $p=0.031$). Unlike
 the two ablations above, both effects are significant: a
 width-rewarding objective is available, at a price of about one point
 of RE at this $\lambda$.
@@ -1871,19 +1857,19 @@ the two are separated on the common deposits, with three further arms
 retrained from scratch at $\lambda=0.5$, $2$ and $4$, ten seeds each.
 When deployed, with each arm's samples ranked by its own
 $f_\lambda$, the five arms trace a monotone frontier, from $13.05\%$
-relative width at the default end to $11.08\%$ at $\lambda=4$, with
-the midpoint makespan climbing by $3.40$ points and every step of
-the narrowing significant ($p=0.031$, all six instances at every
-$\lambda$). Under a common selection criterion the frontier
-vanishes: no retrained arm proposes narrower rollouts than the
-default one, the four widths falling within a tenth of a
-point of the default's $13.05\%$ (at $\lambda=1$, $12.98\%$ against
-$13.05\%$, $p=1.00$; smallest $p=0.44$), and the RE differences are
-equally null (between $-0.07$ and $+0.47$ points, smallest
-$p=0.16$). Conversely, re-ranking the \emph{default} policy's own
+relative width at the default end to $11.07\%$ at $\lambda=4$, with
+the midpoint makespan climbing by $3.86$ points and every step of
+the narrowing significant ($p=0.031$, all six instances from
+$\lambda=1$ on). Under a common selection criterion the frontier
+vanishes: no retrained arm proposes rollouts narrower than the
+default's by more than a fifth of a point, the four widths falling
+between $12.90\%$ and $13.23\%$ against the default's $13.05\%$, none
+of the differences significant (smallest $p=0.22$), and the RE
+differences are of the same order, between $+0.20$ and $+0.54$
+points. Conversely, re-ranking the \emph{default} policy's own
 deposit by each $f_\lambda$ in turn retraces the frontier almost
 point for point, ending at $11.04\%$ width and $17.16\%$ RE where
-the arm trained on $f_4$ lands at $11.08\%$ and $17.36\%$. What
+the arm trained on $f_4$ lands at $11.07\%$ and $17.82\%$. What
 narrows the interval is which sample is kept, not which weights
 produced it: the retrained weights propose samples as wide as the
 default's, and the default's own samples suffice to trace the

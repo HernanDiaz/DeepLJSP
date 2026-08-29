@@ -585,13 +585,18 @@ def fig_frontier():
     import glob as _gl
     pools = defaultdict(list)
     lbs = {}
-    # los tres juegos de depositos: originales (semillas 2-4) y la
-    # ampliacion a diez (5-11), cinco brazos
+    # el brazo base sale de sus depositos y los cuatro brazos
+    # lambda>0 del suyo, diez semillas cada uno
     for f in (["benchmarks/robust_lambda/rollouts.csv",
                "benchmarks/robust_lambda/rollouts_sweep.csv"]
               + sorted(_gl.glob(
-                  "benchmarks/robust_lambda/rollouts_ext_*.csv"))):
+                  "benchmarks/robust_lambda/rollouts_ext_*.csv"))
+              + sorted(_gl.glob(
+                  "benchmarks/robust_lambda_fix/rollouts_*.csv"))):
+        _fix = "robust_lambda_fix" in f.replace("\\", "/")
         for r in csv.DictReader(open(f, encoding="utf-8")):
+            if (r["arm"] == "base") == _fix:
+                continue
             pools[(r["arm"], r["seed"], r["instance"])].append(
                 (float(r["lower"]), float(r["upper"])))
             lbs[r["instance"]] = float(r["lb"])
