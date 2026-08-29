@@ -2590,9 +2590,29 @@ else:
 # es anonimo: EAAI lo publica tal cual y la revision es doble anonima)
 check_exacto("identidad en el principal, suplementario anonimo",
              "Department of Computing, University of Oviedo" in TEX
+             and "Universidad Europea de Madrid" in TEX
              and "%<<IDENTIDAD" in TEX and "%IDENTIDAD>>" in TEX
              and TEXSUP.count("diazhernan@uniovi.es") == 1
              and "Oviedo" not in SUP)
+# dos autores: el manuscrito y la title page deben coincidir, y las
+# declaraciones ir en plural
+_tp = ("drl-eaai/title_page.tex" if os.path.exists("drl-eaai/title_page.tex")
+       else None)
+if _tp:
+    _tptxt = open(_tp, encoding="utf-8").read()
+    check_exacto("los dos autores, en el manuscrito y en la title page",
+                 all(x in TEX for x in ("Gil Ruiz",
+                                        "jesus.gil@universidadeuropea.es"))
+                 and all(x in _tptxt for x in ("Gil Ruiz",
+                                               "0000-0003-0675-2038")))
+    check_exacto("CRediT cubre a los dos autores",
+                 _tptxt.count("textbf{") == 2 and "CRediT" in _tptxt)
+    check_exacto("las declaraciones van en plural",
+                 "The authors have no competing" in TEX
+                 and "the authors used Claude" in TEX
+                 and "The author has no competing" not in TEX)
+else:
+    pendiente("autoria en la title page", "sin drl-eaai/")
 
 
 def _por_par(*tags):

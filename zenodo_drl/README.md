@@ -3,7 +3,8 @@
 Companion deposit of the article *Deep Reinforcement Learning for the
 Interval Job Shop Scheduling Problem: A Comparison with Genetic
 Programming Hyper-Heuristics across Inference Budgets* (Hernán Díaz
-Rodríguez, University of Oviedo). It contains the trained checkpoints,
+Rodríguez, University of Oviedo; Jesús Gil Ruiz, Universidad Europea
+de Madrid). It contains the trained checkpoints,
 the primary result files behind every table and figure of the article,
 accepted and rejected experiment records alike, and the code that
 produced and verifies them.
