@@ -446,11 +446,7 @@ recursion
 \mathbf{c}_{o}=\mathbf{s}_{o}+\mathbf{p}_{o},
 \label{eq:semiactive}
 \end{equation}
-When a predecessor does not exist (the job predecessor of a job's
-first operation, or the machine predecessor of the first operation
-scheduled on a machine), its completion is taken as $[0,0]$, so that
-the corresponding argument is neutral in the $\max$ and the start is
-decided by the predecessor that does exist.
+with the completion of a missing predecessor taken as $[0,0]$.
 The interval makespan collects the job completions component-wise,
 \begin{equation}
 \Cmax=\Big[\max_{j} c^{L}_{o_{jm}},\;\max_{j} c^{U}_{o_{jm}}\Big]
@@ -463,7 +459,23 @@ processing order under a realization means evaluating the recursion
 of Eq.~\eqref{eq:semiactive} with those crisp durations, which yields
 a crisp makespan. Because the recursion is monotone in the durations,
 the executed makespan of \emph{every} realization falls inside
-$\Cmax$. Intervals carry no canonical total order, so
+$\Cmax$, whose two endpoints are themselves the makespans of the two
+corner realizations. Figure~\ref{fig:gantt} shows both for one
+processing order.
+
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig_gantt.pdf}
+  \caption{A processing order on a $3\times3$ interval instance does
+  not fix one schedule but a family of them. Each machine carries two
+  lanes: the schedule that results when every duration takes its
+  lower endpoint, and the one it takes when every duration takes its
+  upper endpoint. Operation $O_{jk}$ is the $k$-th operation of job
+  $j$. Every realization lies between the two lanes, and the interval
+  makespan of Eq.~\eqref{eq:cmax} collects their two completion
+  times.}
+  \label{fig:gantt}
+\end{figure} Intervals carry no canonical total order, so
 schedule comparison requires a ranking choice; during construction and
 search we use the lexicographic order
 \begin{equation}
@@ -945,22 +957,27 @@ $15{\times}15$ to $50{\times}20$,
 each crisp duration replaced by an integer interval symmetric around
 it, with half-width drawn uniformly up to $15\%$ of the original
 value~\citep{DiazGA2020}. The benchmark is openly
-available~\citep{DiazDRLDataset2026}. Of the 70 instances, the final model is trained on four,
-TA11--TA14 of the $20{\times}15$ class. Six more of the same class,
-TA15--TA20, form the \emph{validation set}: never used for
+available~\citep{DiazDRLDataset2026}. Figure~\ref{fig:split} shows
+how they are divided. The validation instances never produce
 gradients, but every design and configuration decision was judged on
-their performance, so they are reported separately and excluded from
-claims about unseen data. The remaining 60 instances entered neither training nor
-validation. The genetic programming study splits the benchmark the
-same three ways~\citep{DiazGP2026}, evolving its rules on TA11--TA14
-and taking its design decisions on TA15--TA20, so the two families
-learned from the same four instances and were tuned against the same
-six. A second benchmark, consisting of interval
-versions of twelve classical instances (FT10, FT20, La21, La24, La25,
-La27, La29, La38, La40 and ABZ7--9) generated
-with the same symmetric scheme~\citep{DiazGA2020}, is reserved for
-the cross-family evaluation of Section~\ref{sec:results-classics},
-and plays no part in training or validation either.
+them, so they are reported separately and excluded from claims about
+unseen data. The genetic programming study splits the benchmark the
+same three ways~\citep{DiazGP2026}, so the two families learned from
+the same four instances and were tuned against the same six. A second
+benchmark of twelve classical instances (FT10, FT20, La21, La24,
+La25, La27, La29, La38, La40 and ABZ7--9), intervalized with the same
+symmetric scheme~\citep{DiazGA2020}, is reserved for the cross-family
+evaluation of Section~\ref{sec:results-classics}.
+
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig_split.pdf}
+  \caption{The data split. Both learners train on TA11--TA14 and take
+  every design decision on TA15--TA20, all of the $20{\times}15$
+  class; the remaining sixty Taillard instances and the twelve
+  classical ones are seen by neither family before evaluation.}
+  \label{fig:split}
+\end{figure}
 
 One convention governs every significance test reported below. The
 independent unit is the instance, not the pair (instance, seed):

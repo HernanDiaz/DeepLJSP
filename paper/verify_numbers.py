@@ -2578,7 +2578,7 @@ if os.path.exists("paper/main.aux"):
 
     for _etq, _num, _uso in [("tab:hyper", 5, "Table~5 of the paper"),
                              ("eq:reward", 5, "Eq.~(5) of the paper"),
-                             ("fig:arch", 1, "Figure~1 of the paper"),
+                             ("fig:arch", 2, "Figure~2 of the paper"),
                              ("tab:classics", 8, "Table~8 of")]:
         check_exacto(f"sup cita {_etq} como numero {_num}",
                      _num_de(_etq) == _num and _uso in SUP,
