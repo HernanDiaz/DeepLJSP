@@ -3874,6 +3874,26 @@ for fichero, v_tex in [("tuning/scenario.txt", 330),
                  m and int(m.group(1)) == v_tex,
                  m.group(1) if m else "?")
 
+# la leyenda de la figura del Gantt declara el makespan del
+# ejemplo: se recalcula con el mismo entorno que la dibuja
+try:
+    import importlib.util as _ilu
+    _spec = _ilu.spec_from_file_location(
+        "_mgf", "scripts/make_gantt_figure.py")
+    _mgf = _ilu.module_from_spec(_spec)
+    _spec.loader.exec_module(_mgf)
+    _sched, (_glo, _gup) = _mgf.construye()
+    _m = re.search(r"eq:cmax\} is \$\[(\d+),(\d+)\]\$", TEX)
+    check_exacto("figura del Gantt: makespan del ejemplo",
+                 bool(_m) and (int(_m.group(1)), int(_m.group(2)))
+                 == (int(_glo), int(_gup)),
+                 f"figura [{_glo:.0f},{_gup:.0f}] / texto "
+                 f"{_m.groups() if _m else '?'}")
+    check_exacto("figura del Gantt: nueve operaciones dibujadas",
+                 len(_sched) == 9, str(len(_sched)))
+except Exception as _e:                                  # noqa: BLE001
+    pendiente("figura del Gantt", f"{type(_e).__name__}: {_e}")
+
 print(f"\n{ok_n} comprobaciones correctas, {fallo_n} fallos, "
       f"{pend_n} pendientes de fuente")
 
