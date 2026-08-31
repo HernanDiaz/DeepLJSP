@@ -106,16 +106,16 @@ def main():
                zorder=1)
     ax.axvline(c_up, color="0.15", linestyle="-", linewidth=1.2,
                zorder=1)
-    ax.annotate("", xy=(c_lo, -0.55), xytext=(c_up, -0.55),
+    ax.annotate("", xy=(c_lo, -0.62), xytext=(c_up, -0.62),
                 arrowprops=dict(arrowstyle="<->", color="0.25", lw=0.9))
-    ax.text((c_lo + c_up) / 2, -0.60,
+    ax.text((c_lo + c_up) / 2, -0.68,
             f"$\\mathbf{{C}}_{{\\max}}=[{c_lo:.0f},\\,{c_up:.0f}]$",
             ha="center", va="bottom", fontsize=7.5)
 
     ax.set_yticks(range(3))
     ax.set_yticklabels([str(i + 1) for i in range(3)])
     ax.set_ylabel("machine")
-    ax.set_ylim(-0.85, 2.42)
+    ax.set_ylim(-1.05, 2.42)
     ax.set_xlim(0, c_up + 0.5)
     ax.set_xlabel("time")
     ax.invert_yaxis()
