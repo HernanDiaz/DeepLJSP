@@ -3874,6 +3874,13 @@ for fichero, v_tex in [("tuning/scenario.txt", 330),
                  m and int(m.group(1)) == v_tex,
                  m.group(1) if m else "?")
 
+# el cuerpo explica la figura del Gantt con los extremos de s_o y
+# c_o, que la Ec. (1) tiene que declarar antes de usarlos
+check_exacto(
+    "extremos de s_o y c_o declarados",
+    "s^{L}_{o},\\,s^{U}_{o}" in TEX and "c^{L}_{o},\\,c^{U}_{o}" in TEX,
+    "declaracion en la Ec. (1)")
+
 # el ejemplo de la figura del Gantt se explica en el cuerpo del
 # texto, no en la leyenda: se recalcula con el mismo entorno que
 # lo dibuja
