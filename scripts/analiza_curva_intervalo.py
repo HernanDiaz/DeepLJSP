@@ -34,7 +34,7 @@ SALIDA = "benchmarks/curva_intervalo/curva_intervalo.json"
 N_POOL = 341
 REPES = 200
 PRESUPUESTOS = [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192,
-                256, 341]
+                256, 341, 342]
 GP_UNA_PASADA = 17.71      # regla destacada, Tabla 7
 
 

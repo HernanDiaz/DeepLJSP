@@ -53,7 +53,7 @@ SALIDA = "paper/figures/fig_budget.pdf"
 N_POOL = 341              # muestras por tirada sin contar el greedy
 R = 200                   # remuestreos por presupuesto y tirada
 PRESUPUESTOS = [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192,
-                256, 341]
+                256, 341, 342]
 
 
 def lee_depositos():

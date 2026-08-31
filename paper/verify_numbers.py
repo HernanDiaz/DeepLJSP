@@ -2479,9 +2479,9 @@ def _gp_curva(b, reps):
 _pol = json.load(open("benchmarks/curva_intervalo/curva_intervalo.json",
                       encoding="utf-8"))["por_presupuesto"]
 _g1, _ = _gp_curva(1, 1)
-_g8, _sd8 = _gp_curva(8, 30)
-_g32, _sd32 = _gp_curva(32, 30)
-_g48, _sd48 = _gp_curva(48, 30)
+_g8, _sd8 = _gp_curva(8, 200)
+_g32, _sd32 = _gp_curva(32, 200)
+_g48, _sd48 = _gp_curva(48, 200)
 check("7.2: la regla arranca 1.8 por delante (texto)", 1.76,
       _pol["1"]["media"] - _g1, tol=0.06)
 check("7.2: 0.54 por delante en B=8 (texto)", 0.54,
@@ -3390,8 +3390,8 @@ else:
           _ci["greedy_media"], tol=0.006)
     check("curva: RE a 64 muestras (texto 15.3)", 15.34,
           _pp["64"]["media"], tol=0.006)
-    check("curva: RE a 341 muestras (texto 14.2)", 14.19,
-          _pp["341"]["media"], tol=0.006)
+    check("curva: RE a 342 muestras (texto 14.2)", 14.19,
+          _pp["342"]["media"], tol=0.006)
     check_exacto("curva: mejora al greedy desde B=2 y a la regla en B=6",
                  _ci["cruce_greedy"] == 2 and _ci["cruce_gp"] == 6,
                  f"greedy B={_ci['cruce_greedy']}, GP B={_ci['cruce_gp']}")
@@ -3425,8 +3425,8 @@ else:
                  and "$239{,}400$ schedules" in TEX
                  and "retained by the criterion"
                  in " ".join(TEX.split()))
-    check_exacto("7.2 imprime 15.3 a 64 y 14.2 a 341",
-                 "$15.3\\%$ at $64$ and $14.2\\%$ at $341$" in TEX)
+    check_exacto("7.2 imprime 15.3 a 64 y 14.2 a 342",
+                 "$15.3\\%$ at $64$ and $14.2\\%$ at $342$" in TEX)
 
 print("\n== centinela: la curva de puntos medios (ya no impresa) ==")
 _CD = "benchmarks/curva_diez/curva_diez.json"

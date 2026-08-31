@@ -75,26 +75,26 @@ processing time as an interval between known bounds and is solved in
 the literature by per-instance metaheuristic search. This paper
 contributes a constructive deep reinforcement learning policy for the
 problem, with dimensionless features and a permutation-invariant
-encoder, so that one trained network schedules an instance of any
-size without retraining or architectural change. Trained on a single
+encoder, so that one trained network schedules any size
+without retraining or architectural change. Trained on a single
 size class, the validation-selected policy improves on every
-hand-crafted dispatching rule on all seventy benchmark instances, six
-of the seven size classes unseen. The paper further contributes a
-controlled comparison against genetic programming hyper-heuristics,
-thirty trained artifacts per family evaluated in one harness at
-matched inference budgets, which shows that neither learned paradigm
-dominates: the leader is decided by the inference budget and by the
-size class. The rule leads by $0.8$ points of relative error at one
+hand-crafted rule on all seventy benchmark instances, six
+of the seven size classes unseen. It further contributes a
+controlled comparison against genetic programming hyper-heuristics in
+one harness at matched inference budgets, over thirty trained
+artifacts per family at one constructive pass and over the selected
+pair when sampling, which shows that neither learned
+paradigm dominates: the leader is decided by the inference budget and
+the size class. The rule leads by $0.8$ points of relative error at one
 constructive pass each; the two draw level at $64$ sampled schedules,
 and the policy passes the rule at $1024$ by $0.6$. On instances
 neither family has seen that advantage holds up to $30{\times}20$ and
 on twelve classical instances outside the training family, while on
 the two largest classes the rule leads at every budget. The paradigms
 also differ in where a width-penalizing objective acts: the policy
-narrows its schedules through sample selection rather than measurably
-changed weights, whereas the same objective acts through the evolved
-representation in the rules. The engineering application is
-production scheduling under such uncertainty.
+narrows its schedules mainly through sample selection, whereas the
+same objective acts through the evolved representation in the rules. The engineering application is
+production scheduling under uncertainty.
 \end{abstract}
 
 \begin{keyword}
@@ -785,7 +785,7 @@ and machine over what is scheduled so far.}
 4--5 & earliest start bounds & $est^L/\LBi$, $est^U/\LBi$ \\
 6 & start uncertainty & $(est^U-est^L)/\mathrm{mid}(\mathbf{est})$ \\
 7--8 & remaining job work & $rem^L/\LBi$, $rem^U/\LBi$ \\
-9--10 & job position & $(m-k-1)/m$, $k/m$ \\
+9--10 & job position & $(m-k)/m$, $(k-1)/m$ \\
 11 & machine load & $L(\mu)/\LBi$ \\
 12 & potential idle gap & $\max(0,\,c^U_{J}-c^U_{\mu})/\LBi$ \\
 13 & machine congestion & $L(\mu)/\bar L$ \\
@@ -1629,9 +1629,13 @@ was not repeated on those arms.
   logarithmic axis, for both learners under the same decoder: the
   schedule each retains from its deterministic pass plus $B-1$
   samples, kept by the criterion of Eq.~\eqref{eq:lex} and averaged
-  over the 70 instances. The policy curve is the mean over the ten
-  training runs and the band spans the best and worst of them; the
-  dotted line marks the rule's single deterministic pass.}
+  over the 70 instances. Both curves average $200$ random subsets of
+  the corresponding pool. The policy curve is the mean over the ten
+  training runs and the band spans the best and worst of them, a
+  dispersion across artifacts; the rule is the single
+  validation-selected one, so its curve carries no such band and its
+  own dispersion, across subsets, is quoted in the text. The dotted
+  line marks the rule's deterministic pass.}
   \label{fig:budget}
 \end{figure}
 
@@ -1671,7 +1675,7 @@ curve: retaining by the midpoint instead of the lexicographic key
 lowers the reported RE by at most $0.17$ points anywhere on the
 axis, so the curve measures the budget and not the tiebreaking
 convention. Past the crossing the returns are near-logarithmic,
-$15.3\%$ at $64$ and $14.2\%$ at $341$, without an inflection: no
+$15.3\%$ at $64$ and $14.2\%$ at $342$, without an inflection: no
 budget within the tested range saturates. The level agrees with the
 independent measurements of Table~\ref{tab:seventy}, where the
 selected run reaches $15.0\%$ at the same budget, slightly ahead of
@@ -1898,11 +1902,19 @@ points. Conversely, re-ranking the \emph{default} policy's own
 deposit by each $f_\lambda$ in turn retraces the frontier almost
 point for point, ending at $11.04\%$ width and $17.16\%$ RE where
 the arm trained on $f_4$ lands at $11.07\%$ and $17.82\%$. What
-narrows the interval is which sample is kept, not which weights
-produced it: the retrained weights propose samples as wide as the
+narrows the interval is which sample is kept rather than which
+weights produced it: the retrained arms propose samples as wide as the
 default's, and the default's own samples suffice to trace the
 frontier. The predictability--performance trade is real, tunable and
-monotone, and it arises entirely at selection time.
+monotone, and selection alone reproduces it. The reading is a bounded
+one. The five arms are compared on the six validation instances, so
+$p=0.031$ is the smallest two-sided exact value attainable when the
+six paired differences share a sign, and several related contrasts are
+examined without a multiplicity correction; one of them does separate,
+the RE of the $\lambda=0.5$ arm rising $0.50$ points under common
+selection at that value. What these deposits establish is that no
+systematic narrowing survives fixing the selection criterion, not that
+training left the weights untouched.
 
 \paragraph{Contrast with the evolved rule} The GP study runs
 the same objective at the same $\lambda$ and reaches the opposite
@@ -2073,8 +2085,10 @@ reinforcement learning policy for the IJSP, trained once on four
 $20{\times}15$ instances and applied to every other size without
 retraining or architectural change, and a controlled comparison of
 the two learned constructive paradigms available for the problem,
-thirty trained artifacts of each family through one harness at
-matched inference budgets and under one selection criterion. The
+thirty trained artifacts of each family through one harness under one
+selection criterion, at one constructive pass on the seventy interval
+instances and at every budget on the twelve classical ones, and the
+selected pair of each family at every budget throughout. The
 policy improves on every hand-crafted rule on all seventy instances
 of the benchmark, six of whose seven size classes it never saw, and
 the comparison separates the stage at which each paradigm absorbs the
@@ -2130,12 +2144,12 @@ data the intervals are not inert, but only where the policy samples:
 fitting it to the crisp midpoints instead costs $0.43$ points at the
 deployed budget ($p=0.045$) and nothing at one constructive pass. An
 objective that charges for the width then separates the families. It
-narrows the policy's schedules through which sample is kept, the
-retrained weights being indistinguishable from the default ones under
-a common selection criterion and ranking the default policy's own
-samples by $f_\lambda$ retracing the frontier without any retraining,
-where in the GP study the same objective acts through the evolved
-representation. What distinguishes the two is the stage at which
+narrows the policy's schedules mainly through which sample is kept,
+the retrained arms proposing rollouts no narrower than the default's
+under a common selection criterion and ranking the default policy's
+own samples by $f_\lambda$ retracing the frontier without any
+retraining, where in the GP study the same objective acts through the
+evolved representation. What distinguishes the two is the stage at which
 robustness is bought rather than its rate, comparable on the two
 sides at roughly two points of RE per point of width. Bought
 deliberately, it reaches execution: the arm trained under that
