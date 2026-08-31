@@ -352,7 +352,7 @@ def fig_eps():
         else:
             FAM.append(("#EAEAEA", "0.45"))
 
-    fig, ax = plt.subplots(figsize=(5.55, 2.25))
+    fig, ax = plt.subplots(figsize=(4.9, 2.0))
     datos = [list(med[g].values()) for g in orden]
     bp = ax.boxplot(datos, positions=list(range(len(orden))), widths=0.42,
                     whis=1.5, showfliers=False, patch_artist=True)
@@ -378,12 +378,12 @@ def fig_eps():
                 fontsize=7.5, color=linea)
     ax.set_ylim(top=base_rotulos + 0.85)
     ax.set_xticks(range(len(orden)))
-    ax.set_xticklabels(rotulos, fontsize=8)
+    ax.set_xticklabels(rotulos, fontsize=7.5)
     ax.set_ylabel("$\\bar\\varepsilon \\times 10^{3}$", fontsize=9)
     ax.tick_params(axis="y", labelsize=8.5)
     ax.grid(axis="y", alpha=0.25, linestyle="-", linewidth=0.5)
     for lado in ("top", "right", "left", "bottom"):
-        ax.spines[lado].set_color("0.5")
+        ax.spines[lado].set_color("black")
         ax.spines[lado].set_linewidth(0.8)
     ax.set_xlim(-0.55, len(orden) - 0.45)
     fig.savefig(os.path.join(FIG_DIR, "fig_eps.pdf"), bbox_inches="tight")
