@@ -340,31 +340,54 @@ def fig_eps():
     rotulos = ["MOR", "GT-MWKR", "EST", "GP\n(1)", "GP\n(64)",
                "Policy\n(greedy)", "Policy\n(64)",
                "Policy $f_\\lambda$\n(64)"]
-    fig, ax = plt.subplots(figsize=(6.53, 2.78))
+    # tres familias, cada una con su color de linea: las reglas de
+    # despacho, la regla evolucionada y la politica. El negro de los
+    # bigotes por defecto pesaba mas que las cajas
+    FAM = []
+    for g in orden:
+        if "Policy" in g:
+            FAM.append(("#DDEFDD", "#2E8B57"))
+        elif "GP" in g:
+            FAM.append(("#DCE8F2", "#4B7BA8"))
+        else:
+            FAM.append(("#EAEAEA", "0.45"))
+
+    fig, ax = plt.subplots(figsize=(6.53, 2.55))
     datos = [list(med[g].values()) for g in orden]
-    bp = ax.boxplot(datos, positions=list(range(len(orden))), widths=0.52,
-                    whis=1.5, showfliers=False, patch_artist=True,
-                    medianprops={"color": "black", "linewidth": 1.2})
-    for parche, g in zip(bp["boxes"], orden):
-        parche.set_facecolor("#D8EFD8" if "Policy" in g else "#D5E5F0")
-        parche.set_edgecolor("0.35")
-    # la media va rotulada ENCIMA de su bigote y centrada en la
-    # categoria: a la derecha del diamante invadia la caja siguiente,
-    # que empieza a 0.74 del centro
+    bp = ax.boxplot(datos, positions=list(range(len(orden))), widths=0.42,
+                    whis=1.5, showfliers=False, patch_artist=True)
+    for k, (relleno, linea) in enumerate(FAM):
+        bp["boxes"][k].set_facecolor(relleno)
+        bp["boxes"][k].set_edgecolor(linea)
+        bp["boxes"][k].set_linewidth(0.9)
+        bp["medians"][k].set_color(linea)
+        bp["medians"][k].set_linewidth(1.5)
+        for j in (2 * k, 2 * k + 1):
+            for artista in (bp["whiskers"][j], bp["caps"][j]):
+                artista.set_color(linea)
+                artista.set_linewidth(0.9)
+    # las medias se rotulan en una sola linea comun sobre el bigote mas
+    # alto: siguiendo cada bigote, el borde superior quedaba dentado
     topes = [bp["caps"][2 * k + 1].get_ydata()[0]
              for k in range(len(orden))]
-    for k, (g, vals) in enumerate(zip(orden, datos)):
+    base_rotulos = max(topes) + 0.35
+    for k, (vals, (_, linea)) in enumerate(zip(datos, FAM)):
         m = sum(vals) / len(vals)
-        color = "seagreen" if "Policy" in g else "steelblue"
-        ax.scatter([k], [m], marker="D", s=26, color=color, zorder=4)
-        ax.text(k, topes[k] + 0.12, "%.2f" % m, va="bottom", ha="center",
-                fontsize=8.5, color=color)
-    ax.set_ylim(top=max(topes) + 0.75)
+        ax.scatter([k], [m], marker="D", s=20, color=linea, zorder=4)
+        ax.text(k, base_rotulos, "%.2f" % m, va="bottom", ha="center",
+                fontsize=7.5, color=linea)
+    ax.set_ylim(top=base_rotulos + 0.85)
     ax.set_xticks(range(len(orden)))
-    ax.set_xticklabels(rotulos, fontsize=8.5)
-    ax.set_ylabel("$\\bar\\varepsilon \\times 10^{3}$")
-    ax.grid(axis="y", alpha=0.3, linestyle="--")
-    ax.set_xlim(-0.55, len(orden) - 0.25)
+    ax.set_xticklabels(rotulos, fontsize=8)
+    ax.set_ylabel("$\\bar\\varepsilon \\times 10^{3}$", fontsize=9)
+    ax.tick_params(axis="y", labelsize=8.5)
+    ax.grid(axis="y", alpha=0.25, linestyle="-", linewidth=0.5)
+    for lado in ("top", "right"):
+        ax.spines[lado].set_visible(False)
+    for lado in ("left", "bottom"):
+        ax.spines[lado].set_color("0.5")
+        ax.spines[lado].set_linewidth(0.8)
+    ax.set_xlim(-0.55, len(orden) - 0.45)
     fig.savefig(os.path.join(FIG_DIR, "fig_eps.pdf"), bbox_inches="tight")
     plt.close(fig)
 
