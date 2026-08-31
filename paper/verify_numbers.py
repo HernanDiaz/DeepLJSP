@@ -2330,13 +2330,17 @@ if os.path.exists("drl-eaai/highlights.tex"):
     check_exacto("EAAI: highlights de 85 caracteres o menos",
                  all(len(h.strip()) <= 85 for h in _hl),
                  f"max {max(len(h.strip()) for h in _hl)}")
-    # la title page lleva la financiacion y el CRediT
+else:
+    pendiente("EAAI highlights", "sin drl-eaai/ (repo de trabajo)")
+# la title page lleva la financiacion y el CRediT. Va aparte de los
+# highlights: una copia anonima del envio puede llevar unos sin la otra
+if os.path.exists("drl-eaai/title_page.tex"):
     _tp = open("drl-eaai/title_page.tex", encoding="utf-8").read()
     check_exacto("EAAI: title page con beca y CRediT",
                  "PID2022-141746OB-I00" in _tp and "CRediT" in _tp
                  and "diazhernan@uniovi.es" in _tp)
 else:
-    pendiente("EAAI highlights", "sin drl-eaai/ (repo de trabajo)")
+    pendiente("EAAI title page", "sin drl-eaai/title_page.tex")
 
 # =========================================================================
 print("\n== la clave de retencion del best-of-N (revision r3) ==")
