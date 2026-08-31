@@ -30,7 +30,7 @@ from jobshop_rl.experiments.factory import EnvironmentFactory  # noqa: E402
 from jobshop_rl.models.interval import (                    # noqa: E402
     Interval, final_makespan)
 
-plt.rcParams.update({"font.family": "serif", "font.size": 8,
+plt.rcParams.update({"font.family": "serif", "font.size": 10,
                      "pdf.fonttype": 42})
 
 SALIDA = "paper/figures/fig_gantt.pdf"
@@ -47,7 +47,7 @@ DUR = [[Interval(5, 7), Interval(5, 7), Interval(6, 8)],
        [Interval(11, 15), Interval(5, 7), Interval(8, 12)]]
 ORDEN = [0, 1, 2, 0, 1, 2, 0, 1, 2]
 COLOR = ["#4C72B0", "#DD8452", "#55A868"]
-ALTO = 0.40
+ALTO = 0.44
 EJEMPLO_FIN = []
 
 
@@ -87,7 +87,7 @@ def construye():
 def main():
     sched, (c_lo, c_up) = construye()
 
-    fig, ax = plt.subplots(figsize=(6.53, 1.95))
+    fig, ax = plt.subplots(figsize=(6.53, 2.15))
     for op in sched:
         s_lo, s_up = extremos(op["start"])
         e_lo, e_up = extremos(op["end"])
@@ -99,7 +99,7 @@ def main():
                              zorder=2))
         ax.text((s_lo + s_up + e_lo + e_up) / 4, y,
                 f"$o_{{{op['job'] + 1}{op['operation'] + 1}}}$",
-                ha="center", va="center", fontsize=7, color="white",
+                ha="center", va="center", fontsize=8.5, color="white",
                 zorder=3)
 
     ax.axvline(c_lo, color="0.30", linestyle="--", linewidth=1.0,
@@ -110,10 +110,11 @@ def main():
                 arrowprops=dict(arrowstyle="<->", color="0.25", lw=0.9))
     ax.text((c_lo + c_up) / 2, -0.68,
             f"$\\mathbf{{C}}_{{\\max}}=[{c_lo:.0f},\\,{c_up:.0f}]$",
-            ha="center", va="bottom", fontsize=8)
+            ha="center", va="bottom", fontsize=8.5)
 
     ax.set_yticks(range(3))
-    ax.set_yticklabels([f"$M_{i + 1}$" for i in range(3)])
+    ax.set_yticklabels([str(i + 1) for i in range(3)])
+    ax.set_ylabel("machine")
     ax.set_ylim(-1.05, 2.45)
     ax.set_xlim(0, c_up + 0.5)
     ax.set_xlabel("time")
