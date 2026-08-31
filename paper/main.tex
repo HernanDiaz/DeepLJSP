@@ -460,22 +460,22 @@ of Eq.~\eqref{eq:semiactive} with those crisp durations, which yields
 a crisp makespan. Because the recursion is monotone in the durations,
 the executed makespan of \emph{every} realization falls inside
 $\Cmax$, whose two endpoints are themselves the makespans of the two
-corner realizations. Figure~\ref{fig:gantt} draws one processing
-order with the start and the completion interval of every operation.
+corner realizations. Figure~\ref{fig:gantt} shows both for one
+processing order.
 
 \begin{figure}[!htb]
   \centering
   \includegraphics[width=\linewidth]{figures/fig_gantt.pdf}
   \caption{A processing order on a $3\times3$ interval instance does
   not fix one schedule but a family of them. Each operation is a
-  single shape whose left edge rises from $s^{L}$ to $s^{U}$ and
-  whose right edge falls from $e^{L}$ to $e^{U}$: the flat top is
-  the span in which the operation holds its machine under every
-  realization, and the sloped edges are the slack in its start and
-  in its completion. Operation $O_{jk}$ is the $k$-th operation of
-  job $j$. Consecutive operations on a machine interlock along the
-  edges they share, and the interval makespan of
-  Eq.~\eqref{eq:cmax} is $[40,50]$.}
+  single shape whose upper edge runs from $s^{L}$ to $e^{L}$ and
+  whose lower edge runs from $s^{U}$ to $e^{U}$: the upper edge is
+  the schedule that results when every duration takes its lower
+  endpoint, the lower edge the one that results at the upper
+  endpoint, and the two sloped sides are the slack in the start and
+  in the completion. Operation $O_{jk}$ is the $k$-th operation of
+  job $j$. Consecutive operations on a machine share a side, and the
+  interval makespan of Eq.~\eqref{eq:cmax} is $[40,50]$.}
   \label{fig:gantt}
 \end{figure} Intervals carry no canonical total order, so
 schedule comparison requires a ranking choice; during construction and

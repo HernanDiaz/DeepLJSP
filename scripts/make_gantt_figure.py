@@ -54,24 +54,16 @@ def extremos(v):
 def perfil(s_lo, s_up, e_lo, e_up, base):
     """Vertices del poligono de una operacion.
 
-    Trapecio cuando la meseta existe (s^U <= e^L). Si la holgura de
-    inicio se come la duracion minima, los dos flancos se cortan y la
-    figura degenera en un triangulo con vertice en ese cruce.
+    El lado superior va de s^L a e^L y el inferior de s^U a e^U,
+    de modo que el borde de arriba es el schedule que resulta si
+    toda duracion toma su extremo inferior y el de abajo el que
+    resulta si toma el superior. Los dos flancos descienden. El
+    eje y se dibuja invertido, asi que el suelo de la barra es la
+    coordenada mayor.
     """
-    # el eje y se dibuja invertido, asi que el suelo de la barra
-    # es la coordenada mayor
     suelo, techo = base + ALTO / 2, base - ALTO / 2
-    if s_up <= e_lo:
-        return [(s_lo, suelo), (s_up, techo), (e_lo, techo), (e_up, suelo)]
-    # cruce de las dos rampas, en altura normalizada
-    da, db = s_up - s_lo, e_up - e_lo
-    if da <= 0 or db <= 0:
-        return [(s_lo, suelo), (s_lo, techo), (e_up, techo), (e_up, suelo)]
-    t = (s_lo * db + e_up * da) / (da + db)
-    h = (t - s_lo) / da
-    return [(s_lo, suelo), (t, suelo + h * (techo - suelo)),
-            (e_up, suelo)]
-
+    return [(s_lo, techo), (e_lo, techo), (e_up, suelo),
+            (s_up, suelo)]
 
 def construye():
     problema = {"num_jobs": 3, "num_machines": 3, "sequences": SEQ,
@@ -96,10 +88,9 @@ def main():
         ax.add_patch(Polygon(perfil(s_lo, s_up, e_lo, e_up, y),
                              closed=True, facecolor=col, alpha=0.75,
                              edgecolor=col, linewidth=1.0))
-        if e_lo - s_up >= 1.6:
-            ax.text((s_up + e_lo) / 2, y,
-                    f"$O_{{{op['job'] + 1}{op['operation'] + 1}}}$",
-                    ha="center", va="center", fontsize=8, color="white")
+        ax.text((s_lo + s_up + e_lo + e_up) / 4, y,
+                f"$O_{{{op['job'] + 1}{op['operation'] + 1}}}$",
+                ha="center", va="center", fontsize=8, color="white")
 
     ax.axvline(c_lo, color="0.30", linestyle="--", linewidth=1.0)
     ax.axvline(c_up, color="0.15", linestyle="-", linewidth=1.2)
