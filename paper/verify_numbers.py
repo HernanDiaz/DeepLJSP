@@ -2261,13 +2261,17 @@ try:
     check_exacto("4.1: efectivos (1,.15,.05,.10,.05,.30) en TA11-14",
                  all(_e == _esper for _e in _efectivos),
                  str(sorted(set(_efectivos))))
-    check_exacto("4.1: el texto imprime los efectivos y el reajuste",
-                 r"$w_{\mathrm{pr}}{=}0.05$" in TEX
-                 and r"$w_{\mathrm{id}}{=}0.15$" in TEX
-                 and r"$w_{\mathrm{li}}{=}0.30$" in TEX
-                 and r"$w_{\mathrm{cr}}{=}0.05$" in TEX
-                 and r"$w_{\mathrm{ba}}{=}0.10$" in TEX
-                 and "nominally $0.15$" in TEX
+    # los efectivos se imprimen en la fila de tab:reward
+    _tabla = re.sub(r"\s+", " ", TEX)
+    _filas = [("mk", "1.00"), ("pr", "0.05"),
+              ("id", "0.15"), ("li", "0.30"),
+              ("cr", "0.05"), ("ba", "0.10")]
+    _faltan = [_c for _c, _w in _filas
+               if f"({_c}) & ${_w}$ &" not in _tabla]
+    check_exacto("4.1: tab:reward imprime los efectivos",
+                 not _faltan, str(_faltan))
+    check_exacto("4.1: el texto declara el reajuste del balance",
+                 "nominally $0.15$" in TEX
                  and "the generator is bypassed" in TEX)
 except Exception as _e:
     pendiente("pesos ruta real", f"{type(_e).__name__}: {_e}")
@@ -2576,10 +2580,10 @@ if os.path.exists("paper/main.aux"):
                        + r"\}\{\{(\d+)\}", _aux)
         return int(_m.group(1)) if _m else -1
 
-    for _etq, _num, _uso in [("tab:hyper", 5, "Table~5 of the paper"),
+    for _etq, _num, _uso in [("tab:hyper", 6, "Table~6 of the paper"),
                              ("eq:reward", 5, "Eq.~(5) of the paper"),
                              ("fig:arch", 2, "Figure~2 of the paper"),
-                             ("tab:classics", 8, "Table~8 of")]:
+                             ("tab:classics", 9, "Table~9 of")]:
         check_exacto(f"sup cita {_etq} como numero {_num}",
                      _num_de(_etq) == _num and _uso in SUP,
                      f"aux dice {_num_de(_etq)}")

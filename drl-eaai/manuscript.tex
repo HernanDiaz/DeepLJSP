@@ -181,7 +181,7 @@ act? \emph{Q3:} what does either learner buy over the hand-crafted
 rules it replaces, and where do both stand relative to the
 per-instance metaheuristic state of the art?
 
-\paragraph{Contributions.}
+\paragraph{Contributions}
 \begin{enumerate}
 \item \emph{A size-invariant constructive DRL policy for the
   IJSP} (Section~\ref{sec:method}), and to the best of our knowledge
@@ -620,108 +620,96 @@ r_t \;=\; w_{\mathrm{mk}}\,r^{\mathrm{mk}}_t
       + w_{\mathrm{cr}}\,r^{\mathrm{cr}}_t
       + w_{\mathrm{ba}}\,r^{\mathrm{ba}}_t,
 \end{equation}
-where each $r^{\bullet}_t$ is one shaping component and
-$w_{\bullet}\in[0,1]$ its fixed weight: terminal makespan
-($\mathrm{mk}$), job progress ($\mathrm{pr}$), machine idleness
-($\mathrm{id}$), local improvement ($\mathrm{li}$), operation
-criticality ($\mathrm{cr}$) and load balance ($\mathrm{ba}$), each
-defined below.
+with terminal makespan ($\mathrm{mk}$), job progress ($\mathrm{pr}$),
+machine idleness ($\mathrm{id}$), local improvement ($\mathrm{li}$),
+operation criticality ($\mathrm{cr}$) and load balance
+($\mathrm{ba}$). Table~\ref{tab:reward} defines the six components
+and gives their fixed weights $w_{\bullet}\in[0,1]$.
 
-Every component is dimensionless, and comparable across instances
-and sizes: five are divided by a magnitude of the instance, listed
-with them, and job progress is by construction a fraction of the
-episode. Several of those scales use $\LBi$, a lower bound on the
-makespan that the method computes from the instance itself as the
-larger of the two classical relaxations, the most loaded machine and
-the longest job, in worst-case durations:
+Every component is dimensionless, and comparable across instances and
+sizes: five are divided by a magnitude of the instance, and job
+progress is by construction a fraction of the episode. Several of
+those scales use $\LBi$, a lower bound on the makespan that the
+method computes from the instance itself as the larger of the two
+classical relaxations, the most loaded machine and the longest job,
+in worst-case durations:
 \begin{equation*}
 \LBi=\max\Big(\;\max_{\mu}\sum_{(j,k)\,:\,\nu_{jk}=\mu} p^{U}_{jk},
 \;\;\max_{j}\sum_{k=1}^{m} p^{U}_{jk}\Big).
 \end{equation*}
 It is an internal estimate, so the method does not depend on
-externally supplied references. In the definitions below, write
-$c^{U}_{\mu}$ for the
+externally supplied references. In the table, step $t$ schedules
+operation $o_{jk}$ on machine $\mu=\nu_{jk}$, $c^{U}_{\mu}$ is the
 worst-case completion time of machine $\mu$ over the operations
-scheduled so far, $M^{U}_{t}=\max_{\mu}c^{U}_{\mu}$ for the
-projected worst-case makespan after $t$ decisions, and let step $t$
-schedule operation $o_{jk}$ on machine $\mu=\nu_{jk}$. The six
-components are:
-\begin{itemize}
-\item \emph{Terminal makespan} ($w_{\mathrm{mk}}{=}1.0$): zero at
-every step except the last, where
-\begin{equation*}
-r^{\mathrm{mk}}_{nm}=-\frac{C^{U}_{\max}}{s_{\mathrm{mk}}},
-\qquad s_{\mathrm{mk}}=\frac{\LBi}{10},
-\end{equation*}
-Substituting the scale gives
+scheduled so far, and $M^{U}_{t}=\max_{\mu}c^{U}_{\mu}$ is the
+projected worst-case makespan after $t$ decisions.
+
+\begin{table}[t]
+\centering\small
+\caption{The six shaping components of Eq.~\eqref{eq:reward} and the
+weights the training entry point supplies.}
+\label{tab:reward}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}lcp{0.55\linewidth}@{}}
+\toprule
+Component & $w_{\bullet}$ & Value at step $t$, with its scale \\
+\midrule
+Terminal makespan (mk) & $1.00$ &
+$-C^{U}_{\max}/s_{\mathrm{mk}}$ at $t=nm$ and zero before, with
+$s_{\mathrm{mk}}=\LBi/10$ \\
+Job progress (pr) & $0.05$ &
+$1/(nm)$ on every step but the terminal one, where the terminal
+component replaces it \\
+Machine idleness (id) & $0.15$ &
+$-\big(s^{U}_{o_{jk}}-c^{L}_{\mu}\big)/s_{\mathrm{id}}$ when
+$JP(o_{jk})$ decides the start under Eq.~\eqref{eq:lex} and zero
+otherwise, with $s_{\mathrm{id}}=2\bar p$ and $\bar p$ the mean
+midpoint duration of the instance \\
+Local improvement (li) & $0.30$ &
+$\kappa_{t}\big(M^{U}_{t-1}-M^{U}_{t}\big)\big/(s_{\mathrm{mk}}/10)$,
+with $\kappa_{t}=2$ if $M^{U}_{t}>M^{U}_{t-1}$ and $1$ otherwise,
+and zero on the first step \\
+Operation criticality (cr) & $0.05$ &
+$\big(\sum_{k'>k}p^{U}_{jk'}\big)/s_{\mathrm{cr}}$, with
+$s_{\mathrm{cr}}=W^{U}/2n$ and $W^{U}$ the instance's total
+worst-case work \\
+Load balance (ba) & $0.10$ &
+$-\sigma_{\mu}\big(c^{U}_{\mu}\big)/s_{\mathrm{ba}}$, the standard
+deviation across the machines already in use, with
+$s_{\mathrm{ba}}=1.5\,\sigma_{\mu}\big(L^{U}_{\mu}\big)$ over the
+total worst-case loads
+$L^{U}_{\mu}=\sum_{(j,k)\,:\,\nu_{jk}=\mu}p^{U}_{jk}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Substituting its scale, the terminal component is
 $r^{\mathrm{mk}}_{nm}=-10\,(1+g)$, with
 $g=(C^{U}_{\max}-\LBi)/\LBi$ the relative gap to the instance bound:
-a function of the relative gap alone, so its magnitude is
-independent of the instance's size and time scale, and a schedule of
-the same relative quality receives the same reward on any instance.
-The robust arms of Section~\ref{sec:ablations-interval} replace
-$C^{U}_{\max}$ here by $f_\lambda$.
-\item \emph{Job progress} ($w_{\mathrm{pr}}{=}0.05$):
-\begin{equation*}
-r^{\mathrm{pr}}_t=\frac{1}{nm}.
-\end{equation*}
-A constant per operation scheduled, on every step but the terminal
-one, where the terminal component replaces it; the episode sum is
-$(nm-1)/nm$. With $\gamma=1$ and the fixed $nm$-step horizon this
-term is the same for every complete schedule, so it stabilizes value
-estimation rather than shaping the policy's preferences.
-\item \emph{Machine idleness} ($w_{\mathrm{id}}{=}0.15$): when the
-job predecessor decides the start
-of $o_{jk}$ under the ranking of Eq.~\eqref{eq:lex},
-\begin{equation*}
-r^{\mathrm{id}}_t=
--\frac{s^{U}_{o_{jk}}-c^{L}_{\mu}}{s_{\mathrm{id}}},
-\qquad s_{\mathrm{id}}=2\bar p,
-\end{equation*}
-and zero otherwise, with $\bar p$ the mean midpoint duration of the
-instance: the upper endpoint of the idle interval that scheduling
-$o_{jk}$ opens on its machine, measured in units of typical
-operations. An idle gap is widest when the machine freed at its
-earliest, so the worst case of an idle interval reads the machine's
-\emph{lower} completion endpoint; this is the one place where the
-training signal consults a lower endpoint, a fact
-Section~\ref{sec:ablations-interval} returns to.
-\item \emph{Local improvement} ($w_{\mathrm{li}}{=}0.30$):
-\begin{equation*}
-r^{\mathrm{li}}_t=
-\kappa_t\,\frac{M^{U}_{t-1}-M^{U}_{t}}{s_{\mathrm{mk}}/10},
-\qquad
-\kappa_t=\begin{cases}2 & M^{U}_{t}>M^{U}_{t-1},\\ 1 &
-\text{otherwise},\end{cases}
-\end{equation*}
-the step change of the projected makespan, with deteriorations
-penalized twice as strongly: a dense signal so that early decisions
-are not credited only $nm$ steps later. On the first step of an
-episode the component is zero, as no previous projection exists.
-\item \emph{Operation criticality} ($w_{\mathrm{cr}}{=}0.05$):
-\begin{equation*}
-r^{\mathrm{cr}}_t=\frac{\sum_{k'>k}p^{U}_{jk'}}{s_{\mathrm{cr}}},
-\qquad s_{\mathrm{cr}}=\frac{W^{U}}{2n},
-\end{equation*}
-with $W^{U}$ the instance's total worst-case work: the worst-case
-work remaining in the scheduled operation's job. Favoring jobs with
+a function of the relative gap alone, so a schedule of the same
+relative quality receives the same reward on any instance, whatever
+its size and time scale. The robust arms of
+Section~\ref{sec:ablations-interval} replace $C^{U}_{\max}$ here by
+$f_\lambda$. Job progress adds a constant per operation scheduled and
+sums to $(nm-1)/nm$ over every complete schedule, so with $\gamma=1$
+and the fixed $nm$-step horizon it stabilizes value estimation rather
+than shaping the policy's preferences. Local improvement is the step
+change of the projected makespan, with deteriorations penalized twice
+as strongly: a dense signal, so that early decisions are not credited
+only $nm$ steps later. Operation criticality is the worst-case work
+remaining in the scheduled operation's job, and favoring jobs with
 much work remaining is a standard proxy for the emerging critical
-path.
-\item \emph{Load balance} ($w_{\mathrm{ba}}{=}0.10$; see below):
-\begin{equation*}
-r^{\mathrm{ba}}_t=
--\frac{\sigma_{\mu}\big(c^{U}_{\mu}\big)}{s_{\mathrm{ba}}},
-\qquad s_{\mathrm{ba}}=1.5\,\sigma_{\mu}\big(L^{U}_{\mu}\big),
-\end{equation*}
-where $\sigma_{\mu}$ denotes the standard deviation across the
-machines already in use (machines with no operation scheduled yet are
-excluded), taken after the step over the worst-case completion times
-and, in the scale, over the total worst-case loads
-$L^{U}_{\mu}=\sum_{(j,k)\,:\,\nu_{jk}=\mu}p^{U}_{jk}$ of the
-instance. Referring the observed dispersion to the dispersion the
-instance's own loads exhibit discourages lopsided machine loads
-without penalizing an instance for being intrinsically unbalanced.
-\end{itemize}
+path. Load balance refers the dispersion the machine completion times
+exhibit to the dispersion of the instance's own loads, which
+discourages lopsided machine loads without penalizing an instance for
+being intrinsically unbalanced.
+
+The idle penalty is the one component that consults a \emph{lower}
+endpoint: an idle gap is widest when the machine freed at its
+earliest, so its worst case reads the machine's lower completion
+time. It is the only place where the training signal does so, a fact
+Section~\ref{sec:ablations-interval} returns to.
 
 The training entry point sets the six weights as fixed constants,
 with $w_{\mathrm{ba}}$ nominally $0.15$. A per-instance adjustment
@@ -729,22 +717,21 @@ layer can then override three of them by fixed deterministic
 threshold rules of the instance's own statistics; on the four
 training instances the only rule that fires is the one lowering the
 balance weight to $0.10$ under high dispersion of the machine loads,
-and it fires on all four, so the effective vector is the one printed
-with the components above, identical across the training set. The
+and it fires on all four, so the effective vector is the one of
+Table~\ref{tab:reward}, identical across the training set. The
 implementation also contains a generator that would derive all six
 weights from instance statistics, but the training entry point
 supplies its explicit vector and the generator is bypassed; it played
 no part in any experiment of this paper. These constants were fixed
 during early development and carried unchanged into every experiment;
-no claim of optimality is attached to them. For completeness, the
-implementation carries two dormant elements: floors on the scales
-that never bound on these instances, and a discontinuous terminal
-bonus below a $5\%$ gap that no recorded training episode reached.
-The configuration campaign of Section~\ref{sec:hyperconfig} later
-raced the six weights, each free in $[0,1]$ (explicit weights bypass
-the adjustment layer), and did not improve on the deployed vector
-within the protocol's resolution; the internal constants were not
-raced.
+no claim of optimality is attached to them. Two further elements are
+dormant: floors on the scales that never bound on these instances,
+and a discontinuous terminal bonus below a $5\%$ gap that no recorded
+training episode reached. The configuration campaign of
+Section~\ref{sec:hyperconfig} later raced the six weights, each free
+in $[0,1]$ (explicit weights bypass the adjustment layer), and did
+not improve on the deployed vector within the protocol's resolution;
+the internal constants were not raced.
 
 \subsection{State representation}
 \label{sec:features}
@@ -1130,7 +1117,7 @@ RE on the validation instances at the deployed budget is \emph{the
 policy} this paper reports; the seventy benchmark instances take no
 part in that choice.
 
-\paragraph{Best-of-$N$ inference.} At evaluation time the stochastic
+\paragraph{Best-of-$N$ inference} At evaluation time the stochastic
 policy is exploited by drawing one greedy rollout and $N-1$ sampled
 ones, and keeping the best solution under the ranking of
 Eq.~\eqref{eq:lex}, the standard sampled decoding of neural
@@ -1753,45 +1740,62 @@ and the upper endpoints alone, the lower half determining
 $C^L_{\max}$ without ever entering it. $C^U_{\max}$ is the primary
 key of the lexicographic criterion of Eq.~\eqref{eq:lex}, whose
 secondary key, the lower endpoint, is consulted only on exact ties of
-the upper one; everything below is therefore conditional on such ties
-deciding rarely, and how rarely is measured rather than assumed.
-Ties of the upper endpoint are common, every one of the 300 (arm,
-instance, seed) rollout pools of this section containing some, but
-only a tie at the \emph{minimum} hands the selection to the
-secondary key, and that happens in 7 of the 300 pools; where it
-does, the key chooses among schedules with the same worst case, so
-it sets the width of the reported schedule, never the objective. The
-training signal is a different matter. The terminal reward of
-Section~\ref{sec:mdp} trains on that primary key, but one of its
-shaping components, the idle penalty, charges the worst case of an
-idle interval, which reads the machine's lower completion endpoint
-(Section~\ref{sec:mdp}): a channel through which interval
-information beyond the upper endpoints reaches the weights does
-exist. Whether the width features inform the trained policy is
+the upper one. Ties are common, every one of the 300 (arm, instance,
+seed) rollout pools of this section containing some, but only a tie
+at the \emph{minimum} hands the selection to the secondary key, and
+that happens in 7 of the 300 pools; where it does, the key chooses
+among schedules with the same worst case, so it sets the width of the
+reported schedule and never the objective. The training signal is a
+different matter: the terminal reward of Section~\ref{sec:mdp} trains
+on that primary key, but one of its shaping components, the idle
+penalty, charges the worst case of an idle interval, which reads the
+machine's lower completion endpoint, so a channel through which
+interval information beyond the upper endpoints reaches the weights
+does exist. Whether the width features inform the trained policy is
 therefore an empirical question rather than a corollary of the
-objective, and the audit and ablations below answer it.
+objective.
 
 The permutation audit of Section~\ref{sec:results-importance} found
 both width features at the floor of its ranking, consistent with this
-entailment. Three training-time ablations ask the causal questions the
-audit cannot: whether the policy would be any worse had it never seen
-the uncertainty at all; whether the upper bounds shown during
-training must be the true ones; and whether the policy would come to
-consult the widths under an objective that pays for them. All three share one design:
-ten retrained seeds per arm, each paired with the same ten seeds of
-the main arm, the standalone evaluator, and the instance as the
-experimental unit. What varies is only where the sampled evaluation,
-which costs $64$ rollouts per instance, can be afforded: at that
-budget the first two ablations are read on the six validation
-instances and on thirty unseen ones, five per size class fixed by
-benchmark index before any result was seen, while the cheap
-single-pass reading covers all sixty. The third ablation probes the
-selection stage itself, so it is read on deposits that retain all
-$64$ rollouts per (arm, instance, seed); under the paper's selection
-criterion the main arm's deposits stand at $13.96\%$, the baseline
-of every figure in that analysis.
+entailment. The three training-time ablations of
+Table~\ref{tab:ablations} ask the causal questions the audit cannot.
+All three share one design: ten retrained seeds per arm, each paired
+with the same ten seeds of the main arm, the standalone evaluator,
+and the instance as the experimental unit; the thirty unseen
+instances are five per size class, fixed by benchmark index before
+any result was seen. Under the paper's selection criterion the main
+arm's deposits stand at $13.96\%$, the baseline of every figure in
+this analysis.
 
-\paragraph{Widths as inputs.} The first ablation removes the
+\begin{table}[t]
+\centering\small
+\caption{The three training-time ablations of this section, and the
+instances each is read on. The sampled evaluation costs $64$ rollouts
+per instance and the single pass one, which is what decides how many
+instances each reading can afford.}
+\label{tab:ablations}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}p{0.21\linewidth}p{0.39\linewidth}p{0.32\linewidth}@{}}
+\toprule
+Ablation & Question & Read on \\
+\midrule
+Widths as inputs &
+Would the policy be any worse had it never seen the uncertainty? &
+the six validation and thirty unseen instances when sampled, all
+sixty at one pass \\
+Intervals as training data &
+Must the upper bounds shown during training be the true ones? &
+the same \\
+A width-penalizing objective &
+Would the policy come to consult the widths under an objective that
+pays for them? &
+deposits that retain all $64$ rollouts per (arm, instance, seed) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Widths as inputs} The first ablation removes the
 information: the encoder collapses every interval to its worst case
 before the features are computed, so the width features are
 identically zero and the bounds coincide, while the architecture, the
@@ -1807,7 +1811,7 @@ the value function or the exploration the widths might have shaped;
 they shape neither, and the thirty unseen instances bound what room
 remains between $-0.34$ and $+0.29$ points with $95\%$ confidence.
 
-\paragraph{Intervals as training data.} The second ablation removes
+\paragraph{Intervals as training data} The second ablation removes
 the uncertainty from training altogether. The benchmark perturbs each
 crisp duration symmetrically, so the original crisp instances
 \emph{are} the midpoint scenario of their interval counterparts: the
@@ -1835,7 +1839,7 @@ widths as \emph{inputs} and the value of intervals as
 \emph{training distribution} are both empirical facts about this
 reward and this benchmark, measured above.
 
-\paragraph{A width-penalizing objective.} The third ablation changes
+\paragraph{A width-penalizing objective} The third ablation changes
 the objective so that the width enters it. The policy is retrained,
 unchanged in every other respect, under
 \begin{equation}
@@ -1890,7 +1894,7 @@ default's, and the default's own samples suffice to trace the
 frontier. The predictability--performance trade is real, tunable and
 monotone, and it arises entirely at selection time.
 
-\paragraph{Contrast with the evolved rule.} The GP study runs
+\paragraph{Contrast with the evolved rule} The GP study runs
 the same objective at the same $\lambda$ and reaches the opposite
 finding. There, penalizing width narrows the schedules only when the
 rule has width terminals to act through: sweeping $\lambda$ from $0$
