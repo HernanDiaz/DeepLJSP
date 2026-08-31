@@ -3891,6 +3891,22 @@ try:
                  f"{_m.groups() if _m else '?'}")
     check_exacto("figura del Gantt: nueve operaciones dibujadas",
                  len(_sched) == 9, str(len(_sched)))
+    _fin = [_mgf.extremos(_c) for _c in _mgf.EJEMPLO_FIN]
+    _m2 = re.search(r"job~2 finishes in \$\[(\d+),(\d+)\]\$\s*\n?\s*and job~3 in \$\[(\d+),(\d+)\]\$", TEX)
+    check_exacto("figura del Gantt: fin de los trabajos 2 y 3",
+                 bool(_m2) and [int(_x) for _x in _m2.groups()]
+                 == [int(_fin[1][0]), int(_fin[1][1]),
+                     int(_fin[2][0]), int(_fin[2][1])],
+                 f"{_fin[1]} {_fin[2]} / "
+                 f"{_m2.groups() if _m2 else '?'}")
+    _lo = [_f[0] for _f in _fin]
+    _up = [_f[1] for _f in _fin]
+    check_exacto(
+        "figura del Gantt: cada extremo de Cmax en un trabajo",
+        _lo.index(max(_lo)) != _up.index(max(_up))
+        and _lo.count(max(_lo)) == 1 and _up.count(max(_up)) == 1,
+        f"L<-job {_lo.index(max(_lo)) + 1}, "
+        f"U<-job {_up.index(max(_up)) + 1}")
 except Exception as _e:                                  # noqa: BLE001
     pendiente("figura del Gantt", f"{type(_e).__name__}: {_e}")
 

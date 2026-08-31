@@ -35,14 +35,20 @@ plt.rcParams.update({"font.family": "serif", "font.size": 10,
 
 SALIDA = "paper/figures/fig_gantt.pdf"
 SEQ = [[0, 1, 2], [1, 0, 2], [2, 1, 0]]
-# duraciones intervalares con la anchura del benchmark: simetricas
-# alrededor de un valor crisp, con semianchura de hasta el 15%
-DUR = [[Interval(9, 11), Interval(7, 9), Interval(11, 13)],
-       [Interval(8, 10), Interval(9, 13), Interval(12, 14)],
-       [Interval(7, 9), Interval(11, 15), Interval(13, 15)]]
+# Duraciones intervalares estrechas frente a la duracion, como en
+# el benchmark. Estan elegidas para que los dos extremos del
+# makespan vengan de trabajos distintos: el trabajo 2 acaba en
+# [26,34] y el 3 en [25,35], de modo que el maximo del extremo
+# inferior y el del superior no son el mismo trabajo y el maximo
+# componente a componente de la Ec. (2) no es el fin de ninguna
+# operacion concreta.
+DUR = [[Interval(5, 7), Interval(5, 7), Interval(6, 8)],
+       [Interval(7, 9), Interval(9, 13), Interval(8, 10)],
+       [Interval(11, 15), Interval(5, 7), Interval(8, 12)]]
 ORDEN = [0, 1, 2, 0, 1, 2, 0, 1, 2]
 COLOR = ["#4C72B0", "#DD8452", "#55A868"]
 ALTO = 0.62
+EJEMPLO_FIN = []
 
 
 def extremos(v):
@@ -72,6 +78,8 @@ def construye():
     env.reset()
     for trabajo in ORDEN:
         env.step(list(env.eligible_ops).index(trabajo))
+    global EJEMPLO_FIN
+    EJEMPLO_FIN = list(env.job_completion_time)
     return env.schedule_history, extremos(final_makespan(
         env.job_completion_time))
 
@@ -87,13 +95,17 @@ def main():
         col = COLOR[op["job"]]
         ax.add_patch(Polygon(perfil(s_lo, s_up, e_lo, e_up, y),
                              closed=True, facecolor=col, alpha=0.75,
-                             edgecolor=col, linewidth=1.0))
+                             edgecolor=col, linewidth=1.0,
+                             zorder=2))
         ax.text((s_lo + s_up + e_lo + e_up) / 4, y,
                 f"$O_{{{op['job'] + 1}{op['operation'] + 1}}}$",
-                ha="center", va="center", fontsize=8, color="white")
+                ha="center", va="center", fontsize=8, color="white",
+                zorder=3)
 
-    ax.axvline(c_lo, color="0.30", linestyle="--", linewidth=1.0)
-    ax.axvline(c_up, color="0.15", linestyle="-", linewidth=1.2)
+    ax.axvline(c_lo, color="0.30", linestyle="--", linewidth=1.0,
+               zorder=1)
+    ax.axvline(c_up, color="0.15", linestyle="-", linewidth=1.2,
+               zorder=1)
     ax.annotate("", xy=(c_lo, -0.80), xytext=(c_up, -0.80),
                 arrowprops=dict(arrowstyle="<->", color="0.25", lw=0.9))
     ax.text((c_lo + c_up) / 2, -0.87,

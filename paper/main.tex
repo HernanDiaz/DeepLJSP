@@ -474,8 +474,11 @@ processing order.
   endpoint, the lower edge the one that results at the upper
   endpoint, and the two sloped sides are the slack in the start and
   in the completion. Operation $O_{jk}$ is the $k$-th operation of
-  job $j$. Consecutive operations on a machine share a side, and the
-  interval makespan of Eq.~\eqref{eq:cmax} is $[40,50]$.}
+  job $j$, and consecutive operations on a machine share a side. The
+  interval makespan of Eq.~\eqref{eq:cmax} is $[26,35]$, whose two
+  endpoints come from different jobs: job~2 finishes in $[26,34]$
+  and job~3 in $[25,35]$, so neither endpoint of $\Cmax$ is the
+  completion of a single job.}
   \label{fig:gantt}
 \end{figure} Intervals carry no canonical total order, so
 schedule comparison requires a ranking choice; during construction and
