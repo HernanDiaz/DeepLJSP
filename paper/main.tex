@@ -234,8 +234,9 @@ per-instance metaheuristic state of the art?
   audit and two retraining ablations that probe the widths as inputs,
   whose effect on unseen instances is bounded within a third of a
   point either way, and the intervals as training data. And the contrast between the paradigms: a width-penalizing
-  objective acts through sample selection in the policy, with the
-  weights unmoved, and through the evolved representation in the GP
+  objective narrows the policy's schedules mainly through sample
+  selection, no systematic narrowing surviving a common selection
+  criterion, and acts through the evolved representation in the GP
   study~\citep{DiazGP2026}.
 \item \emph{An account of which standard components earn their cost}
   (Sections~\ref{sec:arch}, \ref{sec:hyperconfig}
@@ -705,9 +706,14 @@ $f_\lambda$. Job progress adds a constant per operation scheduled and
 sums to $(nm-1)/nm$ over every complete schedule, so with $\gamma=1$
 and the fixed $nm$-step horizon it stabilizes value estimation rather
 than shaping the policy's preferences. Local improvement is the step
-change of the projected makespan, with deteriorations penalized twice
-as strongly: a dense signal, so that early decisions are not credited
-only $nm$ steps later. Operation criticality is the worst-case work
+change of the projected makespan, a dense signal so that early
+decisions are not credited only $nm$ steps later. Its name is
+historical: scheduling an operation can only push a machine's
+completion later, so $M^{U}_{t}$ never falls and the component never
+rewards. In the runs of this paper it is a penalty on how much each
+decision extends the projected worst case, and the $\kappa_t{=}2$
+branch is the only one that ever applies, which makes its effective
+weight $0.60$ on every step that moves the projection. Operation criticality is the worst-case work
 remaining in the scheduled operation's job, and favoring jobs with
 much work remaining is a standard proxy for the emerging critical
 path. Load balance refers the dispersion the machine completion times
@@ -1088,7 +1094,9 @@ judged by the lowest best-episode makespan in raw time units; raw
 makespans are not comparable across instances, so this rule follows
 the instances' time scales as much as learning progress, and on
 TA11--TA14 it made the final block start from TA12's weights rather
-than TA13's in 26 of the 30 runs. Every block receives the same
+than TA13's in 26 of the 30 runs. Only the policy and value weights
+cross the block boundary: the optimizer is rebuilt with the block, so
+its moment estimates start afresh each time. Every block receives the same
 number of episodes, and the instances are presented in their
 benchmark order, TA11 to TA14, which the seed does not permute: it
 governs network initialization, action sampling and minibatch
@@ -1104,9 +1112,13 @@ the network as it stands at the end of the block with the lowest raw
 best-episode makespan, which on this training set was the final
 block, TA14, in all 30 runs; the weights of the best individual
 episode are tracked during training but are not the serialized
-artifact. These two conventions, the transfer rule and the artifact
-identity, define the system that every result in this paper
-measures.
+artifact. The training pipeline can also evaluate that best-episode
+snapshot in process, and it is the one distinction that matters for
+reading the records: every number this paper reports comes from the
+standalone evaluators acting on the serialized end-of-block
+checkpoint, never from that in-process reading. These conventions,
+the transfer rule and the artifact identity, define the system that
+every result in this paper measures.
 
 The discount factor is $\gamma=1$ rather than the $0.99$ customary in
 deep RL~\citep{Schulman2017}. The horizon here is finite and known,
@@ -1385,11 +1397,14 @@ pass is a property of the two families and not of the two artifacts
 that represent them. Selection itself is asymmetric between the
 studies: the policy is chosen on the validation instances, while the
 GP study features the rule with the best mean over these seventy. The
-asymmetry is immaterial here, because selecting the rule on the
-validation instances returns the same artifact ($17.45\%$ there,
+asymmetry is immaterial at one pass, because selecting the rule on
+the validation instances returns the same artifact ($17.45\%$ there,
 against $18.13\%$ for the runner-up), and the thirty-run means
-involve no selection at all; but the selected-pair contrasts should
-be read with it in mind.
+involve no selection at all. That equivalence is a statement about
+the one-pass objective only: it does not establish that validation
+selection under a sampled budget would return the same rule, and the
+selected-pair contrasts at $64$ and $1024$ should be read with that
+in mind.
 
 The per-class columns qualify the aggregate. The one-pass deficit is
 not spread evenly: the policy is \emph{better} on $15{\times}15$
@@ -1630,7 +1645,8 @@ was not repeated on those arms.
   schedule each retains from its deterministic pass plus $B-1$
   samples, kept by the criterion of Eq.~\eqref{eq:lex} and averaged
   over the 70 instances. Both curves average $200$ random subsets of
-  the corresponding pool. The policy curve is the mean over the ten
+  the corresponding pool. The axis ends at $B{=}342$, the size of
+  the deposited policy pool; the rule's own pool holds $1024$. The policy curve is the mean over the ten
   training runs and the band spans the best and worst of them, a
   dispersion across artifacts; the rule is the single
   validation-selected one, so its curve carries no such band and its
@@ -1795,7 +1811,8 @@ instances each reading can afford.}
 Ablation & Question & Read on \\
 \midrule
 Widths as inputs &
-Would the policy be any worse had it never seen the uncertainty? &
+Would the policy be any worse without the lower-endpoint and
+width features? &
 the six validation and thirty unseen instances when sampled, all
 sixty at one pass \\
 Intervals as training data &
@@ -1924,9 +1941,10 @@ to $4$ moves the relative width by $1.64$ points for rules that have
 them and by $0.13$ for rules that do not, from which that study
 concludes that the objective works \emph{through} the
 representation~\citep{DiazGP2026}. The network of this paper has
-both the terminals' equivalent and the objective, and still its
-weights do not move at any $\lambda$; what moves is the ranking
-among its samples. The same reward therefore reaches the decision
+both the terminals' equivalent and the objective, and still the
+rollouts it proposes are no narrower at any $\lambda$ once the
+selection criterion is held common; what moves is the ranking among
+its samples. The same reward therefore reaches the decision
 function of an evolved rule and not that of a trained policy, at
 least at this training scale. The rate of the trade is comparable on
 the two sides, about $2.5$ points of RE per point of width across

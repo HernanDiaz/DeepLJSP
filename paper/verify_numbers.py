@@ -2045,6 +2045,39 @@ try:
                  f"gap minimo {_g_min * 100:.1f}%")
 except Exception as _e:
     pendiente("bonus terminal inactivo", f"{type(_e).__name__}: {_e}")
+# 4.1 afirma que el makespan proyectado en caso peor nunca baja, de
+# modo que la mejora local nunca premia y la rama kappa=2 es la
+# unica que llega a aplicarse. Se mide sobre episodios al azar del
+# propio entorno en vez de darlo por razonado
+try:
+    import random as _rnd
+    from jobshop_rl.experiments.factory import (
+        EnvironmentFactory as _EF)
+    from jobshop_rl.models.interval import Interval as _Iv
+    _r = _rnd.Random(7)
+    _sube = _baja = 0
+    for _pid in [f"int__tai20_15_{_k:02d}" for _k in (1, 2)]:
+        for _ep in range(6):
+            _env = _EF.create_from_problem_id(_pid, 'basic', seed=_ep)
+            _env.reset()
+            _prev = None
+            while _env.eligible_ops:
+                _env.step(_r.randrange(len(list(_env.eligible_ops))))
+                _cur = max(float(_c.upper)
+                           if isinstance(_c, _Iv) else float(_c)
+                           for _c in _env.machine_completion_time)
+                if _prev is not None:
+                    if _cur > _prev:
+                        _sube += 1
+                    elif _cur < _prev:
+                        _baja += 1
+                _prev = _cur
+    check_exacto('4.1: el makespan proyectado nunca baja '
+                 '(la mejora local nunca premia)',
+                 _baja == 0 and _sube > 0,
+                 f'{_sube} subidas, {_baja} bajadas')
+except Exception as _e:                                  # noqa: BLE001
+    pendiente('monotonia de M^U', f'{type(_e).__name__}: {_e}')
 _li = open("jobshop_rl/rewards/components/local_improvement.py",
            encoding="utf-8").read()
 check_exacto("4.1: deterioros penalizados x2 (codigo)",

@@ -136,6 +136,13 @@ def main():
     for f in glob.glob("zenodo_deposit/rules/main_arm/*.json"):
         c_m += copia(f, os.path.join(DESTINO, "rules", "gp_main_arm",
                                      os.path.basename(f)))
+        # y ademas donde el codigo las busca: los scripts las leen
+        # de benchmarks/reevo_fixedfit/, asi que sin esta copia un
+        # arbol montado como documenta el README no las encuentra y
+        # la reevaluacion del GP no se puede relanzar (revision r7)
+        c_m += copia(f, os.path.join(DESTINO, "records", "benchmarks",
+                                     "reevo_fixedfit",
+                                     os.path.basename(f)))
     # los registros idea-* de las modificaciones probadas y rechazadas
     # (7.4 cuenta trece): el verificador los lee por os.listdir, que la
     # captura de rutas entre comillas de arriba no ve (R2-7)
@@ -156,11 +163,14 @@ def main():
     print("suplementario: copiado")
 
     # --- requisitos, con las versiones de la tabla de entorno ---
+    # pandas no estaba y lo importan main.py,
+    # batch_experimenter.py, problem_loader.py y run_benchmark.py:
+    # un entorno limpio hecho con este fichero no entrenaba
+    # (revision del 2026-08-31)
     req = os.path.join(DESTINO, "code", "requirements.txt")
-    if not os.path.exists(req):
-        with open(req, "w", encoding="utf-8") as f:
-            f.write("torch==2.9.1\nnumpy==2.3.5\nscipy==1.17.0\n"
-                    "matplotlib==3.10.8\n")
+    with open(req, "w", encoding="utf-8") as f:
+        f.write("torch==2.9.1\nnumpy==2.3.5\nscipy==1.17.0\n"
+                "pandas==2.3.3\nmatplotlib==3.10.8\n")
     print("hecho: revisar README.md y completar tras el barrido")
 
 
