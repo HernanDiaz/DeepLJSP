@@ -58,7 +58,9 @@ def perfil(s_lo, s_up, e_lo, e_up, base):
     inicio se come la duracion minima, los dos flancos se cortan y la
     figura degenera en un triangulo con vertice en ese cruce.
     """
-    suelo, techo = base - ALTO / 2, base + ALTO / 2
+    # el eje y se dibuja invertido, asi que el suelo de la barra
+    # es la coordenada mayor
+    suelo, techo = base + ALTO / 2, base - ALTO / 2
     if s_up <= e_lo:
         return [(s_lo, suelo), (s_up, techo), (e_lo, techo), (e_up, suelo)]
     # cruce de las dos rampas, en altura normalizada
@@ -67,7 +69,8 @@ def perfil(s_lo, s_up, e_lo, e_up, base):
         return [(s_lo, suelo), (s_lo, techo), (e_up, techo), (e_up, suelo)]
     t = (s_lo * db + e_up * da) / (da + db)
     h = (t - s_lo) / da
-    return [(s_lo, suelo), (t, suelo + h * ALTO), (e_up, suelo)]
+    return [(s_lo, suelo), (t, suelo + h * (techo - suelo)),
+            (e_up, suelo)]
 
 
 def construye():
