@@ -70,31 +70,31 @@ Gij\'on, Spain}
 %IDENTIDAD>>
 
 \begin{abstract}
-The interval job shop scheduling problem (IJSP) models
-each uncertain processing time as an interval between known bounds
-and is solved in the literature by per-instance metaheuristic search. This paper contributes a constructive deep reinforcement
-learning policy for the problem and a controlled comparison against
-genetic programming hyper-heuristics, thirty trained
-artifacts per family evaluated in one harness at matched inference
-budgets. The contribution in artificial intelligence is the policy and
-the comparison; the engineering application is production scheduling
-under such uncertainty. The policy's features are dimensionless and
-its encoder permutation-invariant, so one trained network applies to
-any size without retraining or architectural change.
-Trained on a single size class, the validation-selected policy
-improves on every hand-crafted rule on all seventy
-instances, six of the seven size classes unseen. Which learner leads is decided by the inference
-budget and the size class. The rule leads by $0.8$ points of
-relative error at one constructive pass each; the two draw level at
-$64$ sampled schedules, and the policy passes the rule at $1024$ by
-$0.6$. On instances neither family has seen that advantage holds up
-to $30{\times}20$ and on twelve classical instances outside the
-training family, while on the two largest classes the rule leads at
-every budget.
-The paradigms also differ in where a width-penalizing objective
-acts: the policy narrows its schedules through sample selection
-rather than measurably changed weights, whereas the same objective
-acts through the evolved representation in the rules.
+The interval job shop scheduling problem (IJSP) models each uncertain
+processing time as an interval between known bounds and is solved in
+the literature by per-instance metaheuristic search. This paper
+contributes a constructive deep reinforcement learning policy for the
+problem, with dimensionless features and a permutation-invariant
+encoder, so that one trained network schedules an instance of any
+size without retraining or architectural change. Trained on a single
+size class, the validation-selected policy improves on every
+hand-crafted dispatching rule on all seventy benchmark instances, six
+of the seven size classes unseen. The paper further contributes a
+controlled comparison against genetic programming hyper-heuristics,
+thirty trained artifacts per family evaluated in one harness at
+matched inference budgets, which shows that neither learned paradigm
+dominates: the leader is decided by the inference budget and by the
+size class. The rule leads by $0.8$ points of relative error at one
+constructive pass each; the two draw level at $64$ sampled schedules,
+and the policy passes the rule at $1024$ by $0.6$. On instances
+neither family has seen that advantage holds up to $30{\times}20$ and
+on twelve classical instances outside the training family, while on
+the two largest classes the rule leads at every budget. The paradigms
+also differ in where a width-penalizing objective acts: the policy
+narrows its schedules through sample selection rather than measurably
+changed weights, whereas the same objective acts through the evolved
+representation in the rules. The engineering application is
+production scheduling under such uncertainty.
 \end{abstract}
 
 \begin{keyword}
@@ -2068,7 +2068,18 @@ well, which \citet{Xu2025} call for, remains open.
 \section{Conclusions and Future Work}
 \label{sec:conclusions}
 
-The three questions posed in the introduction now have answers.
+This paper contributes a size-invariant constructive deep
+reinforcement learning policy for the IJSP, trained once on four
+$20{\times}15$ instances and applied to every other size without
+retraining or architectural change, and a controlled comparison of
+the two learned constructive paradigms available for the problem,
+thirty trained artifacts of each family through one harness at
+matched inference budgets and under one selection criterion. The
+policy improves on every hand-crafted rule on all seventy instances
+of the benchmark, six of whose seven size classes it never saw, and
+the comparison separates the stage at which each paradigm absorbs the
+interval uncertainty. The three questions posed in the introduction
+now have answers.
 
 Neither learned paradigm dominates the other: which of the two leads
 is decided by the inference budget and, on instances neither has
@@ -2095,15 +2106,14 @@ narrows without closing. On the twelve
 classical instances, a family neither method was tuned for, it holds
 the lower figure at every budget. Margins under a point in either
 direction should finally be weighed against what the error metric
-does not register. On the rule's side stand less technical machinery,
+does not register: on the rule's side, less technical machinery,
 shorter training and inference times, a decision function that
 remains a readable expression and, on the evidence of the two largest
-classes, the more graceful transfer to instances far above the
-training size. On the policy's side stand a sampling distribution
-that turns additional budget into quality at a rate the randomized
-rule does not match, so that the ordering between them moves with the
-budget rather than against it, and weights that further training can
-still move (Q1).
+classes, the more graceful transfer far above the training size; on
+the policy's side, a sampling distribution that turns additional
+budget into quality at a rate the randomized rule does not match, so
+that the ordering between them moves with the budget rather than
+against it, and weights that further training can still move (Q1).
 
 The paradigms differ in where they handle the uncertainty. For the
 policy the interval widths are inert as inputs: they sit at the floor
@@ -2114,24 +2124,23 @@ does not guarantee this: one shaping term of the reward reads a
 lower endpoint, so a channel into the weights exists and the
 inertness is a measured outcome. On the selection side the ranking
 criterion consults the lower endpoints only on exact ties of the
-upper, which decide seven of the three hundred measured pools and,
-where they do, choose among schedules with the same worst
-case. As training data the intervals are not inert,
-but only where the policy samples: fitting it to the crisp midpoints
-instead costs $0.43$ points at the deployed budget ($p=0.045$) and
-nothing at one constructive pass. An objective that charges for the
-width then separates the families. It narrows the policy's schedules
-through which sample is kept, the retrained weights being
-indistinguishable from the default ones under a common selection
-criterion and ranking the default policy's own samples by $f_\lambda$
-retracing the frontier without any retraining, where in the GP study
-the same objective acts through the evolved representation. What
-distinguishes the two is the stage at which robustness is bought
-rather than its rate, comparable on the two sides at roughly two
-points of RE per point of width. Bought deliberately, it reaches
-execution: the arm
-trained under that objective attains the lowest deviation between
-predicted and realized makespans of the whole comparison (Q2).
+upper, which decide seven of the three hundred measured pools and
+there choose among schedules with the same worst case. As training
+data the intervals are not inert, but only where the policy samples:
+fitting it to the crisp midpoints instead costs $0.43$ points at the
+deployed budget ($p=0.045$) and nothing at one constructive pass. An
+objective that charges for the width then separates the families. It
+narrows the policy's schedules through which sample is kept, the
+retrained weights being indistinguishable from the default ones under
+a common selection criterion and ranking the default policy's own
+samples by $f_\lambda$ retracing the frontier without any retraining,
+where in the GP study the same objective acts through the evolved
+representation. What distinguishes the two is the stage at which
+robustness is bought rather than its rate, comparable on the two
+sides at roughly two points of RE per point of width. Bought
+deliberately, it reaches execution: the arm trained under that
+objective attains the lowest deviation between predicted and realized
+makespans of the whole comparison (Q2).
 
 Both learners leave the hand-crafted rules behind by a margin that
 dwarfs the one between them, and neither reaches the per-instance
@@ -2161,8 +2170,6 @@ differs is the remedy: the weights of a network can be moved onto its
 own best rollouts by retraining on them and iterating, the
 self-labeling strategy that \citet{Corsini2024} demonstrate on the
 crisp JSP, where a formula would have to be evolved anew.
-
-
 
 %<<IDENTIDAD (en el envio anonimo, financiacion y conflictos viven
 % en la title page; el generador elimina este bloque)
