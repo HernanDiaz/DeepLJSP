@@ -8,12 +8,12 @@ cada recompilación con `python scripts/prepara_envio_eaai.py`.
 
 - [ ] `manuscript.tex` — manuscrito ANÓNIMO (fuente; el sistema
       compila su propio PDF). `manuscript.pdf` es la copia de control
-      local (49 págs., límite 50; sin fuentes Type 3).
+      local (37 págs., límite 50; sin fuentes Type 3).
 - [ ] `title_page.tex`/`.pdf` — el único fichero con identidad:
       autor, afiliación postal, email, funding, conflictos, CRediT.
 - [ ] `highlights.tex`/`.pdf` — 5 puntos, ≤85 caracteres (fichero con
       "highlights" en el nombre, como pide la guía).
-- [ ] Las 9 figuras PDF vectoriales (el sistema las pide aparte).
+- [ ] Las 11 figuras PDF vectoriales (el sistema las pide aparte).
 - [ ] `supplementary.pdf` — se publica tal cual; ya es anónimo.
 - [ ] Declaración de conflictos: generar el .docx con la
       "declarations tool" de Elsevier durante el envío ("I have
@@ -62,9 +62,12 @@ cada recompilación con `python scripts/prepara_envio_eaai.py`.
 - Referencias: elsarticle-harv (autor-año). BibTeX avisa de "empty
   pages" en 9 entradas de congreso (NeurIPS/ICLR sin páginas):
   admisible al envío, el formato es flexible; revisar en producción.
-- El límite de 50 páginas queda a 1 página de margen: si la revisión
-  de la curva de presupuesto añade texto, vigilar
-  (`verify_numbers.py` lo comprueba).
+- El límite de 50 páginas queda a 13 de margen con la opción
+  `preprint` de elsarticle, que es la que usa el manuscrito
+  (`verify_numbers.py` lo comprueba). La opción `review`, con su
+  interlineado doble, se midió el 2026-08-31 y da 51 páginas, una por
+  encima del límite; no se usa por eso, y la guía no la exige: lo que
+  pide es una columna, que ambas cumplen.
 - `sup:` las referencias cruzadas del suplementario a números
   literales del paper (Table 5, Eq. 5, Figure 1, Table 8) las vigila
   el verificador contra main.aux.
