@@ -30,7 +30,7 @@ from jobshop_rl.experiments.factory import EnvironmentFactory  # noqa: E402
 from jobshop_rl.models.interval import (                    # noqa: E402
     Interval, final_makespan)
 
-plt.rcParams.update({"font.family": "serif", "font.size": 10,
+plt.rcParams.update({"font.family": "serif", "font.size": 8,
                      "pdf.fonttype": 42})
 
 SALIDA = "paper/figures/fig_gantt.pdf"
@@ -98,8 +98,8 @@ def main():
                              edgecolor=col, linewidth=1.0,
                              zorder=2))
         ax.text((s_lo + s_up + e_lo + e_up) / 4, y,
-                f"$O_{{{op['job'] + 1}{op['operation'] + 1}}}$",
-                ha="center", va="center", fontsize=8.5, color="white",
+                f"$o_{{{op['job'] + 1}{op['operation'] + 1}}}$",
+                ha="center", va="center", fontsize=7, color="white",
                 zorder=3)
 
     ax.axvline(c_lo, color="0.30", linestyle="--", linewidth=1.0,
@@ -110,7 +110,7 @@ def main():
                 arrowprops=dict(arrowstyle="<->", color="0.25", lw=0.9))
     ax.text((c_lo + c_up) / 2, -0.68,
             f"$\\mathbf{{C}}_{{\\max}}=[{c_lo:.0f},\\,{c_up:.0f}]$",
-            ha="center", va="bottom", fontsize=9.5)
+            ha="center", va="bottom", fontsize=8)
 
     ax.set_yticks(range(3))
     ax.set_yticklabels([f"$M_{i + 1}$" for i in range(3)])

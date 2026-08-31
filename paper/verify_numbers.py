@@ -3874,8 +3874,9 @@ for fichero, v_tex in [("tuning/scenario.txt", 330),
                  m and int(m.group(1)) == v_tex,
                  m.group(1) if m else "?")
 
-# la leyenda de la figura del Gantt declara el makespan del
-# ejemplo: se recalcula con el mismo entorno que la dibuja
+# el ejemplo de la figura del Gantt se explica en el cuerpo del
+# texto, no en la leyenda: se recalcula con el mismo entorno que
+# lo dibuja
 try:
     import importlib.util as _ilu
     _spec = _ilu.spec_from_file_location(
@@ -3883,7 +3884,8 @@ try:
     _mgf = _ilu.module_from_spec(_spec)
     _spec.loader.exec_module(_mgf)
     _sched, (_glo, _gup) = _mgf.construye()
-    _m = re.search(r"eq:cmax\} is \$\[(\d+),(\d+)\]\$", TEX)
+    _llano = re.sub(r"\s+", " ", TEX)
+    _m = re.search(r"makespan is \$\[(\d+),(\d+)\]\$", _llano)
     check_exacto("figura del Gantt: makespan del ejemplo",
                  bool(_m) and (int(_m.group(1)), int(_m.group(2)))
                  == (int(_glo), int(_gup)),
@@ -3892,7 +3894,7 @@ try:
     check_exacto("figura del Gantt: nueve operaciones dibujadas",
                  len(_sched) == 9, str(len(_sched)))
     _fin = [_mgf.extremos(_c) for _c in _mgf.EJEMPLO_FIN]
-    _m2 = re.search(r"job~2 finishes in \$\[(\d+),(\d+)\]\$\s*\n?\s*and job~3 in \$\[(\d+),(\d+)\]\$", TEX)
+    _m2 = re.search(r"job~2 completing in \$\[(\d+),(\d+)\]\$ and job~3 in \$\[(\d+),(\d+)\]\$", _llano)
     check_exacto("figura del Gantt: fin de los trabajos 2 y 3",
                  bool(_m2) and [int(_x) for _x in _m2.groups()]
                  == [int(_fin[1][0]), int(_fin[1][1]),
@@ -3907,6 +3909,9 @@ try:
         and _lo.count(max(_lo)) == 1 and _up.count(max(_up)) == 1,
         f"L<-job {_lo.index(max(_lo)) + 1}, "
         f"U<-job {_up.index(max(_up)) + 1}")
+    _cap = re.search(r"\\caption\{([^}]*)\}[^%]*?fig:gantt", TEX, re.S).group(1).split()
+    check_exacto("figura del Gantt: leyenda breve",
+                 len(_cap) <= 25, f"{len(_cap)} palabras")
 except Exception as _e:                                  # noqa: BLE001
     pendiente("figura del Gantt", f"{type(_e).__name__}: {_e}")
 
