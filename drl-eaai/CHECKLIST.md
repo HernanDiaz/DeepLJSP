@@ -6,18 +6,25 @@ cada recompilación con `python scripts/prepara_envio_eaai.py`.
 
 ## Ficheros a subir
 
-- [ ] `manuscript.tex` — manuscrito ANÓNIMO (fuente; el sistema
-      compila su propio PDF). `manuscript.pdf` es la copia de control
-      local (37 págs., límite 50; sin fuentes Type 3).
+- [ ] `manuscript.pdf` — manuscrito ANÓNIMO, 37 págs. (límite 50;
+      sin fuentes Type 3). El formulario dice que un envío escrito en
+      LaTeX sube PDF, no fuente, y que las fuentes LaTeX no hacen
+      falta hasta la revisión. `manuscript.tex` queda para entonces.
 - [ ] `title_page.tex`/`.pdf` — el único fichero con identidad:
       autor, afiliación postal, email, funding, conflictos, CRediT.
 - [ ] `highlights.tex`/`.pdf` — 5 puntos, ≤85 caracteres (fichero con
       "highlights" en el nombre, como pide la guía).
-- [ ] Las 11 figuras PDF vectoriales (el sistema las pide aparte).
+- [ ] `cover_letter.pdf` — carta de presentación, 1 pág. La pide el
+      formulario como fichero obligatorio.
+- [ ] Las 11 figuras: el formulario de subida NO las pide aparte en el
+      envío inicial (van dentro del PDF). Se suben con la fuente en la
+      revisión, si la hay.
 - [ ] `supplementary.pdf` — se publica tal cual; ya es anónimo.
-- [ ] Declaración de conflictos: generar el .docx con la
-      "declarations tool" de Elsevier durante el envío ("I have
-      nothing to declare").
+- [ ] Declaración de conflictos: NO hace falta el .docx. El
+      formulario ofrece confirmarlo con una casilla ("no competing
+      financial or non-financial interests... including serving in an
+      editorial capacity for the journal"). Comprobar que ninguno de
+      los dos está en el consejo editorial de EAAI antes de marcarla.
 
 ## Campos del formulario
 

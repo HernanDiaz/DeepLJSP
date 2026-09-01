@@ -1,0 +1,86 @@
+%% Carta de presentacion para EAAI. Lleva identidad: no es el
+%% manuscrito anonimo. La firma el autor de correspondencia.
+\documentclass[11pt]{article}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{parskip}
+\setlength{\parskip}{0.55em}
+\pagestyle{empty}
+
+\begin{document}
+
+\noindent
+Hern\'an D\'iaz Rodr\'iguez\\
+Department of Computing, University of Oviedo\\
+Gij\'on, Spain\\
+diazhernan@uniovi.es
+
+\vspace{1em}
+\noindent 1 September 2026
+
+\vspace{1em}
+\noindent To the Editors,\\
+\emph{Engineering Applications of Artificial Intelligence}
+
+\vspace{1em}
+
+We submit for your consideration the manuscript \emph{Deep
+Reinforcement Learning for the Interval Job Shop Scheduling Problem:
+A Comparison with Genetic Programming Hyper-Heuristics across
+Inference Budgets}, as a research paper.
+
+The interval job shop scheduling problem models each uncertain
+processing time as an interval between known bounds, and the
+literature solves it with metaheuristics that search anew on every
+instance. The contribution in artificial intelligence is twofold. The
+first is a constructive deep reinforcement learning policy for the
+problem whose features are dimensionless and whose encoder is
+permutation invariant, so that a single network trained on four
+$20\times15$ instances schedules any other size without retraining or
+architectural change; it improves on every hand-crafted dispatching
+rule on all seventy instances of the benchmark, six of whose seven
+size classes it never saw. The second is a controlled comparison
+between the two learned constructive paradigms available for the
+problem, thirty trained artifacts of each family evaluated in one
+harness, under one selection criterion and at matched inference
+budgets. That comparison finds no dominance: which learner leads is
+decided by the inference budget and, on instances neither family has
+seen, by the instance size class. The engineering application is
+production scheduling under uncertain processing times, and the paper
+reports the training and inference costs that a deployment decision
+would need.
+
+The work suits this journal because its result is an engineering
+characterization rather than a leaderboard entry: it says when a
+compact, readable evolved rule is preferable and when a policy's
+sampling distribution earns its higher cost.
+
+We confirm that the manuscript is original, that it has not been
+published elsewhere, and that it is not under consideration by another
+journal. We disclose one related work: a companion study by the same
+first author on genetic programming hyper-heuristics for this problem
+is under review elsewhere and available as a preprint (SSRN,
+doi:10.2139/ssrn.7214286). The present manuscript is distinct in both
+contributions above, and that study enters it only as the published
+source of the thirty evolved rules it compares against.
+
+The instances, source code, experiment records and trained
+checkpoints supporting the study are openly available in Zenodo at
+doi:10.5281/zenodo.21970431. A statement disclosing the use of
+generative AI in the preparation of the manuscript appears directly
+before the references, as the journal's policy requires. In keeping
+with the double-anonymous review process, author identity appears
+only in the title page and in this letter.
+
+Thank you for considering our work.
+
+\vspace{0.7em}
+\noindent Yours sincerely,
+
+\vspace{1.2em}
+\noindent Hern\'an D\'iaz Rodr\'iguez\\
+Corresponding author, on behalf of both authors
+
+\end{document}
