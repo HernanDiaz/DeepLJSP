@@ -21,7 +21,7 @@ cada recompilación con `python scripts/prepara_envio_eaai.py`.
 
 ## Campos del formulario
 
-- [ ] Abstract: 224 palabras (copiar del manuscrito).
+- [ ] Abstract: 243 palabras (copiar del manuscrito).
 - [ ] Keywords (6): job shop scheduling; interval uncertainty; deep
       reinforcement learning; neural combinatorial optimization;
       genetic programming hyper-heuristics; size invariance.
@@ -37,18 +37,17 @@ cada recompilación con `python scripts/prepara_envio_eaai.py`.
 
 ## Decisiones del autor ANTES de enviar
 
-- [ ] **Declaración de IA generativa**: el manuscrito lleva un
-      borrador (sección antes de las referencias) que declara Claude
-      (Anthropic) para redacción/edición y para el desarrollo y
-      verificación de los scripts de análisis. REVISARLA Y APROBARLA
-      (o recortarla) — es la firma del autor, no del asistente.
+- [ ] **Declaración de IA generativa**: el manuscrito la lleva
+      antes de las referencias, acotada a redacción y edición según
+      decisión del autor. REVISARLA Y APROBARLA — es su firma, no la
+      del asistente.
 - [ ] **DOI de Zenodo en el manuscrito anónimo**: se mantiene visible
       (práctica tolerada y exigida por la Opción C de datos). La
       alternativa ortodoxa sería "[anonymized for review]".
-- [ ] **Cita del companion GP** (en revisión en ASOC): hoy va como
-      referencia normal con año; la guía pide marcar lo no publicado
-      como "unpublished results" o citar un preprint con DOI si
-      existiera. Ajustar según el estado en el momento del envío.
+- [ ] **Cita del companion GP** (en revisión en ASOC): va como
+      preprint de SSRN con DOI 10.2139/ssrn.7214286, que es lo que la
+      guía admite. Revisar si al enviar ya está aceptado, para
+      actualizarla.
 - [ ] **Revisores sugeridos** (3–4, si el formulario los pide): elegir
       de la literatura citada, sin coautores ni Oviedo. Candidatos
       naturales por área: DRL para scheduling (autores de los métodos
@@ -56,6 +55,19 @@ cada recompilación con `python scripts/prepara_envio_eaai.py`.
       (grupo de Zagreb citado: Đurašević/Jakobović; o Mei/Zhang en
       Wellington), scheduling bajo incertidumbre intervalar (los
       grupos citados fuera de Oviedo). Comprobar conflictos antes.
+
+## Pendiente antes de enviar
+
+- [ ] **Zenodo v4**: el zip subido es del 2026-08-30 y no lleva las
+      dos correcciones del 2026-08-31, que son de reproducibilidad:
+      las treinta reglas GP también en `records/benchmarks/reevo_fixedfit/`,
+      que es donde el código las busca, y pandas en `requirements.txt`,
+      sin el cual un entorno limpio no entrena. Reconstruir con
+      `python scripts/prepara_zenodo_drl.py` y subir versión nueva; el
+      DOI de concepto no cambia, así que el manuscrito sigue citando
+      bien.
+- [ ] **Lectura completa del manuscrito por el autor**, que ninguna
+      comprobación automática sustituye.
 
 ## Notas técnicas
 
