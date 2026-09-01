@@ -58,14 +58,14 @@ cada recompilación con `python scripts/prepara_envio_eaai.py`.
 
 ## Pendiente antes de enviar
 
-- [ ] **Zenodo v4**: el zip subido es del 2026-08-30 y no lleva las
-      dos correcciones del 2026-08-31, que son de reproducibilidad:
-      las treinta reglas GP también en `records/benchmarks/reevo_fixedfit/`,
-      que es donde el código las busca, y pandas en `requirements.txt`,
-      sin el cual un entorno limpio no entrena. Reconstruir con
-      `python scripts/prepara_zenodo_drl.py` y subir versión nueva; el
-      DOI de concepto no cambia, así que el manuscrito sigue citando
-      bien.
+- [ ] **Zenodo v4**: `drl-eaai/zenodo_drl_v4.zip` (283 MiB, 3277
+      ficheros, construido el 2026-09-01) SUBIR como versión nueva del
+      depósito. Corrige dos fallos de reproducibilidad del v3: las
+      treinta reglas GP viajan también en
+      `records/benchmarks/reevo_fixedfit/`, que es donde el código las
+      busca, y `requirements.txt` incluye pandas, sin el cual un
+      entorno limpio no entrena. El DOI de concepto no cambia, así que
+      el manuscrito sigue citando bien.
 - [ ] **Lectura completa del manuscrito por el autor**, que ninguna
       comprobación automática sustituye.
 
