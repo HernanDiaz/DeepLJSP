@@ -58,7 +58,7 @@ cada recompilación con `python scripts/prepara_envio_eaai.py`.
 
 ## Pendiente antes de enviar
 
-- [ ] **Zenodo v4**: `drl-eaai/zenodo_drl_v4.zip` (283 MiB, 3277
+- [x] **Zenodo v4** SUBIDO por el autor el 2026-09-01: `drl-eaai/zenodo_drl_v4.zip` (283 MiB, 3277
       ficheros, construido el 2026-09-01) SUBIR como versión nueva del
       depósito. Corrige dos fallos de reproducibilidad del v3: las
       treinta reglas GP viajan también en
@@ -66,8 +66,10 @@ cada recompilación con `python scripts/prepara_envio_eaai.py`.
       busca, y `requirements.txt` incluye pandas, sin el cual un
       entorno limpio no entrena. El DOI de concepto no cambia, así que
       el manuscrito sigue citando bien.
-- [ ] **Lectura completa del manuscrito por el autor**, que ninguna
-      comprobación automática sustituye.
+- [x] **Lectura completa del manuscrito por el autor**: hecha el
+      2026-09-01.
+- [x] **Declaración de IA generativa**: aprobada por el autor el
+      2026-09-01.
 
 ## Notas técnicas
 
