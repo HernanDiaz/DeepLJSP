@@ -1,15 +1,16 @@
 ---
 name: escribir-papers
-description: Escribir, auditar y preparar para envío artículos de investigación con resultados computacionales (LaTeX + experimentos + datos). Usar siempre que se redacte o revise un paper, se integren resultados nuevos en el texto, se preparen tablas o figuras, se compruebe que las cifras del manuscrito cuadran con los datos, se elija revista de destino o se descarguen su plantilla y su guía para autores, se adapte el manuscrito a sus normas, o se prepare el depósito de datos. También cuando el usuario pida "revisa esta sección", "mete estos resultados", "a qué revista lo mandamos", "prepara el envío" o "comprueba los números", aunque no diga la palabra paper.
+description: Escribir, auditar y preparar para envío artículos de investigación con resultados computacionales (LaTeX + experimentos + datos). Usar siempre que se redacte o revise un paper, se integren resultados nuevos en el texto, se preparen tablas o figuras, se compruebe que las cifras del manuscrito cuadran con los datos, se elija revista de destino o se descarguen su plantilla y su guía para autores, se adapte el manuscrito a sus normas, se responda a una revisión, o se prepare el depósito de datos. También cuando el usuario pida "revisa esta sección", "mete estos resultados", "a qué revista lo mandamos", "pásaselo a otro modelo como revisor", "prepara el envío", "rellena el formulario" o "comprueba los números", aunque no diga la palabra paper.
 ---
 
 # Escribir papers con resultados computacionales
 
 Destilado de dos artículos completos del repositorio (`paper_gp/`, GP
-hiper-heurístico, enviado a Swarm and Evolutionary Computation; `paper/`,
-política DRL, en preparación para Journal of Intelligent Manufacturing).
-Las prácticas de abajo no son teoría: cada una nació de un fallo real que
-llegó al manuscrito y sobrevivió a varias relecturas humanas.
+hiper-heurístico; `paper/`, política DRL, rechazado en escritorio por
+Journal of Intelligent Manufacturing y reencuadrado para Engineering
+Applications of Artificial Intelligence). Las prácticas de abajo no son
+teoría: cada una nació de un fallo real que llegó al manuscrito y
+sobrevivió a varias relecturas humanas, o a una ronda de revisión.
 
 Estado de automatización: **el verificador de números lo está; el resto es
 disciplina asistida**. Lo que no se puede automatizar se marca como tal.
@@ -17,8 +18,8 @@ disciplina asistida**. Lo que no se puede automatizar se marca como tal.
 ## 1. El verificador de números (la práctica central)
 
 Cada cifra del texto se recomputa desde los datos primarios. Referencias:
-`paper/verify_numbers.py` (201 comprobaciones) y `paper_gp/verify_numbers.py`
-(84). Patrón: una comprobación por afirmación, `OK`/`FALLO`/`PEND`, y un
+`paper/verify_numbers.py` (885 comprobaciones) y
+`paper_gp/verify_numbers.py` (84). Patrón: una comprobación por afirmación, `OK`/`FALLO`/`PEND`, y un
 recuento final.
 
 ```python
@@ -39,6 +40,15 @@ Reglas aprendidas:
   `if len(datos) < 15: pendiente(...)` y saltar el bloque.
 - **Colapsar espacios antes de buscar literales** en el `.tex`: una frase
   partida por el salto de línea no debe fallar espuriamente.
+- **Reanclar, nunca debilitar.** Al reescribir prosa, las comprobaciones
+  que buscan frases literales fallan. La reacción correcta es moverlas a la
+  frase nueva; relajarlas para que pasen convierte el verificador en
+  decorado. Si una comprobación pierde su ancla dos veces, anclarla a algo
+  estructural (una fila de tabla, un `\label`) en vez de a la redacción.
+- **Guardar fichero a fichero, no por carpeta.** Un bloque que comprobaba
+  `if os.path.exists("envio/")` y luego abría dos ficheros de dentro
+  reventaba con `FileNotFoundError` justo en la copia anónima, que lleva
+  uno y no el otro. Cada `open` con su guarda.
 
 Qué ha cazado en la práctica: una celda de tiempo de una tirada contaminada,
 un test estadístico citado que nunca se calculó, "ambas curvas tienen un
@@ -91,6 +101,14 @@ muestras** de una política. Al emparejar presupuestos, la ventaja cayó de
 - Declarar qué **no** está emparejado (aquí: los costes de entrenamiento),
   y decir explícitamente que se comparan artefactos publicados y no un
   estudio controlado.
+- **Artefacto no es familia.** Un Wilcoxon con la instancia como unidad
+  mide variación entre instancias, no entre artefactos entrenados. Si cada
+  lado es *un* modelo seleccionado, la conclusión es sobre ese par y no
+  sobre los paradigmas, por muy pequeño que salga el *p*. Dos rondas de
+  revisión seguidas señalaron lo mismo. O se evalúan varios artefactos por
+  familia bajo un protocolo de selección declarado, o la afirmación se
+  acota al par en el resumen, en los *highlights* y en las conclusiones,
+  que es donde se lee sin los matices del cuerpo.
 
 ## 5. Honestidad en tablas y figuras
 
@@ -262,12 +280,108 @@ introduce en el sistema de envío) y trae su propio `natbib` e
   configuración no es la esperada.
 - **Una figura no puede tumbar una campaña**: envolver la visualización en
   `try/except`.
+- **Los heredocs de shell destrozan las contrabarras.** Un script de Python
+  pegado en un heredoc convierte `\ref` en otra cosa y corrompe el `.tex`
+  en silencio. Escribir el script a fichero y ejecutarlo, o construir las
+  contrabarras con `chr(92)`. Es el fallo operativo que más veces se repitió.
 - **En Windows, lanzar con `.bat` y redirección de `cmd`**, no con tuberías
   de PowerShell: un reinicio del proceso padre congela al hijo escribiendo
   en una tubería muerta, y `Select-Object -First N` mata el proceso de
   origen.
 
-## 11. Lo que NO está automatizado
+## 11. Revisión ciega simulada antes de enviar
+
+Pasar el manuscrito **y el código** a un modelo distinto con el papel de
+revisor de la revista de destino, en rondas sucesivas. Cinco rondas
+movieron el veredicto de *reject* a *no hay motivo de rechazo sobre los
+resultados centrales*, y los dos hallazgos más profundos salieron de ahí.
+
+Dos reglas que costaron horas aprender:
+
+- **El workspace del revisor debe ser idéntico al repo, fichero a
+  fichero.** Se le entrega una copia aislada; si esa copia se refrescó
+  parcialmente, el revisor audita código que ya no existe. En la ronda 6,
+  dos de los tres problemas mayores eran ficheros desfasados, y en la 7
+  uno más. Comprobarlo con un `diff` de todo el árbol de fuentes antes de
+  lanzar, y correr el verificador dentro del workspace.
+- **Verificar cada hallazgo antes de tocar nada.** Alrededor de la mitad no
+  eran ciertos. Clasificar en tres montones: real, falso, y *culpa mía por
+  cómo se lo he entregado*. Ese tercero es el más incómodo y el más
+  frecuente.
+
+Qué preguntarle además del guion habitual: si la contribución basta para
+esa revista *dado* el resultado que sea (si nadie gana, decirlo); si el
+resumen, los *highlights* y las conclusiones enuncian la aportación sin
+exagerarla ni enterrarla; y si el ejemplo dibujado en las figuras es lo que
+el código calcula de verdad.
+
+## 12. Sobreafirmación: decir lo que el dato sostiene
+
+Lo que más veces han marcado los revisores, y siempre con razón.
+
+- **«No cambia» no es «no se detecta cambio».** Un experimento que no
+  encuentra desplazamiento sistemático bajo un criterio fijo no demuestra
+  que los pesos estén intactos: no compara parámetros. La redacción honesta
+  es la del efecto medido, no la del mecanismo supuesto.
+- **Suelo del *p* exacto.** Con seis observaciones pareadas del mismo
+  signo, el mínimo alcanzable a dos colas es *p*=0,03125. Ver ese valor
+  repetido en varios contrastes no es una racha de significación: es el
+  suelo. Declararlo, y decir cuántos contrastes relacionados se examinaron
+  sin corrección de multiplicidad.
+- **Adverbios que salvan un párrafo**: «mainly», «predominantly», «no
+  systematic ... was detected». Cuestan una palabra y quitan una objeción
+  mayor.
+- Al suavizar una afirmación, **buscarla en todo el manuscrito**. Se
+  suaviza el pasaje técnico y quedan en pie la lista de contribuciones, el
+  resumen y las conclusiones diciendo la versión fuerte.
+
+## 13. El depósito publicado no es el repositorio
+
+El paquete que cita el paper se prueba **como lo probaría un extraño**, no
+desde el árbol de trabajo donde todo resuelve por accidente.
+
+- **Las rutas por defecto de los scripts.** El depósito colocaba las reglas
+  comparadas en `rules/` mientras el código las leía de
+  `benchmarks/...`; en el repo funcionaba y en el paquete no. Lo cazó un
+  revisor cuya copia imitaba el depósito.
+- **Las dependencias que nadie declara.** `requirements.txt` listaba cuatro
+  paquetes y faltaba pandas, que importaban cuatro módulos del
+  entrenamiento: un entorno limpio hecho con ese fichero no entrenaba.
+  Reconstruir el fichero desde los `import` reales, no de memoria.
+- **Las notas internas se cuelan.** Empaquetar la carpeta entera metió en
+  el zip una guía de trabajo que decía de sí misma que no debía publicarse.
+  Los ficheros de una versión publicada no se pueden editar: sale caro.
+- Un comprobador que recorra las rutas que el verificador consulta y diga
+  si el paquete las cubre todas paga su coste el primer día.
+
+## 14. Del rechazo en escritorio al formulario de envío
+
+- **Un desk-reject no es un veredicto sobre el contenido.** El de este
+  paper vino por encaje. Reencuadrar cuesta menos de lo que parece si la
+  arquitectura ya está: cambio de clase LaTeX, separación de identidad y
+  ajuste del resumen a las condiciones de la revista nueva.
+- **Doble anonimato**: marcar los bloques con identidad en el fuente
+  (`%<<IDENTIDAD ... %IDENTIDAD>>`) y generar la copia anónima con un
+  script que los elimine y **aborte** si queda algún rastro. A mano se
+  olvida uno.
+- **Medir antes de elegir opción de clase.** `elsarticle` con `review` da
+  interlineado doble: en este paper, 51 páginas contra un límite duro de
+  50, frente a 37 con `preprint`. La guía pedía una columna, que ambas
+  cumplen.
+- **El formulario manda sobre la guía.** Al llegar a la pantalla de subida,
+  cuatro cosas que habíamos deducido de la guía eran falsas: un envío en
+  LaTeX sube **PDF y no fuente** (las fuentes, en la revisión), los
+  conflictos se confirman con una **casilla** y no con el .docx de la
+  herramienta, las figuras **no** van aparte en el envío inicial, y la
+  **carta de presentación es obligatoria**. Leer el formulario real antes
+  de dar por cerrado el plan de ficheros.
+- **La carta de presentación** dice qué aporta el trabajo separando la
+  parte de IA de la aplicación, confirma originalidad y no envío
+  simultáneo, y **declara cualquier trabajo relacionado en revisión en otra
+  revista** con su DOI de preprint. Esa transparencia es mejor darla que
+  esperar a que la pregunten.
+
+## 15. Lo que NO está automatizado
 
 Honestidad sobre el estado real:
 
