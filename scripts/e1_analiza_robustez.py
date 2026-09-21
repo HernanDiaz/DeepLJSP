@@ -60,7 +60,16 @@ def pareado(a, b, insts, k):
     if not np.any(np.abs(dif) > 1e-12):
         return 0.0, 1.0
     w = stats.wilcoxon(x, y, method="exact", zero_method="wilcox")
-    return float(dif.mean()), float(w.pvalue)
+    # z y tamano del efecto, en el formato que usa el articulo
+    n = int(np.sum(np.abs(dif) > 1e-12))
+    mu = n * (n + 1) / 4.0
+    sd = (n * (n + 1) * (2 * n + 1) / 24.0) ** 0.5
+    z = (float(w.statistic) - mu) / sd if sd > 0 else 0.0
+    if dif.mean() > 0:
+        z = abs(z)
+    else:
+        z = -abs(z)
+    return float(dif.mean()), float(w.pvalue), z, abs(z) / n ** 0.5
 
 
 def main():
@@ -92,13 +101,15 @@ def main():
         for x, y in PARES:
             if x not in d or y not in d:
                 continue
-            de, pe = pareado(d[x], d[y], insts, 0)
-            da, pa = pareado(d[x], d[y], insts, 1)
+            de, pe, ze, re_ = pareado(d[x], d[y], insts, 0)
+            da, pa, za, ra = pareado(d[x], d[y], insts, 1)
             contrastes[f"{x} vs {y}"] = {"d_eps": de, "p_eps": pe,
-                                         "d_abs": da, "p_abs": pa}
+                                         "d_abs": da, "p_abs": pa,
+                                         "z_eps": ze, "r_eps": re_,
+                                         "z_abs": za, "r_abs": ra}
             aviso = "  <-- cambia de signo" if de * da < 0 else ""
             print(f"  {x + ' vs ' + y:<26} {de:8.2f} {pe:8.4f} "
-                  f"{da:9.2f} {pa:8.4f}{aviso}")
+                  f"{da:9.2f} {pa:8.4f}  z={za:+6.2f} r={ra:.2f}{aviso}")
         res[dist] = {"metodos": tabla, "contrastes": contrastes,
                      "n_instancias": len(insts)}
         print()

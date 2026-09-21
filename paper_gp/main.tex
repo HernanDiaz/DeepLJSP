@@ -5,6 +5,11 @@
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{xcolor}
+% Texto anadido en esta revision, marcado para que el revisor lo
+% localice. Antes del envio definitivo basta redefinir la orden como
+% \newcommand{\rev}[1]{#1} para que el color desaparezca.
+\definecolor{revcolor}{rgb}{0.00,0.30,0.70}
+\newcommand{\rev}[1]{\textcolor{revcolor}{#1}}
 \usepackage{multirow}
 \usepackage{tikz}
 \usepackage{algorithm}
@@ -1168,29 +1173,38 @@ objective that rewards narrowness.
 
 \begin{table}[t]
 \centering\small
+\setlength{\tabcolsep}{4pt}
 \caption{Predicted quality and executional robustness over the 70
 instances (lower is better on all measures): mean $\RE$, relative width
 of the predicted makespan interval, and $\bar\varepsilon$
 ($\times10^3$) at nominal interval widths and widened by $+20\%$ and
 $+40\%$ (Monte Carlo, $K{=}1000$ realizations, common random numbers
-across methods). Each GP arm is represented by one rule: the makespan
-arms by their best $\RE$, the robust arms by their narrowest predicted
-interval, which is what their fitness optimizes.}
+across methods). \rev{The last column is the mean absolute deviation
+$|\Delta|$ in time units at nominal widths, the same quantity as
+$\bar\varepsilon$ before dividing by $E[\mathbf{C}_{\max}]$.} Each GP arm is
+represented by one rule: the makespan arms by their best $\RE$, the
+robust arms by their narrowest predicted interval, which is what their
+fitness optimizes.}
 \label{tab:robustness}
-\begin{tabular}{lccccc}
+\begin{tabular}{lcccccc}
 \toprule
-& & & \multicolumn{3}{c}{$\bar\varepsilon$ ($\times10^3$)} \\
-\cmidrule(l){4-6}
-Method & RE (\%) & Width (\%) & $+0\%$ & $+20\%$ & $+40\%$ \\
+& & & \multicolumn{3}{c}{$\bar\varepsilon$ ($\times10^3$)} & \\
+\cmidrule(lr){4-6}
+Method & RE (\%) & Width (\%) & $+0\%$ & $+20\%$ & $+40\%$ &
+\rev{$|\Delta|$} \\
 \midrule
-GP, makespan & 17.71 & 12.28 & 5.70 & 6.64 & 7.57 \\
-GP, makespan, no widths & 17.17 & 12.48 & 5.75 & 6.80 & 7.83 \\
-GP, robust $\lambda{=}1$ & 24.95 & 9.24 & 4.52 & 5.32 & 6.08 \\
-GP, robust $\lambda{=}1$, no widths & 17.45 & 12.05 & 5.54 & 6.50 & 7.42 \\
-GP, robust $\lambda{=}4$ & 28.27 & 8.61 & 4.21 & 5.01 & 5.73 \\
+GP, makespan & 17.71 & 12.28 & 5.70 & 6.64 & 7.57 & \rev{12.30} \\
+GP, makespan, no widths & 17.17 & 12.48 & 5.75 & 6.80 & 7.83 &
+\rev{12.25} \\
+GP, robust $\lambda{=}1$ & 24.95 & 9.24 & 4.52 & 5.32 & 6.08 &
+\rev{10.31} \\
+GP, robust $\lambda{=}1$, no widths & 17.45 & 12.05 & 5.54 & 6.50 & 7.42 &
+\rev{12.08} \\
+GP, robust $\lambda{=}4$ & 28.27 & 8.61 & 4.21 & 5.01 & 5.73 &
+\rev{9.78} \\
 \midrule
-G\&T-MWKR & 29.50 & 13.77 & 6.29 & 7.51 & 8.58 \\
-EST & 42.30 & 13.37 & 5.66 & 6.79 & 7.83 \\
+G\&T-MWKR & 29.50 & 13.77 & 6.29 & 7.51 & 8.58 & \rev{14.94} \\
+EST & 42.30 & 13.37 & 5.66 & 6.79 & 7.83 & \rev{14.64} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1229,6 +1243,18 @@ $z=0.42$), although it improves on EST by $24.6$ points of $\RE$. A low
 deviation does not require a low makespan, so robustness must be
 optimized for directly.
 
+\rev{The comparison with EST reverses once the normalization is
+removed. $\bar\varepsilon$ divides by $E[\mathbf{C}_{\max}]$, and EST's predicted
+makespan is $21\%$ larger than the rule's ($2732$ against $2259$ time
+units on average), so the same absolute error reads as a smaller
+relative one. In absolute terms the rule deviates by $12.30$ time units
+against EST's $14.64$, and the two separate clearly ($z=-5.89$,
+$p<0.001$, $|r|=0.70$). The ordering against G\&T-MWKR is unchanged and
+widens ($12.30$ against $14.94$, $z=-6.83$, $|r|=0.82$), and the
+makespan arm and its ablation remain indistinguishable ($12.30$ against
+$12.25$, $z=0.61$, $p=0.55$). What the normalization hides is therefore
+an advantage of the rule, not one attributed to it.}
+
 The robust fitness achieves this. The narrowest rule of the
 $\lambda{=}1$ arm reduces $\bar\varepsilon$ from $5.70$ to $4.52$
 ($z=-6.40$, $|r|=0.88$ against the makespan rule), and the reduction requires the
@@ -1239,6 +1265,17 @@ correspond to smaller realized deviations, at the cost in expected
 makespan reported in the RE column: $24.95$ and $28.27$ against
 $17.71$.
 
+\rev{Part of that reduction is the denominator, and the absolute
+deviation says how much. The robust $\lambda{=}1$ arm carries an
+$E[\mathbf{C}_{\max}]$ that is $6.1\%$ larger than the makespan arm's, so where
+$\bar\varepsilon$ falls by $20.7\%$ the absolute deviation falls by
+$16.2\%$, from $12.30$ to $10.31$ time units; at $\lambda{=}4$ it
+reaches $9.78$. Roughly a fifth of the apparent gain is therefore
+arithmetic and the rest is not: the paired contrasts separate on the
+absolute measure as well, by $-1.99$ time units against the makespan
+arm ($z=-5.55$, $p<0.001$, $|r|=0.66$) and by $-1.78$ against its own
+ablation ($z=-5.17$, $|r|=0.62$).}
+
 The comparisons above select one representative rule per arm; at the
 level of the method the ordering is the same. Recomputing
 $\bar\varepsilon$ at the nominal width for all 30 rules of each arm
@@ -1248,6 +1285,21 @@ correction over the three arm-level tests, $|r|=0.54$), the robust
 $\lambda{=}1$ arm $5.50 \pm 0.30$ against $5.68 \pm 0.11$ for its own
 ($z=-3.26$, $p<0.01$, $|r|=0.68$), and the robust arm improves on the
 makespan arm with the same terminals ($z=-2.46$, $p<0.05$, $|r|=0.51$).
+
+\rev{The estimate above draws each realization uniformly on its
+interval, which is one choice among several. Repeating the measurement
+with a symmetric triangular law, with a law skewed towards the upper
+endpoint, and with the single worst-case realization in which every
+duration takes its upper bound, leaves the ordering and every
+significant contrast intact. Averaged over the 70 instances, the robust
+$\lambda{=}1$ arm improves on the makespan arm by $1.22$ time units
+under the triangular law, $12.16$ under the skewed one and $29.01$ in
+the worst case, all with $p<0.001$; the makespan arm and its ablation
+remain indistinguishable under all three. The deviations themselves
+grow with the mass the law places near the upper endpoint, from $8.95$
+time units for the rule under the triangular law to $57.15$ under the
+skewed one and $138.35$ in the worst case, but the comparison between
+methods does not depend on which law is used.}
 Two things follow. The width terminals do reduce
 $\bar\varepsilon$ slightly even under the makespan objective, a
 method-level effect too small to show in the single featured pair; and
