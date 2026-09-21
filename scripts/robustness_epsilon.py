@@ -108,12 +108,45 @@ def heuristic_sequence(env, heuristic):
     return seq
 
 
-def eps_bar(seq, lo, up, mseq, rng):
-    """eps-barra sobre K realizaciones uniformes de [lo,up]."""
+def muestrea(lo, up, n, rng, dist):
+    """Duraciones bajo el modelo de realizacion pedido.
+
+    La medida de robustez necesita un oraculo externo que diga que pasa
+    al ejecutar. El uniforme es el del articulo; los otros tres existen
+    para comprobar que el hallazgo no depende de esa eleccion, que el
+    modelo intervalar no hace.
+    """
+    if dist == "uniform":
+        return sample_durations(lo, up, n, rng)
+    if dist == "worstcase":                       # una sola realizacion
+        return [[np.full(n, up[j][k]) for k in range(len(lo[j]))]
+                for j in range(len(lo))]
+    if dist == "triangular":                      # simetrica, moda al medio
+        # un intervalo degenerado (lo == up) no es una triangular: la
+        # duracion es cierta y numpy rechaza left == right
+        return [[(np.full(n, lo[j][k]) if up[j][k] <= lo[j][k]
+                  else rng.triangular(lo[j][k], (lo[j][k] + up[j][k]) / 2,
+                                      up[j][k], n))
+                 for k in range(len(lo[j]))] for j in range(len(lo))]
+    if dist == "pessimistic":                     # sesgada al extremo alto
+        return [[lo[j][k] + (up[j][k] - lo[j][k]) * rng.beta(5, 2, n)
+                 for k in range(len(lo[j]))] for j in range(len(lo))]
+    raise ValueError(dist)
+
+
+def eps_bar(seq, lo, up, mseq, rng, dist="uniform"):
+    """eps-barra, su desviacion ABSOLUTA y el punto medio predicho.
+
+    La normalizada divide por E[Cmax], que difiere entre metodos: un
+    metodo con peor makespan tiene un denominador mayor y sale
+    favorecido. Se devuelven las dos.
+    """
     e_mid = predicted_midpoint(seq, lo, up, mseq)
-    dur = sample_durations(lo, up, K, rng)
-    cmax = decode_mc(seq, dur, mseq, K)           # array (K,)
-    return float(np.mean(np.abs(cmax - e_mid) / e_mid)), e_mid, cmax
+    n = 1 if dist == "worstcase" else K
+    dur = muestrea(lo, up, n, rng, dist)
+    cmax = decode_mc(seq, dur, mseq, n)           # array (n,)
+    abs_dev = float(np.mean(np.abs(cmax - e_mid)))
+    return float(np.mean(np.abs(cmax - e_mid) / e_mid)), e_mid, cmax, abs_dev
 
 
 def coverage(cmax, clo, cup):
@@ -135,6 +168,10 @@ def main():
                     help="regla adicional como nombre=fichero.json; repetible")
     ap.add_argument("--hist-instance", default="int__tai20_20_02",
                     help="instancia para los histogramas estilo fEABC Fig 3")
+    ap.add_argument("--dist", default="uniform",
+                    choices=["uniform", "triangular", "pessimistic",
+                             "worstcase"],
+                    help="modelo de realizacion del oraculo de medida")
     ap.add_argument("--out", default="benchmarks/robustness_eps.csv")
     args = ap.parse_args()
 
@@ -173,13 +210,15 @@ def main():
                 # semilla determinista por (instancia, anchura): reproducible y
                 # con números comunes entre métodos (misma nube por instancia).
                 rng = np.random.default_rng(1000 * i + wi)
-                eb, e_mid, cmax = eps_bar(seq, lo, up, mseq, rng)
+                eb, e_mid, cmax, adev = eps_bar(seq, lo, up, mseq, rng,
+                                                args.dist)
                 # cobertura: siempre contra el intervalo NOMINAL predicho,
                 # tambien cuando se ensancha la incertidumbre, porque es el
                 # intervalo que el planificador habria anunciado
                 cov = coverage(cmax, clo, cup)
                 rows.append({"instance": pid, "cls": cls, "method": name,
                              "width": w, "eps_bar": eb, "coverage": cov,
+                             "e_mid": e_mid, "abs_dev": adev,
                              "rel_width": rel_width if w == 1.0 else float("nan")})
                 if pid == args.hist_instance:
                     hist[(name, w)] = (cmax, e_mid)
@@ -187,12 +226,14 @@ def main():
     print()
 
     with open(args.out, "w", encoding="utf-8") as f:
-        f.write("instance,cls,method,width,eps_bar,rel_width,coverage\n")
+        f.write("instance,cls,method,width,eps_bar,rel_width,coverage,"
+                "e_mid,abs_dev\n")
         for r in rows:
             rw = f"{r['rel_width']:.4f}" if r["rel_width"] == r["rel_width"] else ""
             f.write(f"{r['instance']},{r['cls']},{r['method']},"
                     f"{r['width']:.1f},{r['eps_bar']*1000:.4f},{rw},"
-                    f"{r['coverage']:.4f}\n")
+                    f"{r['coverage']:.4f},{r['e_mid']:.4f},"
+                    f"{r['abs_dev']:.4f}\n")
 
     # Resumen: eps-barra media (x1000) por método y anchura
     print("\n=== eps-barra media (x1000) por método y anchura ===")
