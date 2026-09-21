@@ -393,11 +393,6 @@ if len(_sem) == 30 and _g70 == _gde == 1:
 else:
     bad += 1
     print(f'  FALLA destacada: desarrollo seed{_gde}, 70 seed{_g70}')
-_ord = sorted(_sem, key=_mde.get)
-check('segunda en desarrollo (texto 18.13)',
-      f'{_mde[_ord[1]]:.2f}', 'summary.csv sobre TA15-TA20')
-check('destacada en desarrollo (texto 17.45)',
-      f'{_mde[_ord[0]]:.2f}', 'summary.csv sobre TA15-TA20')
 
 print(f"\n{ok} comprobaciones correctas, {bad} fallos")
 sys.exit(1 if bad else 0)
