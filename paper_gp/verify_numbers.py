@@ -366,5 +366,38 @@ if n_rows != 70:
 else:
     ok += 1
 
+# E0 (revision r3 de SWEVO): la regla destacada se elige sobre el
+# conjunto de desarrollo, no sobre las setenta. Se recomprueba que
+# el criterio no decide el resultado, que es lo que permite quitar
+# la contaminacion sin mover ninguna cifra del articulo
+import collections as _col
+import csv as _csv
+import re as _re
+_DES = {f'int__tai20_15_{k:02d}' for k in range(5, 11)}
+_por = _col.defaultdict(dict)
+for _r in _csv.DictReader(open(os.path.join(
+        REPO, 'benchmarks/reevo_fixedfit/summary.csv'),
+        encoding='utf-8')):
+    _m = _re.fullmatch(r'gp_tuned_seed(\d+)', _r['method'])
+    if _m:
+        _por[int(_m.group(1))][_r['instance']] = float(_r['re'])
+_sem = sorted(_por)
+_m70 = {_s: sum(_por[_s].values()) / len(_por[_s]) for _s in _sem}
+_mde = {_s: sum(_por[_s][_i] for _i in _DES) / len(_DES)
+        for _s in _sem}
+_g70, _gde = min(_m70, key=_m70.get), min(_mde, key=_mde.get)
+if len(_sem) == 30 and _g70 == _gde == 1:
+    ok += 1
+    print(f"  OK    {'destacada = ganadora de desarrollo (seed1)':<46} "
+          f'desarrollo {_mde[_gde]:.2f}, 70 {_m70[_g70]:.2f}')
+else:
+    bad += 1
+    print(f'  FALLA destacada: desarrollo seed{_gde}, 70 seed{_g70}')
+_ord = sorted(_sem, key=_mde.get)
+check('segunda en desarrollo (texto 18.13)',
+      f'{_mde[_ord[1]]:.2f}', 'summary.csv sobre TA15-TA20')
+check('destacada en desarrollo (texto 17.45)',
+      f'{_mde[_ord[0]]:.2f}', 'summary.csv sobre TA15-TA20')
+
 print(f"\n{ok} comprobaciones correctas, {bad} fallos")
 sys.exit(1 if bad else 0)
