@@ -12,7 +12,7 @@ crea la contribución**.
 
 ## Experimentos, en orden
 
-### E0 — Selección sin contaminación *(gratis, primero)*
+### E0 — Selección sin contaminación — **HECHO**
 
 R3.1 sostiene que la regla destacada se eligió mirando las setenta
 instancias, incluidas las sesenta de prueba. Comprobar qué se hizo
@@ -24,7 +24,7 @@ secundario.
 Sin tiradas nuevas: reanálisis de los depósitos existentes. Es el que
 arregla el número principal del artículo, así que va primero.
 
-### E1 — Robustez sin efecto denominador *(barato)*
+### E1 — Robustez sin efecto denominador — **HECHO**
 
 R3.2, la crítica más afilada del lote. ε̄ va normalizado por E[Cmax] y el
 brazo robusto tiene un RE más alto, de modo que parte de la mejora puede
@@ -112,10 +112,32 @@ rehacer el análisis de robustez.
 
 ### E5 — Decodificador y baselines intervalares *(medio)*
 
-R3.3. Describir explícitamente cómo trata los intervalos cada baseline,
-añadir baselines lexicográficas intervalares, y evaluar la regla bajo el
-decodificador Giffler--Thompson para aislar la diferencia de decodificador
-de la diferencia de regla.
+R3.3. `scripts/e5_decodificador_baselines.py` mide las tres cosas.
+
+**Convenios.** Cada regla clásica, ordenando por el extremo inferior,
+por el punto medio y por el superior: SPT 633,1--642,5; LPT
+703,1--704,4; MWKR 62,9--64,6; EST 42,7--45,1. La mayor dispersión que
+abre un convenio es 2,4 puntos, contra los 23,3 que separan a la mejor
+regla llana de la evolucionada. Cómo se resumen los intervalos no es lo
+que la comparación mide.
+
+**Decodificador.** El cuadro de dos por dos, por fin separado:
+
+| | Semiactivo | Giffler--Thompson |
+|---|---|---|
+| MWKR | 64,7 | 29,5 |
+| Evolucionada, media de 30 | **18,99 ± 1,33** | 23,18 ± 7,47 |
+| Evolucionada, destacada | 17,71 | 18,15 |
+
+A decodificador fijo la regla gana a MWKR con los dos. A regla fija cada
+una prefiere el suyo: la evolucionada pierde 4,2 puntos al entrar en el
+conflict set —y su desviación se dispara de 1,33 a 7,47, porque alguna
+regla se rompe cuando le restringen los candidatos— y MWKR gana 35,2 al
+entrar. La destacada es el caso en que el decodificador casi no importa,
+17,71 contra 18,15, p = 0,32.
+
+Escrito en §6.4 (`sec:decoder`, tabla `tab:decoder`) y anclado en el
+verificador.
 
 ### E6 — Presupuesto igualado contra las metaheurísticas *(el caro, y el que decide)*
 
