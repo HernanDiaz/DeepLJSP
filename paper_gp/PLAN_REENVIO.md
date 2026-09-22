@@ -103,12 +103,42 @@ imprentas de Elsevier rechazan. Faltaba `pdf.fonttype: 42` en los seis
 scripts que las generan; puesto y regeneradas. Ahora todas van en
 TrueType embebido.
 
-### E4 — Intervalos asimétricos *(medio)*
+### E4 — Intervalos asimétricos — **HECHO**
 
-R3.4. Todas las instancias tienen intervalos simétricos, así que la
-contribución de las anchuras podría depender del esquema de generación.
-Generar instancias con anchura asimétrica, reevolucionar treinta semillas y
-rehacer el análisis de robustez.
+R3.4. `scripts/e4_genera_asimetricas.py` regenera las setenta con el
+intervalo sesgado a la derecha, recuperando el valor crisp del punto
+medio de la versión simétrica: −5 % y +25 % en esperanza. La anchura
+media queda en 14,3 % de p contra el 13,9 % del esquema simétrico, así
+que entre los dos bancos cambia la forma y no el tamaño, y las rutas son
+las mismas, de modo que las cotas de Taillard siguen valiendo.
+
+`scripts/e4_campana.py` reevoluciona **los cuatro brazos** —makespan y
+robusto λ=1, cada uno con y sin anchuras— a quince semillas. Nota: el
+primer lanzamiento sólo llevaba los dos de makespan, que responden al
+resultado negativo pero no a la mejora de robustez, que es lo que R3.4
+pone en duda. Se corrigió a los diez minutos.
+
+**Resultado** (`scripts/e4_analiza.py`, 400 realizaciones por
+instancia):
+
+| Brazo | RE | Anchura | \|Δ\| |
+|---|---|---|---|
+| makespan, full | 25,08 ± 1,42 | 13,23 ± 0,72 | 13,36 ± 0,64 |
+| makespan, sin anchura | 23,90 ± 1,18 | 13,08 ± 0,20 | 13,06 ± 0,26 |
+| robusto λ=1, full | 25,93 ± 1,18 | **12,67 ± 0,20** | **12,75 ± 0,27** |
+| robusto λ=1, sin anchura | 23,89 ± 1,06 | 12,97 ± 0,18 | 13,03 ± 0,16 |
+
+La estructura del artículo se repite entera. Bajo makespan las anchuras
+no compran nada (anchura p=0,89; desviación p=0,11). Bajo el objetivo
+robusto compran las dos: anchura 12,97 → 12,67 (z=−3,24, |r|=0,84) y
+desviación 13,03 → 12,75 (z=−2,90, |r|=0,75). Cinco contrastes
+sobreviven a Holm sobre los nueve, el mayor ajustado 0,0101.
+
+Los niveles de RE **no** son comparables con el banco simétrico: el
+sesgo sube el makespan esperado y la cota crisp no se mueve. Lo
+comparable es el contraste dentro del banco, y eso queda dicho.
+
+Escrito en §7.7 (`sec:asym`, tabla `tab:asym`) y anclado.
 
 ### E5 — Decodificador y baselines intervalares *(medio)*
 
@@ -139,7 +169,7 @@ entrar. La destacada es el caso en que el decodificador casi no importa,
 Escrito en §6.4 (`sec:decoder`, tabla `tab:decoder`) y anclado en el
 verificador.
 
-### E6 — Presupuesto igualado contra las metaheurísticas *(el caro, y el que decide)*
+### E6 — Presupuesto igualado contra las metaheurísticas — **HECHO**
 
 R2 y R3.5. Hoy las metaheurísticas solo se comparan en las doce clásicas,
 con lenguajes y presupuestos distintos. Hay que correr GA/fEABC/ESABC bajo
@@ -153,27 +183,54 @@ y acotarlo es exactamente la «ventaja cuantificable bajo un escenario,
 objetivo y presupuesto» que el revisor 2 exige. La figura que sale de aquí
 es la que justifica el artículo.
 
-Riesgo: si ese cruce cae en un presupuesto irrelevante para la práctica, el
-artículo tiene que decirlo y conformarse con el encuadre de «baseline
-rápido e interpretable» que propone R1.3.
+**Cómo se hizo.** Un simulador propio,
+`jobshop_rl/heuristics/fast_sim.py`, validado contra el entorno
+operación a operación (`tests/test_fast_sim.py`, doce tests), y un
+genético sobre permutación con repetición,
+`jobshop_rl/heuristics/ga_interval.py`. G&T-MWKR con el decodificador
+común sale 29,52 contra el 29,5 de la tabla de baselines, así que mide
+lo mismo que el paper.
 
-## Reescritura
+**Calibración, antes de usarlo.** En las doce clásicas el genético de
+aquí llega a 7,9 % con 5·10⁵ construcciones contra el 9,8 % publicado
+del genético que imita. No es un espantapájaros.
 
-- **Contribución 3** consistente con la evidencia: las anchuras no mejoran
-  el makespan esperado bajo el objetivo por defecto, y su valor aparece
-  bajo un objetivo que paga por la anchura. Añadir orientación accionable
-  para elegir λ y declarar la frontera de aplicabilidad.
-- **Abstract**: quitar toda implicación de eficiencia (el mejor-de-1024 no
-  es más rápido que las metaheurísticas) y acotar el «la información
-  intervalar no aporta al makespan» con «bajo el objetivo por defecto y
-  este banco de pruebas».
-- **Mejor-de-N** encuadrado como herramienta de comparación emparentada
-  con GRASP y el arranque múltiple, no como vía rápida.
-- **Muestreo uniforme** declarado explícitamente como oráculo posterior de
-  medición que no interviene en la evolución ni en la formulación.
-- **Posicionamiento**: «baseline rápido, interpretable y de alta calidad»,
-  no «solución general al IJSP», salvo que E6 diga otra cosa.
-- **Conclusiones** reescritas sobre lo que demuestre E6.
+**Resultado, sobre las setenta.** El genético necesita 7,6·10⁴
+construcciones para empatar con UNA pasada de la regla, y a 1,3·10⁵ —128
+veces el presupuesto del mejor-de-1024— sigue en 15,84 contra 13,71. Por
+debajo de ~10⁵ construcciones la regla es el mejor uso del presupuesto.
+
+En reloj: una pasada de la regla cuesta lo que 36 a 134 evaluaciones del
+genético, porque despachar evalúa nueve atributos por elegible en cada
+decisión. La razón es estructural; los segundos absolutos, no. Aun así,
+a 5 s por instancia el muestreo de la regla está en 14,60 contra 41,27.
+
+**Y el hallazgo.** El genético sembrado con la permutación de la regla
+es el único brazo que termina por debajo del muestreo (13,35). El sitio
+de una regla evolucionada junto a una metaheurística no es enfrente sino
+delante.
+
+Escrito en §6.5 (`sec:budget`, figura `fig:budget`) y anclado, con un
+`assert` que salta si el genético llegara a alcanzar al mejor-de-1024.
+
+## Reescritura — **HECHA**
+
+- ✔ **Contribución 3** reescrita con su frontera de aplicabilidad.
+- ✔ **Abstract** acotado al objetivo por defecto, sin implicación de
+  eficiencia, y bajado a 249 palabras, que vale para las tres candidatas
+  (IJPR tiene el tope en 250 y C&IE en 200).
+- ✔ **Mejor-de-N** como instrumento de medida emparentado con GRASP.
+- ✔ **Muestreo uniforme**: medida sobre schedules ya construidos, que no
+  toca formulación, fitness, evolución ni selección. Sin la palabra
+  «oráculo», que no aporta nada.
+- ✔ **Posicionamiento** de baseline rápido e interpretable, en §6.4 y en
+  las conclusiones.
+- ✔ **Conclusiones** reescritas, con una cuarta que antes no existía: el
+  régimen de presupuesto.
+- ✔ **Highlights**: fuera «sampled rules match a published genetic
+  algorithm», que es la implicación que R2 señala y que la tabla no
+  sostiene (11,3 contra 9,8, mejor en 3 de 12).
+- ✔ **Figuras** fuera de Type 3, que Elsevier rechaza.
 
 ## Revista
 
