@@ -38,7 +38,12 @@ ORDEN = ["GP", "GP-nowidth", "GP-rob1", "GP-rob1-nw", "GP-rob4",
          "GT-MWKR", "EST"]
 # los contrastes que el articulo sostiene y que la objecion pone en duda
 PARES = [("GP", "GP-nowidth"), ("GP-rob1", "GP"), ("GP-rob1", "GP-rob1-nw"),
-         ("GP-rob4", "GP"), ("GP", "GT-MWKR"), ("GP", "EST")]
+         ("GP-rob4", "GP"), ("GP", "GT-MWKR"), ("GP", "EST"),
+         # r3.2 pide ademas comparar a niveles de RE parecidos: el brazo
+         # robusto lam=4 (28.27 de RE) y G&T-MWKR (29.50) estan casi
+         # empatados en makespan esperado, asi que su contraste en
+         # desviacion aisla la robustez de la calidad a priori
+         ("GP-rob4", "GT-MWKR")]
 
 
 def carga(ruta):

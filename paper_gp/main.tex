@@ -52,31 +52,32 @@ that Generalize Across Instance Sizes}
             country={Spain}}
 
 \begin{abstract}
-The automated design of dispatching rules has not previously been
-explored for the job shop scheduling problem with interval durations
-(IJSP), where each processing time is known only to lie within an
-interval and schedules are built and compared by interval arithmetic.
-We present a genetic programming hyper-heuristic for this problem:
-priority rules are evolved over an \emph{interval-aware} terminal set
-that exposes both the worst-case values and the widths of the uncertain
-quantities, and are deployed in a single constructive pass. On the 70
-interval Taillard instances, 30 independent evolutions average a
-relative error of $18.99\%$ ($\pm1.33$) and the best rule attains
-$17.71\%$, improving on the strongest constructive baseline,
-Giffler--Thompson with MWKR tie-breaking at $29.5\%$, on every
-instance. Evolved on four $20{\times}15$ instances, the rules transfer
+Automated dispatching-rule design has not been explored for the job shop
+scheduling problem with interval durations (IJSP), where processing
+times are known only to lie within intervals and schedules are built by
+interval arithmetic. We present a genetic programming
+hyper-heuristic: priority rules are evolved over an
+\emph{interval-aware} terminal set exposing both the worst-case values
+and the widths of the uncertain quantities, and deployed in a single
+constructive pass. On the 70 interval Taillard instances, 30
+evolutions average $18.99\%$ ($\pm1.33$) relative error and the best
+rule attains $17.71\%$, improving on the strongest constructive
+baseline, Giffler--Thompson/MWKR ($29.5\%$), on every instance. Evolved on four $20{\times}15$ instances, the rules transfer
 zero-shot to all seven size classes and to a second benchmark of
-classical instances, keeping their margin over the constructive
-baselines, and remain compact, human-readable expressions. Controlled
-ablations then delimit what interval awareness contributes. For
-expected makespan it is unnecessary: removing the width terminals, or
-evolving on the crisp midpoint instances with scalar fitness, does
-equally well. Its value lies in robustness: an objective that penalizes
-interval width, one with no crisp counterpart, yields substantially
-narrower predicted intervals and a deviation of the executed makespan
-from its prediction about one fifth lower, neither attainable without
-the width terminals. Both gains are paid for in expected makespan, with
-the weight of the width penalty setting the trade-off.
+classical instances, keeping their margin and remaining compact,
+human-readable expressions. \rev{Which four instances are trained on,
+and how many, moves the result by less than the spread between seeds.}
+Ablations delimit what interval awareness contributes.
+\rev{Under the default expected-makespan objective it is unnecessary}:
+removing the width terminals, or evolving on crisp midpoints, does
+equally well\rev{, although 27 of the 30 rules retain them}. Its value
+is robustness: an objective penalizing interval width, which has no
+crisp counterpart, yields narrower predicted intervals and an
+executed-makespan deviation about one fifth lower, neither attainable
+without those terminals. \rev{The ordering survives non-uniform and
+worst-case realizations, and at matched expected makespan the robust
+rule deviates a third less than that baseline.} It is paid for in
+expected makespan, the penalty weight setting the trade-off.
 \end{abstract}
 
 \begin{keyword}
@@ -146,17 +147,25 @@ This paper makes the following contributions:
   (iii) transfer to a second benchmark of classical instances, keeping
   the same margin over the constructive baselines
   (Section~\ref{sec:results}).
-\item A delimitation of what interval awareness contributes, in two
-  halves. It contributes nothing to expected makespan: removing the
-  width terminals leaves it unchanged, and so does replacing the
-  interval-arithmetic fitness by scalar evolution on the crisp midpoint
-  instances (Section~\ref{sec:ablation}). Its value is robustness: an
+\item A delimitation of what interval awareness contributes, \rev{with
+  its boundary of applicability stated}. \rev{Under the default
+  expected-makespan objective it contributes nothing measurable at the
+  level of the arm}: removing the width terminals leaves expected
+  makespan unchanged, and so does replacing the interval-arithmetic
+  fitness by scalar evolution on the crisp midpoint instances
+  (Section~\ref{sec:ablation}). Its value is robustness: an
   objective that penalizes interval width, which has no crisp
   counterpart, cuts the deviation of the executed makespan from its
   prediction by about a fifth, a reduction unattainable without the
   width terminals and paid for in expected makespan, with the weight of
   the penalty tracing the frontier between the two
-  (Section~\ref{sec:robustness}).
+  (Section~\ref{sec:robustness}). \rev{The frontier comes with an
+  exchange rate and a recommended operating point
+  (Section~\ref{sec:frontier}), and the gain is not an artifact of the
+  measure: it holds on the unnormalized deviation, under three
+  realization laws besides the uniform one, and against a constructive
+  baseline of the same expected makespan
+  (Section~\ref{sec:robustness}).}
 \end{enumerate}
 
 The remainder of the paper is organized as follows.
@@ -599,6 +608,17 @@ schedules. This uniform perturbation of a single
 rule is the simplest member of a family of randomized rule-based
 builders; an alternative swaps among a \emph{set} of evolved rules
 during construction~\cite{GilGala2025GRASB}.
+\rev{GP-best-of-$N$ is a measuring instrument and not a deployment
+mode. Its only purpose is to put the evolved rule on the same footing as
+sampling-based methods when the comparison is made at a given number of
+schedule evaluations, and it behaves as GRASP and multi-start
+constructive search do: what improves with $N$ is the dispersion of the
+sampled schedules, not the quality of any individual decision. Where a
+decision must be taken in milliseconds the deterministic pass is the
+method, and the wrapper is only how its quality is placed beside methods
+that are allowed many trials. It is not, and is not offered as, a fast
+alternative to a metaheuristic; Section~\ref{sec:classics} reports what
+it costs.}
 
 \section{Experimental Setup}
 \label{sec:setup}
@@ -1222,8 +1242,25 @@ the makespan interval falls from $12.18 \pm 0.50$ to
 $10.54 \pm 1.26$ while the expected makespan degrades from
 $19.20 \pm 1.52$ to $23.27 \pm 3.80$ $\RE$. At the far end of the sweep
 the schedules are therefore narrower than any the ablated rules produced,
-at a cost of about four points of $\RE$. The practitioner can
-choose an operating point along this curve.
+at a cost of about four points of $\RE$.
+
+\rev{The curve can be read as an exchange rate, which is what a
+practitioner needs in order to choose. Measured on the executed
+deviation of Section~\ref{sec:robustness} rather than on the predicted
+width, the first unit of $\lambda$ is much the cheapest: moving from the
+makespan objective to $\lambda = 1$ costs $7.2$ points of $\RE$ and
+removes $16.2\%$ of the absolute deviation, while moving on from
+$\lambda = 1$ to $\lambda = 4$ costs a further $3.3$ points and removes
+only $5.1\%$ more. Returns diminish sharply, so $\lambda \approx 1$
+captures most of the attainable stability and is the operating point we
+would recommend by default; larger weights are worth their price only
+where a missed due date costs more than a late completion, since beyond
+$\lambda = 2$ the expected makespan degrades faster than the deviation
+improves. The boundary of the whole trade is equally explicit: it exists
+only when the objective prices width. Under expected makespan alone the
+width terminals buy nothing at the level of the arm, and a practitioner
+who only cares about average completion can use the smaller terminal set
+at no loss.}
 
 Sweeping $\lambda$ for the ablated arm (ten evolutions per value)
 shows that it has no such curve. Its width does not respond to the
@@ -1293,7 +1330,15 @@ robustness of Eq.~\eqref{eq:eps} measures how well that a-priori
 prediction survives execution, and is the quantity examined here. We
 estimate it by Monte Carlo, drawing $K{=}1000$ realizations of the
 durations uniformly on each operation's interval and executing the fixed
-processing order on each of them; lower is more robust. To probe
+processing order on each of them; lower is more robust.
+\rev{The sampling measures schedules that are already built. The
+processing order is fixed before any realization is drawn, so no
+distributional assumption enters the problem formulation of
+Section~\ref{sec:problem}, the interval-arithmetic fitness of
+Section~\ref{sec:method}, the evolution or the selection of any rule:
+the distribution-free character of the interval model is untouched by
+it. The uniform law is the least committal choice on a bounded support,
+and the measurement is repeated below under three other laws.} To probe
 behavior under growing uncertainty we also widen every interval
 symmetrically about its midpoint by $+20\%$ and $+40\%$ (clipping
 negative bounds to zero), re-evaluating the same processing orders.
@@ -1351,6 +1396,20 @@ arithmetic and the rest is not: the paired contrasts separate on the
 absolute measure as well, by $-1.99$ time units against the makespan
 arm ($z=-5.55$, $p<0.001$, $|r|=0.66$) and by $-1.78$ against its own
 ablation ($z=-5.17$, $|r|=0.62$).}
+
+\rev{The objection has a third part: that methods should be compared at
+similar levels of $\RE$, since a rule that gives up expected makespan
+buys stability with it. Two entries of
+Table~\ref{tab:robustness} make that comparison without any adjustment.
+The robust $\lambda{=}4$ rule and G\&T-MWKR predict almost the same
+makespan, $2454$ against $2482$ time units, which is $28.27$ against
+$29.50$ points of $\RE$ --- if anything the robust rule is the better of
+the two a priori. Their realized deviations are not close: $9.78$ against
+$14.94$ time units, a reduction of $34.5\%$, paired over the 70
+instances at $z=-7.26$, $p<0.001$, $|r|=0.87$, and of the same sign and
+significance under all four realization laws. At matched a-priori
+quality the robustness gain is therefore neither a denominator effect
+nor a makespan concession.}
 
 The comparisons above select one representative rule per arm; at the
 level of the method the ordering is the same. Recomputing

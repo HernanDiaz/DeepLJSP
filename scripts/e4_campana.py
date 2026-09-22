@@ -1,11 +1,17 @@
 # -*- coding: utf-8 -*-
-"""E4: evoluciona sobre las asimetricas, con y sin terminales de anchura.
+"""E4: evoluciona sobre las asimetricas, los cuatro brazos del articulo.
 
 La revision r3.4 pregunta si el valor de los terminales de anchura
-depende del esquema simetrico de generacion. La respuesta necesita las
-dos ramas sobre el banco asimetrico de e4_genera_asimetricas.py: la
-completa y la ablacion --no-width, treinta semillas cada una, con la
-configuracion de irace del articulo y sin tocar nada mas.
+depende del esquema simetrico de generacion, y lo que pone en duda no es
+solo el resultado negativo sobre el makespan esperado sino la mejora de
+ROBUSTEZ, que en el articulo vive en el objetivo robusto. Hacen falta
+por tanto los cuatro brazos sobre el banco asimetrico de
+e4_genera_asimetricas.py: makespan y robusto lambda=1, cada uno con el
+conjunto completo de terminales y con la ablacion --no-width.
+
+Quince semillas por brazo en vez de treinta: cuatro brazos a treinta
+serian unas dieciseis horas de maquina, y para un contraste pareado
+quince semillas bastan. El articulo lo dice donde reporta el resultado.
 
 El entrenamiento son las cuatro 20x15 asimetricas que corresponden a
 TA11--TA14, de modo que el protocolo es el mismo que el del articulo
@@ -28,11 +34,15 @@ if hasattr(sys.stdout, "reconfigure"):
 
 PY = os.path.join("venv", "Scripts", "python.exe")
 DIR = "benchmarks/e4_asimetrico"
-SEMILLAS = list(range(1, 31))
+SEMILLAS = list(range(1, 16))
 TRAIN = ",".join(f"int__atai20_15_{k:02d}" for k in (1, 2, 3, 4))
 TUNED = ["--tournament", "7", "--crossover", "0.7695",
          "--maxtree", "30", "--elitism", "2"]
-RAMAS = {"full": [], "nowidth": ["--no-width"]}
+ROB = ["--fitness", "robust", "--lam", "1.0"]
+RAMAS = {"full": [],
+         "nowidth": ["--no-width"],
+         "rob1": ROB,
+         "rob1_nowidth": ROB + ["--no-width"]}
 
 
 def main():
