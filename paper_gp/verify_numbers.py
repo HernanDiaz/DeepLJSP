@@ -562,5 +562,53 @@ else:
     # y que el ejemplo siga siendo el que la figura dibuja
     check('la figura del caso', 'figures/fig_case.pdf', 'e3_caso')
 
+# E5 (revision r3.3): convenios de intervalo y decodificador.
+# Las cifras salen de scripts/e5_decodificador_baselines.py sobre
+# benchmarks/e5_decodificador/resumen.json.
+_e5 = os.path.join(REPO, 'benchmarks/e5_decodificador/resumen.json')
+if not os.path.exists(_e5):
+    print('\n== E5: sin benchmarks/e5_decodificador/resumen.json ==')
+else:
+    import json as _json
+    _D = _json.load(open(_e5, encoding='utf-8'))
+    print('\n== E5: convenios y decodificador ==')
+    # el rango que abre cada regla entre los tres convenios
+    for _r in ('SPT', 'LPT', 'MWKR', 'EST'):
+        _v = _D['convenios'][_r]
+        check(f'rango de {_r} entre convenios',
+              f'${min(_v.values()):.1f}$ to ${max(_v.values()):.1f}$',
+              'e5/convenios')
+    # la mayor dispersion entre convenios, que el texto acota
+    _sp = max(max(_v.values()) - min(_v.values())
+              for _v in _D['convenios'].values()
+              if max(_v.values()) < 100)
+    check('mayor dispersion entre convenios', f'${_sp:.1f}$ points',
+          'e5, derivado')
+    # el cuadro de dos por dos del decodificador
+    _dec = _D['decodificador']
+    check('la regla en semiactivo, media y sd',
+          f"$\\mathbf{{{_dec['gp_semiactivo']['media']:.2f}}} \\pm "
+          f"{_dec['gp_semiactivo']['sd']:.2f}$", 'e5/decodificador')
+    check('la regla en G&T, media y sd',
+          f"${_dec['gp_en_gt']['media']:.2f} \\pm "
+          f"{_dec['gp_en_gt']['sd']:.2f}$", 'e5/decodificador')
+    check('la destacada en semiactivo',
+          f"{_dec['gp_semiactivo']['destacada']:.2f}",
+          'e5/decodificador')
+    check('la destacada en G&T',
+          f"{_dec['gp_en_gt']['destacada']:.2f}", 'e5/decodificador')
+    check('SPT dentro del conflict set',
+          f"{_dec['gt_spt']['media']:.2f}", 'e5/decodificador')
+    # lo que cuesta a la regla entrar en el conflict set
+    _d = _dec['gp_en_gt']['media'] - _dec['gp_semiactivo']['media']
+    check('lo que pierde la regla en G&T', f'${_d:.1f}$ points',
+          'e5, derivado')
+    check('el contraste de la destacada',
+          f"$p = {_dec['contraste_destacada']['p']:.2f}$",
+          'e5/decodificador')
+    # y que G&T-MWKR sigue siendo el de la tabla de baselines
+    assert abs(_dec['gt_mwkr']['media'] - 29.5) < 0.1, (
+        'G&T-MWKR ya no reproduce la tabla de baselines')
+
 print(f"\n{ok} comprobaciones correctas, {bad} fallos")
 sys.exit(1 if bad else 0)

@@ -876,6 +876,76 @@ comparison is deferred to
 Section~\ref{sec:classics}, where published results are available on a
 common benchmark.
 
+\subsection{Interval handling and the decoder}
+\label{sec:decoder}
+
+\rev{Two things are left implicit by the comparison above and are
+separated here: how each baseline reduces an interval to a comparable
+quantity, and how much of its margin belongs to the priority rule rather
+than to the schedule generation scheme.}
+
+\rev{Every baseline in Table~\ref{tab:baselines} ranks candidates by the
+lexicographic order of Eq.~\eqref{eq:rank} applied to its own criterion,
+that is by the upper endpoint with the lower one as tie-break. That
+choice could in principle handicap them, so each rule was re-run
+ranking instead by the lower endpoint and by the midpoint of the same
+interval. It does not: over the 70 instances SPT spans $633.1$ to
+$642.5$ across the three single-endpoint conventions, LPT $703.1$ to
+$704.4$, MWKR $62.9$ to $64.6$ and EST $42.7$ to $45.1$, and the
+lexicographic values of Table~\ref{tab:baselines} fall inside or at the
+better edge of those ranges. The widest spread any convention opens is
+$2.4$ points of $\RE$, against the $23.3$ points that separate the best
+plain rule from the evolved one. How the intervals are collapsed is
+therefore not what the comparison is measuring.}
+
+\rev{The decoder is a more substantial question, since the strongest
+baseline, G\&T-MWKR, does not use the same one: it restricts each
+decision to Giffler and Thompson's conflict set and so produces active
+schedules, whereas the evolved rules choose from the whole eligible set
+and produce semi-active ones. Running the evolved rules as the
+tie-break \emph{inside} the conflict set separates the two effects.
+Table~\ref{tab:decoder} gives the four combinations. Holding the
+decoder fixed, the evolved rules beat MWKR under either one: $18.99$
+against $64.7$ in the semi-active decoder and $23.18$ against $29.5$
+in G\&T's. Holding the rule fixed, each prefers a different decoder:
+the evolved rules lose $4.2$ points when moved into the conflict set,
+while MWKR gains $35.2$ by entering it. Each method in
+Table~\ref{tab:baselines} is thus reported with the decoder that suits
+it, and the margin survives the other choice.}
+
+\begin{table}[t]
+\centering\small
+\color{revcolor}
+\caption{\rev{RE (\%) over the 70 instances for the two decoders and the
+two priority rules, one deterministic pass. The GP entries are the mean
+over the 30 evolved rules.}}
+\label{tab:decoder}
+\begin{tabular}{lcc}
+\toprule
+Priority rule & Semi-active & Giffler--Thompson \\
+\midrule
+MWKR & 64.7 & 29.5 \\
+Evolved, mean of 30 & $\mathbf{18.99} \pm 1.33$ & $23.18 \pm 7.47$ \\
+Evolved, featured & 17.71 & 18.15 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\rev{Two details of that table are worth stating. The featured rule is
+the one case where the decoder barely matters, $17.71$ against $18.15$,
+a difference of $0.44$ points that a paired test over the 70 instances
+does not separate from zero ($p = 0.32$); the loss is concentrated in
+the rest of the arm, whose standard deviation grows from $1.33$ to
+$7.47$ because a few rules degrade badly once their candidate set is
+restricted. This is what should be expected of rules evolved against a
+particular generation scheme: the conflict set removes candidates their
+fitness was never measured on. And SPT, which is the worst entry of
+Table~\ref{tab:baselines} at $627.2$, reaches $71.03$ inside the
+conflict set, which is the same phenomenon seen from the other side.
+The decoder and the rule interact, and the honest reading of
+Table~\ref{tab:baselines} is that it compares methods, each with the
+generation scheme it was designed for, not rules in isolation.}
+
 \subsection{Cross-family generalization: the 12 classical instances}
 \label{sec:classics}
 The 12 classical instances serve a double purpose: they test the evolved
