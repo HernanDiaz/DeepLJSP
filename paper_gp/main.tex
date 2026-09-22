@@ -1,4 +1,4 @@
-\documentclass[review,11pt]{elsarticle}
+\documentclass[review,authoryear,11pt]{elsarticle}
 
 \usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb}
@@ -33,7 +33,7 @@
 \renewcommand{\textfraction}{.1}
 \renewcommand{\floatpagefraction}{.75}
 
-\journal{Swarm and Evolutionary Computation}
+\journal{Computers \& Industrial Engineering}
 
 \begin{document}
 
@@ -91,7 +91,7 @@ interval job shop scheduling \sep genetic programming \sep hyper-heuristics
 \label{sec:intro}
 
 Real manufacturing environments rarely know the exact duration of an
-operation in advance~\cite{Allahverdi2022}. The interval job shop scheduling problem (IJSP)
+operation in advance~\citep{Allahverdi2022}. The interval job shop scheduling problem (IJSP)
 models this uncertainty in a minimal, distribution-free way: each
 processing time is only assumed to lie within a known interval, and
 schedules are built and evaluated with interval arithmetic, so that the
@@ -100,7 +100,7 @@ by an interval ranking. Population metaheuristics for the
 IJSP, among them genetic algorithms and artificial bee colony variants,
 achieve strong results at the cost of building and evaluating
 large numbers of complete solutions for every
-instance~\cite{DiazGA2020,DiazFEABC2023,DiazICAE2023}.
+instance~\citep{DiazGA2020,DiazFEABC2023,DiazICAE2023}.
 
 At the opposite end of the computational spectrum are \emph{dispatching
 rules}: priority functions that build a schedule in a single constructive
@@ -112,7 +112,7 @@ later in this paper confirm.
 
 For \emph{deterministic} scheduling, evolving rules automatically with
 genetic programming (GP) has been shown to narrow this gap
-substantially~\cite{Branke2016,Nguyen2017}. For scheduling
+substantially~\citep{Branke2016,Nguyen2017}. For scheduling
 under interval uncertainty, however, the automated design of dispatching
 rules remains, to the best of our knowledge, unexplored. Moving automated
 rule design to interval durations raises questions that do not
@@ -129,7 +129,7 @@ exposing uncertainty to the rule as first-class attributes, which is the
 starting point of this work. A further question, how interval makespans
 should be compared at all when they admit no natural total order, we do
 not reopen: we adopt the ranking that a systematic study of the
-alternatives found most robust~\cite{DiazGA2020}.
+alternatives found most robust~\citep{DiazGA2020}.
 
 This paper makes the following contributions:
 \begin{enumerate}
@@ -186,30 +186,30 @@ Section~\ref{sec:conclusions} concludes.
 \subsection{Job shop scheduling under interval uncertainty}
 Interval durations offer a distribution-free uncertainty model requiring
 only bounds, in contrast to stochastic and fuzzy
-approaches~\cite{Palacios2015}: they are the natural choice when
+approaches~\citep{Palacios2015}: they are the natural choice when
 historical data are insufficient to estimate distributions and a
 decision maker can only supply a minimum and a maximum duration.
 Scheduling with interval processing times has been studied across
-machine environments, from the single machine~\cite{Allahverdi2014} to
-the flexible job shop~\cite{Xu2023}, with the flow shop and others
-surveyed in~\cite{Allahverdi2022}; recent work extends the model to
-richer variants such as assembly~\cite{Zheng2024} and energy-aware
-flexible~\cite{Afsar2025} shops. It has also been studied analytically, through measures of
+machine environments, from the single machine~\citep{Allahverdi2014} to
+the flexible job shop~\citep{Xu2023}, with the flow shop and others
+surveyed by \citet{Allahverdi2022}; recent work extends the model to
+richer variants such as assembly~\citep{Zheng2024} and energy-aware
+flexible~\citep{Afsar2025} shops. It has also been studied analytically, through measures of
 the problem uncertainty induced by the intervals and of the stability of
-optimal sequences~\cite{Sotskov2013}, and through the execution of
-schedules built under uncertain durations~\cite{Sotskov2020}, the
+optimal sequences~\citep{Sotskov2013}, and through the execution of
+schedules built under uncertain durations~\citep{Sotskov2020}, the
 question Section~\ref{sec:robustness} examines for evolved rules.
 
 For the job shop with makespan minimization, which concerns us here, the
 literature is dominated by population-based metaheuristics. Lei's
-population-based neighborhood search~\cite{Lei2011}, which ranks
+population-based neighborhood search~\citep{Lei2011}, which ranks
 interval makespans by a possibility degree, was an early reference
 point; it was subsequently outperformed by a genetic algorithm with a
-systematic study of interval rankings~\cite{DiazGA2020} and by
-artificial bee colony variants~\cite{DiazFEABC2023,DiazICAE2023}, which
+systematic study of interval rankings~\citep{DiazGA2020} and by
+artificial bee colony variants~\citep{DiazFEABC2023,DiazICAE2023}, which
 report the best published results for this problem. Related objectives
 have also been addressed under interval uncertainty, notably tardiness
-minimization~\cite{DiazTardiness2022}. All of these are iterative search
+minimization~\citep{DiazTardiness2022}. All of these are iterative search
 methods: they build and evaluate many complete solutions and refine them
 over many iterations for each instance solved. Fast constructive methods
 for the IJSP have received far less attention, and dispatching rules with
@@ -231,51 +231,51 @@ favor the one with the largest amount of pending work, measured
 respectively in time units and in number of operations. The
 \emph{critical ratio} (CR) weighs the work still to be done against the
 time available until a due date. Surveys catalogue more than a hundred
-such variants~\cite{Panwalkar1977,Haupt1989}, and more recent ones
+such variants~\citep{Panwalkar1977,Haupt1989}, and more recent ones
 compare those in current use across machine
-environments~\cite{Durasevic2018}. A step
+environments~\citep{Durasevic2018}. A step
 above single-attribute rules, the algorithm of Giffler and
-Thompson (G\&T)~\cite{Giffler1960} restricts each choice to a machine's
+Thompson (G\&T)~\citep{Giffler1960} restricts each choice to a machine's
 conflict set, guaranteeing \emph{active} schedules and markedly
 improving plain rules when a priority criterion is used to break ties
 inside that set; we write G\&T-SPT and G\&T-MWKR for the resulting
 combinations. Stronger constructive procedures exist
 for the \emph{deterministic} job shop, notably the shifting bottleneck
-heuristic~\cite{Adams1988}, which repeatedly solves one-machine
+heuristic~\citep{Adams1988}, which repeatedly solves one-machine
 subproblems with heads and tails by means of Carlier's
-algorithm~\cite{Carlier1982}. These fall outside the scope of the present work: their machinery rests
+algorithm~\citep{Carlier1982}. These fall outside the scope of the present work: their machinery rests
 on exact one-machine optimization and critical-path arguments that do
 not extend directly to interval arithmetic, where no natural total order
 is available. Hand-crafted rules, however, plateaued: no fixed combination of
 attributes performs well across shop configurations and
-objectives~\cite{Haupt1989}, which motivated their \emph{automated}
+objectives~\citep{Haupt1989}, which motivated their \emph{automated}
 design.
 
 \subsection{Automated design of dispatching rules}
-Genetic programming~\cite{Koza1992,Poli2008} evolves a population of
+Genetic programming~\citep{Koza1992,Poli2008} evolves a population of
 expressions, usually represented as trees, by applying selection and
 variation operators directly on their structure. GP hyper-heuristics apply this
 machinery to \emph{priority expressions} over scheduling attributes, and
 constitute the standard approach to automated rule design
-for production scheduling~\cite{Branke2016,Nguyen2017}. Evolved rules
+for production scheduling~\citep{Branke2016,Nguyen2017}. Evolved rules
 have been shown to outperform hand-crafted ones across job shop variants,
-with active research on surrogate fitness~\cite{Hildebrandt2015}, feature
-selection~\cite{Mei2017} and multi-objective
-formulations~\cite{Nguyen2014}. Beyond single rules, a further line
+with active research on surrogate fitness~\citep{Hildebrandt2015}, feature
+selection~\citep{Mei2017} and multi-objective
+formulations~\citep{Nguyen2014}. Beyond single rules, a further line
 combines several evolved rules into \emph{ensembles} that jointly
-construct or vote on a solution~\cite{GilGala2021Ensembles}, and recent
+construct or vote on a solution~\citep{GilGala2021Ensembles}, and recent
 work explores alternatives to evolutionary search for the same design
 task, namely systematic tree search over the space of expression
-trees~\cite{GilGala2025SSHE}, reporting rules of comparable quality but
+trees~\citep{GilGala2025SSHE}, reporting rules of comparable quality but
 smaller size and better readability. All of this work targets
 deterministic (or dynamic-stochastic) settings. Closest to our setting,
 Karunakaran et
-al.~\cite{Karunakaran2017} evolve rules for dynamic job shops with
+al.~\citep{Karunakaran2017} evolve rules for dynamic job shops with
 uncertain processing times, exposing summary statistics of observed
 deviations (an exponential moving average) to the rule; uncertainty there
 is realized stochastically during simulation, and rules are evaluated on
 sampled scenarios. A recent survey of learned optimization for the job
-shop~\cite{Xu2025}, covering both GP and DRL constructive approaches,
+shop~\citep{Xu2025}, covering both GP and DRL constructive approaches,
 records no work on interval-valued processing times. To the best of our
 knowledge, evolving rules whose \emph{inputs} are interval
 attributes, and whose fitness is computed by interval arithmetic rather
@@ -283,11 +283,11 @@ than by sampling realizations, has not been explored before.
 
 Finally, deep reinforcement learning provides an alternative family of
 learned constructive methods for the
-JSP~\cite{Zhang2020L2D,Park2021GNN}; GP rules and DRL policies are
+JSP~\citep{Zhang2020L2D,Park2021GNN}; GP rules and DRL policies are
 increasingly studied as competing learning paradigms for the same
 construction task, and controlled comparisons between them under common
 protocols have been identified as a gap in the recent
-literature~\cite{Xu2025}. Both families occupy the same computational
+literature~\citep{Xu2025}. Both families occupy the same computational
 class at deployment: a single constructive pass.
 
 \section{The Interval Job Shop Scheduling Problem}
@@ -313,12 +313,13 @@ the two operations required by makespan minimization are
 \max(\mathbf{a},\mathbf{b}) &= [\max(\underline{a},\underline{b}),\,
 \max(\overline{a},\overline{b})],
 \end{align}
-both component-wise, the standard operations of interval arithmetic~\cite{Moore2009} as used in the IJSP literature~\cite{DiazGA2020}. A solution determines a task
+both component-wise, the standard operations of interval arithmetic~\citep{Moore2009} as used in the IJSP literature~\citep{DiazGA2020}. A solution determines a task
 processing order $\pi$ (a permutation with repetition of jobs, decoded
-left to right). Following the notation of~\cite{DiazGA2020,DiazICAE2023},
+left to right). Following the notation of \citet{DiazGA2020} and
+\citet{DiazICAE2023},
 let $\mathrm{PM}_o(\pi)$ and $\mathrm{PJ}_o$ denote the predecessors of task $o$ in its
 machine (according to $\pi$) and in its job. The \emph{semi-active}
-schedule~\cite{Sprecher1995} starts each task at
+schedule~\citep{Sprecher1995} starts each task at
 \begin{equation}
 \mathbf{s}_o(\pi) = \max\big(\mathbf{c}_{\mathrm{PJ}_o}(\pi),\,
 \mathbf{c}_{\mathrm{PM}_o(\pi)}(\pi)\big), \qquad
@@ -344,10 +345,10 @@ where Eq.~\eqref{eq:cmax} defines the interval makespan as the
 component-wise maximum of the job completion times,
 Eq.~\eqref{eq:prec} enforces precedence within each job and
 Eq.~\eqref{eq:cap} forbids overlaps on each machine, in both interval
-components~\cite{DiazGA2020,DiazICAE2023}. The minimum
+components~\citep{DiazGA2020,DiazICAE2023}. The minimum
 in~\eqref{eq:obj} is taken with respect to an interval ranking $R$,
 since intervals admit no natural total order and any ranking embodies a
-modeling choice~\cite{Ishibuchi1990}. We rank schedules
+modeling choice~\citep{Ishibuchi1990}. We rank schedules
 lexicographically, comparing upper bounds first and using the lower
 bound only to break ties:
 \begin{equation}
@@ -357,7 +358,7 @@ bound only to break ties:
 \label{eq:rank}
 \end{equation}
 one of the standard rankings of the IJSP literature and the one found
-in~\cite{DiazGA2020} to yield the most robust schedules. All methods in
+by \citet{DiazGA2020} to yield the most robust schedules. All methods in
 this paper, the GP rules and every baseline, share one implementation
 of this decoder and evaluator, so reported differences cannot stem from
 evaluator discrepancies.
@@ -373,8 +374,8 @@ E[\mathbf{C}_{\max}] = \frac{\underline{C}_{\max} +
 where $E[\mathbf{C}_{\max}]$ is the expected value of the interval
 makespan under the uniform distribution on
 $[\underline{C}_{\max},\overline{C}_{\max}]$, and $\LB$ is a bound of the
-underlying deterministic instance: Taillard's bounds~\cite{Taillard1993} for the
-Taillard-derived instances, the best known ones~\cite{DiazFEABC2023} for
+underlying deterministic instance: Taillard's bounds~\citep{Taillard1993} for the
+Taillard-derived instances, the best known ones~\citep{DiazFEABC2023} for
 the classical set. It serves as an indicative common reference, not as a
 bound for the interval problem, for which none is available.
 
@@ -382,8 +383,8 @@ A schedule is eventually \emph{executed} under one realization of the
 durations, and a second quantity of interest is how well its a-priori
 interval predicts that execution. Measuring the gap between a predicted
 schedule and its execution is the classical notion of schedule
-robustness~\cite{Leon1994}, here specialized to interval
-predictions. Following~\cite{DiazGA2020}, the
+robustness~\citep{Leon1994}, here specialized to interval
+predictions. Following~\citep{DiazGA2020}, the
 $\bar\varepsilon$ robustness of a schedule with a fixed processing order
 is the average relative deviation of its executed makespan from the
 predicted expected value, over $K$ realizations of the durations:
@@ -505,7 +506,7 @@ maps each instance to exactly one schedule.
 \subsection{Evolutionary components}
 \label{sec:evoview}
 The initial population is built with the \emph{ramped half-and-half}
-method~\cite{Koza1992,Poli2008}: each individual draws its maximum
+method~\citep{Koza1992,Poli2008}: each individual draws its maximum
 depth uniformly from $\{2,3,4\}$ and is generated, with equal
 probability, by the \emph{full} method, which expands every branch with
 function nodes down to that depth, or by the \emph{grow} method, which
@@ -570,14 +571,14 @@ Each generation then proceeds as follows. Parents are chosen by
 tournament, drawing $k$ individuals uniformly without replacement from
 the current population and returning the fittest of them. With
 probability $p_c$ two parents are recombined by \emph{subtree
-crossover}~\cite{Koza1992,Poli2008}: a node is drawn uniformly at
+crossover}~\citep{Koza1992,Poli2008}: a node is drawn uniformly at
 random in each parent, leaves included, and the offspring is a copy of
 the first parent with the subtree rooted at its chosen node replaced by
 the one rooted at the second parent's. Unlike the classical
 two-offspring formulation, we keep a single offspring per
 recombination. With the
 complementary probability $1-p_c$ a single parent undergoes
-\emph{subtree mutation}~\cite{Koza1992,Poli2008}: a node is again drawn
+\emph{subtree mutation}~\citep{Koza1992,Poli2008}: a node is again drawn
 uniformly at random, and the subtree rooted at it is discarded and
 replaced by a freshly generated random tree, built with the grow method
 and maximum depth $3$ over the full primitive set. Offspring
@@ -600,14 +601,14 @@ Table~\ref{tab:gpparams} lists the parameter values.
 \label{sec:grasp}
 A deterministic rule produces one schedule. For matched comparisons with
 sampling-based methods we wrap the evolved rule in GRASP-style
-randomization~\cite{Feo1995}: with probability $0.1$ the dispatched operation is
+randomization~\citep{Feo1995}: with probability $0.1$ the dispatched operation is
 drawn uniformly from the eligible set, otherwise the rule decides;
 sample $0$ remains deterministic. The wrapper, which we call
 GP-best-of-$N$, reports the lexicographically best of its $N$
 schedules. This uniform perturbation of a single
 rule is the simplest member of a family of randomized rule-based
 builders; an alternative swaps among a \emph{set} of evolved rules
-during construction~\cite{GilGala2025GRASB}.
+during construction~\citep{GilGala2025GRASB}.
 \rev{GP-best-of-$N$ is a measuring instrument and not a deployment
 mode. Its only purpose is to put the evolved rule on the same footing as
 sampling-based methods when the comparison is made at a given number of
@@ -626,13 +627,13 @@ it costs.}
 \subsection{Benchmark instances}
 \label{sec:instances}
 We use two benchmarks, both taken from the IJSP
-literature~\cite{DiazGA2020,DiazFEABC2023,DiazICAE2023}: the 70 interval
-versions of Taillard's instances~\cite{Taillard1993} (TA1--TA70, seven size classes from
+literature~\citep{DiazGA2020,DiazFEABC2023,DiazICAE2023}: the 70 interval
+versions of Taillard's instances~\citep{Taillard1993} (TA1--TA70, seven size classes from
 $15{\times}15$ to $50{\times}20$), and the 12 classical instances on
-which the published IJSP metaheuristics report results (FT10, FT20~\cite{FisherThompson1963}, seven
-instances of the La family~\cite{Lawrence1984} and ABZ7--9~\cite{Adams1988}, from $10$ to $20$ jobs and $5$ to
+which the published IJSP metaheuristics report results (FT10, FT20~\citep{FisherThompson1963}, seven
+instances of the La family~\citep{Lawrence1984} and ABZ7--9~\citep{Adams1988}, from $10$ to $20$ jobs and $5$ to
 $15$ machines). Both were obtained from their crisp counterparts with
-the generation scheme introduced in~\cite{DiazGA2020}: for every
+the generation scheme introduced by \citet{DiazGA2020}: for every
 operation a value $\delta$ is drawn uniformly at random in
 $[0,\, 0.15\,p]$, where $p$ is its original duration, and that duration
 becomes the integer interval $[p-\delta,\, p+\delta]$, machine routes
@@ -668,7 +669,7 @@ changes.}
 
 \subsection{Hyperparameter configuration with irace}
 \label{sec:irace}
-Four parameters of the evolution were configured with irace~\cite{LopezIbanez2016}: tournament
+Four parameters of the evolution were configured with irace~\citep{LopezIbanez2016}: tournament
 size, crossover probability, tree-size cap and elitism. Population size
 and number of generations were held fixed, so that every configuration is
 evaluated under the same evolution budget. The budget was 200
@@ -956,8 +957,8 @@ comparison with the \emph{published} results of the IJSP metaheuristics
 on their own benchmark and metric (Table~\ref{tab:classics}). Those
 methods belong to different algorithmic families, evolutionary
 computation and swarm intelligence: a genetic algorithm
-evolving a population of permutations~\cite{DiazGA2020} and three
-artificial bee colony variants~\cite{DiazFEABC2023,DiazICAE2023}, each
+evolving a population of permutations~\citep{DiazGA2020} and three
+artificial bee colony variants~\citep{DiazFEABC2023,DiazICAE2023}, each
 of which runs a separate search on every instance. Alongside the
 deterministic pass, Table~\ref{tab:classics} reports the randomized
 extension of Section~\ref{sec:grasp} at $N = 64$ and $N = 1024$:
@@ -970,8 +971,8 @@ schedule is kept, with no refinement or recombination among samples.
 (deterministic single pass and GP-best-of-$N$; rule evolved
 on interval Taillard $20{\times}15$, applied zero-shot) versus the
 published average results (30 runs per instance) of the IJSP
-metaheuristics GA~\cite{DiazGA2020}, ABC$_{E3}$, fEABC~\cite{DiazFEABC2023}
-and ESABC~\cite{DiazICAE2023}. LB is the best-known lower bound of the
+metaheuristics GA~\citep{DiazGA2020}, ABC$_{E3}$, fEABC~\citep{DiazFEABC2023}
+and ESABC~\citep{DiazICAE2023}. LB is the best-known lower bound of the
 expected makespan.}
 \label{tab:classics}
 \setlength{\tabcolsep}{4.5pt}
@@ -1004,13 +1005,13 @@ Mean & & & 17.9 & 14.2 & 11.3 & 9.8 & 6.4 & 5.8 & 5.5 \\
 The two families also differ in how they spend computation:
 GP-1024 evaluates $1024$ mutually independent samples per instance,
 whereas the metaheuristics evolve a population of $250$
-individuals~\cite{DiazGA2020,DiazFEABC2023} through successive
+individuals~\citep{DiazGA2020,DiazFEABC2023} through successive
 generations, each of which depends on the previous one. In wall-clock
 terms, a single constructive pass over these instances takes
 $0.03$--$0.13$~s in our Python implementation, $0.07$~s on average,
 against the $0.5$--$2.2$~s reported for the genetic algorithm and the
 $1.9$--$6.8$~s reported for fEABC on the same
-instances~\cite{DiazFEABC2023}, both implemented in C\texttt{++}.
+instances~\citep{DiazFEABC2023}, both implemented in C\texttt{++}.
 GP-1024, however, requires $37$--$134$~s of sequential Python time
 depending on instance size, and is therefore \emph{not} faster than the
 published metaheuristics.
@@ -1813,7 +1814,7 @@ constructed does not depend on the implementation, and the ratio
 between what a dispatching pass and a permutation decoding cost is
 structural, but the seconds themselves are ours.} Finally, no
 learned policy is among the baselines: no published DRL method targets
-the IJSP~\cite{Xu2025}.
+the IJSP~\citep{Xu2025}.
 
 \section{Conclusions and Future Work}
 \label{sec:conclusions}
@@ -1888,7 +1889,7 @@ Two properties of this setting shape how such a search should be
 posed. Because operations are
 dispatched by \emph{argmin}, the priority is invariant to adding a
 constant and to multiplying by a positive one, so the standard technique
-of linear scaling~\cite{Keijzer2003} cannot help and only the
+of linear scaling~\citep{Keijzer2003} cannot help and only the
 \emph{relative} weights of the additive terms are free, $k-1$ of them
 for a rule with $k$ terms. And because the terminal set contains no
 ephemeral random constants, the evolution must build coefficients
@@ -1897,7 +1898,7 @@ constant would express in one. Both an enriched terminal set and a local
 search over the relative weights, whether applied after evolution or to
 the elites of each generation, follow from these observations.
 Second, richer symbolic models:
-ensembles of complementary rules~\cite{GilGala2021Ensembles} and
+ensembles of complementary rules~\citep{GilGala2021Ensembles} and
 co-evolution of construction and tie-breaking. Third, \rev{carrying the seeding result of
 Section~\ref{sec:budget} to the published metaheuristics themselves:
 here it is a genetic algorithm of our own that the rule improves, and
@@ -1906,7 +1907,7 @@ kind of incumbent, gain as much is open.} The pools of diverse sequences produce
 GP-best-of-$N$ are directly usable as seeded initial populations. Fourth, a controlled comparison with learned
 neural constructive policies under matched training and inference
 budgets, the head-to-head evaluation that the recent
-literature~\cite{Xu2025} identifies as missing.
+literature~\citep{Xu2025} identifies as missing.
 
 \section*{CRediT authorship contribution statement}
 \textbf{Hern\'an D\'iaz}: Conceptualization, Methodology, Software,
@@ -1932,10 +1933,10 @@ strategies by the same environment used by every baseline. All benchmark
 instances, the 220 evolved rules of every experimental arm, the primary
 result files behind each table and figure, and a self-contained
 implementation that re-derives the deposited results from scratch are
-openly available in a Zenodo repository~\cite{DiazDataset2026}
+openly available in a Zenodo repository~\citep{DiazDataset2026}
 (\href{https://doi.org/10.5281/zenodo.21716972}{doi:10.5281/zenodo.21716972}).
 
-\bibliographystyle{elsarticle-num}
+\bibliographystyle{elsarticle-harv}
 \bibliography{refs}
 
 \appendix

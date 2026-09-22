@@ -19,7 +19,9 @@ for m in re.finditer(r"@(\w+)\{([^,]+),(.*?)\n\}", bib, re.S):
     entradas[m.group(2).strip()] = (m.group(1).lower(), m.group(3))
 
 citadas = Counter()
-for m in re.finditer(r"\\cite\{([^}]*)\}", tex):
+# C&IE cita en autor-ano, asi que las ordenes son las de natbib:
+# \citep para el parentesis y \citet cuando la cita hace de sujeto
+for m in re.finditer(r"\\cite[pt]?\{([^}]*)\}", tex):
     for k in m.group(1).split(","):
         citadas[k.strip()] += 1
 
