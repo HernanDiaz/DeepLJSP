@@ -1706,6 +1706,81 @@ $10.8$--$14.4\%$ under every other training set. Different instances
 select different tie-breakers around the same core, and reach the same
 performance with them.}
 
+\subsection{Asymmetric intervals}
+\label{sec:asym}
+
+\rev{Every instance used so far carries an interval symmetric about its
+crisp value, so what the width terminals contribute could belong to the
+generator rather than to the problem. The 70 instances were therefore
+regenerated with the interval skewed to the right. The crisp value is
+recovered from the midpoint of the symmetric version, which the scheme
+of Section~\ref{sec:instances} preserves exactly, and the bounds are
+drawn around it as $p - \mathrm{round}(p\,U[0,0.05])$ and
+$p + \mathrm{round}(p\,U[0,0.25])$: a job may run a little early and may
+run much late, which is the asymmetry a shop floor has. Machine routes
+are untouched, so the crisp Taillard bounds still apply. Measured over
+the $37{,}250$ operations, the mean total width is $14.3\%$ of $p$
+against the $13.9\%$ of the symmetric scheme, so what differs between
+the two banks is the shape of the interval and not its size.}
+
+\rev{The four arms of Sections~\ref{sec:ablation}
+and~\ref{sec:frontier} were re-evolved on the asymmetric counterparts of
+TA11--TA14 with the same configuration, fifteen seeds per arm rather
+than thirty, which is the one concession the compute budget required.
+Table~\ref{tab:asym} reports them over all 70 asymmetric instances,
+with the executed deviation estimated from $400$ realizations of the
+fixed processing order. Levels of $\RE$ do not compare across the two
+banks, since the right skew raises the expected makespan while the
+crisp lower bound does not move and every arm sits some six points
+higher; what compares is the contrast between arms inside the bank.}
+
+\begin{table}[t]
+\centering\small
+\color{revcolor}
+\caption{\rev{The four arms re-evolved on asymmetric intervals and
+evaluated over the 70 asymmetric instances: mean $\pm$ sd across 15
+seeds of $\RE$, of the relative width of the predicted makespan
+interval, and of the absolute deviation of the executed makespan.}}
+\label{tab:asym}
+\begin{tabular}{lccc}
+\toprule
+Arm & RE (\%) & Width (\%) & $|\Delta|$ \\
+\midrule
+Makespan, full & $25.08 \pm 1.42$ & $13.23 \pm 0.72$ & $13.36 \pm 0.64$ \\
+Makespan, no width & $23.90 \pm 1.18$ & $13.08 \pm 0.20$ &
+$13.06 \pm 0.26$ \\
+Robust $\lambda{=}1$, full & $25.93 \pm 1.18$ & $12.67 \pm 0.20$ &
+$12.75 \pm 0.27$ \\
+Robust $\lambda{=}1$, no width & $23.89 \pm 1.06$ & $12.97 \pm 0.18$ &
+$13.03 \pm 0.16$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\rev{The contrast reproduces the symmetric bank in both halves. Under
+the makespan objective the width terminals buy nothing: the predicted
+interval is no narrower ($13.23$ against $13.08$, $p=0.89$) and the
+executed deviation no smaller ($13.36$ against $13.06$, $p=0.11$),
+which is the negative result of Section~\ref{sec:ablation} again. Under
+the robust objective they buy both: the interval narrows from $12.97$
+to $12.67$ ($z=-3.24$, $|r|=0.84$) and the deviation from $13.03$ to
+$12.75$ ($z=-2.90$, $|r|=0.75$), and the robust arm improves on the
+makespan arm carrying the same terminals by $0.55$ points of width and
+$0.61$ time units of deviation ($z=-3.41$, $|r|=0.88$). Those five
+contrasts survive Holm's correction over the nine tests of the table,
+the largest adjusted $p$ among them being $0.0101$. What the width
+terminals contribute, and the objective under which they contribute it,
+therefore does not depend on the symmetric generation scheme.}
+
+\rev{One difference is worth recording rather than claiming. On the
+asymmetric bank, carrying the width terminals under the makespan
+objective costs $1.18$ points of $\RE$, where on the symmetric bank the
+two arms were indistinguishable. The difference does not survive the
+correction ($p=0.10$ adjusted) and we do not read it as an effect, but
+it points the same way as the boundary of Section~\ref{sec:frontier}:
+where the objective does not price width, the smaller terminal set is
+the better choice.}
+
 \subsection{Limitations}
 \label{sec:limitations}
 Four limitations bound the scope of our conclusions. First, the evolved
@@ -1713,16 +1788,30 @@ rules choose from the whole eligible set inside a semi-active decoder.
 Neither the conflict-set restriction that makes Giffler and Thompson's
 procedure yield active schedules, used here only for the baselines, nor
 an insertion-based generation scheme was placed in the evolutionary loop,
-and both are known to help weaker constructors. Second, all rules were
+and both are known to help weaker constructors. \rev{Section~\ref{sec:decoder}
+measures what the first of the two costs after the fact, and the rules
+lose by it: transplanted into the conflict set they were not evolved
+against, the arm gives up $4.2$ points of $\RE$. Whether evolving
+\emph{inside} that decoder would recover them, or better, is open.}
+Second, all rules were
 evolved on instances generated with the $\pm15\%$ symmetric interval
 scheme standard in the IJSP literature; the robustness analysis of
 Section~\ref{sec:robustness} does re-evaluate the resulting schedules
-under intervals widened by $+20\%$ and $+40\%$, but no rule was evolved
-under a different width, and asymmetric intervals remain untested.
+under intervals widened by $+20\%$ and $+40\%$, \rev{and
+Section~\ref{sec:asym} re-evolves the four arms on a right-skewed bank,
+where the contribution of the width terminals is unchanged,}
+but no rule was evolved
+under a different \emph{width}\rev{, so how far these results carry to
+uncertainty of a different magnitude remains open}.
 Third, our runtime figures
 are relative (evolved rules cost the same as hand-crafted ones per
 pass); absolute times depend on the research-grade Python
-implementation, but the rankings reported here do not. Finally, no
+implementation, but the rankings reported here do not. \rev{The
+budget comparison of Section~\ref{sec:budget} inherits that dependence
+on its second axis, and only on that one: the count of schedules
+constructed does not depend on the implementation, and the ratio
+between what a dispatching pass and a permutation decoding cost is
+structural, but the seconds themselves are ours.} Finally, no
 learned policy is among the baselines: no published DRL method targets
 the IJSP~\cite{Xu2025}.
 
@@ -1734,16 +1823,23 @@ hyper-heuristic for job shop scheduling with interval durations:
 priority rules evolved over a terminal set that exposes both the
 worst-case values and the widths of the uncertain quantities, compact
 enough to be read and simplified by hand. The empirical conclusions are
-three. (i)~Evolved rules outperform every
+\rev{four}. (i)~Evolved rules outperform every
 deterministic constructive baseline on the 70-instance benchmark by a
 wide, statistically significant margin ($18.99 \pm 1.33$ over 30
 evolutions, $17.71\%$ for the best rule, versus $29.5\%$ for the
 strongest baseline, which the best rule outperforms on all 70 instances) at
-the cost of a single constructive pass, and (ii)~they
+the cost of a single constructive pass\rev{, and the margin is not an
+artifact of the schedule generation scheme: holding the decoder fixed,
+either one, the evolved rules still beat MWKR}. (ii)~They
 generalize zero-shot across all size classes, evolved on
 $20{\times}15$ and best on the unseen $50{\times}15$; since every
 terminal is a per-operation attribute with no size-bound quantities,
-that transfer requires no retraining or rescaling. (iii)~For expected makespan, interval awareness at evolution time is
+that transfer requires no retraining or rescaling\rev{. Nor does the
+result rest on the particular four instances trained on: across six
+training sets of two, four and eight instances the means span $0.66$
+points of $\RE$, less than the spread between evolution seeds}.
+(iii)~\rev{Under the default expected-makespan objective}, interval
+awareness at evolution time is
 unnecessary: removing the width terminals leaves it unchanged, and
 evolving on the crisp midpoint instances with scalar fitness does
 equally well. Under an objective that penalizes interval width, however,
@@ -1754,6 +1850,27 @@ reduction requires the width terminals, since under the same objective
 the ablated arm reaches only $5.54$ and no value of $\lambda$ narrows its
 intervals. The gain is paid for in expected
 makespan, and the weight $\lambda$ governs the trade-off.
+\rev{Both halves survive a change of generator: re-evolved on a
+right-skewed bank, the width terminals again buy nothing under the
+makespan objective and again narrow both the predicted interval and the
+executed deviation under the robust one.}
+
+\rev{(iv)~Where an evolved rule stands against per-instance search is a
+question of budget, and it has a measurable answer. On one decoder, one
+evaluator and one language, a genetic algorithm of the design published
+for this problem needs about $7.6\times10^{4}$ schedule constructions to
+draw level with a single pass of the evolved rule, and at
+$1.3\times10^{5}$ it has still not reached what the same rule attains
+with $1024$ samples. Below roughly $10^{5}$ constructions the evolved
+rule is the better use of the budget; above it, per-instance search
+takes over, and the remaining distance to the best published ABC
+variants is not bought with budget at all --- a plain population method
+flattens well short of it --- but with the neighbourhood structure and
+local search those carry. What this paper contributes is therefore a
+high-quality, interpretable, fast-decision baseline for the IJSP, not a
+general solver; and the most useful thing such a baseline does for a
+solver is to start it, since the same genetic algorithm seeded with the
+rule's permutation is the only arm that ends below the sampled rule.}
 
 Returning to the questions of Section~\ref{sec:intro}: the evolution
 selects the classical scheduling attributes most often, with the width
@@ -1781,9 +1898,11 @@ search over the relative weights, whether applied after evolution or to
 the elites of each generation, follow from these observations.
 Second, richer symbolic models:
 ensembles of complementary rules~\cite{GilGala2021Ensembles} and
-co-evolution of construction and tie-breaking. Third, using evolved
-rules as inexpensive, high-quality population initializers for the
-leading IJSP metaheuristics: the pools of diverse sequences produced by
+co-evolution of construction and tie-breaking. Third, \rev{carrying the seeding result of
+Section~\ref{sec:budget} to the published metaheuristics themselves:
+here it is a genetic algorithm of our own that the rule improves, and
+whether the ABC variants, whose local search starts from a different
+kind of incumbent, gain as much is open.} The pools of diverse sequences produced by
 GP-best-of-$N$ are directly usable as seeded initial populations. Fourth, a controlled comparison with learned
 neural constructive policies under matched training and inference
 budgets, the head-to-head evaluation that the recent

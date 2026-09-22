@@ -1,0 +1,67 @@
+{
+  "fitness_re": 43.46895576296768,
+  "rule": "(-((((WKRW - (SLACK * (SLACK / (NOR + (WKRW / NOR))))) - (-((WKRW - EST) - PTW))) - NOR) - ((NOR + (WKRW / NOR)) / WKRW)))",
+  "tree": [
+    "neg",
+    [
+      "sub",
+      [
+        "sub",
+        [
+          "sub",
+          [
+            "sub",
+            "WKRW",
+            [
+              "mul",
+              "SLACK",
+              [
+                "div",
+                "SLACK",
+                [
+                  "add",
+                  "NOR",
+                  [
+                    "div",
+                    "WKRW",
+                    "NOR"
+                  ]
+                ]
+              ]
+            ]
+          ],
+          [
+            "neg",
+            [
+              "sub",
+              [
+                "sub",
+                "WKRW",
+                "EST"
+              ],
+              "PTW"
+            ]
+          ]
+        ],
+        "NOR"
+      ],
+      [
+        "div",
+        [
+          "add",
+          "NOR",
+          [
+            "div",
+            "WKRW",
+            "NOR"
+          ]
+        ],
+        "WKRW"
+      ]
+    ]
+  ],
+  "pop": 100,
+  "gens": 50,
+  "seed": 2,
+  "train_ids": "int__atai20_15_01,int__atai20_15_02,int__atai20_15_03,int__atai20_15_04"
+}

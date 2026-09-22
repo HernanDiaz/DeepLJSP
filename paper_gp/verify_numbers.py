@@ -715,5 +715,61 @@ else:
     check('lo que cuesta una pasada de la regla',
           f"${_c['min']:.0f}$ to ${_c['max']:.0f}$", 'e6/coste')
 
+# E4 (revision r3.4): los cuatro brazos sobre intervalos asimetricos.
+# Las cifras salen de scripts/e4_analiza.py sobre el banco que genera
+# scripts/e4_genera_asimetricas.py.
+_e4 = os.path.join(REPO, 'benchmarks/e4_asimetrico/resumen.json')
+_e4g = os.path.join(REPO,
+                    'benchmarks/e4_asimetrico/resumen_generacion.json')
+if not os.path.exists(_e4):
+    print('\n== E4: sin benchmarks/e4_asimetrico/resumen.json ==')
+else:
+    import json as _json
+    _A = _json.load(open(_e4, encoding='utf-8'))
+    print('\n== E4: intervalos asimetricos ==')
+    assert _A['n_instancias'] == 70, 'E4 no cubre las setenta'
+    check('realizaciones por instancia', f"${_A['K']}$ realizations",
+          'e4/resumen')
+    _ET = {'full': 'makespan full', 'nowidth': 'makespan sin anchura',
+           'rob1': 'robusto full', 'rob1_nowidth': 'robusto sin anchura'}
+    for _r, _et in _ET.items():
+        _v = _A['ramas'][_r]
+        assert _v['n'] == 15, f'{_r} no tiene quince semillas'
+        for _k, _ek in (('re', 'RE'), ('anchura', 'anchura'),
+                        ('abs', '|Delta|')):
+            check(f'{_ek} de {_et}',
+                  f"${_v[_k]['media']:.2f} \\pm {_v[_k]['sd']:.2f}$",
+                  f'e4/{_r}')
+    # los contrastes que el texto cita, y su correccion
+    _C = _A['contrastes']
+    for _par, _k, _et in (
+            ('rob1 vs rob1_nowidth', 'anchura', 'anchura, robusto'),
+            ('rob1 vs rob1_nowidth', 'abs', 'desviacion, robusto'),
+            ('rob1 vs full', 'abs', 'desviacion, robusto vs makespan')):
+        _c = _C[_par][_k]
+        check(f'z de {_et}', f"z=-{abs(_c['z']):.2f}", f'e4/{_par}')
+        check(f'|r| de {_et}', f"|r|={_c['r']:.2f}", f'e4/{_par}')
+    # el mayor p ajustado entre los que el texto declara supervivientes
+    _vivos = [_v['p_holm'] for _par, _d in _C.items() for _k, _v in
+              _d.items() if _v['p_holm'] < 0.05]
+    check('el mayor p ajustado de los que sobreviven',
+          f'${max(_vivos):.4f}$', 'e4, derivado')
+    assert len(_vivos) == 5, f'{len(_vivos)} contrastes sobreviven, no 5'
+    # y los dos que NO sobreviven, que el texto tambien declara
+    check('lo que cuesta la anchura bajo makespan',
+          f"${_C['full vs nowidth']['re']['d']:.2f}$ points",
+          'e4/full vs nowidth')
+    check('la anchura bajo makespan no separa',
+          f"$p={_C['full vs nowidth']['anchura']['p']:.2f}$",
+          'e4/full vs nowidth')
+if os.path.exists(_e4g):
+    import json as _json2
+    _G = _json2.load(open(_e4g, encoding='utf-8'))
+    check('anchura media del banco asimetrico',
+          f"${100 * _G['anchura_media_rel']:.1f}\\%$",
+          'e4/resumen_generacion')
+    check('operaciones del banco', f"${_G['n_operaciones']:,}$"
+          .replace(',', '{,}'), 'e4/resumen_generacion')
+
 print(f"\n{ok} comprobaciones correctas, {bad} fallos")
 sys.exit(1 if bad else 0)

@@ -167,6 +167,23 @@ def main():
             print(f"    {k:<8} d={d[k]['d']:+7.2f}  z={d[k]['z']:+6.2f}  "
                   f"p={d[k]['p']:.4f}  |r|={d[k]['r']:.2f}")
 
+    # Holm sobre la familia entera: tres contrastes por tres medidas. Sin
+    # ella, dos diferencias de RE al filo de 0.03 pareceria que dicen algo
+    todos = [(v[k]["p"], f"{par}/{k}")
+             for par, v in res["contrastes"].items() for k in v]
+    todos.sort()
+    prev, ajust = 0.0, {}
+    for i, (pv, etq) in enumerate(todos):
+        prev = max(prev, min(1.0, pv * (len(todos) - i)))
+        ajust[etq] = prev
+    for par, v in res["contrastes"].items():
+        for k in v:
+            v[k]["p_holm"] = ajust[f"{par}/{k}"]
+    print(f"\n  Holm sobre los {len(todos)} contrastes")
+    for pv, etq in todos:
+        marca = "  <-- sobrevive" if ajust[etq] < 0.05 else ""
+        print(f"    {etq:<34} p={pv:.4f}  Holm={ajust[etq]:.4f}{marca}")
+
     json.dump(res, open(SALIDA, "w", encoding="utf-8"), indent=1)
     print(f"\nescrito {SALIDA}")
 
