@@ -39,7 +39,7 @@ ser del denominador. Hacer tres cosas:
 Sin reevolución: se reevalúan los órdenes ya almacenados bajo sorteos
 nuevos. Horas.
 
-### E2 — Sensibilidad al conjunto de entrenamiento *(medio; lo piden los tres)*
+### E2 — Sensibilidad al conjunto de entrenamiento — **HECHO**
 
 `scripts/evolve_gp_rule.py` ya acepta `--train-ids`, así que **no hace falta
 código nuevo**. Dos ejes:
@@ -51,9 +51,23 @@ código nuevo**. Dos ejes:
 Treinta semillas por campaña. Reportar media y desviación por campaña, y
 si la estructura de la regla (uso de terminales) es estable entre ellas.
 
-Coste: una campaña de treinta artefactos son unas 4,4 h; seis campañas,
-unas 26 h de un carril, en torno a 4--5 h en seis. Sirve además al paper de
-DRL, que entrena en las mismas cuatro instancias y tiene el mismo hueco.
+Cinco campañas de treinta evoluciones, unas 16 h en seis carriles
+(`scripts/e2_sensibilidad_entrenamiento.py`, análisis en
+`scripts/e2_analiza.py`, depósito en `benchmarks/e2_entrenamiento/`).
+
+**Resultado.** Sobre las sesenta instancias que ninguna campaña toca, las
+seis medias caben en 0,66 puntos (18,95 % a 19,61 %) contra una
+desviación entre semillas de 0,93--1,35 dentro de cada campaña: importa
+más la semilla que el conjunto. Ninguna campaña se separa de TA11--TA14
+tras Holm sobre los cinco contrastes (menor p ajustado, 0,12). El eje del
+tamaño se mueve poco y en el sentido esperado: bajar a dos instancias
+cuesta 0,46 puntos y subir a ocho gana 0,20. Lo que sí cambia es la forma
+de las reglas: WKRW cae del 12,0 % al 5,8--11,8 % del recuento de
+terminales y EST sube del 9,7 % al 10,8--14,4 %.
+
+Escrito en §7.6 (`sec:trainset`, tabla `tab:trainset`) y anclado en el
+verificador. Sirve además al paper de DRL, que entrena en las mismas
+cuatro instancias y tiene el mismo hueco.
 
 ### E3 — Caso ilustrativo pequeño *(barato)*
 
