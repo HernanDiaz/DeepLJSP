@@ -150,6 +150,28 @@ def main():
               + (f"a los {cruce:.1f} s por instancia" if cruce
                  else "en ningun punto de la rejilla"))
 
+    # lo que cuesta una pasada de la regla medido en decodificaciones de
+    # permutacion: es la razon estructural entre las dos monedas, y el
+    # texto la cita, asi que se calcula aqui y no a mano
+    razon = []
+    for i in insts:
+        pasada = [seg for s in d["regla"][i]
+                  for p, _, seg in d["regla"][i][s] if p == 1]
+        # el denominador es una evaluacion del genetico, que es con quien
+        # el texto compara: cruce, mutacion y decodificacion
+        decode = [seg / p for s in d["ga"][i]
+                  for p, _, seg in d["ga"][i][s] if p == max(
+                      q for q, _, _ in d["ga"][i][s])]
+        if pasada and decode and decode[0] > 0:
+            razon.append(pasada[0] / decode[0])
+    if razon:
+        res["coste_pasada_en_decodificaciones"] = {
+            "min": float(np.min(razon)), "max": float(np.max(razon)),
+            "media": float(np.mean(razon))}
+        print(f"\n  una pasada de la regla cuesta "
+              f"{np.min(razon):.0f}--{np.max(razon):.0f} decodificaciones "
+              f"de permutacion (media {np.mean(razon):.0f})")
+
     json.dump(res, open(SALIDA, "w", encoding="utf-8"), indent=1)
     print(f"\nescrito {SALIDA}")
 

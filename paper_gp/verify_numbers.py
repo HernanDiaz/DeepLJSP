@@ -656,5 +656,64 @@ else:
     assert _ga[max(_xs)] > _m['esabc_publicado'], (
         'el genetico llano ya alcanza a ESABC: el texto de r1.3 sobra')
 
+# E6 (revision r2 y r3.5): calidad frente a presupuesto. Las cifras
+# salen de scripts/e6_analiza.py sobre las curvas que deja
+# scripts/e6_presupuesto.py, y la figura se dibuja del mismo json,
+# asi que texto y dibujo no pueden separarse.
+_e6 = os.path.join(REPO, 'benchmarks/e6_presupuesto/resumen.json')
+if not os.path.exists(_e6):
+    print('\n== E6: sin benchmarks/e6_presupuesto/resumen.json ==')
+else:
+    import json as _json
+    import math as _math
+    _B = _json.load(open(_e6, encoding='utf-8'))
+    print('\n== E6: calidad frente a presupuesto ==')
+    assert _B['n_instancias'] == 70, 'E6 no cubre las setenta'
+    _E = _B['por_evaluaciones']
+    check('la regla en una pasada', f"${_E['regla']['1']:.2f}\\%$",
+          'e6/por_evaluaciones')
+    check('el mejor-de-1024 de la regla',
+          f"${_E['regla_bon']['1024']:.2f}\\%$",
+          'e6/por_evaluaciones')
+    check('donde arranca el genetico',
+          f"${_E['ga']['1']:.0f}\\%$", 'e6/por_evaluaciones')
+    check('el genetico al final del rango',
+          f"${_E['ga']['131072']:.2f}\\%$", 'e6/por_evaluaciones')
+    check('el sembrado al final del rango',
+          f"${_E['ga_sembrado']['131072']:.2f}\\%$",
+          'e6/por_evaluaciones')
+    # los dos cruces, interpolados en log sobre la rejilla
+
+    def _cruza(_tab, _obj):
+        _ks = sorted(int(_k) for _k in _tab)
+        for _a, _b in zip(_ks, _ks[1:]):
+            _va, _vb = _tab[str(_a)], _tab[str(_b)]
+            if _va >= _obj > _vb:
+                _f = (_va - _obj) / (_va - _vb)
+                return 10 ** (_math.log10(_a) + _f *
+                              (_math.log10(_b) - _math.log10(_a)))
+        return None
+
+    def _sci(_x):
+        _e = int(_math.floor(_math.log10(_x)))
+        return f'${_x / 10 ** _e:.1f}\\times10^{{{_e}}}$'
+
+    check('donde el genetico iguala la pasada unica',
+          _sci(_cruza(_E['ga'], _E['regla']['1'])), 'e6, derivado')
+    check('donde el sembrado pasa al mejor-de-1024',
+          _sci(_cruza(_E['ga_sembrado'], _E['regla_bon']['1024'])),
+          'e6, derivado')
+    # y que el genetico NO alcanza al mejor-de-1024 en el rango, que
+    # es la afirmacion que sostiene la seccion entera
+    assert _cruza(_E['ga'], _E['regla_bon']['1024']) is None, (
+        'el genetico ya alcanza al mejor-de-1024: reescribir 6.5')
+    # cuantas veces el presupuesto del mejor-de-1024
+    check('cuantas veces el presupuesto del muestreo',
+          f'${131072 // 1024}$ times', 'e6, derivado')
+    # el coste de una pasada en evaluaciones del genetico
+    _c = _B['coste_pasada_en_decodificaciones']
+    check('lo que cuesta una pasada de la regla',
+          f"${_c['min']:.0f}$ to ${_c['max']:.0f}$", 'e6/coste')
+
 print(f"\n{ok} comprobaciones correctas, {bad} fallos")
 sys.exit(1 if bad else 0)

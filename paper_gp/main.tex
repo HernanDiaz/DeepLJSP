@@ -1091,8 +1091,77 @@ and a plain population method does not. The evolved rules are therefore
 best understood as what
 Table~\ref{tab:baselines} shows them to be, the strongest constructive
 option at the cost of one pass, and not as a substitute for per-instance
-search.}
+search; Section~\ref{sec:budget} makes that trade explicit over the
+whole range of budgets.}
 
+
+\subsection{Quality against budget}
+\label{sec:budget}
+
+\rev{The comparisons so far place the evolved rules among constructive
+methods, and Section~\ref{sec:classics} measures how far a population
+method has to search to reach them on the 12 classical instances. This
+section does the same over the 70, and does it on both axes a budget can
+be measured on, because they do not say the same thing.}
+
+\rev{Everything here runs on one decoder, one evaluator and one
+language. The genetic algorithm is the one of
+Section~\ref{sec:classics}, the evolved rule is the featured one, and
+the sampled variant is the GP-best-of-$N$ wrapper of
+Section~\ref{sec:grasp}. Two further arms bound the picture: uniformly
+sampled permutations, which is what a search with no structure
+achieves, and the genetic algorithm started from the permutation the
+rule builds, which asks whether the rule is useful to a metaheuristic
+rather than against one. Each stochastic arm keeps its best-so-far, so
+one run per instance gives its whole curve; the search arms run to
+$2^{17}$ constructions and the sampled rule to $1024$, the largest
+budget the paper reports for it.}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_budget.pdf}
+\caption{\rev{RE over the 70 instances against budget, measured in
+schedules constructed (a) and in seconds of this implementation (b).
+No curve is drawn beyond the budget at which it was measured.}}
+\label{fig:budget}
+\end{figure}
+
+\rev{Figure~\ref{fig:budget}(a) counts schedules constructed, which is
+the currency that does not depend on the implementation. The genetic
+algorithm starts where random sampling starts, at $112\%$ $\RE$, and
+needs about $7.6\times10^{4}$ constructions to draw level with the
+single pass of the rule at $17.71\%$. It does not reach what the same
+rule attains with $1024$ samples, $13.71\%$: at $2^{17}$ constructions,
+$128$ times the sampled rule's budget, it stands at $15.84\%$. Over
+this whole range, from one construction to a hundred thousand, the
+evolved rule is the better use of the budget, and that is the
+quantifiable advantage the method has: not that it is a better
+optimizer, but that it occupies a regime of budget in which optimizers
+have not yet started to work.}
+
+\rev{The second axis is less flattering and has to be read with care.
+Figure~\ref{fig:budget}(b) reports seconds in this implementation, where
+a construction does not cost the same for every method: dispatching with
+a rule evaluates nine attributes for every eligible operation at each of
+the $nm$ decisions, while decoding a fixed permutation evaluates none,
+so one pass of the rule costs what $36$ to $134$ evaluations of the
+genetic algorithm cost, depending on instance size. That ratio is structural and would
+survive a reimplementation; the absolute seconds would not, and both
+methods would move left together if written in C\texttt{++}. Even after
+paying it, the ordering holds within the range measured: at $5$ seconds
+per instance the sampled rule is at $14.60\%$ against the genetic
+algorithm's $41.27\%$, and the genetic algorithm does not overtake the
+sampled rule at any point where both were measured.}
+
+\rev{The seeded arm is the one that changes the reading. Started from
+the rule's permutation instead of at random, the genetic algorithm
+begins at $17.71\%$ by construction and ends at $13.35\%$, passing the
+sampled rule at about $9.4\times10^{4}$ constructions. It is the only
+arm that ends below the sampled rule, and it does so using the rule.
+The natural place for an evolved dispatching rule alongside a
+per-instance metaheuristic is therefore not as its competitor but as its
+starting point, which is also the cheapest way to give a population
+method a good first incumbent.}
 
 \section{Analysis}
 \label{sec:analysis}

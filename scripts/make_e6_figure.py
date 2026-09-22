@@ -89,9 +89,15 @@ def main():
     ax.set_xlabel("seconds per instance")
     ax.set_title("(b)", loc="left", fontsize=8, pad=3)
 
-    tope = float(d["por_evaluaciones"]["regla"]["1"]) * 3.2
+    # eje logaritmico en RE: el muestreo al azar vive por encima del 60%
+    # y la zona que interesa esta entre 13 y 30, asi que en escala lineal
+    # o se pierde el suelo o se aplasta el resto
     for ax in axes:
-        ax.set_ylim(0, tope)
+        ax.set_yscale("log")
+        ax.set_ylim(10, 140)
+        ax.set_yticks([10, 15, 20, 30, 50, 100])
+        ax.set_yticklabels(["10", "15", "20", "30", "50", "100"])
+        ax.minorticks_off()
         ax.spines[["top", "right"]].set_visible(False)
         ax.grid(alpha=0.25, linestyle=":", linewidth=0.6)
     axes[1].set_yticklabels([])
