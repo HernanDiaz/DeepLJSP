@@ -65,7 +65,7 @@ def main():
             c, _ = evoluciona(inst, PRESUPUESTO, random.Random(1), pop=pop,
                               torneo=tor, p_muta=pm, puntos=list(PUNTOS))
             for p in PUNTOS:
-                por_punto[p].append(re_de(c[p], lb))
+                por_punto[p].append(re_de(c[p][0], lb))
         etq = f"pop{pop} tor{tor} pm{pm}"
         res["configs"][etq] = {str(p): float(np.mean(v))
                                for p, v in por_punto.items()}

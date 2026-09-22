@@ -93,18 +93,19 @@ def gt_mwkr(terms):
 
 def curva_regla_bon(inst, pol, semilla, puntos):
     rng = random.Random(semilla)
+    t0 = time.time()
     cm0 = despacha(inst, pol)                      # muestra 0: determinista
     curva, mejor_cm, k = {}, cm0, 1
     pend = sorted(puntos)
     while pend and 1 >= pend[0]:
-        curva[pend.pop(0)] = mejor_cm
+        curva[pend.pop(0)] = (mejor_cm, time.time() - t0)
     while pend:
         cm = despacha(inst, pol, eps=EPS, rng=rng)
         k += 1
         if mejor(cm, mejor_cm):
             mejor_cm = cm
         while pend and k >= pend[0]:
-            curva[pend.pop(0)] = mejor_cm
+            curva[pend.pop(0)] = (mejor_cm, time.time() - t0)
     return curva
 
 
@@ -139,10 +140,11 @@ def main():
         def re_(cm):
             return ((cm[0] + cm[1]) / 2 - lb) / lb * 100
 
-        def anota(metodo, semilla, curva, segundos):
-            for p, cm in sorted(curva.items()):
+        def anota(metodo, semilla, curva):
+            """curva: {presupuesto: (makespan, segundos hasta ese punto)}."""
+            for p, (cm, seg) in sorted(curva.items()):
                 w.writerow([metodo, semilla, pid, p, f"{re_(cm):.4f}",
-                            f"{segundos:.3f}"])
+                            f"{seg:.4f}"])
             f.flush()
 
         # deterministas: una sola evaluacion, y su coste real
@@ -151,32 +153,28 @@ def main():
                 continue
             t = time.time()
             cm = despacha(inst, politica)
-            anota(metodo, 0, {1: cm}, time.time() - t)
+            anota(metodo, 0, {1: (cm, time.time() - t)})
 
         _, perm = despacha(inst, pol, orden=True)
 
         for s in range(1, args.semillas + 1):
             if ("regla_bon", s, pid) not in hechos:
-                t = time.time()
-                c = curva_regla_bon(inst, pol, s, PUNTOS_REGLA)
-                anota("regla_bon", s, c, time.time() - t)
+                anota("regla_bon", s,
+                      curva_regla_bon(inst, pol, s, PUNTOS_REGLA))
             if ("azar", s, pid) not in hechos and s == 1:
-                t = time.time()
                 c, _ = azar(inst, PUNTOS_BUSQUEDA[-1], random.Random(s),
                             list(PUNTOS_BUSQUEDA))
-                anota("azar", s, c, time.time() - t)
+                anota("azar", s, c)
             if ("ga", s, pid) not in hechos:
-                t = time.time()
                 c, _ = evoluciona(inst, PUNTOS_BUSQUEDA[-1],
                                   random.Random(s),
                                   puntos=list(PUNTOS_BUSQUEDA))
-                anota("ga", s, c, time.time() - t)
+                anota("ga", s, c)
             if ("ga_sembrado", s, pid) not in hechos:
-                t = time.time()
                 c, _ = evoluciona(inst, PUNTOS_BUSQUEDA[-1],
                                   random.Random(s), siembra=perm,
                                   puntos=list(PUNTOS_BUSQUEDA))
-                anota("ga_sembrado", s, c, time.time() - t)
+                anota("ga_sembrado", s, c)
             print(f"  {pid} semilla {s} hecha", flush=True)
     f.close()
     print("carril hecho", flush=True)

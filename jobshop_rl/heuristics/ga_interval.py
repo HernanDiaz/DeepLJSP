@@ -18,6 +18,7 @@ independiente de la implementacion, y quien llama mide aparte el reloj.
 Modulo NUEVO: no modifica nada del codigo existente.
 """
 import random
+import time
 
 from jobshop_rl.heuristics.fast_sim import decodifica, mejor
 
@@ -58,10 +59,12 @@ def evoluciona(inst, presupuesto, rng, pop=250, torneo=3, p_cruce=0.9,
     # decodificaciones llega a 13.4 de RE en TA11 contra 20.4 con 100.
     """Corre el genetico hasta agotar `presupuesto` decodificaciones.
 
-    Devuelve {evaluaciones: mejor makespan hasta ese momento} en los
-    `puntos` pedidos, de modo que una sola tirada da la curva entera.
+    Devuelve {evaluaciones: (mejor makespan, segundos)} en los `puntos`
+    pedidos, de modo que una sola tirada da la curva entera y su coste
+    en reloj, que es la segunda moneda de la comparacion.
     """
     puntos = sorted(puntos or [presupuesto])
+    t0 = time.time()
     curva, usadas = {}, 0
     poblacion = []
     if siembra is not None:
@@ -77,7 +80,7 @@ def evoluciona(inst, presupuesto, rng, pop=250, torneo=3, p_cruce=0.9,
         if mejor_cm is None or mejor(cm, mejor_cm):
             mejor_cm = cm
         while puntos and usadas >= puntos[0]:
-            curva[puntos.pop(0)] = mejor_cm
+            curva[puntos.pop(0)] = (mejor_cm, time.time() - t0)
 
     puntuada = []
     for ind in poblacion:
@@ -105,7 +108,7 @@ def evoluciona(inst, presupuesto, rng, pop=250, torneo=3, p_cruce=0.9,
         puntuada = nueva
 
     for p in puntos:            # por si el presupuesto acabo antes
-        curva[p] = mejor_cm
+        curva[p] = (mejor_cm, time.time() - t0)
     return curva, mejor_cm
 
 
@@ -113,13 +116,14 @@ def azar(inst, presupuesto, rng, puntos=None):
     """Muestreo uniforme de permutaciones: el suelo contra el que se mide
     cualquier busqueda, con el mismo decodificador."""
     puntos = sorted(puntos or [presupuesto])
+    t0 = time.time()
     curva, mejor_cm = {}, None
     for k in range(1, presupuesto + 1):
         cm = decodifica(inst, aleatoria(inst, rng))
         if mejor_cm is None or mejor(cm, mejor_cm):
             mejor_cm = cm
         while puntos and k >= puntos[0]:
-            curva[puntos.pop(0)] = mejor_cm
+            curva[puntos.pop(0)] = (mejor_cm, time.time() - t0)
     for p in puntos:
-        curva[p] = mejor_cm
+        curva[p] = (mejor_cm, time.time() - t0)
     return curva, mejor_cm

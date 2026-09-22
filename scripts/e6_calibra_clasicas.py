@@ -57,7 +57,10 @@ def main():
     ap.add_argument("--presupuesto", type=int, default=200000)
     ap.add_argument("--semillas", type=int, default=3)
     args = ap.parse_args()
-    puntos = [p for p in (1000, 10000, 50000, 100000, 200000, 500000)
+    # rejilla fina entre 10k y 50k: ahi esta el cruce con la pasada unica
+    # de la regla, que es lo que r1.3 pide cuantificar
+    puntos = [p for p in (1000, 5000, 10000, 15000, 20000, 30000, 40000,
+                          50000, 100000, 200000, 500000)
               if p <= args.presupuesto]
 
     ec = modulo_clasicas()
@@ -84,7 +87,7 @@ def main():
             c, _ = evoluciona(inst, args.presupuesto, random.Random(s),
                               puntos=list(puntos))
             for p in puntos:
-                por_punto[p].append(re_(c[p]))
+                por_punto[p].append(re_(c[p][0]))
         fila = {"lb": lb, "regla": regla,
                 "ga": {str(p): float(np.mean(v))
                        for p, v in por_punto.items()},
