@@ -1,0 +1,47 @@
+{
+  "fitness_re": 13.30464809255323,
+  "rule": "(EST + (-((WKRW + WKR) / max((SLACK + PT), min(PT, (-(WKRW + min(WKRW, EST))))))))",
+  "tree": [
+    "add",
+    "EST",
+    [
+      "neg",
+      [
+        "div",
+        [
+          "add",
+          "WKRW",
+          "WKR"
+        ],
+        [
+          "max",
+          [
+            "add",
+            "SLACK",
+            "PT"
+          ],
+          [
+            "min",
+            "PT",
+            [
+              "neg",
+              [
+                "add",
+                "WKRW",
+                [
+                  "min",
+                  "WKRW",
+                  "EST"
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "pop": 100,
+  "gens": 50,
+  "seed": 1,
+  "train_ids": "int__tai20_15_01,int__tai20_15_02"
+}

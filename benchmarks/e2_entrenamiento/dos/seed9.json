@@ -1,0 +1,38 @@
+{
+  "fitness_re": 13.173126528623158,
+  "rule": "(EST - ((-(PT / ((WKR * (-(-WKRW))) - WKR))) - EST))",
+  "tree": [
+    "sub",
+    "EST",
+    [
+      "sub",
+      [
+        "neg",
+        [
+          "div",
+          "PT",
+          [
+            "sub",
+            [
+              "mul",
+              "WKR",
+              [
+                "neg",
+                [
+                  "neg",
+                  "WKRW"
+                ]
+              ]
+            ],
+            "WKR"
+          ]
+        ]
+      ],
+      "EST"
+    ]
+  ],
+  "pop": 100,
+  "gens": 50,
+  "seed": 9,
+  "train_ids": "int__tai20_15_01,int__tai20_15_02"
+}

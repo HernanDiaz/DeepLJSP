@@ -394,5 +394,113 @@ else:
     bad += 1
     print(f'  FALLA destacada: desarrollo seed{_gde}, 70 seed{_g70}')
 
+# E1 (revision r3): la desviacion absoluta y las otras tres
+# realizaciones. Las cifras salen del resumen que produce
+# scripts/e1_analiza_robustez.py sobre benchmarks/e1_robustez/
+_e1 = os.path.join(REPO, 'benchmarks/e1_robustez/resumen.json')
+if not os.path.exists(_e1):
+    print('\n== E1: sin benchmarks/e1_robustez/resumen.json ==')
+else:
+    import json as _json
+    _R = _json.load(open(_e1, encoding='utf-8'))
+    print('\n== E1: robustez absoluta y realizaciones ==')
+    _u = _R['uniform']
+    for _m, _et in (('GP', 'GP makespan'), ('GP-nowidth', 'sin anchura'),
+                    ('GP-rob1', 'robusto lam=1'),
+                    ('GP-rob1-nw', 'robusto lam=1 sin anchura'),
+                    ('GP-rob4', 'robusto lam=4'),
+                    ('GT-MWKR', 'G&T-MWKR'), ('EST', 'EST')):
+        check(f'|Delta| de {_et}',
+              f"{_u['metodos'][_m]['abs']:.2f}", 'e1_robustez/uniform')
+    # el E[Cmax] de EST y de la regla, que el texto compara
+    check('E[Cmax] de la regla',
+          f"{_u['metodos']['GP']['e_mid']:.0f}", 'e1_robustez/uniform')
+    check('E[Cmax] de EST',
+          f"{_u['metodos']['EST']['e_mid']:.0f}", 'e1_robustez/uniform')
+    # y los tres contrastes sobre la medida absoluta
+    for _par, _et in (('GP vs EST', 'GP contra EST'),
+                      ('GP vs GT-MWKR', 'GP contra G&T-MWKR'),
+                      ('GP-rob1 vs GP', 'robusto contra makespan'),
+                      ('GP-rob1 vs GP-rob1-nw', 'robusto contra su ablacion')):
+        _c = _u['contrastes'][_par]
+        check(f'z absoluto, {_et}', f"z=-{abs(_c['z_abs']):.2f}",
+              'e1_robustez/uniform')
+        check(f'|r| absoluto, {_et}', f"|r|={_c['r_abs']:.2f}",
+              'e1_robustez/uniform')
+    # las diferencias absolutas bajo las otras realizaciones
+    for _d, _et in (('triangular', 'triangular'),
+                    ('pessimistic', 'sesgada'),
+                    ('worstcase', 'caso peor')):
+        _v = abs(_R[_d]['contrastes']['GP-rob1 vs GP']['d_abs'])
+        check(f'ventaja del robusto, {_et}', f'{_v:.2f}',
+              f'e1_robustez/{_d}')
+        check(f'|Delta| de la regla, {_et}',
+              f"{_R[_d]['metodos']['GP']['abs']:.2f}",
+              f'e1_robustez/{_d}')
+
+# E2 (revision r1.1 y r2): sensibilidad al conjunto de entrenamiento.
+# Las cifras salen de scripts/e2_analiza.py sobre
+# benchmarks/e2_entrenamiento/. El nombre de cada campana en el json
+# es el del script que las lanzo; aqui se mapea a las TA del paper.
+_e2 = os.path.join(REPO, 'benchmarks/e2_entrenamiento/resumen.json')
+if not os.path.exists(_e2):
+    print('\n== E2: sin benchmarks/e2_entrenamiento/resumen.json ==')
+else:
+    import json as _json
+    _S = _json.load(open(_e2, encoding='utf-8'))
+    print('\n== E2: sensibilidad al conjunto de entrenamiento ==')
+    _TA = {'cuatro_b': 'TA15--TA18', 'cuatro_c': 'TA17--TA20',
+           'cuatro_d': 'TA12, 14, 16, 18', 'dos': 'TA11--TA12',
+           'ocho': 'TA11--TA18'}
+    check('referencia, media y sd',
+          f"${_S['referencia']['media']:.2f} \\pm "
+          f"{_S['referencia']['sd']:.2f}$", 'e2_entrenamiento')
+    _medias = [_S['referencia']['media']]
+    for _c, _v in sorted(_S['campanas'].items()):
+        _medias.append(_v['media'])
+        check(f'media y sd de {_TA[_c]}',
+              f"${_v['media']:.2f} \\pm {_v['sd']:.2f}$",
+              f'e2_entrenamiento/{_c}')
+        check(f'mejor regla de {_TA[_c]}', f"{_v['min']:.2f}",
+              f'e2_entrenamiento/{_c}')
+        _sg = '+' if _v['d_vs_ref'] >= 0 else '-'
+        check(f'diferencia de {_TA[_c]}',
+              f"${_sg}{abs(_v['d_vs_ref']):.2f}$",
+              f'e2_entrenamiento/{_c}')
+        check(f'p de {_TA[_c]}', f"{_v['p']:.3f}",
+              f'e2_entrenamiento/{_c}')
+    # el rango de medias y el minimo de Holm, que el texto afirma
+    check('rango de las seis medias',
+          f'${max(_medias) - min(_medias):.2f}$ points', 'e2, derivado')
+    check('media menor', f'${min(_medias):.2f}\\%$', 'e2, derivado')
+    check('media mayor', f'${max(_medias):.2f}\\%$', 'e2, derivado')
+    _ps = sorted(_v['p'] for _v in _S['campanas'].values())
+    _m, _prev = len(_ps), 0.0
+    _holm = []
+    for _i, _pv in enumerate(_ps):
+        _prev = max(_prev, min(1.0, _pv * (_m - _i)))
+        _holm.append(_prev)
+    check('menor p ajustado por Holm', f'${min(_holm):.2f}$',
+          'e2, derivado')
+    assert min(_holm) > 0.05, 'alguna campana pasa a ser significativa'
+    # la sd entre semillas que el texto usa como vara de medir
+    _sds = [_S['referencia']['sd']] + [_v['sd']
+                                       for _v in _S['campanas'].values()]
+    check('rango de sd entre semillas',
+          f'${min(_sds):.2f}$--${max(_sds):.2f}$', 'e2, derivado')
+    # el uso de terminales, los tres que el texto cita
+    _fr = {_c: {_k: 100.0 * _n / sum(_u.values())
+                for _k, _n in _u.items()}
+           for _c, _u in _S['terminales'].items()}
+    _ref = _fr['TA11-TA14']
+    check('WKRW en la referencia', f"${_ref['WKRW']:.1f}\\%$",
+          'e2/terminales')
+    check('EST en la referencia', f"${_ref['EST']:.1f}\\%$",
+          'e2/terminales')
+    for _t in ('WKRW', 'EST'):
+        _o = [_fr[_c][_t] for _c in _TA]
+        check(f'rango de {_t} en las otras campanas',
+              f'${min(_o):.1f}$--${max(_o):.1f}\\%$', 'e2/terminales')
+
 print(f"\n{ok} comprobaciones correctas, {bad} fallos")
 sys.exit(1 if bad else 0)

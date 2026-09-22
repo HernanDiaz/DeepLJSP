@@ -641,6 +641,9 @@ The one with the lowest mean $\RE$ on the development set is the
 classical ones play no part in this or in any other choice of the
 paper. Every table reports the mean over the 30 rules, which no
 selection touches, beside the featured rule's value.
+\rev{Section~\ref{sec:trainset} repeats the whole protocol over five
+other training sets, of two, four and eight instances, and reports what
+changes.}
 
 
 \subsection{Hyperparameter configuration with irace}
@@ -1316,6 +1319,66 @@ $6.08$ against $7.57$ for the makespan rule and $8.58$ for G\&T-MWKR.
 
 
 
+
+\subsection{Sensitivity to the training set}
+\label{sec:trainset}
+
+\rev{The rules of this paper are evolved on four instances, TA11--TA14,
+fixed before any result was inspected. Whether the generalization
+figures rest on that particular quadruple is a question the design
+cannot answer by itself, so five further campaigns repeat the protocol
+unchanged --- thirty independent evolutions each, same terminal set,
+same irace configuration of Section~\ref{sec:irace} --- over different
+training sets: three alternative quadruples of the $20{\times}15$ class
+(TA15--TA18, TA17--TA20, and the even-numbered TA12, TA14, TA16, TA18),
+a pair (TA11--TA12) and an octuple (TA11--TA18). All six are judged on
+the 60 instances of the other size classes, which no campaign trains on,
+so the comparison surface is identical for every one of them, and the
+mean over the thirty rules is reported without any selection step, so
+the development set plays no part in the comparison.}
+
+\rev{Table~\ref{tab:trainset} gives the outcome. The six means span
+$0.66$ points, from $18.95\%$ to $19.61\%$, against a seed-to-seed
+standard deviation of $0.93$--$1.35$ within each campaign: which
+instances are trained on matters less than which seed the evolution
+starts from. Paired by seed against the reference, no campaign separates
+from TA11--TA14 once Holm correction is applied over the five contrasts,
+the smallest adjusted $p$ being $0.12$. The size axis moves in the
+expected direction and moves very little: halving the training set to
+two instances costs $0.46$ points and doubling it to eight gains $0.20$,
+both inside the seed noise. The best rule of each campaign tells the
+same story from the other end, ranging from $17.38\%$ to $17.89\%$, with
+the reference quadruple at the unfavorable extreme of that range.}
+
+\begin{table}[t]
+\centering\small
+\color{revcolor}
+\caption{\rev{RE (\%) over the 60 instances no campaign trains on, by
+training set: mean $\pm$ sd across 30 independently evolved rules, best
+rule, and the seed-paired Wilcoxon contrast against the reference.}}
+\label{tab:trainset}
+\begin{tabular}{lccccc}
+\toprule
+Training set & $|T|$ & Mean $\pm$ sd & Best & $\Delta$ & $p$ \\
+\midrule
+TA11--TA14 (reference) & 4 & $19.15 \pm 1.35$ & 17.89 & --- & --- \\
+TA15--TA18 & 4 & $19.46 \pm 1.24$ & 17.57 & $+0.31$ & 0.229 \\
+TA17--TA20 & 4 & $19.53 \pm 1.07$ & 17.76 & $+0.37$ & 0.025 \\
+TA12, 14, 16, 18 & 4 & $19.07 \pm 0.93$ & 17.49 & $-0.08$ & 0.952 \\
+TA11--TA12 & 2 & $19.61 \pm 1.23$ & 17.53 & $+0.46$ & 0.031 \\
+TA11--TA18 & 8 & $18.95 \pm 1.03$ & 17.38 & $-0.20$ &
+0.730 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\rev{What the training set does change is the shape of the rules. SLACK
+leads the terminal count everywhere, between $21\%$ and $27\%$, but the
+reference's second lever gives way: WKRW falls from $12.0\%$ under
+TA11--TA14 to $5.8$--$11.8\%$, while EST rises from $9.7\%$ to
+$10.8$--$14.4\%$ under every other training set. Different instances
+select different tie-breakers around the same core, and reach the same
+performance with them.}
 
 \subsection{Limitations}
 \label{sec:limitations}
