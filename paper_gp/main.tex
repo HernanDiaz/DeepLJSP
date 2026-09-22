@@ -1017,6 +1017,79 @@ $0.5$ points of $\RE$ ($18.23$ against $17.71$).
 
 
 
+\subsection{A worked example}
+\label{sec:case}
+
+\rev{Equation~\eqref{eq:besttree} reads as a blend of MWKR and SPT
+tilted by $-\mathit{WKRW}$, and a $3{\times}3$ instance makes that tilt
+visible. Instances were generated with the scheme of
+Section~\ref{sec:instances} and screened for one in which removing the
+width term, $\beta = 0$ in the notation of Section~\ref{sec:anatomy},
+changes exactly one dispatching decision and leaves the makespan worse
+for it; what the baselines do was no part of the screen. The first such
+instance has three jobs of three operations: $J_1$ visits
+$M_3, M_2, M_1$ with durations $[28,30]$, $[20,26]$, $[24,32]$; $J_2$
+visits $M_1, M_3, M_2$ with $[26,30]$, $[10,12]$, $[16,18]$; and $J_3$
+visits $M_3, M_1, M_2$ with $[22,26]$, $[14,14]$, $[27,31]$.}
+
+\rev{The two traces agree on the first two decisions and part at the
+third, where $M_3$ has just been released by $o_{11}$ and the eligible
+set is $\{o_{12}, o_{22}, o_{31}\}$. Table~\ref{tab:case} gives the
+terminals and the resulting scores. All three candidates can start at
+the same time, so SLACK vanishes and the decision rests on the
+remaining terms. Without the width term the ranking puts $o_{22}$
+($5$) ahead of $o_{31}$ ($6$): the short operation of the job with
+little work left wins on $2\,\mathit{PT}$. The width term contributes
+$-\mathit{WKRW}$, which is $-4$ for $o_{31}$ against $-2$ for $o_{22}$,
+and that reverses a one-point gap. The rule therefore dispatches
+$o_{31}$, the first operation of the job whose remaining work is the
+most uncertain, $[41,45]$ against $[16,18]$. Of the two classical
+baselines, SPT dispatches $o_{22}$ and MWKR dispatches $o_{31}$.}
+
+\begin{table}[t]
+\centering\small
+\color{revcolor}
+\caption{\rev{Terminals and priority scores at the third dispatching
+decision of the worked example. The lowest score is dispatched.}}
+\label{tab:case}
+\begin{tabular}{lcccccc}
+\toprule
+Eligible & Duration & WKR & WKRW & SLACK & Eq.~\eqref{eq:besttree} &
+$\beta = 0$ \\
+\midrule
+$o_{12}$ & $[20,26]$ & 32 & 8 & 0 & 11 & 19 \\
+$o_{22}$ & $[10,12]$ & 18 & 2 & 0 & 3 & \underline{5} \\
+$o_{31}$ & $[22,26]$ & 45 & 4 & 0 & \underline{2} & 6 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_case.pdf}
+\caption{\rev{The worked example scheduled by the evolved rule and by
+the same rule without the width term. The outlined operation is the one
+that separates the two traces.}}
+\label{fig:case}
+\end{figure}
+
+\rev{Figure~\ref{fig:case} shows what follows. Starting $J_3$ early puts
+its chain on the machines while there is still room for it, and the
+schedule closes at $\mathbf{C}_{\max} = [103,117]$; delaying it by that
+one decision pushes the same chain to the end of the horizon, and the
+schedule closes at $[113,133]$, worse at both endpoints. SPT and MWKR
+end at $[147,170]$ and $[143,161]$: MWKR agrees with the evolved rule at
+this decision and parts from it at a later one.}
+
+\rev{The example shows the mechanism, not its size. Over the first
+$800$ instances generated this way, removing the width term leaves the
+trace unchanged in $668$; of the $132$ traces that do change, $93$ end
+at the same makespan, $21$ end better with the term and $18$ worse. At
+this scale the width terminals act rarely and little better than a coin
+flip, which is why their value is established over the 70-instance
+benchmark in Sections~\ref{sec:ablation}
+and~\ref{sec:robustness} rather than here.}
+
 \subsection{The value of interval awareness: ablations}
 \label{sec:ablation}
 The interval-width terminals are the distinctive ingredient of this

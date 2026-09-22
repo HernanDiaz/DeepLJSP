@@ -262,6 +262,10 @@ def _figures(rows, hist, methods):
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
+    # fonttype 42 embebe TrueType: sin el, matplotlib escribe Type 3, que
+    # las imprentas de Elsevier rechazan
+    plt.rcParams.update({"pdf.fonttype": 42})
+
     os.makedirs("paper_gp/figures", exist_ok=True)
     COL = {"GP": "#d68910", "GP-nowidth": "#a04000",
            "EST": "#5d6d7e", "GT-MWKR": "#0e8a7d",

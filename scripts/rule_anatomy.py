@@ -102,7 +102,10 @@ def _figure(term_count, total_terms):
     # mismo esquema que el resto de las figuras del paper: la figura se genera
     # al ancho al que se imprime, asi que 8 pt es lo que llega al papel. Antes
     # no se fijaba y el defecto de 10 acababa imprimiendose a 6.2 pt.
-    plt.rcParams.update({"font.size": 8.0, "figure.facecolor": "white"})
+    # fonttype 42 embebe TrueType: sin el, matplotlib escribe Type 3, que
+    # las imprentas de Elsevier rechazan
+    plt.rcParams.update({"font.size": 8.0, "figure.facecolor": "white",
+                         "pdf.fonttype": 42})
 
     os.makedirs("paper_gp/figures", exist_ok=True)
     order = sorted(TERMINALS, key=lambda x: -term_count[x])

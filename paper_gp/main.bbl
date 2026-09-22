@@ -70,8 +70,8 @@ W.~Xu, W.~Wu, Y.~Wang, Y.~He, Z.~Lei, Flexible job-shop scheduling method based
 
 \bibitem{Zheng2024}
 P.~Zheng, S.~Xiao, P.~Zhang, Y.~Lv, A two-individual-based evolutionary
-  algorithm for the flexible assembly job shop scheduling problem with
-  uncertain interval processing times, Applied Sciences 14~(22) (2024) 10304.
+  algorithm for flexible assembly job shop scheduling problem with uncertain
+  interval processing times, Applied Sciences 14~(22) (2024) 10304.
 \newblock \href {https://doi.org/10.3390/app142210304}
   {\path{doi:10.3390/app142210304}}.
 
@@ -292,8 +292,9 @@ M.~Keijzer, Improving symbolic regression with interval arithmetic and linear
   {\path{doi:10.1007/3-540-36599-0_7}}.
 
 \bibitem{DiazDataset2026}
-H.~D{\'i}az, Genetic programming dispatching rules for the interval job shop:
-  instances, evolved rules, results and code, [dataset] (2026).
+H.~D{\'i}az~Rodr{\'i}guez, Genetic programming dispatching rules for the
+  interval job shop: instances, evolved rules, results and code, [dataset]
+  (2026).
 \newblock \href {https://doi.org/10.5281/zenodo.21716972}
   {\path{doi:10.5281/zenodo.21716972}}.
 

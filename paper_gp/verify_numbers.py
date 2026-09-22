@@ -502,5 +502,65 @@ else:
         check(f'rango de {_t} en las otras campanas',
               f'${min(_o):.1f}$--${max(_o):.1f}\\%$', 'e2/terminales')
 
+# E3 (revision r1.4): el caso ilustrativo. Las cifras salen de
+# scripts/e3_caso_ilustrativo.py; la figura, de make_e3_figure.py
+# sobre el mismo json, asi que texto y dibujo no pueden separarse.
+_e3 = os.path.join(REPO, 'benchmarks/e3_caso/caso.json')
+if not os.path.exists(_e3):
+    print('\n== E3: sin benchmarks/e3_caso/caso.json ==')
+else:
+    import json as _json
+    _C = _json.load(open(_e3, encoding='utf-8'))
+    print('\n== E3: caso ilustrativo ==')
+    # las nueve duraciones, tal como el texto las enumera
+    for _j, _fila in enumerate(_C['durations']):
+        for _lo, _up in _fila:
+            check(f'duracion de J{_j + 1}', f'$[{_lo},{_up}]$',
+                  'e3_caso/durations')
+    # la tabla de la decision: terminales y las dos puntuaciones
+    _T, _el, _oi = _C['terminales'], _C['elegibles'], _C['op_idx']
+    for _i, _j in enumerate(_el):
+        _et = f'$o_{{{_j + 1}{_oi[_i] + 1}}}$'
+        check(f'duracion de {_et}',
+              f"$[{_C['pt_lo'][_i]:.0f},{_T['PT'][_i]:.0f}]$",
+              'e3_caso/decision')
+        for _k in ('WKR', 'WKRW', 'SLACK'):
+            check(f'{_k} de {_et}', f'{_T[_k][_i]:.0f}',
+                  'e3_caso/decision')
+        check(f'Ec.(4) en {_et}', f"{_C['score_b1'][_i]:.0f}",
+              'e3_caso/decision')
+        check(f'beta=0 en {_et}', f"{_C['score_b0'][_i]:.0f}",
+              'e3_caso/decision')
+    # el trabajo restante de los dos candidatos que se disputan
+    for _i, _j in enumerate(_el):
+        if _j not in (_C['elige']['gp'], _C['elige']['b0']):
+            continue
+        _up = _T['WKR'][_i]
+        check(f'trabajo restante de J{_j + 1}',
+              f"$[{_up - _T['WKRW'][_i]:.0f},{_up:.0f}]$",
+              'e3_caso/decision')
+    # los cuatro makespans
+    for _m, _et in (('gp', 'la regla'), ('b0', 'beta=0'),
+                    ('spt', 'SPT'), ('mwkr', 'MWKR')):
+        _lo, _up = _C['makespan'][_m]
+        # sin los delimitadores: el primero va dentro de un
+        # \mathbf{C}_{\max} = ... y los otros tres sueltos
+        check(f'makespan de {_et}', f'[{_lo:.0f},{_up:.0f}]',
+              'e3_caso/makespan')
+    # el censo, que es lo que acota la lectura del ejemplo
+    _z = _C['censo']
+    for _k, _et in (('n', 'instancias del censo'),
+                    ('igual', 'trazas que no cambian'),
+                    ('divergen', 'trazas que cambian'),
+                    ('empata', 'cambian y empatan'),
+                    ('mejora', 'la anchura mejora'),
+                    ('empeora', 'la anchura empeora')):
+        check(_et, f'${_z[_k]}$', 'e3_caso/censo')
+    assert _z['igual'] + _z['divergen'] == _z['n'], 'censo descuadrado'
+    assert (_z['empata'] + _z['mejora'] + _z['empeora']
+            == _z['divergen']), 'censo descuadrado'
+    # y que el ejemplo siga siendo el que la figura dibuja
+    check('la figura del caso', 'figures/fig_case.pdf', 'e3_caso')
+
 print(f"\n{ok} comprobaciones correctas, {bad} fallos")
 sys.exit(1 if bad else 0)

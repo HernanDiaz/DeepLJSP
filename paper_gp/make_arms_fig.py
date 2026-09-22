@@ -30,7 +30,8 @@ OUT = os.path.join(HERE, "figures/fig_arms.pdf")
 
 # 8 pt es el tamano EFECTIVO porque la figura se genera al ancho al que
 # se imprime: no hay reduccion de LaTeX que encoja las letras
-plt.rcParams.update({"font.size": 8.0, "figure.facecolor": "white"})
+plt.rcParams.update({"font.size": 8.0, "figure.facecolor": "white",
+                     "pdf.fonttype": 42})
 AMBAR, GRIS = "#d68910", "#5d6d7e"
 
 pts = defaultdict(list)

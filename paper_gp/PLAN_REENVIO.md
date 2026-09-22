@@ -69,14 +69,39 @@ Escrito en §7.6 (`sec:trainset`, tabla `tab:trainset`) y anclado en el
 verificador. Sirve además al paper de DRL, que entrena en las mismas
 cuatro instancias y tiene el mismo hueco.
 
-### E3 — Caso ilustrativo pequeño *(barato)*
+### E3 — Caso ilustrativo pequeño — **HECHO**
 
-R1.4. Una instancia pequeña donde se comparen las puntuaciones de
-prioridad de la regla evolucionada contra SPT y MWKR, y se trace cómo el
-terminal de anchura inclina la decisión hacia resolver antes la
-incertidumbre. Reutilizar el dibujo de Gantt intervalar del paper de DRL
-(`scripts/make_gantt_figure.py`), que ya usa la convención de flancos
-inclinados.
+R1.4. `scripts/e3_caso_ilustrativo.py` genera instancias 3x3 con el
+esquema de la §5.1 y busca una en la que quitar el término de anchura
+cambie **una sola** decisión y empeore el makespan. El criterio no mira
+a SPT ni a MWKR, así que lo que hagan ellas en el caso es un hallazgo y
+no una condición de la búsqueda. La figura,
+`scripts/make_e3_figure.py`, usa la convención de flancos inclinados del
+paper de DRL.
+
+**Resultado.** La primera instancia así es la semilla 300. En la tercera
+decisión los tres candidatos pueden empezar a la vez, de modo que SLACK
+se anula y decide el resto. Sin el término de anchura gana `o22` (5
+contra 6); el término aporta −4 a `o31` contra −2 a `o22` y da la vuelta
+a un punto de diferencia, así que la regla adelanta `o31`, la primera
+operación del trabajo cuyo trabajo pendiente es el más incierto ([41,45]
+contra [16,18]). El schedule cierra en [103,117] contra [113,133] sin el
+término; SPT da [147,170] y MWKR [143,161].
+
+**Y el censo, que es lo que acota la lectura.** En las primeras 800
+instancias generadas así, quitar el término no cambia la traza en 668;
+de las 132 que cambian, 93 acaban en el mismo makespan, 21 mejor con el
+término y 18 peor. A esa escala el terminal de anchura actúa poco y poco
+mejor que una moneda: el ejemplo enseña el mecanismo, no su tamaño, y
+eso se dice en el texto.
+
+Escrito en §7.2 (`sec:case`, tabla `tab:case`, figura `fig:case`) y
+anclado en el verificador.
+
+**De paso.** Las seis figuras del paper salían en **Type 3**, que las
+imprentas de Elsevier rechazan. Faltaba `pdf.fonttype: 42` en los seis
+scripts que las generan; puesto y regeneradas. Ahora todas van en
+TrueType embebido.
 
 ### E4 — Intervalos asimétricos *(medio)*
 
