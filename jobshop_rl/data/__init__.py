@@ -113,7 +113,11 @@ data_dir = os.path.dirname(__file__)
 
 # Registrar archivos con .F.15_01
 for filename in os.listdir(data_dir):
-    if filename.endswith('.py') and '.F.15_01' in filename:
+    # .A.05_25 son las asimetricas de E4: mismo mecanismo, otro protocolo
+    # de generacion. El id sale del nombre antes del primer punto, asi que
+    # int__atai20_15_01.A.05_25_interval.py no choca con la simetrica.
+    if filename.endswith('.py') and ('.F.15_01' in filename
+                                     or '.A.05_25' in filename):
         register_special_problem(filename)
 
 # Los problemas con intervalos se cargan mediante el método register_special_problem anterior
