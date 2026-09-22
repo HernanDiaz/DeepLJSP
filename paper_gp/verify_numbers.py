@@ -610,5 +610,51 @@ else:
     assert abs(_dec['gt_mwkr']['media'] - 29.5) < 0.1, (
         'G&T-MWKR ya no reproduce la tabla de baselines')
 
+# r1.3: de que esta hecha la distancia con las metaheuristicas. Las
+# cifras salen de scripts/e6_calibra_clasicas.py, que corre el
+# genetico de jobshop_rl/heuristics/ga_interval.py sobre las doce
+# clasicas con el decodificador y el evaluador del articulo.
+_cc = os.path.join(REPO,
+                   'benchmarks/e6_presupuesto/calibracion_clasicas.json')
+if not os.path.exists(_cc):
+    print('\n== r1.3: sin calibracion_clasicas.json ==')
+else:
+    import json as _json
+    import math as _math
+    _K = _json.load(open(_cc, encoding='utf-8'))
+    print('\n== r1.3: la brecha, medida en construcciones ==')
+    _m = _K['medias']
+    _ga = {int(_k): _v for _k, _v in _m['ga'].items()}
+    for _p in (1000, 5000, 10000, 15000, 20000, 50000, 100000, 500000):
+        check(f'el genetico a {_p} construcciones', f'{_ga[_p]:.1f}',
+              'e6/calibracion_clasicas')
+    check('la regla en una construccion', f"${_m['regla']:.1f}\\%$",
+          'e6/calibracion_clasicas')
+    check('el genetico publicado', f"${_m['ga_publicado']:.1f}\\%$",
+          'eval_classic12.PUB_AVG')
+    check('ESABC publicado', f"${_m['esabc_publicado']:.1f}\\%$",
+          'eval_classic12.PUB_AVG')
+    # los dos cruces que el texto afirma, interpolados en log
+    _xs = sorted(_ga)
+
+    def _cruza(_obj):
+        for _a, _b in zip(_xs, _xs[1:]):
+            if _ga[_a] >= _obj > _ga[_b]:
+                _f = (_ga[_a] - _obj) / (_ga[_a] - _ga[_b])
+                return 10 ** (_math.log10(_a) + _f *
+                              (_math.log10(_b) - _math.log10(_a)))
+        return None
+
+    for _obj, _et in ((_m['regla'], 'la pasada unica'),
+                      (_m['ga_publicado'], 'el genetico publicado')):
+        _c = _cruza(_obj)
+        check(f'construcciones para igualar {_et}',
+              f'${_c / 10 ** _math.floor(_math.log10(_c)):.1f}\\times10^{{{int(_math.floor(_math.log10(_c)))}}}$',
+              'e6, derivado')
+    # y que el genetico llano NO llega a ESABC, que es lo que el texto
+    # atribuye a la busqueda local y no al presupuesto
+    assert _ga[max(_xs)] > _m['esabc_publicado'], (
+        'el genetico llano ya alcanza a ESABC: el texto de r1.3 sobra')
+
 print(f"\n{ok} comprobaciones correctas, {bad} fallos")
 sys.exit(1 if bad else 0)

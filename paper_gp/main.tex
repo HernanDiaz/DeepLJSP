@@ -1038,6 +1038,61 @@ deterministic baselines, and the best rule with a $1024$-sample budget
 comes within $1.5$ points of a population-based method that searches
 every instance separately.
 
+\rev{That distance deserves an explanation rather than an
+acknowledgement, and it can be measured. The comparison above is
+between published numbers obtained in C\texttt{++} under each author's
+own stopping rule, so we reimplemented a genetic algorithm of the same
+design --- permutation with repetition, job-order crossover, tournament
+selection, elitism, and the interval ranking of
+Eq.~\eqref{eq:rank} --- inside this codebase, running on the same
+decoder and the same evaluator as the evolved rules, and measured
+quality as a function of the number of schedules it constructs.
+Table~\ref{tab:gapbudget} reports the result on the same 12 instances,
+averaged over three runs. The reimplementation is not a weak stand-in:
+at $5\times10^{5}$ constructions it reaches $7.9\%$, ahead of the
+$9.8\%$ published for the genetic algorithm it follows.}
+
+\begin{table}[t]
+\centering\small
+\color{revcolor}
+\caption{\rev{RE (\%) of a genetic algorithm of the same design, run on
+this paper's decoder and evaluator, as a function of the schedules it
+constructs; mean over the 12 classical instances and 3 runs. The
+evolved rule constructs one.}}
+\label{tab:gapbudget}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lcccccccc}
+\toprule
+Schedules constructed & $10^3$ & $5{\cdot}10^3$ & $10^4$ &
+$1.5{\cdot}10^4$ & $2{\cdot}10^4$ & $5{\cdot}10^4$ & $10^5$ &
+$5{\cdot}10^5$ \\
+\midrule
+GA, this implementation & 50.1 & 33.2 & 24.3 & 18.2 & 15.4 & 10.3 & 9.0
+& 7.9 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\rev{Read against the $17.9\%$ the evolved rule reaches in a single
+construction, the table says that the gap is, up to a point, a budget
+gap and nothing more: the genetic algorithm needs about
+$1.6\times10^{4}$ schedules to draw level with one pass of the rule,
+and about $6.6\times10^{4}$ to reach the $9.8\%$ published for its
+C\texttt{++} counterpart. Four orders of magnitude of construction
+separate the two regimes, which is the precise sense in which a
+dispatching rule and a metaheuristic are not alternatives.}
+
+\rev{Beyond that point the explanation changes. The remaining distance
+to ESABC's $5.5\%$ is not bought with budget: this genetic algorithm
+flattens at $7.9\%$ and does not reach $5.5\%$ at
+$5\times10^{5}$ constructions, so the last few points belong to the
+neighbourhood structure and local search that the ABC variants carry
+and a plain population method does not. The evolved rules are therefore
+best understood as what
+Table~\ref{tab:baselines} shows them to be, the strongest constructive
+option at the cost of one pass, and not as a substitute for per-instance
+search.}
+
 
 \section{Analysis}
 \label{sec:analysis}
