@@ -5,7 +5,7 @@ No comprueba la redaccion, solo que cada numero que el paper afirma aparezca
 igual en su fuente. Pensado para pasarlo antes de enviar: si una campana se
 rehace y alguna cifra se queda atras, aqui salta.
 
-Uso: python paper_gp/verify_numbers.py
+Uso: python paper_caie/verify_numbers.py
 """
 
 import csv
@@ -876,7 +876,7 @@ if os.path.exists(_sw):
     _t2 = (_re[4.0] - _re[2.0]) / (_w[2.0] - _w[4.0])
     check('coste por punto de anchura, 0.5 a 2', f'costs\n${_t1:.1f}$ points',
           'lambda_sweep')
-    check('RE perdido de 0.5 a 2', f'gives up ${_re[2.0] - _re[0.5]:.2f}$ points',
+    check('RE perdido de 0.5 a 2', f'range costs ${_re[2.0] - _re[0.5]:.2f}$ points',
           'lambda_sweep')
     check('coste por punto de anchura, 2 a 4', f'rate rises to ${_t2:.1f}$',
           'lambda_sweep')
