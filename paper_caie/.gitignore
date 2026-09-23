@@ -1,1 +1,5 @@
 _envio/
+*.aux
+*.out
+*.spl
+*.log
