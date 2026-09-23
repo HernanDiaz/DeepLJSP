@@ -203,7 +203,12 @@ flexible~\citep{Afsar2025} shops. It has also been studied analytically, through
 the problem uncertainty induced by the intervals and of the stability of
 optimal sequences~\citep{Sotskov2013}, and through the execution of
 schedules built under uncertain durations~\citep{Sotskov2020}, the
-question Section~\ref{sec:robustness} examines for evolved rules.
+question Section~\ref{sec:robustness} examines for evolved rules. The
+risk carried by a fixed schedule has also been quantified directly:
+\citet{Calamita2025} estimate the value-at-risk and conditional
+value-at-risk of its makespan when only the range of each duration is
+known, replacing costly exact evaluation with machine-learning
+predictors built on features of the activity network.
 
 For the job shop with interval durations and makespan minimization,
 which concerns us here, the literature is dominated by population-based metaheuristics. Lei's
@@ -1834,8 +1839,11 @@ on its second axis, and only on that one: the count of schedules
 constructed does not depend on the implementation, and the ratio
 between what a dispatching pass and a permutation decoding cost is
 structural, but the absolute times are specific to our implementation. Finally, no
-learned policy is among the baselines: no published DRL method targets
-the IJSP~\citep{Xu2025}.
+learned policy is among the baselines. The one reinforcement-learning
+method published for the IJSP~\citep{Han2026RAPO} leaves part of the
+sequencing to be resolved during execution, so it does not belong to
+the single-pass class compared here, and it reports results on a
+different selection of classical instances.
 
 \section{Conclusions and Future Work}
 \label{sec:conclusions}
