@@ -151,23 +151,21 @@ This paper makes the following contributions:
   sensitivity to the choice and size of the training set, measured
   against the variation between independent evolution runs
   (Sections~\ref{sec:results} and~\ref{sec:trainset}).
-\item A comparison with per-instance search on a common implementation
-  and across budgets. A genetic algorithm of the design published for
-  the IJSP needs about $7.6\times10^{4}$ schedule constructions to match
-  a single pass of the evolved rule; the remaining distance to the best
-  published methods is not a matter of budget; and, seeded with the rule, the genetic algorithm outperforms both the rule's sampled variant and its own unseeded version (Section~\ref{sec:metaheur}).
-\item A delimitation of what interval awareness contributes. Under the
-  default expected-makespan objective it adds nothing measurable:
-  removing the width terminals, or evolving on the crisp midpoint
-  instances with scalar fitness, leaves expected makespan statistically
-  unchanged (Section~\ref{sec:ablation}). Its value is robustness: an
+\item A comparison with per-instance search on a common implementation,
+  in which the evolved rule, its sampled variant and a genetic algorithm
+  of the design published for the IJSP, with and without the rule as a
+  seed, are evaluated across computational budgets measured in schedule
+  constructions (Section~\ref{sec:metaheur}).
+\item A delimitation of what interval awareness contributes, in two
+  parts: ablations that remove the width terminals or evolve on the
+  crisp midpoint instances with scalar fitness, under the default
+  expected-makespan objective (Section~\ref{sec:ablation}); and an
   objective that penalizes interval width, which has no crisp
-  counterpart, reduces the deviation of the executed makespan from its
-  prediction, a reduction unattainable without the width terminals,
-  stable under non-uniform and worst-case realizations and on asymmetric
-  intervals, and obtained at the cost of a higher expected makespan, in
-  a proportion that the weight of the penalty controls
-  (Sections~\ref{sec:frontier}--\ref{sec:asym}).
+  counterpart, whose effect on the deviation of the executed makespan
+  from its prediction is examined as a function of the weight of the
+  penalty, under non-uniform and worst-case realizations, and on
+  asymmetric intervals (Sections~\ref{sec:frontier},
+  \ref{sec:robustness} and~\ref{sec:asym}).
 \end{enumerate}
 
 The remainder of the paper is organized as follows.
