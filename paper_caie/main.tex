@@ -669,13 +669,14 @@ $p + \mathrm{round}(p\,U[0,0.25])$, so that a duration may fall slightly below i
 the crisp Taillard bounds still apply. Over the $37{,}250$ operations
 the mean total width is $14.3\%$ of $p$ against $12.9\%$ for the
 symmetric scheme: the two benchmarks differ above all in the shape of
-the intervals, and the asymmetric one is also somewhat wider.
+the intervals, and the asymmetric intervals are also wider on average,
+by $1.4$ points of $p$.
 
 \subsection{Training protocol and data split}
 \label{sec:protocol}
 The 70 interval Taillard instances are split three ways. Rules are
 evolved on TA11--TA14 ($20{\times}15$). TA15--TA20 form the
-development set: they never contribute to fitness, but the design and
+validation set: they never contribute to fitness, but the design and
 configuration decisions of this paper, including the irace study of
 Section~\ref{sec:irace}, were selected on their performance. The
 remaining 60 instances are unseen by every design and configuration
@@ -685,7 +686,7 @@ generalization test.
 Each evolution runs a population of $100$ rules for $50$ generations
 and returns the best rule of its final population; thirty independent
 evolutions, differing only in their random seed, yield thirty rules.
-The one with the lowest mean $\RE$ on the development set is the
+The one with the lowest mean $\RE$ on the validation set is the
 \emph{featured rule}: the 60 held-out Taillard instances and the 12
 classical ones play no part in this or in any other choice of the
 paper. Results are reported as the mean over the 30 rules, which no
@@ -736,7 +737,7 @@ and number of generations were held fixed, so that every configuration is
 evaluated under the same evolution budget. The budget was 200
 experiments, each one a full evolution
 (population $100$, $50$ generations) on the training instances, scored by
-the resulting rule's $\RE$ on the development set.
+the resulting rule's $\RE$ on the validation set.
 Table~\ref{tab:irace} lists the parameter space and the winning
 configuration (Table~\ref{tab:gpparams}). Of the four elite configurations
 irace retains, three favor a high selection pressure (tournament size
@@ -747,7 +748,7 @@ $30$ and $40$.
 \begin{table}[t]
 \centering\small
 \caption{Hyperparameter space explored by irace (200 experiments; cost =
-development-set RE of the evolved rule) and the winning configuration.}
+validation-set RE of the evolved rule) and the winning configuration.}
 \label{tab:irace}
 \begin{tabular}{lcc}
 \toprule
@@ -1748,7 +1749,7 @@ training sets: three alternative quadruples of the $20{\times}15$ class
 a pair (TA11--TA12) and an octuple (TA11--TA18). All six are evaluated on the 60 instances of the other size classes, which no campaign trains on,
 so the comparison surface is identical for every one of them, and the
 mean over the thirty rules is reported without any selection step, so
-the development set plays no part in the comparison.
+the validation set plays no part in the comparison.
 
 Table~\ref{tab:trainset} gives the outcome. The six means span
 $0.66$ points, from $18.95\%$ to $19.61\%$, against a seed-to-seed

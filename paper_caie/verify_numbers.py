@@ -1001,6 +1001,13 @@ try:
     print('\n== anchura media de los dos bancos ==')
     check('anchura media del banco simetrico',
           f'against ${100 * sum(_ws) / len(_ws):.1f}\\%$ for the', 'instancias')
+    # la diferencia entre los dos bancos, desde las medias sin redondear
+    if os.path.exists(_e4g):
+        _G2 = _json.load(open(_e4g, encoding='utf-8'))
+        _dw = 100 * (_G2['anchura_media_rel'] - sum(_ws) / len(_ws))
+        check('diferencia de anchura entre bancos',
+              f'wider on average, by ${_dw:.1f}$ points of $p$',
+              'e4/resumen_generacion e instancias')
 except ImportError as _e:
     print(f'\n== anchura del banco simetrico: PEND ({_e}) ==')
 
