@@ -69,11 +69,12 @@ one pass of the evolved rule, and seeded with the rule it ends below
 every other method compared. Ablations delimit what interval awareness
 contributes. Under the default expected-makespan objective it is
 unnecessary: removing the width terminals, or evolving on crisp
-midpoints, does equally well. Its value is robustness: an objective
-penalizing interval width yields narrower predicted intervals and an
-executed-makespan deviation about one fifth lower, unattainable without
-those terminals, stable under non-uniform and worst-case realizations
-and on asymmetric intervals, and paid for in expected makespan.
+midpoints, does equally well. Its value lies in robustness: an
+objective penalizing interval width yields narrower predicted intervals
+and reduces the deviation of the executed makespan by about one fifth, a
+gain that requires the width terminals and persists under non-uniform
+and worst-case realizations and on asymmetric intervals, at the cost of
+a higher expected makespan.
 \end{abstract}
 
 \begin{keyword}
@@ -171,8 +172,8 @@ This paper makes the following contributions:
   counterpart, reduces the deviation of the executed makespan from its
   prediction, a reduction unattainable without the width terminals,
   stable under non-uniform and worst-case realizations and on asymmetric
-  intervals, and paid for in expected makespan at a rate that the weight
-  of the penalty controls
+  intervals, and obtained at the cost of a higher expected makespan, in
+  a proportion that the weight of the penalty controls
   (Sections~\ref{sec:frontier}--\ref{sec:asym}).
 \end{enumerate}
 
@@ -1104,7 +1105,7 @@ separate the two regimes, which is the precise sense in which a
 dispatching rule and a metaheuristic are not alternatives.
 
 Beyond that point the explanation changes. The remaining distance
-to ESABC's $5.5\%$ is not bought with budget: this genetic algorithm
+to ESABC's $5.5\%$ is not a matter of budget: this genetic algorithm
 flattens at $7.9\%$ and does not reach $5.5\%$ at
 $5\times10^{5}$ constructions, so the last few points belong to the
 neighbourhood structure and local search that the ABC variants carry
@@ -1507,9 +1508,9 @@ here. Under this objective the separation widens. Rules evolved with the
 width terminals produce schedules whose makespan interval is
 significantly narrower than those evolved without them
 ($12.04 \pm 0.75$ versus $12.47 \pm 0.20$ relative width; paired
-Wilcoxon $z=3.22$, $p<0.001$, $|r|=0.67$), and the gain is paid for in
-expected makespan ($19.62$ versus $18.42$ $\RE$), the trade the robust
-objective asks for.
+Wilcoxon $z=3.22$, $p<0.001$, $|r|=0.67$), at the cost of a higher
+expected makespan ($19.62$ versus $18.42$ $\RE$), which is the
+trade-off the robust objective is designed to make.
 
 \begin{figure}[t]
 \centering
@@ -1562,7 +1563,8 @@ $0.5$, $12.47 \pm 0.20$ at $1$, $12.44 \pm 0.24$ at $2$ and
 $12.56 \pm 0.17$ at $4$, a range of $0.13$ points against the $1.64$
 the full arm covers, with the largest width at the largest weight, and
 with a spread several times smaller, so no individual rule escapes
-either. Penalizing width in the fitness therefore buys narrowness only
+either. Penalizing width in the fitness therefore yields narrower
+intervals only
 when the rule has terminals through which to act on it: the objective
 and the representation are not two independent routes to the same end,
 the first works through the second.
@@ -1929,8 +1931,8 @@ substantially narrower and the deviation of the executed makespan from its predi
 falls by about a fifth ($4.52$ against $5.70 \times 10^{-3}$); that
 reduction requires the width terminals, since under the same objective
 the ablated arm reaches only $5.54$ and no value of $\lambda$ narrows its
-intervals. The gain is paid for in expected
-makespan, and the weight $\lambda$ governs the trade-off.
+intervals. The gain comes at the cost of a higher expected makespan,
+and the weight $\lambda$ governs the trade-off.
 The robustness result survives a change of generator: re-evolved on a
 right-skewed benchmark, the width terminals again narrow both the
 predicted interval and the executed deviation under the robust
@@ -1946,8 +1948,8 @@ $1.3\times10^{5}$ it has still not reached what the same rule attains
 with $1024$ samples. Below roughly $10^{5}$ constructions the evolved
 rule is the better use of the budget; above it, per-instance search
 takes over, and the remaining distance to the best published ABC
-variants is not bought with budget at all --- a plain population method
-flattens well short of it --- but with the neighbourhood structure and
+variants is not a matter of budget at all --- a plain population method
+flattens well short of it --- but of the neighbourhood structure and
 local search those carry. What this paper contributes is therefore a
 high-quality, interpretable, fast-decision baseline for the IJSP, not a
 general solver; and the most useful thing such a baseline does for a
@@ -1960,8 +1962,8 @@ terminals present in most rules; the magnitude of the uncertainty adds
 nothing to the expected makespan, which rules reading bounds or
 midpoints alone attain equally well, and shows its value on the third
 question: an objective that rewards a narrow interval, which only the
-width terminals can pursue, pays a chosen amount of expected makespan
-for executions about a fifth closer to their prediction. The last
+width terminals can pursue, trades a chosen amount of expected
+makespan for executions about a fifth closer to their prediction. The last
 question, where such rules stand against per-instance search, has the
 answer given in (iv): up to the order of $10^{5}$ schedule
 constructions they are the better use of computation, and beyond it
