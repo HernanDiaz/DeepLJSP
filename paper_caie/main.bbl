@@ -1,0 +1,427 @@
+\begin{thebibliography}{45}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\href}[2]{#2}
+\providecommand{\path}[1]{#1}
+\providecommand{\DOIprefix}{doi:}
+\providecommand{\ArXivprefix}{arXiv:}
+\providecommand{\URLprefix}{URL: }
+\providecommand{\Pubmedprefix}{pmid:}
+\providecommand{\doi}[1]{\href{http://dx.doi.org/#1}{\path{#1}}}
+\providecommand{\Pubmed}[1]{\href{pmid:#1}{\path{#1}}}
+\providecommand{\bibinfo}[2]{#2}
+\ifx\xfnm\relax \def\xfnm[#1]{\unskip,\space#1}\fi
+%Type = Article
+\bibitem[{Adams et~al.(1988)Adams, Balas and Zawack}]{Adams1988}
+\bibinfo{author}{Adams, J.}, \bibinfo{author}{Balas, E.},
+  \bibinfo{author}{Zawack, D.}, \bibinfo{year}{1988}.
+\newblock \bibinfo{title}{The shifting bottleneck procedure for job shop
+  scheduling}.
+\newblock \bibinfo{journal}{Management Science} \bibinfo{volume}{34},
+  \bibinfo{pages}{391--401}.
+\newblock \DOIprefix\doi{10.1287/mnsc.34.3.391}.
+%Type = Article
+\bibitem[{Af{\c{s}}ar et~al.(2025)Af{\c{s}}ar, Puente, Palacios,
+  Gonz{\'a}lez-Rodr{\'i}guez and Vela}]{Afsar2025}
+\bibinfo{author}{Af{\c{s}}ar, S.}, \bibinfo{author}{Puente, J.},
+  \bibinfo{author}{Palacios, J.J.},
+  \bibinfo{author}{Gonz{\'a}lez-Rodr{\'i}guez, I.}, \bibinfo{author}{Vela,
+  C.R.}, \bibinfo{year}{2025}.
+\newblock \bibinfo{title}{Solving the energy-aware flexible job shop problem
+  using a memetic algorithm}.
+\newblock \bibinfo{journal}{Integrated Computer-Aided Engineering}
+  \bibinfo{volume}{32}, \bibinfo{pages}{397--414}.
+\newblock \DOIprefix\doi{10.1177/10692509251353343}.
+%Type = Article
+\bibitem[{Allahverdi(2022)}]{Allahverdi2022}
+\bibinfo{author}{Allahverdi, A.}, \bibinfo{year}{2022}.
+\newblock \bibinfo{title}{A survey of scheduling problems with uncertain
+  interval/bounded processing/setup times}.
+\newblock \bibinfo{journal}{Journal of Project Management} \bibinfo{volume}{7},
+  \bibinfo{pages}{255--264}.
+\newblock \DOIprefix\doi{10.5267/j.jpm.2022.3.003}.
+%Type = Article
+\bibitem[{Allahverdi et~al.(2014)Allahverdi, Aydilek and
+  Aydilek}]{Allahverdi2014}
+\bibinfo{author}{Allahverdi, A.}, \bibinfo{author}{Aydilek, H.},
+  \bibinfo{author}{Aydilek, A.}, \bibinfo{year}{2014}.
+\newblock \bibinfo{title}{Single machine scheduling problem with interval
+  processing times to minimize mean weighted completion time}.
+\newblock \bibinfo{journal}{Computers \& Operations Research}
+  \bibinfo{volume}{51}, \bibinfo{pages}{200--207}.
+\newblock \DOIprefix\doi{10.1016/j.cor.2014.06.003}.
+%Type = Article
+\bibitem[{Branke et~al.(2016)Branke, Nguyen, Pickardt and Zhang}]{Branke2016}
+\bibinfo{author}{Branke, J.}, \bibinfo{author}{Nguyen, S.},
+  \bibinfo{author}{Pickardt, C.W.}, \bibinfo{author}{Zhang, M.},
+  \bibinfo{year}{2016}.
+\newblock \bibinfo{title}{Automated design of production scheduling heuristics:
+  a review}.
+\newblock \bibinfo{journal}{IEEE Transactions on Evolutionary Computation}
+  \bibinfo{volume}{20}, \bibinfo{pages}{110--124}.
+\newblock \DOIprefix\doi{10.1109/tevc.2015.2429314}.
+%Type = Article
+\bibitem[{Carlier(1982)}]{Carlier1982}
+\bibinfo{author}{Carlier, J.}, \bibinfo{year}{1982}.
+\newblock \bibinfo{title}{The one-machine sequencing problem}.
+\newblock \bibinfo{journal}{European Journal of Operational Research}
+  \bibinfo{volume}{11}, \bibinfo{pages}{42--47}.
+\newblock \DOIprefix\doi{10.1016/s0377-2217(82)80007-6}.
+%Type = Inproceedings
+\bibitem[{D{\'i}az et~al.(2020)D{\'i}az, Gonz{\'a}lez-Rodr{\'i}guez, Palacios,
+  D{\'i}az and Vela}]{DiazGA2020}
+\bibinfo{author}{D{\'i}az, H.}, \bibinfo{author}{Gonz{\'a}lez-Rodr{\'i}guez,
+  I.}, \bibinfo{author}{Palacios, J.J.}, \bibinfo{author}{D{\'i}az, I.},
+  \bibinfo{author}{Vela, C.R.}, \bibinfo{year}{2020}.
+\newblock \bibinfo{title}{A genetic approach to the job shop scheduling problem
+  with interval uncertainty}, in: \bibinfo{booktitle}{Information Processing
+  and Management of Uncertainty in Knowledge-Based Systems ({IPMU})},
+  \bibinfo{publisher}{Springer}. pp. \bibinfo{pages}{663--676}.
+\newblock \DOIprefix\doi{10.1007/978-3-030-50143-3_52}.
+%Type = Article
+\bibitem[{D{\'i}az et~al.(2022)D{\'i}az, Palacios, D{\'i}az, Vela and
+  Gonz{\'a}lez-Rodr{\'i}guez}]{DiazTardiness2022}
+\bibinfo{author}{D{\'i}az, H.}, \bibinfo{author}{Palacios, J.J.},
+  \bibinfo{author}{D{\'i}az, I.}, \bibinfo{author}{Vela, C.R.},
+  \bibinfo{author}{Gonz{\'a}lez-Rodr{\'i}guez, I.}, \bibinfo{year}{2022}.
+\newblock \bibinfo{title}{Robust schedules for tardiness optimization in job
+  shop with interval uncertainty}.
+\newblock \bibinfo{journal}{Logic Journal of the IGPL} \bibinfo{volume}{31},
+  \bibinfo{pages}{240--254}.
+\newblock \DOIprefix\doi{10.1093/jigpal/jzac016}.
+%Type = Article
+\bibitem[{D{\'i}az et~al.(2023a)D{\'i}az, Palacios, Gonz{\'a}lez-Rodr{\'i}guez
+  and Vela}]{DiazICAE2023}
+\bibinfo{author}{D{\'i}az, H.}, \bibinfo{author}{Palacios, J.J.},
+  \bibinfo{author}{Gonz{\'a}lez-Rodr{\'i}guez, I.}, \bibinfo{author}{Vela,
+  C.R.}, \bibinfo{year}{2023}a.
+\newblock \bibinfo{title}{An elitist seasonal artificial bee colony algorithm
+  for the interval job shop}.
+\newblock \bibinfo{journal}{Integrated Computer-Aided Engineering}
+  \bibinfo{volume}{30}, \bibinfo{pages}{223--242}.
+\newblock \DOIprefix\doi{10.3233/ica-230705}.
+%Type = Article
+\bibitem[{D{\'i}az et~al.(2023b)D{\'i}az, Palacios, Gonz{\'a}lez-Rodr{\'i}guez
+  and Vela}]{DiazFEABC2023}
+\bibinfo{author}{D{\'i}az, H.}, \bibinfo{author}{Palacios, J.J.},
+  \bibinfo{author}{Gonz{\'a}lez-Rodr{\'i}guez, I.}, \bibinfo{author}{Vela,
+  C.R.}, \bibinfo{year}{2023}b.
+\newblock \bibinfo{title}{Fast elitist {ABC} for makespan optimisation in
+  interval {JSP}}.
+\newblock \bibinfo{journal}{Natural Computing} \bibinfo{volume}{22},
+  \bibinfo{pages}{645--657}.
+\newblock \DOIprefix\doi{10.1007/s11047-023-09953-2}.
+%Type = Misc
+\bibitem[{D{\'i}az~Rodr{\'i}guez(2026)}]{DiazDataset2026}
+\bibinfo{author}{D{\'i}az~Rodr{\'i}guez, H.}, \bibinfo{year}{2026}.
+\newblock \bibinfo{title}{Genetic programming dispatching rules for the
+  interval job shop: instances, evolved rules, results and code}.
+\newblock \DOIprefix\doi{10.5281/zenodo.21716972}. \bibinfo{note}{[dataset]}.
+%Type = Article
+\bibitem[{Feo and Resende(1995)}]{Feo1995}
+\bibinfo{author}{Feo, T.A.}, \bibinfo{author}{Resende, M.G.C.},
+  \bibinfo{year}{1995}.
+\newblock \bibinfo{title}{Greedy randomized adaptive search procedures}.
+\newblock \bibinfo{journal}{Journal of Global Optimization}
+  \bibinfo{volume}{6}, \bibinfo{pages}{109--133}.
+\newblock \DOIprefix\doi{10.1007/BF01096763}.
+%Type = Incollection
+\bibitem[{Fisher and Thompson(1963)}]{FisherThompson1963}
+\bibinfo{author}{Fisher, H.}, \bibinfo{author}{Thompson, G.L.},
+  \bibinfo{year}{1963}.
+\newblock \bibinfo{title}{Probabilistic learning combinations of local job-shop
+  scheduling rules}, in: \bibinfo{editor}{Muth, J.F.},
+  \bibinfo{editor}{Thompson, G.L.} (Eds.), \bibinfo{booktitle}{Industrial
+  Scheduling}. \bibinfo{publisher}{Prentice-Hall}, \bibinfo{address}{Englewood
+  Cliffs, NJ}, pp. \bibinfo{pages}{225--251}.
+%Type = Article
+\bibitem[{Giffler and Thompson(1960)}]{Giffler1960}
+\bibinfo{author}{Giffler, B.}, \bibinfo{author}{Thompson, G.L.},
+  \bibinfo{year}{1960}.
+\newblock \bibinfo{title}{Algorithms for solving production-scheduling
+  problems}.
+\newblock \bibinfo{journal}{Operations Research} \bibinfo{volume}{8},
+  \bibinfo{pages}{487--503}.
+\newblock \DOIprefix\doi{10.1287/opre.8.4.487}.
+%Type = Article
+\bibitem[{Gil-Gala et~al.(2021)Gil-Gala, Menc{\'i}a, Sierra and
+  Varela}]{GilGala2021Ensembles}
+\bibinfo{author}{Gil-Gala, F.J.}, \bibinfo{author}{Menc{\'i}a, C.},
+  \bibinfo{author}{Sierra, M.R.}, \bibinfo{author}{Varela, R.},
+  \bibinfo{year}{2021}.
+\newblock \bibinfo{title}{Learning ensembles of priority rules for online
+  scheduling by hybrid evolutionary algorithms}.
+\newblock \bibinfo{journal}{Integrated Computer-Aided Engineering}
+  \bibinfo{volume}{28}, \bibinfo{pages}{65--80}.
+\newblock \DOIprefix\doi{10.3233/ica-200634}.
+%Type = Inproceedings
+\bibitem[{Gil-Gala et~al.(2025a)Gil-Gala, {\DJ}ura{\v{s}}evi{\'c}, Sierra and
+  Puente}]{GilGala2025GRASB}
+\bibinfo{author}{Gil-Gala, F.J.}, \bibinfo{author}{{\DJ}ura{\v{s}}evi{\'c},
+  M.}, \bibinfo{author}{Sierra, M.R.}, \bibinfo{author}{Puente, J.},
+  \bibinfo{year}{2025}a.
+\newblock \bibinfo{title}{Greedy randomised adaptive solution builder using
+  priority rules}, in: \bibinfo{booktitle}{Proceedings of the Genetic and
+  Evolutionary Computation Conference Companion ({GECCO} '25)},
+  \bibinfo{publisher}{ACM}. pp. \bibinfo{pages}{211--214}.
+\newblock \DOIprefix\doi{10.1145/3712255.3726547}.
+%Type = Article
+\bibitem[{Gil-Gala et~al.(2025b)Gil-Gala, {\DJ}ura{\v{s}}evi{\'c}, Sierra and
+  Varela}]{GilGala2025SSHE}
+\bibinfo{author}{Gil-Gala, F.J.}, \bibinfo{author}{{\DJ}ura{\v{s}}evi{\'c},
+  M.}, \bibinfo{author}{Sierra, M.R.}, \bibinfo{author}{Varela, R.},
+  \bibinfo{year}{2025}b.
+\newblock \bibinfo{title}{Tree search hyper-heuristic with application to
+  combinatorial optimization}.
+\newblock \bibinfo{journal}{Journal of Heuristics} \bibinfo{volume}{31},
+  \bibinfo{pages}{25}.
+\newblock \DOIprefix\doi{10.1007/s10732-025-09560-7}.
+%Type = Article
+\bibitem[{Haupt(1989)}]{Haupt1989}
+\bibinfo{author}{Haupt, R.}, \bibinfo{year}{1989}.
+\newblock \bibinfo{title}{A survey of priority rule-based scheduling}.
+\newblock \bibinfo{journal}{OR Spektrum} \bibinfo{volume}{11},
+  \bibinfo{pages}{3--16}.
+\newblock \DOIprefix\doi{10.1007/bf01721162}.
+%Type = Article
+\bibitem[{Hildebrandt and Branke(2015)}]{Hildebrandt2015}
+\bibinfo{author}{Hildebrandt, T.}, \bibinfo{author}{Branke, J.},
+  \bibinfo{year}{2015}.
+\newblock \bibinfo{title}{On using surrogates with genetic programming}.
+\newblock \bibinfo{journal}{Evolutionary Computation} \bibinfo{volume}{23},
+  \bibinfo{pages}{343--367}.
+\newblock \DOIprefix\doi{10.1162/evco_a_00133}.
+%Type = Article
+\bibitem[{Ishibuchi and Tanaka(1990)}]{Ishibuchi1990}
+\bibinfo{author}{Ishibuchi, H.}, \bibinfo{author}{Tanaka, H.},
+  \bibinfo{year}{1990}.
+\newblock \bibinfo{title}{Multiobjective programming in optimization of the
+  interval objective function}.
+\newblock \bibinfo{journal}{European Journal of Operational Research}
+  \bibinfo{volume}{48}, \bibinfo{pages}{219--225}.
+\newblock \DOIprefix\doi{10.1016/0377-2217(90)90375-L}.
+%Type = Inproceedings
+\bibitem[{Karunakaran et~al.(2017)Karunakaran, Mei, Chen and
+  Zhang}]{Karunakaran2017}
+\bibinfo{author}{Karunakaran, D.}, \bibinfo{author}{Mei, Y.},
+  \bibinfo{author}{Chen, G.}, \bibinfo{author}{Zhang, M.},
+  \bibinfo{year}{2017}.
+\newblock \bibinfo{title}{Dynamic job shop scheduling under uncertainty using
+  genetic programming}, in: \bibinfo{booktitle}{Intelligent and Evolutionary
+  Systems}, \bibinfo{publisher}{Springer}. pp. \bibinfo{pages}{195--210}.
+\newblock \DOIprefix\doi{10.1007/978-3-319-49049-6_14}.
+%Type = Inproceedings
+\bibitem[{Kazimipour et~al.(2014)Kazimipour, Li and Qin}]{Kazimipour2014}
+\bibinfo{author}{Kazimipour, B.}, \bibinfo{author}{Li, X.},
+  \bibinfo{author}{Qin, A.K.}, \bibinfo{year}{2014}.
+\newblock \bibinfo{title}{A review of population initialization techniques for
+  evolutionary algorithms}, in: \bibinfo{booktitle}{2014 IEEE Congress on
+  Evolutionary Computation (CEC)}, \bibinfo{publisher}{IEEE}. pp.
+  \bibinfo{pages}{2585--2592}.
+\newblock \DOIprefix\doi{10.1109/CEC.2014.6900618}.
+%Type = Inproceedings
+\bibitem[{Keijzer(2003)}]{Keijzer2003}
+\bibinfo{author}{Keijzer, M.}, \bibinfo{year}{2003}.
+\newblock \bibinfo{title}{Improving symbolic regression with interval
+  arithmetic and linear scaling}, in: \bibinfo{booktitle}{Genetic Programming
+  ({EuroGP})}, \bibinfo{publisher}{Springer}. pp. \bibinfo{pages}{70--82}.
+\newblock \DOIprefix\doi{10.1007/3-540-36599-0_7}.
+%Type = Book
+\bibitem[{Koza(1992)}]{Koza1992}
+\bibinfo{author}{Koza, J.R.}, \bibinfo{year}{1992}.
+\newblock \bibinfo{title}{Genetic Programming: On the Programming of Computers
+  by Means of Natural Selection}.
+\newblock \bibinfo{publisher}{MIT Press}, \bibinfo{address}{Cambridge, MA}.
+%Type = Techreport
+\bibitem[{Lawrence(1984)}]{Lawrence1984}
+\bibinfo{author}{Lawrence, S.}, \bibinfo{year}{1984}.
+\newblock \bibinfo{title}{Resource constrained project scheduling: an
+  experimental investigation of heuristic scheduling techniques (Supplement)}.
+\newblock \bibinfo{type}{Technical Report}. Graduate School of Industrial
+  Administration, Carnegie-Mellon University. \bibinfo{address}{Pittsburgh,
+  PA}.
+%Type = Article
+\bibitem[{Lei(2011)}]{Lei2011}
+\bibinfo{author}{Lei, D.}, \bibinfo{year}{2011}.
+\newblock \bibinfo{title}{Population-based neighborhood search for job shop
+  scheduling with interval processing time}.
+\newblock \bibinfo{journal}{Computers \& Industrial Engineering}
+  \bibinfo{volume}{61}, \bibinfo{pages}{1200--1208}.
+\newblock \DOIprefix\doi{10.1016/j.cie.2011.07.010}.
+%Type = Article
+\bibitem[{Leon et~al.(1994)Leon, Wu and Storer}]{Leon1994}
+\bibinfo{author}{Leon, V.J.}, \bibinfo{author}{Wu, S.D.},
+  \bibinfo{author}{Storer, R.H.}, \bibinfo{year}{1994}.
+\newblock \bibinfo{title}{Robustness measures and robust scheduling for job
+  shops}.
+\newblock \bibinfo{journal}{IIE Transactions} \bibinfo{volume}{26},
+  \bibinfo{pages}{32--43}.
+\newblock \DOIprefix\doi{10.1080/07408179408966626}.
+%Type = Article
+\bibitem[{L{\'o}pez-Ib{\'a}{\~n}ez et~al.(2016)L{\'o}pez-Ib{\'a}{\~n}ez,
+  Dubois-Lacoste, P{\'e}rez~C{\'a}ceres, Birattari and
+  St{\"u}tzle}]{LopezIbanez2016}
+\bibinfo{author}{L{\'o}pez-Ib{\'a}{\~n}ez, M.},
+  \bibinfo{author}{Dubois-Lacoste, J.}, \bibinfo{author}{P{\'e}rez~C{\'a}ceres,
+  L.}, \bibinfo{author}{Birattari, M.}, \bibinfo{author}{St{\"u}tzle, T.},
+  \bibinfo{year}{2016}.
+\newblock \bibinfo{title}{The irace package: Iterated racing for automatic
+  algorithm configuration}.
+\newblock \bibinfo{journal}{Operations Research Perspectives}
+  \bibinfo{volume}{3}, \bibinfo{pages}{43--58}.
+\newblock \DOIprefix\doi{10.1016/j.orp.2016.09.002}.
+%Type = Article
+\bibitem[{Mei et~al.(2017)Mei, Nguyen, Xue and Zhang}]{Mei2017}
+\bibinfo{author}{Mei, Y.}, \bibinfo{author}{Nguyen, S.}, \bibinfo{author}{Xue,
+  B.}, \bibinfo{author}{Zhang, M.}, \bibinfo{year}{2017}.
+\newblock \bibinfo{title}{An efficient feature selection algorithm for evolving
+  job shop scheduling rules with genetic programming}.
+\newblock \bibinfo{journal}{IEEE Transactions on Emerging Topics in
+  Computational Intelligence} \bibinfo{volume}{1}, \bibinfo{pages}{339--353}.
+\newblock \DOIprefix\doi{10.1109/TETCI.2017.2743758}.
+%Type = Book
+\bibitem[{Moore et~al.(2009)Moore, Kearfott and Cloud}]{Moore2009}
+\bibinfo{author}{Moore, R.E.}, \bibinfo{author}{Kearfott, R.B.},
+  \bibinfo{author}{Cloud, M.J.}, \bibinfo{year}{2009}.
+\newblock \bibinfo{title}{Introduction to Interval Analysis}.
+\newblock \bibinfo{publisher}{SIAM}, \bibinfo{address}{Philadelphia, PA}.
+\newblock \DOIprefix\doi{10.1137/1.9780898717716}.
+%Type = Article
+\bibitem[{Nguyen et~al.(2017)Nguyen, Mei and Zhang}]{Nguyen2017}
+\bibinfo{author}{Nguyen, S.}, \bibinfo{author}{Mei, Y.},
+  \bibinfo{author}{Zhang, M.}, \bibinfo{year}{2017}.
+\newblock \bibinfo{title}{Genetic programming for production scheduling: a
+  survey with a unified framework}.
+\newblock \bibinfo{journal}{Complex \& Intelligent Systems}
+  \bibinfo{volume}{3}, \bibinfo{pages}{41--66}.
+\newblock \DOIprefix\doi{10.1007/s40747-017-0036-x}.
+%Type = Article
+\bibitem[{Nguyen et~al.(2014)Nguyen, Zhang, Johnston and Tan}]{Nguyen2014}
+\bibinfo{author}{Nguyen, S.}, \bibinfo{author}{Zhang, M.},
+  \bibinfo{author}{Johnston, M.}, \bibinfo{author}{Tan, K.C.},
+  \bibinfo{year}{2014}.
+\newblock \bibinfo{title}{Automatic design of scheduling policies for dynamic
+  multi-objective job shop scheduling via cooperative coevolution genetic
+  programming}.
+\newblock \bibinfo{journal}{IEEE Transactions on Evolutionary Computation}
+  \bibinfo{volume}{18}, \bibinfo{pages}{193--208}.
+\newblock \DOIprefix\doi{10.1109/TEVC.2013.2248159}.
+%Type = Article
+\bibitem[{Palacios et~al.(2015)Palacios, Gonz{\'a}lez-Rodr{\'i}guez, Vela and
+  Puente}]{Palacios2015}
+\bibinfo{author}{Palacios, J.J.}, \bibinfo{author}{Gonz{\'a}lez-Rodr{\'i}guez,
+  I.}, \bibinfo{author}{Vela, C.R.}, \bibinfo{author}{Puente, J.},
+  \bibinfo{year}{2015}.
+\newblock \bibinfo{title}{Coevolutionary makespan optimisation through
+  different ranking methods for the fuzzy flexible job shop}.
+\newblock \bibinfo{journal}{Fuzzy Sets and Systems} \bibinfo{volume}{278},
+  \bibinfo{pages}{81--97}.
+\newblock \DOIprefix\doi{10.1016/j.fss.2014.12.003}.
+%Type = Article
+\bibitem[{Panwalkar and Iskander(1977)}]{Panwalkar1977}
+\bibinfo{author}{Panwalkar, S.S.}, \bibinfo{author}{Iskander, W.},
+  \bibinfo{year}{1977}.
+\newblock \bibinfo{title}{A survey of scheduling rules}.
+\newblock \bibinfo{journal}{Operations Research} \bibinfo{volume}{25},
+  \bibinfo{pages}{45--61}.
+\newblock \DOIprefix\doi{10.1287/opre.25.1.45}.
+%Type = Article
+\bibitem[{Park et~al.(2021)Park, Chun, Kim, Kim and Park}]{Park2021GNN}
+\bibinfo{author}{Park, J.}, \bibinfo{author}{Chun, J.}, \bibinfo{author}{Kim,
+  S.H.}, \bibinfo{author}{Kim, Y.}, \bibinfo{author}{Park, J.},
+  \bibinfo{year}{2021}.
+\newblock \bibinfo{title}{Learning to schedule job-shop problems:
+  representation and policy learning using graph neural network and
+  reinforcement learning}.
+\newblock \bibinfo{journal}{International Journal of Production Research}
+  \bibinfo{volume}{59}, \bibinfo{pages}{3360--3377}.
+\newblock \DOIprefix\doi{10.1080/00207543.2020.1870013}.
+%Type = Book
+\bibitem[{Poli et~al.(2008)Poli, Langdon and McPhee}]{Poli2008}
+\bibinfo{author}{Poli, R.}, \bibinfo{author}{Langdon, W.B.},
+  \bibinfo{author}{McPhee, N.F.}, \bibinfo{year}{2008}.
+\newblock \bibinfo{title}{A Field Guide to Genetic Programming}.
+\newblock \bibinfo{publisher}{Lulu Enterprises}.
+\newblock \bibinfo{note}{Freely available at
+  \url{http://www.gp-field-guide.org.uk}}.
+%Type = Article
+\bibitem[{Sotskov et~al.(2013)Sotskov, Lai and Werner}]{Sotskov2013}
+\bibinfo{author}{Sotskov, Y.N.}, \bibinfo{author}{Lai, T.C.},
+  \bibinfo{author}{Werner, F.}, \bibinfo{year}{2013}.
+\newblock \bibinfo{title}{Measures of problem uncertainty for scheduling with
+  interval processing times}.
+\newblock \bibinfo{journal}{OR Spectrum} \bibinfo{volume}{35},
+  \bibinfo{pages}{659--689}.
+\newblock \DOIprefix\doi{10.1007/s00291-012-0306-3}.
+%Type = Article
+\bibitem[{Sotskov et~al.(2020)Sotskov, Matsveichuk and Hatsura}]{Sotskov2020}
+\bibinfo{author}{Sotskov, Y.N.}, \bibinfo{author}{Matsveichuk, N.M.},
+  \bibinfo{author}{Hatsura, V.D.}, \bibinfo{year}{2020}.
+\newblock \bibinfo{title}{Schedule execution for two-machine job-shop to
+  minimize makespan with uncertain processing times}.
+\newblock \bibinfo{journal}{Mathematics} \bibinfo{volume}{8},
+  \bibinfo{pages}{1314}.
+\newblock \DOIprefix\doi{10.3390/math8081314}.
+%Type = Article
+\bibitem[{Sprecher et~al.(1995)Sprecher, Kolisch and Drexl}]{Sprecher1995}
+\bibinfo{author}{Sprecher, A.}, \bibinfo{author}{Kolisch, R.},
+  \bibinfo{author}{Drexl, A.}, \bibinfo{year}{1995}.
+\newblock \bibinfo{title}{Semi-active, active, and non-delay schedules for the
+  resource-constrained project scheduling problem}.
+\newblock \bibinfo{journal}{European Journal of Operational Research}
+  \bibinfo{volume}{80}, \bibinfo{pages}{94--102}.
+\newblock \DOIprefix\doi{10.1016/0377-2217(93)e0294-8}.
+%Type = Article
+\bibitem[{Taillard(1993)}]{Taillard1993}
+\bibinfo{author}{Taillard, E.}, \bibinfo{year}{1993}.
+\newblock \bibinfo{title}{Benchmarks for basic scheduling problems}.
+\newblock \bibinfo{journal}{European Journal of Operational Research}
+  \bibinfo{volume}{64}, \bibinfo{pages}{278--285}.
+\newblock \DOIprefix\doi{10.1016/0377-2217(93)90182-M}.
+%Type = Article
+\bibitem[{{\DJ}ura{\v{s}}evi{\'c} and Jakobovi{\'c}(2018)}]{Durasevic2018}
+\bibinfo{author}{{\DJ}ura{\v{s}}evi{\'c}, M.}, \bibinfo{author}{Jakobovi{\'c},
+  D.}, \bibinfo{year}{2018}.
+\newblock \bibinfo{title}{A survey of dispatching rules for the dynamic
+  unrelated machines environment}.
+\newblock \bibinfo{journal}{Expert Systems with Applications}
+  \bibinfo{volume}{113}, \bibinfo{pages}{555--569}.
+\newblock \DOIprefix\doi{10.1016/j.eswa.2018.06.053}.
+%Type = Article
+\bibitem[{Xu et~al.(2025)Xu, Mei, Zhang and Zhang}]{Xu2025}
+\bibinfo{author}{Xu, M.}, \bibinfo{author}{Mei, Y.}, \bibinfo{author}{Zhang,
+  F.}, \bibinfo{author}{Zhang, M.}, \bibinfo{year}{2025}.
+\newblock \bibinfo{title}{Learn to optimise for job shop scheduling: a survey
+  with comparison between genetic programming and reinforcement learning}.
+\newblock \bibinfo{journal}{Artificial Intelligence Review}
+  \bibinfo{volume}{58}, \bibinfo{pages}{160}.
+\newblock \DOIprefix\doi{10.1007/s10462-024-11059-9}.
+%Type = Article
+\bibitem[{Xu et~al.(2023)Xu, Wu, Wang, He and Lei}]{Xu2023}
+\bibinfo{author}{Xu, W.}, \bibinfo{author}{Wu, W.}, \bibinfo{author}{Wang, Y.},
+  \bibinfo{author}{He, Y.}, \bibinfo{author}{Lei, Z.}, \bibinfo{year}{2023}.
+\newblock \bibinfo{title}{Flexible job-shop scheduling method based on interval
+  grey processing time}.
+\newblock \bibinfo{journal}{Applied Intelligence} \bibinfo{volume}{53},
+  \bibinfo{pages}{14876--14891}.
+\newblock \DOIprefix\doi{10.1007/s10489-022-04213-9}.
+%Type = Inproceedings
+\bibitem[{Zhang et~al.(2020)Zhang, Song, Cao, Zhang, Tan and Xu}]{Zhang2020L2D}
+\bibinfo{author}{Zhang, C.}, \bibinfo{author}{Song, W.}, \bibinfo{author}{Cao,
+  Z.}, \bibinfo{author}{Zhang, J.}, \bibinfo{author}{Tan, P.S.},
+  \bibinfo{author}{Xu, C.}, \bibinfo{year}{2020}.
+\newblock \bibinfo{title}{Learning to dispatch for job shop scheduling via deep
+  reinforcement learning}, in: \bibinfo{booktitle}{Advances in Neural
+  Information Processing Systems ({NeurIPS})}, pp. \bibinfo{pages}{1621--1632}.
+%Type = Article
+\bibitem[{Zheng et~al.(2024)Zheng, Xiao, Zhang and Lv}]{Zheng2024}
+\bibinfo{author}{Zheng, P.}, \bibinfo{author}{Xiao, S.},
+  \bibinfo{author}{Zhang, P.}, \bibinfo{author}{Lv, Y.}, \bibinfo{year}{2024}.
+\newblock \bibinfo{title}{A two-individual-based evolutionary algorithm for
+  flexible assembly job shop scheduling problem with uncertain interval
+  processing times}.
+\newblock \bibinfo{journal}{Applied Sciences} \bibinfo{volume}{14},
+  \bibinfo{pages}{10304}.
+\newblock \DOIprefix\doi{10.3390/app142210304}.
+
+\end{thebibliography}

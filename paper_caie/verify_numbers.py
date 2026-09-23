@@ -43,6 +43,20 @@ def check(label, expected, source):
         print(f"  FALLA {label:<46} esperaba '{expected}' de {source}")
 
 
+def check_zr(label, z, r, source):
+    """El |r| tiene que ir en el mismo parentesis que su z: sin esto, un
+    |r| pasa por coincidir con otro cualquiera del articulo."""
+    global ok, bad
+    pat = (r"z=" + re.escape(z) + r"\$,[^()]{0,40}?\$\|r\|="
+           + re.escape(r))
+    if re.search(pat, TEX_1L):
+        ok += 1
+        print(f"  OK    {label:<46} z={z} |r|={r}")
+    else:
+        bad += 1
+        print(f"  FALLA {label:<46} esperaba z={z} con |r|={r} de {source}")
+
+
 def stats(v):
     n = len(v)
     mu = sum(v) / n
@@ -417,16 +431,36 @@ else:
           f"{_u['metodos']['GP']['e_mid']:.0f}", 'e1_robustez/uniform')
     check('E[Cmax] de EST',
           f"{_u['metodos']['EST']['e_mid']:.0f}", 'e1_robustez/uniform')
-    # y los tres contrastes sobre la medida absoluta
+    # los contrastes sobre la medida absoluta: |r| es la biserial por
+    # rangos (rb_abs), y va atado a su z
     for _par, _et in (('GP vs EST', 'GP contra EST'),
                       ('GP vs GT-MWKR', 'GP contra G&T-MWKR'),
                       ('GP-rob1 vs GP', 'robusto contra makespan'),
-                      ('GP-rob1 vs GP-rob1-nw', 'robusto contra su ablacion')):
+                      ('GP-rob1 vs GP-rob1-nw', 'robusto contra su ablacion'),
+                      ('GP-rob4 vs GT-MWKR', 'lambda=4 contra G&T-MWKR')):
         _c = _u['contrastes'][_par]
-        check(f'z absoluto, {_et}', f"z=-{abs(_c['z_abs']):.2f}",
-              'e1_robustez/uniform')
-        check(f'|r| absoluto, {_et}', f"|r|={_c['r_abs']:.2f}",
-              'e1_robustez/uniform')
+        check_zr(f'z y |r| absolutos, {_et}',
+                 f"-{abs(_c['z_abs']):.2f}", f"{_c['rb_abs']:.2f}",
+                 'e1_robustez/uniform')
+    # en cuantas de las 70 se desvia menos: se cuenta, no se deduce de |r|
+    _uf = os.path.join(REPO, 'benchmarks/e1_robustez/uniform.csv')
+    _dv = defaultdict(dict)
+    for _r in csv.DictReader(open(_uf, encoding='utf-8')):
+        if float(_r['width']) == 1.0:
+            _dv[_r['method']][_r['instance']] = float(_r['abs_dev'])
+    _nm = sum(_dv['GP-rob4'][i] < _dv['GT-MWKR'][i] for i in _dv['GP-rob4'])
+    check('instancias en que lambda=4 se desvia menos que G&T-MWKR',
+          f'smaller on {_nm} of the {len(_dv["GP-rob4"])} instances',
+          'e1_robustez/uniform.csv')
+    # la comparacion a RE parecido: los dos E[Cmax] y la reduccion
+    _mu = _u['metodos']
+    check('E[Cmax] lambda=4', f"${_mu['GP-rob4']['e_mid']:.0f}$",
+          'e1_robustez/uniform')
+    check('E[Cmax] G&T-MWKR', f"${_mu['GT-MWKR']['e_mid']:.0f}$",
+          'e1_robustez/uniform')
+    _red = 100 * (1 - _mu['GP-rob4']['abs'] / _mu['GT-MWKR']['abs'])
+    check('reduccion de la desviacion a RE parecido', f"${_red:.1f}\\%$",
+          'e1_robustez/uniform')
     # las diferencias absolutas bajo las otras realizaciones
     for _d, _et in (('triangular', 'triangular'),
                     ('pessimistic', 'sesgada'),
@@ -578,12 +612,31 @@ else:
         check(f'rango de {_r} entre convenios',
               f'${min(_v.values()):.1f}$ to ${max(_v.values()):.1f}$',
               'e5/convenios')
-    # la mayor dispersion entre convenios, que el texto acota
-    _sp = max(max(_v.values()) - min(_v.values())
-              for _v in _D['convenios'].values()
-              if max(_v.values()) < 100)
-    check('mayor dispersion entre convenios', f'${_sp:.1f}$ points',
+    # la dispersion entre convenios, por grupos DECLARADOS en el texto:
+    # EST y MWKR (las que miran el estado del taller) y SPT y LPT. Antes
+    # habia aqui un filtro "< 100" que dejaba fuera a SPT y hacia pasar
+    # una afirmacion falsa; el grupo ahora es explicito.
+    def _rango(_r):
+        _v = _D['convenios'][_r]
+        return max(_v.values()) - min(_v.values())
+    check('dispersion maxima, EST y MWKR',
+          f'more than ${max(_rango(r) for r in ("EST", "MWKR")):.1f}$ points',
           'e5, derivado')
+    check('dispersion maxima, SPT y LPT',
+          f'by at most ${max(_rango(r) for r in ("SPT", "LPT")):.1f}$',
+          'e5, derivado')
+    # el lexicografico de la tabla de baselines contra los tres convenios
+    _bl = os.path.join(REPO, 'benchmarks/all_baselines.csv')
+    _lex = {r['method']: float(r['all'])
+            for r in csv.DictReader(open(_bl, encoding='utf-8'))}
+    for _r in ('SPT', 'EST'):
+        assert _lex[_r] < min(_D['convenios'][_r].values()), (
+            f'{_r}: el lexicografico ya no es mejor que los tres convenios')
+    _gap = max(_lex[_r] - min(_D['convenios'][_r].values())
+               for _r in ('LPT', 'MWKR'))
+    assert _gap > 0, 'LPT y MWKR ya no quedan por detras del mejor convenio'
+    check('distancia del lexicografico al mejor convenio',
+          f'within ${_gap:.1f}$ points of the best', 'e5 + all_baselines')
     # el cuadro de dos por dos del decodificador
     _dec = _D['decodificador']
     check('la regla en semiactivo, media y sd',
@@ -597,8 +650,11 @@ else:
           'e5/decodificador')
     check('la destacada en G&T',
           f"{_dec['gp_en_gt']['destacada']:.2f}", 'e5/decodificador')
-    check('SPT dentro del conflict set',
-          f"{_dec['gt_spt']['media']:.2f}", 'e5/decodificador')
+    # SPT dentro del conflict set es G&T-SPT, con el valor de la tabla de
+    # baselines: antes el texto daba 71.03, del convenio de un solo
+    # extremo, y la tabla 70.6, del lexicografico
+    check('SPT dentro del conflict set, como G&T-SPT',
+          f"reaches ${_lex['G&T-SPT']:.1f}$ inside the", 'all_baselines')
     # lo que cuesta a la regla entrar en el conflict set
     _d = _dec['gp_en_gt']['media'] - _dec['gp_semiactivo']['media']
     check('lo que pierde la regla en G&T', f'${_d:.1f}$ points',
@@ -725,6 +781,8 @@ if not os.path.exists(_e4):
     print('\n== E4: sin benchmarks/e4_asimetrico/resumen.json ==')
 else:
     import json as _json
+    sys.path.insert(0, os.path.join(REPO, 'scripts'))
+    from efecto import biserial as _biserial
     _A = _json.load(open(_e4, encoding='utf-8'))
     print('\n== E4: intervalos asimetricos ==')
     assert _A['n_instancias'] == 70, 'E4 no cubre las setenta'
@@ -747,8 +805,26 @@ else:
             ('rob1 vs rob1_nowidth', 'abs', 'desviacion, robusto'),
             ('rob1 vs full', 'abs', 'desviacion, robusto vs makespan')):
         _c = _C[_par][_k]
-        check(f'z de {_et}', f"z=-{abs(_c['z']):.2f}", f'e4/{_par}')
-        check(f'|r| de {_et}', f"|r|={_c['r']:.2f}", f'e4/{_par}')
+        _a, _b = _par.split(' vs ')
+        _ps = _A['ramas']
+        _x = [_ps[_a]['por_semilla'][s][_k]
+              for s in sorted(_ps[_a]['por_semilla'], key=int)]
+        _y = [_ps[_b]['por_semilla'][s][_k]
+              for s in sorted(_ps[_b]['por_semilla'], key=int)]
+        check_zr(f'z y |r| de {_et}', f"-{abs(_c['z']):.2f}",
+                 f"{_biserial(_x, _y):.2f}", f'e4/{_par}')
+    # "en cada una de las quince semillas" solo si la biserial vale 1
+    _ps = _A['ramas']
+    _x = [_ps['rob1']['por_semilla'][s]['abs']
+          for s in sorted(_ps['rob1']['por_semilla'], key=int)]
+    _y = [_ps['full']['por_semilla'][s]['abs']
+          for s in sorted(_ps['full']['por_semilla'], key=int)]
+    assert (abs(_biserial(_x, _y) - 1.0) < 1e-12) == (
+        'for every one of the fifteen seeds' in TEX_1L), (
+        'el texto dice "cada una de las quince" y la biserial no es 1')
+    check('Holm del RE bajo makespan, que no sobrevive',
+          f"$p={_C['full vs nowidth']['re']['p_holm']:.2f}$ adjusted",
+          'e4/full vs nowidth')
     # el mayor p ajustado entre los que el texto declara supervivientes
     _vivos = [_v['p_holm'] for _par, _d in _C.items() for _k, _v in
               _d.items() if _v['p_holm'] < 0.05]
@@ -770,6 +846,106 @@ if os.path.exists(_e4g):
           'e4/resumen_generacion')
     check('operaciones del banco', f"${_G['n_operaciones']:,}$"
           .replace(',', '{,}'), 'e4/resumen_generacion')
+
+# ---- tabla de baselines: la columna de RE, que antes nadie comprobaba --
+_bl = os.path.join(REPO, 'benchmarks/all_baselines.csv')
+if os.path.exists(_bl):
+    print('\n== tab:baselines, columna de RE (all_baselines.csv) ==')
+    _nombre = {'G&T-SPT': 'G\\&T-SPT', 'G&T-MWKR': 'G\\&T-MWKR',
+               'GP (best)': 'GP rule (best of 30)'}
+    for _r in csv.DictReader(open(_bl, encoding='utf-8')):
+        # la fila 'GP (best)' de este fichero es de una campana anterior; las
+        # filas GP de la tabla salen de summary.csv y se comprueban arriba
+        if _r['method'] == 'GP (best)':
+            continue
+        _n = _nombre.get(_r['method'], _r['method'])
+        _dec = 2 if _r['method'] == 'GP (best)' else 1
+        check(f"RE y sd de {_r['method']}",
+              f"{_n} & {float(_r['all']):.{_dec}f} & {float(_r['sd']):.1f}",
+              'all_baselines.csv')
+
+# ---- la guia de lambda, a nivel de brazo (lambda_sweep_tuned.csv) ----------
+_sw = os.path.join(REPO, 'benchmarks/lambda_sweep/lambda_sweep_tuned.csv')
+if os.path.exists(_sw):
+    print('\n== guia de lambda (lambda_sweep_tuned.csv) ==')
+    _L = {float(r['lambda']): r for r in csv.DictReader(open(_sw, encoding='utf-8'))}
+    _re = {k: float(v['re_mean']) for k, v in _L.items()}
+    _w = {k: float(v['width_mean']) for k, v in _L.items()}
+    _sd = {k: float(v['re_sd']) for k, v in _L.items()}
+    _t1 = (_re[2.0] - _re[0.5]) / (_w[0.5] - _w[2.0])
+    _t2 = (_re[4.0] - _re[2.0]) / (_w[2.0] - _w[4.0])
+    check('coste por punto de anchura, 0.5 a 2', f'costs\n${_t1:.1f}$ points',
+          'lambda_sweep')
+    check('RE perdido de 0.5 a 2', f'gives up ${_re[2.0] - _re[0.5]:.2f}$ points',
+          'lambda_sweep')
+    check('coste por punto de anchura, 2 a 4', f'rate rises to ${_t2:.1f}$',
+          'lambda_sweep')
+    check('anchura de 2 a 4', f'${_w[2.0] - _w[4.0]:.2f}$ points of width',
+          'lambda_sweep')
+    check('RE de 2 a 4', f'costing ${_re[4.0] - _re[2.0]:.2f}$ points',
+          'lambda_sweep')
+    check('dispersion de 2 a 4', f'from ${_sd[2.0]:.2f}$ to ${_sd[4.0]:.2f}$',
+          'lambda_sweep')
+    assert _t2 > _t1, 'el tramo alto ya no es mas caro: la guia no se sostiene'
+
+# ---- las dos anchuras medias de los bancos ------------------------------
+try:
+    sys.path.insert(0, REPO)
+    import contextlib as _cl
+    import io as _io
+    with _cl.redirect_stdout(_io.StringIO()):
+        from jobshop_rl.data import PROBLEM_REGISTRY as _PR
+        from jobshop_rl.models.interval import Interval as _Iv
+    _cls = {(15, 15), (20, 15), (20, 20), (30, 15), (30, 20), (50, 15), (50, 20)}
+    _ws = []
+    for _p in _PR:
+        _mm = re.fullmatch(r'int__tai(\d+)_(\d+)_(\d+)', _p)
+        if not _mm or (int(_mm[1]), int(_mm[2])) not in _cls:
+            continue
+        for _fila in _PR[_p]()['durations']:
+            for _dd in _fila:
+                _lo, _up = ((_dd.lower, _dd.upper) if isinstance(_dd, _Iv)
+                            else (_dd, _dd))
+                _ws.append((_up - _lo) / ((_lo + _up) / 2))
+    print('\n== anchura media de los dos bancos ==')
+    check('anchura media del banco simetrico',
+          f'against ${100 * sum(_ws) / len(_ws):.1f}\\%$ for the', 'instancias')
+except ImportError as _e:
+    print(f'\n== anchura del banco simetrico: PEND ({_e}) ==')
+
+# ---- el genetico de referencia, tal como lo describe 5.3 ---------------
+_cg = os.path.join(REPO, 'benchmarks/e6_presupuesto/calibracion.json')
+if os.path.exists(_cg):
+    import json as _json3
+    _G = _json3.load(open(_cg, encoding='utf-8'))
+    print('\n== el genetico de referencia (calibracion.json) ==')
+    assert _G['mejor'] == 'pop250 tor3 pm0.2', (
+        'la configuracion del genetico ya no es la que describe 5.3')
+    for _f in ('A population of $250$ individuals',
+               'tournaments of size $3$', 'with probability $0.9$',
+               'probability $0.2$ by swapping', 'of four configurations tried',
+               f"${_G['presupuesto'] // 100000}\\times10^{{5}}$ constructions"):
+        check('configuracion del genetico', _f, 'calibracion.json')
+
+# ---- conformidad con la revista (Computers & Industrial Engineering) ----
+print('\n== conformidad con C&IE ==')
+_ab = re.search(r'\\begin\{abstract\}(.*?)\\end\{abstract\}', TEX, re.S).group(1)
+_npal = len(re.sub(r'\\[a-zA-Z]+\{?|[{}$]', ' ', _ab).split())
+if _npal <= 250:
+    ok += 1
+    print(f'  OK    resumen en {_npal} palabras (tope 250)')
+else:
+    bad += 1
+    print(f'  FALLA resumen en {_npal} palabras, tope 250')
+_kw = re.search(r'\\begin\{keyword\}(.*?)\\end\{keyword\}', TEX, re.S).group(1)
+_nkw = len(_kw.split(r'\sep'))
+if 1 <= _nkw <= 7:
+    ok += 1
+    print(f'  OK    {_nkw} palabras clave (1 a 7)')
+else:
+    bad += 1
+    print(f'  FALLA {_nkw} palabras clave, deben ser de 1 a 7')
+
 
 print(f"\n{ok} comprobaciones correctas, {bad} fallos")
 sys.exit(1 if bad else 0)

@@ -1,6 +1,9 @@
 \documentclass[review,authoryear,11pt]{elsarticle}
 
 \usepackage[T1]{fontenc}
+% sin una familia Type 1 detras, T1 cae en fuentes de mapa de bits (Type 3),
+% que las imprentas de Elsevier rechazan
+\usepackage{lmodern}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
 \usepackage{graphicx}
@@ -50,29 +53,27 @@ that Generalize Across Instance Sizes}
 Automated dispatching-rule design has not been explored for the job shop
 scheduling problem with interval durations (IJSP), where processing
 times are known only to lie within intervals and schedules are built by
-interval arithmetic. We present a genetic programming
-hyper-heuristic: priority rules are evolved over an
-\emph{interval-aware} terminal set exposing both the worst-case values
-and the widths of the uncertain quantities, and deployed in a single
-constructive pass. On the 70 interval Taillard instances, 30
-evolutions average $18.99\%$ ($\pm1.33$) relative error and the best
-rule attains $17.71\%$, improving on the strongest constructive
-baseline, Giffler--Thompson/MWKR ($29.5\%$), on every instance. Evolved on four $20{\times}15$ instances, the rules transfer
-zero-shot to all seven size classes and to a second benchmark of
-classical instances, keeping their margin and remaining compact,
-human-readable expressions. Which four instances are trained on,
-and how many, moves the result by less than the spread between seeds.
-Ablations delimit what interval awareness contributes.
-Under the default expected-makespan objective it is unnecessary:
-removing the width terminals, or evolving on crisp midpoints, does
-equally well, although 27 of the 30 rules retain them. Its value
-is robustness: an objective penalizing interval width, which has no
-crisp counterpart, yields narrower predicted intervals and an
-executed-makespan deviation about one fifth lower, neither attainable
-without those terminals. The ordering survives non-uniform and
-worst-case realizations, and at matched expected makespan the robust
-rule deviates a third less than that baseline. It is paid for in
-expected makespan, the penalty weight setting the trade-off.
+interval arithmetic. We present a genetic programming hyper-heuristic
+that evolves priority rules over an \emph{interval-aware} terminal set,
+exposing both the worst-case values and the widths of the uncertain
+quantities, and deploys them in a single constructive pass. On the 70
+interval Taillard instances, 30 evolutions average $18.99\%$
+($\pm1.33$) relative error and the best rule attains $17.71\%$,
+improving on the strongest constructive baseline, Giffler--Thompson/MWKR
+($29.5\%$), on every instance. Evolved on four $20{\times}15$ instances,
+the rules transfer zero-shot to all size classes and to a second
+benchmark, remain human-readable, and vary less with the training set
+than between evolution seeds. On a common implementation, a genetic
+algorithm needs some $7.6\times10^{4}$ schedule constructions to match
+one pass of the evolved rule, and seeded with the rule it ends below
+every other method compared. Ablations delimit what interval awareness
+contributes. Under the default expected-makespan objective it is
+unnecessary: removing the width terminals, or evolving on crisp
+midpoints, does equally well. Its value is robustness: an objective
+penalizing interval width yields narrower predicted intervals and an
+executed-makespan deviation about one fifth lower, unattainable without
+those terminals, stable under non-uniform and worst-case realizations
+and on asymmetric intervals, and paid for in expected makespan.
 \end{abstract}
 
 \begin{keyword}
@@ -121,10 +122,20 @@ objective that rewards a narrow makespan interval, rather than a low
 one, leads the evolution to schedules whose execution departs less from
 what was predicted. Answering these questions empirically requires
 exposing uncertainty to the rule as first-class attributes, which is the
-starting point of this work. A further question, how interval makespans
-should be compared at all when they admit no natural total order, we do
-not reopen: we adopt the ranking that a systematic study of the
-alternatives found most robust~\citep{DiazGA2020}.
+starting point of this work.
+
+A last question concerns the place of such rules among the methods
+already available for the IJSP. Dispatching rules and per-instance
+metaheuristics are usually compared at their natural operating points,
+one constructive pass against a complete search, which says which is
+better but not when. Placed on a common budget axis, on one
+implementation, the comparison acquires an answer: up to which budget an
+evolved rule is the better use of computation, and what separates it
+from the best search methods beyond it. A further question, how interval
+makespans should be compared at all when they admit no natural total
+order, we do not reopen: we adopt the ranking that a systematic study of
+the alternatives found most robust~\citep{DiazGA2020}.
+
 
 This paper makes the following contributions:
 \begin{enumerate}
@@ -137,42 +148,49 @@ This paper makes the following contributions:
   and~\ref{sec:anatomy}).
 \item An empirical study on the 70 interval Taillard instances showing
   that evolved rules (i) outperform every deterministic constructive
-  baseline by a wide margin at equal cost, (ii) generalize zero-shot across instance
-  sizes (evolved on $20{\times}15$, best class $50{\times}15$), and
-  (iii) transfer to a second benchmark of classical instances, keeping
-  the same margin over the constructive baselines
-  (Section~\ref{sec:results}).
-\item A delimitation of what interval awareness contributes, with
-  its boundary of applicability stated. Under the default
-  expected-makespan objective it contributes nothing measurable at the
-  level of the arm: removing the width terminals leaves expected
-  makespan unchanged, and so does replacing the interval-arithmetic
-  fitness by scalar evolution on the crisp midpoint instances
-  (Section~\ref{sec:ablation}). Its value is robustness: an
+  baseline by a wide margin at equal cost, whichever of the two
+  decoders is used, (ii) generalize zero-shot across instance sizes
+  (evolved on $20{\times}15$, best class $50{\times}15$) and to a second
+  benchmark of classical instances, and (iii) vary less with the choice
+  and size of the training set than between evolution seeds
+  (Sections~\ref{sec:results}, \ref{sec:decoder}
+  and~\ref{sec:trainset}).
+\item A comparison with per-instance search on a common implementation
+  and across budgets. A genetic algorithm of the design published for
+  the IJSP needs about $7.6\times10^{4}$ schedule constructions to match
+  a single pass of the evolved rule; the remaining distance to the best
+  published methods is not a matter of budget; and seeded with the
+  rule, the genetic algorithm ends below both the rule's sampled variant
+  and its own unseeded version (Section~\ref{sec:metaheur}).
+\item A delimitation of what interval awareness contributes. Under the
+  default expected-makespan objective it adds nothing measurable:
+  removing the width terminals, or evolving on the crisp midpoint
+  instances with scalar fitness, leaves expected makespan statistically
+  unchanged (Section~\ref{sec:ablation}). Its value is robustness: an
   objective that penalizes interval width, which has no crisp
-  counterpart, cuts the deviation of the executed makespan from its
-  prediction by about a fifth, a reduction unattainable without the
-  width terminals and paid for in expected makespan, with the weight of
-  the penalty tracing the frontier between the two
-  (Section~\ref{sec:robustness}). The frontier comes with an
-  exchange rate and a recommended operating point
-  (Section~\ref{sec:frontier}), and the gain is not an artifact of the
-  measure: it holds on the unnormalized deviation, under three
-  realization laws besides the uniform one, and against a constructive
-  baseline of the same expected makespan
-  (Section~\ref{sec:robustness}).
+  counterpart, reduces the deviation of the executed makespan from its
+  prediction, a reduction unattainable without the width terminals,
+  stable under non-uniform and worst-case realizations and on asymmetric
+  intervals, and paid for in expected makespan at a rate that the weight
+  of the penalty controls
+  (Sections~\ref{sec:frontier}--\ref{sec:asym}).
 \end{enumerate}
 
 The remainder of the paper is organized as follows.
-Section~\ref{sec:related} reviews related work.
+Section~\ref{sec:related} reviews related work and
 Section~\ref{sec:problem} formalizes the IJSP.
 Section~\ref{sec:method} presents the GP hyper-heuristic, from both the
 hyper-heuristic and the evolutionary viewpoints.
-Section~\ref{sec:setup} details the benchmark, the training protocol and
-the irace configuration study. Section~\ref{sec:results} reports the
-empirical results, and Section~\ref{sec:analysis} analyzes them: rule
-anatomy, the interval-awareness ablation, executional robustness and
-limitations.
+Section~\ref{sec:setup} describes the benchmarks, the data split, the
+reference methods, the configuration study, the evaluation measures and
+the computing environment. Section~\ref{sec:results} reports the
+results: evolution, generalization, the position of the evolved rules
+among constructive methods, and their comparison with per-instance
+search across budgets. Section~\ref{sec:analysis} analyzes them: the
+anatomy of the rules and a worked example, the role of the decoder, the
+ablations of interval awareness, the robust objective and executional
+robustness, and the sensitivity of the results to the training set and
+to asymmetric intervals, before stating the limitations.
 Section~\ref{sec:conclusions} concludes.
 
 \section{Related Work}
@@ -210,7 +228,10 @@ over many iterations for each instance solved. Fast constructive methods
 for the IJSP have received far less attention, and dispatching rules with
 interval-aware lexicographic comparisons are the point of comparison they
 are measured against, the role they play in this paper
-(Section~\ref{sec:baselines}).
+(Section~\ref{sec:baselines}). Constructive heuristics are also a
+standard source of initial solutions for population
+methods~\citep{Kazimipour2014}, a use Section~\ref{sec:metaheur} examines
+for evolved rules.
 
 \subsection{Dispatching rules for job shop scheduling}
 Priority dispatching rules are among the oldest and most widely
@@ -229,8 +250,8 @@ time available until a due date. Surveys catalogue more than a hundred
 such variants~\citep{Panwalkar1977,Haupt1989}, and more recent ones
 compare those in current use across machine
 environments~\citep{Durasevic2018}. A step
-above single-attribute rules, the algorithm of Giffler and
-Thompson (G\&T)~\citep{Giffler1960} restricts each choice to a machine's
+above single-attribute rules, the algorithm of \citet{Giffler1960}, G\&T in what
+follows, restricts each choice to a machine's
 conflict set, guaranteeing \emph{active} schedules and markedly
 improving plain rules when a priority criterion is used to break ties
 inside that set; we write G\&T-SPT and G\&T-MWKR for the resulting
@@ -264,8 +285,7 @@ task, namely systematic tree search over the space of expression
 trees~\citep{GilGala2025SSHE}, reporting rules of comparable quality but
 smaller size and better readability. All of this work targets
 deterministic (or dynamic-stochastic) settings. Closest to our setting,
-Karunakaran et
-al.~\citep{Karunakaran2017} evolve rules for dynamic job shops with
+\citet{Karunakaran2017} evolve rules for dynamic job shops with
 uncertain processing times, exposing summary statistics of observed
 deviations (an exponential moving average) to the rule; uncertainty there
 is realized stochastically during simulation, and rules are evaluated on
@@ -319,6 +339,7 @@ schedule~\citep{Sprecher1995} starts each task at
 \mathbf{s}_o(\pi) = \max\big(\mathbf{c}_{\mathrm{PJ}_o}(\pi),\,
 \mathbf{c}_{\mathrm{PM}_o(\pi)}(\pi)\big), \qquad
 \mathbf{c}_o(\pi) = \mathbf{s}_o(\pi) + \mathbf{p}_o,
+\label{eq:sgs}
 \end{equation}
 so starting and completion times of all tasks are themselves intervals.
 The problem can be stated as
@@ -366,9 +387,12 @@ with respect to a crisp reference bound $\LB$ of each instance,
 E[\mathbf{C}_{\max}] = \frac{\underline{C}_{\max} +
 \overline{C}_{\max}}{2},
 \end{equation}
-where $E[\mathbf{C}_{\max}]$ is the expected value of the interval
-makespan under the uniform distribution on
-$[\underline{C}_{\max},\overline{C}_{\max}]$, and $\LB$ is a bound of the
+where $E[\mathbf{C}_{\max}]$ is the midpoint of the interval
+makespan, which the IJSP literature calls its expected makespan because
+it is the expectation under a uniform distribution on
+$[\underline{C}_{\max},\overline{C}_{\max}]$; it serves here only as a
+point summary of the interval, and no distributional assumption
+enters the problem. $\LB$ is a bound of the
 underlying deterministic instance: Taillard's bounds~\citep{Taillard1993} for the
 Taillard-derived instances, the best known ones~\citep{DiazFEABC2023} for
 the classical set. It serves as an indicative common reference, not as a
@@ -379,7 +403,7 @@ durations, and a second quantity of interest is how well its a-priori
 interval predicts that execution. Measuring the gap between a predicted
 schedule and its execution is the classical notion of schedule
 robustness~\citep{Leon1994}, here specialized to interval
-predictions. Following~\citep{DiazGA2020}, the
+predictions. Following \citet{DiazGA2020}, the
 $\bar\varepsilon$ robustness of a schedule with a fixed processing order
 is the average relative deviation of its executed makespan from the
 predicted expected value, over $K$ realizations of the durations:
@@ -393,7 +417,6 @@ where $C^{\mathrm{ex},k}_{\max}$ is the crisp makespan obtained by executing tha
 same order when the durations turn out to take the values of realization
 $k$. A low $\bar\varepsilon$ therefore means that the executed makespan
 stays close to its a-priori expectation.
-
 
 
 \section{GP Hyper-Heuristic for the IJSP}
@@ -461,8 +484,8 @@ ONE  & $1$ & constant \\
 interval-aware attributes of the candidate operation (here the
 illustrative rule $\mathit{SLACK}/\mathit{PT} + \mathit{EST} -
 \mathit{WKR}\cdot\mathit{PTW}$). At each decision point the tree is
-evaluated on every eligible operation and the lowest-priority one is
-dispatched.}
+evaluated on every eligible operation and the one with the lowest
+value is dispatched.}
 \label{fig:tree}
 \end{figure}
 
@@ -483,7 +506,7 @@ decision points the set $\mathcal{E}$ of eligible operations (those
 whose job predecessor is already scheduled) is formed, the tree is
 evaluated on the attributes of every $o \in \mathcal{E}$, and the
 operation with \emph{lowest} priority value is appended at its earliest
-feasible start on its machine, Eq.~(3).
+feasible start on its machine, Eq.~\eqref{eq:sgs}.
 
 Because the lowest value is dispatched, a criterion that seeks to \emph{maximize}
 an attribute must be expressed through the unary $\mathrm{neg}$
@@ -495,7 +518,6 @@ remaining is $\mathrm{neg}(\mathit{WKR})$. We inject both as seeded rules in the
 Priority ties at dispatch time are broken by eligible
 set order (lowest job index first), which is deterministic; hence a rule
 maps each instance to exactly one schedule.
-
 
 
 \subsection{Evolutionary components}
@@ -545,7 +567,7 @@ training instances}
 \centering\small
 \caption{Evolution parameters: the configuration selected by irace
 (Section~\ref{sec:irace}), used for every experiment reported in this
-paper.}
+paper unless a section states otherwise.}
 \label{tab:gpparams}
 \begin{tabular}{ll}
 \toprule
@@ -591,7 +613,6 @@ Algorithm~\ref{alg:gp} summarizes the generational loop and
 Table~\ref{tab:gpparams} lists the parameter values.
 
 
-
 \subsection{Randomized multi-start extension}
 \label{sec:grasp}
 A deterministic rule produces one schedule. For matched comparisons with
@@ -604,17 +625,13 @@ schedules. This uniform perturbation of a single
 rule is the simplest member of a family of randomized rule-based
 builders; an alternative swaps among a \emph{set} of evolved rules
 during construction~\citep{GilGala2025GRASB}.
-GP-best-of-$N$ is a measuring instrument and not a deployment
-mode. Its only purpose is to put the evolved rule on the same footing as
-sampling-based methods when the comparison is made at a given number of
-schedule evaluations, and it behaves as GRASP and multi-start
-constructive search do: what improves with $N$ is the dispersion of the
-sampled schedules, not the quality of any individual decision. Where a
-decision must be taken in milliseconds the deterministic pass is the
-method, and the wrapper is only how its quality is placed beside methods
-that are allowed many trials. It is not, and is not offered as, a fast
-alternative to a metaheuristic; Section~\ref{sec:classics} reports what
-it costs.
+GP-best-of-$N$ is a device for comparison rather than a deployment
+mode: it places the evolved rule on the same footing as sampling-based
+methods when methods are compared at a given number of schedule
+constructions and, as with GRASP and other multi-start constructive
+schemes, what improves with $N$ is the dispersion of the sampled
+schedules rather than any individual decision. Its cost is reported in
+Section~\ref{sec:metaheur}.
 
 \section{Experimental Setup}
 \label{sec:setup}
@@ -639,7 +656,21 @@ classical set without any re-evolution, the latter doubles as a
 cross-family generalization test (Section~\ref{sec:classics}). Both sets
 are released with this paper (see Data availability).
 
-\subsection{Training protocol, data split and baselines}
+
+For the analysis of Section~\ref{sec:asym} the 70 Taillard instances
+were also regenerated with intervals skewed to the right. The crisp
+duration is recovered from the midpoint of the symmetric version, which
+the scheme above preserves exactly, and the bounds are drawn as
+$p - \mathrm{round}(p\,U[0,0.05])$ and
+$p + \mathrm{round}(p\,U[0,0.25])$, so that an operation may finish
+slightly early and considerably late. Machine routes are unchanged and
+the crisp Taillard bounds still apply. Over the $37{,}250$ operations
+the mean total width is $14.3\%$ of $p$ against $12.9\%$ for the
+symmetric scheme: the two benchmarks differ above all in the shape of
+the intervals, and the asymmetric one is also somewhat wider.
+
+\subsection{Training protocol and data split}
+\label{sec:protocol}
 The 70 interval Taillard instances are split three ways. Rules are
 evolved on TA11--TA14 ($20{\times}15$). TA15--TA20 form the
 development set: they never contribute to fitness, but the design and
@@ -655,12 +686,47 @@ evolutions, differing only in their random seed, yield thirty rules.
 The one with the lowest mean $\RE$ on the development set is the
 \emph{featured rule}: the 60 held-out Taillard instances and the 12
 classical ones play no part in this or in any other choice of the
-paper. Every table reports the mean over the 30 rules, which no
-selection touches, beside the featured rule's value.
+paper. Results are reported as the mean over the 30 rules, which no
+selection touches, beside the featured rule's value, except where a
+section states that a single rule is examined.
 Section~\ref{sec:trainset} repeats the whole protocol over five
 other training sets, of two, four and eight instances, and reports what
 changes.
 
+
+\subsection{Reference methods}
+\label{sec:reference}
+All methods run on the same decoder and evaluator
+(Section~\ref{sec:problem}), so that the differences reported between
+them are differences between methods.
+
+The constructive baselines are the dispatching rules of
+Section~\ref{sec:related} (SPT, LPT, EST, MWKR, MOR and CR) and the two
+Giffler--Thompson combinations, G\&T-SPT and G\&T-MWKR, each applied in
+one deterministic pass. Each ranks candidates by its own criterion under
+the lexicographic order of Eq.~\eqref{eq:rank}, upper endpoint first and
+lower endpoint as tie-break; Section~\ref{sec:decoder} checks that this
+choice does not handicap them. A dispatcher that chooses uniformly
+among the eligible operations serves as a reference point.
+
+The sampled variant of the evolved rule is GP-best-of-$N$
+(Section~\ref{sec:grasp}). For comparison with per-instance search on
+this implementation we use a genetic algorithm of the design published
+for the IJSP~\citep{DiazGA2020}. A solution is a permutation with
+repetition of jobs, decoded by the semi-active scheme of
+Eq.~\eqref{eq:sgs} and compared by the ranking of Eq.~\eqref{eq:rank}.
+A population of $250$ individuals is initialized at random; parents are
+chosen by tournaments of size $3$ and recombined with probability $0.9$
+by a job-based order crossover, in which a random subset of jobs keeps
+its positions from the first parent and the remaining positions are
+filled in the order they take in the second; offspring are mutated with
+probability $0.2$ by swapping two positions, and the two best
+individuals pass unchanged to the next generation. The population size
+is that of the published algorithm, and of four configurations tried at
+$2\times10^{5}$ constructions on the training instances it was the best.
+The algorithm is stopped after a given number of schedule
+constructions, which is the budget measure of
+Section~\ref{sec:metaheur}.
 
 \subsection{Hyperparameter configuration with irace}
 \label{sec:irace}
@@ -696,6 +762,43 @@ Elitism & $\{1, 2, 4\}$ & $2$ \\
 \end{table}
 
 
+\subsection{Evaluation measures and statistical analysis}
+\label{sec:stats}
+Quality is reported as the relative error $\RE$ of
+Section~\ref{sec:problem}. The spread of a prediction is the relative
+width of the interval makespan,
+$W = (\overline{C}_{\max}-\underline{C}_{\max})/E[\mathbf{C}_{\max}]
+\times 100$, and executional robustness is measured by
+$\bar\varepsilon$ of Eq.~\eqref{eq:eps} and by the absolute deviation
+$|\Delta|$, the same average taken before dividing by
+$E[\mathbf{C}_{\max}]$ and expressed in time units. Both are estimated by
+Monte Carlo over realizations of the durations, as described in
+Section~\ref{sec:robustness}. Lower is better on every measure.
+
+Two kinds of comparison appear, with different experimental units.
+Methods are compared instance by instance, pairing their values on the
+same instances. Arms of evolutions, which differ in terminal set,
+fitness, training set or benchmark, are compared seed by seed, pairing
+the rules evolved with the same seed after averaging each rule over the
+instances. In both cases the test is the two-sided Wilcoxon signed-rank
+test with exact $p$-values, reported with the normal-approximation
+statistic $z$ and, as effect size, the matched-pairs rank-biserial
+correlation $|r|$. Holm's correction is applied within each family of
+related comparisons, and where it changes a verdict the text says so.
+
+\subsection{Computing environment}
+\label{sec:env}
+All experiments ran on a desktop computer with an AMD Ryzen~5~3400G
+processor (4 cores, 8 threads) and 32~GB of RAM under Windows~10~Pro.
+The hyper-heuristic, the decoder, the baselines and the genetic
+algorithm are implemented in Python~3.12 with NumPy~2.3, statistical
+tests use SciPy~1.17, and the configuration study used
+irace~4.4.3~\citep{LopezIbanez2016}. Every evolution and every
+evaluation is single-threaded; independent runs were executed in
+parallel, up to six at a time, which inflates wall-clock times and is
+why times are compared only between methods measured under the same
+conditions.
+
 \section{Results}
 \label{sec:results}
 
@@ -718,18 +821,6 @@ expression
 \end{equation}
 We verified this identity at each of the $37{,}250$ dispatching decisions
 the rule takes on the benchmark ($1.29$ million candidate evaluations).
-Since the lowest value is dispatched, the
-rule reads directly: $-\mathit{WKR}$ is most-work-remaining, $2\,
-\mathit{PT}$ is shortest-processing-time at double weight, $\mathit{
-SLACK}^{2}$ penalizes quadratically any operation that cannot start at
-the earliest available time, and the constant is immaterial to the
-ranking. The remaining term, $-\mathit{WKRW}$, is the interval-aware
-one: among jobs with comparable remaining work the rule advances those
-whose remaining work is \emph{more uncertain}, resolving that
-uncertainty early rather than carrying it to the end of the schedule.
-The evolved rule is thus a weighted blend of MWKR and SPT, regularized
-by a quadratic earliest-start term and tilted by the uncertainty of the
-work ahead.
 
 \begin{figure}[t]
 \centering
@@ -751,40 +842,6 @@ simplified form.}
 \label{fig:besttree}
 \end{figure}
 
-
-\subsection{Generalization to the full benchmark}
-Table~\ref{tab:gp70} reports single-rollout $\RE$ per size class over all
-70 instances, as mean $\pm$ standard deviation across the 30 evolved
-rules and for the single best rule. The best rule attains $17.71\%$
-global mean. Evolved only on $20{\times}15$, its best class is the
-unseen $50{\times}15$ ($13.8\%$), and the same pattern holds on
-average ($13.7 \pm 1.5$). Because all terminals are per-operation
-attributes with no size-bound quantities, transfer requires no
-retraining or rescaling.
-
-\begin{table}[t]
-\centering\small
-\caption{RE (\%) per size class, single deterministic rollout, over all
-70 Taillard interval instances: mean $\pm$ sd across the 30 independently
-evolved rules, and the best evolved rule.}
-\label{tab:gp70}
-% 9 columnas = 18 huecos, asi que cada punto de tabcolsep vale 18pt de ancho:
-% a 3.5pt la tabla medía 373.7pt contra los 360pt de \linewidth
-\setlength{\tabcolsep}{2.5pt}
-\scriptsize
-\begin{tabular}{lccccccc|c}
-\toprule
-& $15{\times}15$ & $20{\times}15$ & $20{\times}20$ &
-$30{\times}15$ & $30{\times}20$ & $50{\times}15$ & $50{\times}20$ & All \\
-\midrule
-Mean of 30 & $18.1{\pm}1.3$ & $18.0{\pm}1.5$ & $20.9{\pm}1.7$ &
-$21.4{\pm}1.7$ & $25.7{\pm}1.9$ & $13.7{\pm}1.5$ & $15.1{\pm}1.5$ &
-$18.99{\pm}1.33$ \\
-Best rule & 15.7 & 16.6 & 18.1 & 21.1 & 24.1 & \textbf{13.8} & 14.6 &
-\textbf{17.71} \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 \subsection{Position among constructive methods}
 \label{sec:baselines}
@@ -868,96 +925,54 @@ operations per decision, so the choice of priority expression
 contributes little to the cost of a pass. Both cost and quality thus
 place the evolved rule with the constructive methods, while closing much
 of the quality gap that separated them from search-based methods; that
-comparison is deferred to
-Section~\ref{sec:classics}, where published results are available on a
-common benchmark.
+comparison is the subject of
+Section~\ref{sec:metaheur}.
 
-\subsection{Interval handling and the decoder}
-\label{sec:decoder}
-
-Two things are left implicit by the comparison above and are
-separated here: how each baseline reduces an interval to a comparable
-quantity, and how much of its margin belongs to the priority rule rather
-than to the schedule generation scheme.
-
-Every baseline in Table~\ref{tab:baselines} ranks candidates by the
-lexicographic order of Eq.~\eqref{eq:rank} applied to its own criterion,
-that is by the upper endpoint with the lower one as tie-break. That
-choice could in principle handicap them, so each rule was re-run
-ranking instead by the lower endpoint and by the midpoint of the same
-interval. It does not: over the 70 instances SPT spans $633.1$ to
-$642.5$ across the three single-endpoint conventions, LPT $703.1$ to
-$704.4$, MWKR $62.9$ to $64.6$ and EST $42.7$ to $45.1$, and the
-lexicographic values of Table~\ref{tab:baselines} fall inside or at the
-better edge of those ranges. The widest spread any convention opens is
-$2.4$ points of $\RE$, against the $23.3$ points that separate the best
-plain rule from the evolved one. How the intervals are collapsed is
-therefore not what the comparison is measuring.
-
-The decoder is a more substantial question, since the strongest
-baseline, G\&T-MWKR, does not use the same one: it restricts each
-decision to Giffler and Thompson's conflict set and so produces active
-schedules, whereas the evolved rules choose from the whole eligible set
-and produce semi-active ones. Running the evolved rules as the
-tie-break \emph{inside} the conflict set separates the two effects.
-Table~\ref{tab:decoder} gives the four combinations. Holding the
-decoder fixed, the evolved rules beat MWKR under either one: $18.99$
-against $64.7$ in the semi-active decoder and $23.18$ against $29.5$
-in G\&T's. Holding the rule fixed, each prefers a different decoder:
-the evolved rules lose $4.2$ points when moved into the conflict set,
-while MWKR gains $35.2$ by entering it. Each method in
-Table~\ref{tab:baselines} is thus reported with the decoder that suits
-it, and the margin survives the other choice.
+\subsection{Generalization across sizes and instance families}
+\label{sec:generalization}
+\label{sec:classics}
+Table~\ref{tab:gp70} reports single-rollout $\RE$ per size class over all
+70 instances, as mean $\pm$ standard deviation across the 30 evolved
+rules and for the single best rule. The best rule attains $17.71\%$
+global mean. Evolved only on $20{\times}15$, its best class is the
+unseen $50{\times}15$ ($13.8\%$), and the same pattern holds on
+average ($13.7 \pm 1.5$). Because all terminals are per-operation
+attributes with no size-bound quantities, transfer requires no
+retraining or rescaling.
 
 \begin{table}[t]
 \centering\small
-\caption{RE (\%) over the 70 instances for the two decoders and the
-two priority rules, one deterministic pass. The GP entries are the mean
-over the 30 evolved rules.}
-\label{tab:decoder}
-\begin{tabular}{lcc}
+\caption{RE (\%) per size class, single deterministic rollout, over all
+70 Taillard interval instances: mean $\pm$ sd across the 30 independently
+evolved rules, and the best evolved rule.}
+\label{tab:gp70}
+% 9 columnas = 18 huecos, asi que cada punto de tabcolsep vale 18pt de ancho:
+% a 3.5pt la tabla medía 373.7pt contra los 360pt de \linewidth
+\setlength{\tabcolsep}{2.5pt}
+\scriptsize
+\begin{tabular}{lccccccc|c}
 \toprule
-Priority rule & Semi-active & Giffler--Thompson \\
+& $15{\times}15$ & $20{\times}15$ & $20{\times}20$ &
+$30{\times}15$ & $30{\times}20$ & $50{\times}15$ & $50{\times}20$ & All \\
 \midrule
-MWKR & 64.7 & 29.5 \\
-Evolved, mean of 30 & $\mathbf{18.99} \pm 1.33$ & $23.18 \pm 7.47$ \\
-Evolved, featured & 17.71 & 18.15 \\
+Mean of 30 & $18.1{\pm}1.3$ & $18.0{\pm}1.5$ & $20.9{\pm}1.7$ &
+$21.4{\pm}1.7$ & $25.7{\pm}1.9$ & $13.7{\pm}1.5$ & $15.1{\pm}1.5$ &
+$18.99{\pm}1.33$ \\
+Best rule & 15.7 & 16.6 & 18.1 & 21.1 & 24.1 & \textbf{13.8} & 14.6 &
+\textbf{17.71} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Two details of that table are worth stating. The featured rule is
-the one case where the decoder barely matters, $17.71$ against $18.15$,
-a difference of $0.44$ points that a paired test over the 70 instances
-does not separate from zero ($p = 0.32$); the loss is concentrated in
-the rest of the arm, whose standard deviation grows from $1.33$ to
-$7.47$ because a few rules degrade badly once their candidate set is
-restricted. This is what should be expected of rules evolved against a
-particular generation scheme: the conflict set removes candidates their
-fitness was never measured on. And SPT, which is the worst entry of
-Table~\ref{tab:baselines} at $627.2$, reaches $71.03$ inside the
-conflict set, which is the same phenomenon seen from the other side.
-The decoder and the rule interact, and the honest reading of
-Table~\ref{tab:baselines} is that it compares methods, each with the
-generation scheme it was designed for, not rules in isolation.
 
-\subsection{Cross-family generalization: the 12 classical instances}
-\label{sec:classics}
-The 12 classical instances serve a double purpose: they test the evolved
-rule on instance families and sizes it has never seen, since it was
-evolved on four interval Taillard $20{\times}15$ instances and is
-applied here without any re-evolution, and they enable a direct
-comparison with the \emph{published} results of the IJSP metaheuristics
-on their own benchmark and metric (Table~\ref{tab:classics}). Those
-methods belong to different algorithmic families, evolutionary
-computation and swarm intelligence: a genetic algorithm
-evolving a population of permutations~\citep{DiazGA2020} and three
-artificial bee colony variants~\citep{DiazFEABC2023,DiazICAE2023}, each
-of which runs a separate search on every instance. Alongside the
-deterministic pass, Table~\ref{tab:classics} reports the randomized
-extension of Section~\ref{sec:grasp} at $N = 64$ and $N = 1024$:
-independent randomized passes of the same rule, of which the best
-schedule is kept, with no refinement or recombination among samples.
+The rules also transfer to a second family of instances. The 12
+classical instances differ from the Taillard ones in origin, size and
+structure, and the rules evolved on interval Taillard $20{\times}15$
+instances are applied to them without any re-evolution.
+Table~\ref{tab:classics} gives the featured rule's single-pass $\RE$ on
+each, together with GP-best-of-$N$ at $N = 64$ and $N = 1024$ and the
+published results of the IJSP metaheuristics, which
+Section~\ref{sec:metaheur} discusses.
 
 \begin{table}[t]
 \centering\small
@@ -996,20 +1011,6 @@ Mean & & & 17.9 & 14.2 & 11.3 & 9.8 & 6.4 & 5.8 & 5.5 \\
 \end{tabular}
 \end{table}
 
-The two families also differ in how they spend computation:
-GP-1024 evaluates $1024$ mutually independent samples per instance,
-whereas the metaheuristics evolve a population of $250$
-individuals~\citep{DiazGA2020,DiazFEABC2023} through successive
-generations, each of which depends on the previous one. In wall-clock
-terms, a single constructive pass over these instances takes
-$0.03$--$0.13$~s in our Python implementation, $0.07$~s on average,
-against the $0.5$--$2.2$~s reported for the genetic algorithm and the
-$1.9$--$6.8$~s reported for fEABC on the same
-instances~\citep{DiazFEABC2023}, both implemented in C\texttt{++}.
-GP-1024, however, requires $37$--$134$~s of sequential Python time
-depending on instance size, and is therefore \emph{not} faster than the
-published metaheuristics.
-
 Transfer is a property of the method rather than of one rule: over the
 30 evolved rules the deterministic pass averages $19.04 \pm 1.97\%$
 $\RE$ on these instances, single rules ranging from $15.3\%$ to
@@ -1019,6 +1020,22 @@ but margins over baselines evaluated on the same instances do, and that
 margin is preserved: $2.40$ times over MOR and $1.58$ over G\&T-MWKR on
 the classical set, against $2.40$ and $1.55$ on the benchmark the rules
 were evolved for.
+
+\subsection{Comparison with per-instance search}
+\label{sec:metaheur}
+\label{sec:budget}
+On the 12 classical instances the evolved rules can be compared with the
+published results of the IJSP metaheuristics on their own benchmark and
+metric (Table~\ref{tab:classics}). Those methods belong to different
+algorithmic families, evolutionary computation and swarm intelligence:
+a genetic algorithm evolving a population of
+permutations~\citep{DiazGA2020} and three artificial bee colony
+variants~\citep{DiazFEABC2023,DiazICAE2023}, each of which runs a
+separate search on every instance. Alongside the deterministic pass,
+Table~\ref{tab:classics} reports GP-best-of-$N$ at $N = 64$ and
+$N = 1024$: independent randomized passes of the same rule, of which the
+best schedule is kept, with no refinement or recombination among
+samples.
 
 Against the per-instance metaheuristics the evolved rules do not
 compete: the purpose-built ABC variants remain clearly ahead
@@ -1033,19 +1050,29 @@ deterministic baselines, and the best rule with a $1024$-sample budget
 comes within $1.5$ points of a population-based method that searches
 every instance separately.
 
-That distance deserves an explanation rather than an
-acknowledgement, and it can be measured. The comparison above is
-between published numbers obtained in C\texttt{++} under each author's
-own stopping rule, so we reimplemented a genetic algorithm of the same
-design --- permutation with repetition, job-order crossover, tournament
-selection, elitism, and the interval ranking of
-Eq.~\eqref{eq:rank} --- inside this codebase, running on the same
-decoder and the same evaluator as the evolved rules, and measured
-quality as a function of the number of schedules it constructs.
-Table~\ref{tab:gapbudget} reports the result on the same 12 instances,
-averaged over three runs. The reimplementation is not a weak stand-in:
-at $5\times10^{5}$ constructions it reaches $7.9\%$, ahead of the
-$9.8\%$ published for the genetic algorithm it follows.
+The two families also differ in how they spend computation:
+GP-1024 evaluates $1024$ mutually independent samples per instance,
+whereas the metaheuristics evolve a population of $250$
+individuals~\citep{DiazGA2020,DiazFEABC2023} through successive
+generations, each of which depends on the previous one. In wall-clock
+terms, a single constructive pass over these instances takes
+$0.03$--$0.13$~s in our Python implementation, $0.07$~s on average,
+against the $0.5$--$2.2$~s reported for the genetic algorithm and the
+$1.9$--$6.8$~s reported for fEABC on the same
+instances~\citep{DiazFEABC2023}, both implemented in C\texttt{++}.
+GP-1024, however, requires $37$--$134$~s of sequential Python time
+depending on instance size, and is therefore \emph{not} faster than the
+published metaheuristics.
+
+Those comparisons set a Python implementation against published
+C\texttt{++} results obtained under each author's own stopping rule, so
+the rest of this section measures quality against budget within a single
+implementation, using the genetic algorithm of
+Section~\ref{sec:reference}. Table~\ref{tab:gapbudget} reports it on the
+same 12 instances as a function of the number of schedules it
+constructs, averaged over three runs. It is a faithful reference: at
+$5\times10^{5}$ constructions it reaches $7.9\%$, ahead of the $9.8\%$
+published for the genetic algorithm it follows.
 
 \begin{table}[t]
 \centering\small
@@ -1085,31 +1112,20 @@ and a plain population method does not. The evolved rules are therefore
 best understood as what
 Table~\ref{tab:baselines} shows them to be, the strongest constructive
 option at the cost of one pass, and not as a substitute for per-instance
-search; Section~\ref{sec:budget} makes that trade explicit over the
-whole range of budgets.
+search.
 
 
-\subsection{Quality against budget}
-\label{sec:budget}
-
-The comparisons so far place the evolved rules among constructive
-methods, and Section~\ref{sec:classics} measures how far a population
-method has to search to reach them on the 12 classical instances. This
-section does the same over the 70, and does it on both axes a budget can
-be measured on, because they do not say the same thing.
-
-Everything here runs on one decoder, one evaluator and one
-language. The genetic algorithm is the one of
-Section~\ref{sec:classics}, the evolved rule is the featured one, and
-the sampled variant is the GP-best-of-$N$ wrapper of
-Section~\ref{sec:grasp}. Two further arms bound the picture: uniformly
-sampled permutations, which is what a search with no structure
-achieves, and the genetic algorithm started from the permutation the
-rule builds, which asks whether the rule is useful to a metaheuristic
-rather than against one. Each stochastic arm keeps its best-so-far, so
-one run per instance gives its whole curve; the search arms run to
-$2^{17}$ constructions and the sampled rule to $1024$, the largest
-budget the paper reports for it.
+The same measurement over the 70 Taillard instances is shown in
+Figure~\ref{fig:budget}, on the two axes a budget can be measured on.
+Besides the genetic algorithm, the featured rule and its GP-best-of-$N$
+wrapper, two further arms bound the picture: uniformly sampled
+permutations, which is what a search with no structure achieves, and the
+genetic algorithm started from the permutation the rule builds, which
+asks whether the rule is useful to a metaheuristic rather than against
+one. Each stochastic arm keeps its best-so-far, so one run per instance
+gives its whole curve; the search arms run to $2^{17}$ constructions and
+the sampled rule to $1024$, the largest budget the paper reports for
+it.
 
 \begin{figure}[t]
 \centering
@@ -1133,7 +1149,7 @@ quantifiable advantage the method has: not that it is a better
 optimizer, but that it occupies a regime of budget in which optimizers
 have not yet started to work.
 
-The second axis is less flattering and has to be read with care.
+The second axis must be read with more care.
 Figure~\ref{fig:budget}(b) reports seconds in this implementation, where
 a construction does not cost the same for every method: dispatching with
 a rule evaluates nine attributes for every eligible operation at each of
@@ -1147,26 +1163,35 @@ per instance the sampled rule is at $14.60\%$ against the genetic
 algorithm's $41.27\%$, and the genetic algorithm does not overtake the
 sampled rule at any point where both were measured.
 
-The seeded arm is the one that changes the reading. Started from
+The seeded arm changes the reading. Started from
 the rule's permutation instead of at random, the genetic algorithm
 begins at $17.71\%$ by construction and ends at $13.35\%$, passing the
 sampled rule at about $9.4\times10^{4}$ constructions. It is the only
 arm that ends below the sampled rule, and it does so using the rule.
 The natural place for an evolved dispatching rule alongside a
 per-instance metaheuristic is therefore not as its competitor but as its
-starting point, which is also the cheapest way to give a population
-method a good first incumbent.
+starting point, the role constructive heuristics commonly play in the
+initialization of population methods~\citep{Kazimipour2014}, and the
+cheapest way to give such a method a good first incumbent.
 
 \section{Analysis}
 \label{sec:analysis}
 
-This section takes up the three questions of
-Section~\ref{sec:intro} in turn: which attributes the evolution selects
-(Section~\ref{sec:anatomy}); whether the evolution driven by the
-makespan objective extracts measurable value from the width terminals
-(Section~\ref{sec:ablation}); and whether an objective that penalizes
+This section explains the results. It first examines the rules
+themselves: which attributes the evolution selects and how the featured
+rule reads (Section~\ref{sec:anatomy}), a worked example of that rule
+at a single decision (Section~\ref{sec:case}), and how much of its
+margin over the baselines belongs to the rule rather than to the
+schedule generation scheme (Section~\ref{sec:decoder}). It then takes up
+the questions of Section~\ref{sec:intro} on interval awareness: whether
+the makespan objective extracts value from the width terminals
+(Section~\ref{sec:ablation}), and whether an objective that penalizes
 interval width yields more robust schedules, and at what cost
-(Sections~\ref{sec:frontier} and~\ref{sec:robustness}).
+(Sections~\ref{sec:frontier} and~\ref{sec:robustness}). Finally, it
+tests whether the conclusions depend on the training set
+(Section~\ref{sec:trainset}) or on the symmetric interval scheme
+(Section~\ref{sec:asym}), and states the limitations
+(Section~\ref{sec:limitations}).
 
 \begin{figure}[!t]
 \centering
@@ -1206,6 +1231,20 @@ terminal usage and appear in $27$ of the $30$ evolved rules. Whether
 that width information translates into better schedules is quantified in
 Sections~\ref{sec:ablation}--\ref{sec:robustness}.
 
+The featured rule, Eq.~\eqref{eq:besttree}, is itself readable.
+Since the lowest value is dispatched, the
+rule reads directly: $-\mathit{WKR}$ is most-work-remaining, $2\,
+\mathit{PT}$ is shortest-processing-time at double weight, $\mathit{
+SLACK}^{2}$ penalizes quadratically any operation that cannot start at
+the earliest available time, and the constant is immaterial to the
+ranking. The remaining term, $-\mathit{WKRW}$, is the interval-aware
+one: among jobs with comparable remaining work the rule advances those
+whose remaining work is \emph{more uncertain}, resolving that
+uncertainty early rather than carrying it to the end of the schedule.
+The evolved rule is thus a weighted blend of MWKR and SPT, regularized
+by a quadratic earliest-start term and tilted by the uncertainty of the
+work ahead.
+
 The simplified form of the featured rule, Eq.~\eqref{eq:besttree}, also
 admits a direct sensitivity analysis: it weighs $\mathit{PT}$ by
 $\alpha = 2$ and $\mathit{WKRW}$ by $\beta = 1$, and we swept each
@@ -1222,7 +1261,6 @@ replaced by local descent: started at $\alpha = 4$, a descent stalls in
 a secondary minimum $0.6$ points above the global one. Setting
 $\beta = 0$ removes the width term from the deployed rule and costs
 $0.5$ points of $\RE$ ($18.23$ against $17.71$).
-
 
 
 \subsection{A worked example}
@@ -1297,6 +1335,76 @@ flip, which is why their value is established over the 70-instance
 benchmark in Sections~\ref{sec:ablation}
 and~\ref{sec:robustness} rather than here.
 
+\subsection{Interval handling and the decoder}
+\label{sec:decoder}
+
+Two aspects of the comparison with the constructive baselines are
+examined here: how each baseline reduces an interval to a comparable
+quantity, and how much of the margin of the evolved rules belongs to
+the priority rule rather than to the schedule generation scheme.
+
+The baselines rank candidates by the lexicographic order of
+Eq.~\eqref{eq:rank} (Section~\ref{sec:reference}). To check that this
+choice does not handicap them, each interval-valued rule was re-run
+ranking by a single number drawn from the same interval: its lower
+endpoint, its midpoint or its upper endpoint. Over the 70 instances
+SPT spans $633.1$ to $642.5$ across those three conventions, LPT
+$703.1$ to $704.4$, MWKR $62.9$ to $64.6$ and EST $42.7$ to $45.1$. The
+lexicographic values of Table~\ref{tab:baselines} are better than all
+three for SPT and EST, and within $1.9$ points of the best for LPT and
+MWKR. For EST and MWKR, the rules that account for the state of the
+shop, no convention moves the result by more than $2.4$ points, and for
+SPT and LPT, whose levels exceed 600, by at most $9.4$; the best plain
+rule and the evolved one are $23.3$ points apart. How the intervals are
+collapsed is therefore not what the comparison measures.
+
+The decoder is a more substantial question, since the strongest
+baseline, G\&T-MWKR, does not use the same one: it restricts each
+decision to Giffler and Thompson's conflict set and so produces active
+schedules, whereas the evolved rules choose from the whole eligible set
+and produce semi-active ones. Running the evolved rules as the
+tie-break \emph{inside} the conflict set separates the two effects.
+Table~\ref{tab:decoder} gives the four combinations. Holding the
+decoder fixed, the evolved rules beat MWKR under either one: $18.99$
+against $64.7$ in the semi-active decoder and $23.18$ against $29.5$
+in G\&T's. Holding the rule fixed, each prefers a different decoder:
+the evolved rules lose $4.2$ points when moved into the conflict set,
+while MWKR gains $35.2$ by entering it. Each method in
+Table~\ref{tab:baselines} is thus reported with the decoder that suits
+it, and the margin survives the other choice.
+
+\begin{table}[t]
+\centering\small
+\caption{RE (\%) over the 70 instances for the two decoders and the
+two priority rules, one deterministic pass. The GP entries are the mean
+over the 30 evolved rules.}
+\label{tab:decoder}
+\begin{tabular}{lcc}
+\toprule
+Priority rule & Semi-active & Giffler--Thompson \\
+\midrule
+MWKR & 64.7 & 29.5 \\
+Evolved, mean of 30 & $\mathbf{18.99} \pm 1.33$ & $23.18 \pm 7.47$ \\
+Evolved, featured & 17.71 & 18.15 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two details of the table deserve mention. The featured rule is
+the one case where the decoder barely matters, $17.71$ against $18.15$,
+a difference of $0.44$ points that a paired test over the 70 instances
+does not separate from zero ($p = 0.32$); the loss is concentrated in
+the rest of the arm, whose standard deviation grows from $1.33$ to
+$7.47$ because a few rules degrade badly once their candidate set is
+restricted. This is what should be expected of rules evolved against a
+particular generation scheme: the conflict set removes candidates their
+fitness was never measured on. And SPT, which is the worst entry of
+Table~\ref{tab:baselines} at $627.2$, reaches $70.6$ inside the
+conflict set, as G\&T-SPT, which is the same phenomenon seen from the
+other side. The decoder and the rule interact, and
+Table~\ref{tab:baselines} compares methods, each with the generation
+scheme it was designed for, rather than rules in isolation.
+
 \subsection{The value of interval awareness: ablations}
 \label{sec:ablation}
 The interval-width terminals are the distinctive ingredient of this
@@ -1304,12 +1412,9 @@ setting, so we isolate their contribution by ablation: we repeat the
 30 evolutions with and
 without the width terminals ($\mathit{PTW}$, $\mathit{ESTW}$,
 $\mathit{WKRW}$) in the terminal set, everything else held fixed, and
-compare the resulting rules with a paired Wilcoxon signed-rank test on
-the shared seeds, reporting the normal-approximation statistic $z$,
-exact two-sided $p$-values, and the matched-pairs rank-biserial
-correlation $|r|$ as effect size. Holm's correction across the
-tests of Table~\ref{tab:ablation}, and across each later family of
-comparisons, changes no verdict reported in this paper. The irace configuration of
+compare the resulting rules seed by seed (Section~\ref{sec:stats});
+Holm's correction over the tests of Table~\ref{tab:ablation} changes
+none of their verdicts. The irace configuration of
 Section~\ref{sec:irace} was selected on the full terminal set and is used
 for both arms: holding it fixed is what makes the comparison controlled,
 at the cost that the ablated arm runs with hyperparameters tuned for a
@@ -1431,23 +1536,24 @@ $19.20 \pm 1.52$ to $23.27 \pm 3.80$ $\RE$. At the far end of the sweep
 the schedules are therefore narrower than any the ablated rules produced,
 at a cost of about four points of $\RE$.
 
-The curve can be read as an exchange rate, which is what a
-practitioner needs in order to choose. Measured on the executed
-deviation of Section~\ref{sec:robustness} rather than on the predicted
-width, the first unit of $\lambda$ is much the cheapest: moving from the
-makespan objective to $\lambda = 1$ costs $7.2$ points of $\RE$ and
-removes $16.2\%$ of the absolute deviation, while moving on from
-$\lambda = 1$ to $\lambda = 4$ costs a further $3.3$ points and removes
-only $5.1\%$ more. Returns diminish sharply, so $\lambda \approx 1$
-captures most of the attainable stability and is the operating point we
-would recommend by default; larger weights are worth their price only
-where a missed due date costs more than a late completion, since beyond
-$\lambda = 2$ the expected makespan degrades faster than the deviation
-improves. The boundary of the whole trade is equally explicit: it exists
-only when the objective prices width. Under expected makespan alone the
-width terminals buy nothing at the level of the arm, and a practitioner
-who only cares about average completion can use the smaller terminal set
-at no loss.
+Read at the level of the arm, which is what a single evolution should
+be expected to deliver, the frontier has two regimes. Between
+$\lambda = 0.5$ and $\lambda = 2$ each point of narrower interval costs
+$1.7$ points of $\RE$, and the whole stretch gives up $0.66$ points;
+between $\lambda = 2$ and $\lambda = 4$ the rate rises to $2.7$, the last
+$1.26$ points of width costing $3.41$ points of $\RE$, and the spread
+between evolutions more than doubles, from $1.74$ to $3.80$, so the
+outcome of a single run becomes much less predictable. A weight between
+$1$ and $2$ is therefore the default we would recommend, and the largest
+weights are warranted only where predictability is worth considerably
+more than expected makespan. Selecting a rule within an arm amplifies
+both sides of the trade: the narrowest rule of the $\lambda = 1$ arm,
+used in Section~\ref{sec:robustness}, reduces the executed deviation by
+$16.2\%$ at a cost of $7.2$ points of $\RE$ with respect to the featured
+rule. The trade itself exists only when the objective prices width:
+under expected makespan alone the width terminals leave the expected
+makespan unchanged, and a practitioner who only cares about average
+completion can use the smaller terminal set at no loss.
 
 Sweeping $\lambda$ for the ablated arm (ten evolutions per value)
 shows that it has no such curve. Its width does not respond to the
@@ -1470,7 +1576,6 @@ leave the ablated band, but reaching $9.24\%$ takes both them and an
 objective that rewards narrowness.
 
 
-
 \begin{table}[t]
 \centering\small
 \setlength{\tabcolsep}{4pt}
@@ -1479,9 +1584,7 @@ instances (lower is better on all measures): mean $\RE$, relative width
 of the predicted makespan interval, and $\bar\varepsilon$
 ($\times10^3$) at nominal interval widths and widened by $+20\%$ and
 $+40\%$ (Monte Carlo, $K{=}1000$ realizations, common random numbers
-across methods). The last column is the mean absolute deviation
-$|\Delta|$ in time units at nominal widths, the same quantity as
-$\bar\varepsilon$ before dividing by $E[\mathbf{C}_{\max}]$. Each GP arm is
+across methods). The last column is $|\Delta|$ at nominal widths. Each GP arm is
 represented by one rule: the makespan arms by their best $\RE$, the
 robust arms by their narrowest predicted interval, which is what their
 fitness optimizes.}
@@ -1541,8 +1644,8 @@ terminals, as in Table~\ref{tab:robustness}.}
 \label{fig:robustness}
 \end{figure}
 
-Under the makespan objective the first question receives the same
-negative answer (Table~\ref{tab:robustness}): the featured rule and its
+Under the makespan objective the width terminals make no difference to
+robustness either (Table~\ref{tab:robustness}): the featured rule and its
 ablated counterpart are statistically indistinguishable in
 $\bar\varepsilon$ ($5.70$ against $5.75$ at the nominal width; paired
 Wilcoxon over the 70 instances, $z=-0.17$). The rule is more robust than
@@ -1557,8 +1660,8 @@ makespan is $21\%$ larger than the rule's ($2732$ against $2259$ time
 units on average), so the same absolute error reads as a smaller
 relative one. In absolute terms the rule deviates by $12.30$ time units
 against EST's $14.64$, and the two separate clearly ($z=-5.89$,
-$p<0.001$, $|r|=0.70$). The ordering against G\&T-MWKR is unchanged and
-widens ($12.30$ against $14.94$, $z=-6.83$, $|r|=0.82$), and the
+$p<0.001$, $|r|=0.81$). The ordering against G\&T-MWKR is unchanged and
+widens ($12.30$ against $14.94$, $z=-6.83$, $|r|=0.94$), and the
 makespan arm and its ablation remain indistinguishable ($12.30$ against
 $12.25$, $z=0.61$, $p=0.55$). What the normalization hides is therefore
 an advantage of the rule, not one attributed to it.
@@ -1581,22 +1684,22 @@ $16.2\%$, from $12.30$ to $10.31$ time units; at $\lambda{=}4$ it
 reaches $9.78$. Roughly a fifth of the apparent gain is therefore
 arithmetic and the rest is not: the paired contrasts separate on the
 absolute measure as well, by $-1.99$ time units against the makespan
-arm ($z=-5.55$, $p<0.001$, $|r|=0.66$) and by $-1.78$ against its own
-ablation ($z=-5.17$, $|r|=0.62$).
+arm ($z=-5.55$, $p<0.001$, $|r|=0.76$) and by $-1.78$ against its own
+ablation ($z=-5.17$, $|r|=0.71$).
 
-The objection has a third part: that methods should be compared at
-similar levels of $\RE$, since a rule that gives up expected makespan
-buys stability with it. Two entries of
-Table~\ref{tab:robustness} make that comparison without any adjustment.
-The robust $\lambda{=}4$ rule and G\&T-MWKR predict almost the same
-makespan, $2454$ against $2482$ time units, which is $28.27$ against
-$29.50$ points of $\RE$ --- if anything the robust rule is the better of
-the two a priori. Their realized deviations are not close: $9.78$ against
-$14.94$ time units, a reduction of $34.5\%$, paired over the 70
-instances at $z=-7.26$, $p<0.001$, $|r|=0.87$, and of the same sign and
-significance under all four realization laws. At matched a-priori
-quality the robustness gain is therefore neither a denominator effect
-nor a makespan concession.
+Methods can also be compared at similar levels of $\RE$, which
+separates the robustness gain from the expected makespan given up for
+it. Two entries of Table~\ref{tab:robustness} allow that comparison
+without any adjustment. The robust $\lambda{=}4$ rule and G\&T-MWKR
+predict almost the same makespan, $2454$ against $2482$ time units,
+which is $28.27$ against $29.50$ points of $\RE$; if anything the
+robust rule is the better of the two a priori. Their realized
+deviations are not close: $9.78$ against $14.94$ time units, a
+reduction of $34.5\%$, smaller on 69 of the 70 instances
+($z=-7.26$, $p<0.001$, $|r|=1.00$), and of the same sign and
+significance under the three other realization laws considered below.
+At matched a-priori quality the robustness gain is therefore neither a
+denominator effect nor a makespan concession.
 
 The comparisons above select one representative rule per arm; at the
 level of the method the ordering is the same. Recomputing
@@ -1607,6 +1710,14 @@ correction over the three arm-level tests, $|r|=0.54$), the robust
 $\lambda{=}1$ arm $5.50 \pm 0.30$ against $5.68 \pm 0.11$ for its own
 ($z=-3.26$, $p<0.01$, $|r|=0.68$), and the robust arm improves on the
 makespan arm with the same terminals ($z=-2.46$, $p<0.05$, $|r|=0.51$).
+
+Two things follow. The width terminals do reduce
+$\bar\varepsilon$ slightly even under the makespan objective, a
+method-level effect too small to show in the single featured pair; and
+the arm-level reductions are modest, three percent or less, against the
+fifth separating the featured rules, so selecting the narrowest rule of
+the robust arm amplifies an effect that at the method level is
+consistent but small.
 
 The estimate above draws each realization uniformly on its
 interval, which is one choice among several. Repeating the measurement
@@ -1622,21 +1733,11 @@ grow with the mass the law places near the upper endpoint, from $8.95$
 time units for the rule under the triangular law to $57.15$ under the
 skewed one and $138.35$ in the worst case, but the comparison between
 methods does not depend on which law is used.
-Two things follow. The width terminals do reduce
-$\bar\varepsilon$ slightly even under the makespan objective, a
-method-level effect too small to show in the single featured pair; and
-the arm-level reductions are modest, three percent or less, against the
-fifth separating the featured rules, so selecting the narrowest rule of
-the robust arm amplifies an effect that at the method level is
-consistent but small.
 
 Figure~\ref{fig:robustness} shows the per-instance $\bar\varepsilon$
 distributions. The ordering is stable as uncertainty grows, and the
 advantage of the robust rule widens with it: at $+40\%$ its deviation is
 $6.08$ against $7.57$ for the makespan rule and $8.58$ for G\&T-MWKR.
-
-
-
 
 
 \subsection{Sensitivity to the training set}
@@ -1703,28 +1804,17 @@ performance with them.
 
 Every instance used so far carries an interval symmetric about its
 crisp value, so what the width terminals contribute could belong to the
-generator rather than to the problem. The 70 instances were therefore
-regenerated with the interval skewed to the right. The crisp value is
-recovered from the midpoint of the symmetric version, which the scheme
-of Section~\ref{sec:instances} preserves exactly, and the bounds are
-drawn around it as $p - \mathrm{round}(p\,U[0,0.05])$ and
-$p + \mathrm{round}(p\,U[0,0.25])$: a job may run a little early and may
-run much late, which is the asymmetry a shop floor has. Machine routes
-are untouched, so the crisp Taillard bounds still apply. Measured over
-the $37{,}250$ operations, the mean total width is $14.3\%$ of $p$
-against the $13.9\%$ of the symmetric scheme, so what differs between
-the two banks is the shape of the interval and not its size.
-
-The four arms of Sections~\ref{sec:ablation}
-and~\ref{sec:frontier} were re-evolved on the asymmetric counterparts of
-TA11--TA14 with the same configuration, fifteen seeds per arm rather
-than thirty, which is the one concession the compute budget required.
-Table~\ref{tab:asym} reports them over all 70 asymmetric instances,
-with the executed deviation estimated from $400$ realizations of the
-fixed processing order. Levels of $\RE$ do not compare across the two
-banks, since the right skew raises the expected makespan while the
-crisp lower bound does not move and every arm sits some six points
-higher; what compares is the contrast between arms inside the bank.
+generator rather than to the problem. The four arms of
+Sections~\ref{sec:ablation} and~\ref{sec:frontier} were therefore
+re-evolved on the asymmetric counterparts of TA11--TA14 described in
+Section~\ref{sec:instances}, with the same configuration and fifteen
+seeds per arm rather than thirty, the one concession the compute budget
+required. Table~\ref{tab:asym} reports them over all 70 asymmetric
+instances, with the executed deviation estimated from $400$ realizations
+of the fixed processing order. Levels of $\RE$ do not compare across the
+two benchmarks, since the right skew raises the expected makespan while
+the crisp lower bound does not move and every arm sits some six points
+higher; what compares is the contrast between arms within a benchmark.
 
 \begin{table}[t]
 \centering\small
@@ -1748,29 +1838,29 @@ $13.03 \pm 0.16$ \\
 \end{tabular}
 \end{table}
 
-The contrast reproduces the symmetric bank in both halves. Under
-the makespan objective the width terminals buy nothing: the predicted
-interval is no narrower ($13.23$ against $13.08$, $p=0.89$) and the
-executed deviation no smaller ($13.36$ against $13.06$, $p=0.11$),
-which is the negative result of Section~\ref{sec:ablation} again. Under
-the robust objective they buy both: the interval narrows from $12.97$
-to $12.67$ ($z=-3.24$, $|r|=0.84$) and the deviation from $13.03$ to
-$12.75$ ($z=-2.90$, $|r|=0.75$), and the robust arm improves on the
+The result that matters reproduces. Under the robust objective the
+width terminals narrow the predicted interval from $12.97$ to $12.67$
+($z=-3.24$, $|r|=0.95$) and the executed deviation from $13.03$ to
+$12.75$ ($z=-2.90$, $|r|=0.85$), and the robust arm improves on the
 makespan arm carrying the same terminals by $0.55$ points of width and
-$0.61$ time units of deviation ($z=-3.41$, $|r|=0.88$). Those five
-contrasts survive Holm's correction over the nine tests of the table,
-the largest adjusted $p$ among them being $0.0101$. What the width
-terminals contribute, and the objective under which they contribute it,
-therefore does not depend on the symmetric generation scheme.
+$0.61$ time units of deviation, the latter for every one of the fifteen
+seeds ($z=-3.41$, $|r|=1.00$). These five contrasts survive Holm's
+correction over the nine tests of the table, the largest adjusted $p$
+among them being $0.0101$. The robustness that the width terminals make
+attainable, and the objective under which they attain it, therefore do
+not depend on the symmetric generation scheme.
 
-One difference is worth recording rather than claiming. On the
-asymmetric bank, carrying the width terminals under the makespan
-objective costs $1.18$ points of $\RE$, where on the symmetric bank the
-two arms were indistinguishable. The difference does not survive the
-correction ($p=0.10$ adjusted) and we do not read it as an effect, but
-it points the same way as the boundary of Section~\ref{sec:frontier}:
-where the objective does not price width, the smaller terminal set is
-the better choice.
+Under the makespan objective the picture is weaker than on the
+symmetric benchmark. There, the width terminals made the predicted
+interval slightly but significantly narrower even though that objective
+does not reward it (Section~\ref{sec:ablation}); here they do not
+($13.23$ against $13.08$, $p=0.89$), nor do they reduce the executed
+deviation ($13.36$ against $13.06$, $p=0.11$), and they cost $1.18$
+points of $\RE$, a difference that does not survive the correction
+($p=0.10$ adjusted). The negative result for expected makespan holds on
+both benchmarks, and the rest points the same way as the boundary of
+Section~\ref{sec:frontier}: where the objective does not price width,
+the smaller terminal set is the better choice.
 
 \subsection{Limitations}
 \label{sec:limitations}
@@ -1789,8 +1879,8 @@ evolved on instances generated with the $\pm15\%$ symmetric interval
 scheme standard in the IJSP literature; the robustness analysis of
 Section~\ref{sec:robustness} does re-evaluate the resulting schedules
 under intervals widened by $+20\%$ and $+40\%$, and
-Section~\ref{sec:asym} re-evolves the four arms on a right-skewed bank,
-where the contribution of the width terminals is unchanged,
+Section~\ref{sec:asym} re-evolves the four arms on a right-skewed benchmark,
+where the robustness contribution of the width terminals is unchanged,
 but no rule was evolved
 under a different \emph{width}, so how far these results carry to
 uncertainty of a different magnitude remains open.
@@ -1841,10 +1931,11 @@ reduction requires the width terminals, since under the same objective
 the ablated arm reaches only $5.54$ and no value of $\lambda$ narrows its
 intervals. The gain is paid for in expected
 makespan, and the weight $\lambda$ governs the trade-off.
-Both halves survive a change of generator: re-evolved on a
-right-skewed bank, the width terminals again buy nothing under the
-makespan objective and again narrow both the predicted interval and the
-executed deviation under the robust one.
+The robustness result survives a change of generator: re-evolved on a
+right-skewed benchmark, the width terminals again narrow both the
+predicted interval and the executed deviation under the robust
+objective, and again leave expected makespan unimproved under the
+default one.
 
 (iv)~Where an evolved rule stands against per-instance search is a
 question of budget, and it has a measurable answer. On one decoder, one
@@ -1870,7 +1961,11 @@ nothing to the expected makespan, which rules reading bounds or
 midpoints alone attain equally well, and shows its value on the third
 question: an objective that rewards a narrow interval, which only the
 width terminals can pursue, pays a chosen amount of expected makespan
-for executions about a fifth closer to their prediction.
+for executions about a fifth closer to their prediction. The last
+question, where such rules stand against per-instance search, has the
+answer given in (iv): up to the order of $10^{5}$ schedule
+constructions they are the better use of computation, and beyond it
+they are a starting point rather than a competitor.
 
 Future work follows four lines. First, optimizing the numeric weights of
 an evolved rule, which the sensitivity analysis of

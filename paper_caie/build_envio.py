@@ -9,9 +9,9 @@ llevar el enlace al deposito, que identifica igual que una firma.
 Se genera todo desde main.tex, asi que no hay una segunda copia del
 articulo que se pueda quedar atras.
 
-    python paper_gp/build_envio.py
+    python paper_caie/build_envio.py
 
-Deja en paper_gp/envio/:
+Deja en paper_caie/envio/:
     manuscript.pdf   anonimo, sin marcas de revision
     title_page.pdf   titulo, autor, afiliacion, agradecimientos
     highlights.pdf   los cinco puntos
@@ -29,6 +29,7 @@ TMP = os.path.join(HERE, "_envio")
 
 PORTADA = r"""\documentclass[11pt]{article}
 \usepackage[T1]{fontenc}
+\usepackage{lmodern}
 \usepackage[a4paper,margin=2.5cm]{geometry}
 \usepackage{hyperref}
 \pagestyle{empty}
@@ -123,13 +124,14 @@ def anonimiza(t):
 
 
 def limpia(t):
-    """Quita las marcas azules de revision."""
-    marcado = r"\newcommand{\rev}[1]{\textcolor{revcolor}{#1}}"
-    assert t.count(marcado) == 1, "la orden \\rev ya no esta donde estaba"
-    t = t.replace(marcado, r"\newcommand{\rev}[1]{#1}")
-    t = t.replace("\\color{revcolor}\n", "")
-    quedan = len(re.findall(r"\\textcolor\{revcolor\}", t))
-    assert quedan == 0, f"quedan {quedan} marcas de color"
+    """Comprueba que no quedan marcas de revision.
+
+    En paper_caie el fuente ya no las lleva: es un envio nuevo, sin
+    version anterior que marcar. Si alguna vuelve a aparecer, se aborta
+    en vez de enviarla.
+    """
+    for rastro in ("revcolor", "\\rev{"):
+        assert rastro not in t, f"queda una marca de revision: {rastro}"
     return t
 
 
@@ -195,7 +197,7 @@ def main():
                            capture_output=True).stdout
     texto = bruto.decode("utf-8", errors="replace")
     # cadenas que identifican de verdad. Ojo con palabras corrientes:
-    # "acknowledgement" sale en la prosa de la seccion 6.4 y no delata a
+    # una palabra como "acknowledgement" puede salir en la prosa y no delata a
     # nadie, asi que se busca el encabezado y no la palabra.
     delatoras = ["Hern", "Oviedo", "uniovi", "Gij", "zenodo", "PID2022",
                  "MCIN/AEI", "Acknowledgements", "CRediT",

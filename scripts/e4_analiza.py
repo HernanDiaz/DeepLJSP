@@ -43,6 +43,9 @@ from jobshop_rl.data.literature_bounds import (                # noqa: E402
 from jobshop_rl.heuristics.fast_sim import (                   # noqa: E402
     Instancia, despacha, prioridad_de)
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from efecto import biserial                                    # noqa: E402
+
 DIR = "benchmarks/e4_asimetrico"
 SALIDA = os.path.join(DIR, "resumen.json")
 RAMAS = ["full", "nowidth", "rob1", "rob1_nowidth"]
@@ -159,8 +162,11 @@ def main():
             sd = (n * (n + 1) * (2 * n + 1) / 24.0) ** 0.5
             z = (float(w.statistic) - mu) / sd if sd > 0 else 0.0
             z = abs(z) if (x - y).mean() > 0 else -abs(z)
+            # "r" es |z|/sqrt(n), que es lo que cito paper_gp; "rb" es la
+            # biserial por rangos, que es el |r| que define el articulo
             d[k] = {"d": float((x - y).mean()), "p": float(w.pvalue),
-                    "z": float(z), "r": float(abs(z) / n ** 0.5)}
+                    "z": float(z), "r": float(abs(z) / n ** 0.5),
+                    "rb": float(biserial(list(x), list(y)))}
         res["contrastes"][f"{a} vs {b}"] = d
         print(f"\n  {etq} (n={len(com)})")
         for k in ("re", "anchura", "abs"):

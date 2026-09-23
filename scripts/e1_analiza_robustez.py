@@ -32,6 +32,9 @@ from scipy import stats
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from efecto import biserial                                    # noqa: E402
+
 DIR = "benchmarks/e1_robustez"
 SALIDA = os.path.join(DIR, "resumen.json")
 ORDEN = ["GP", "GP-nowidth", "GP-rob1", "GP-rob1-nw", "GP-rob4",
@@ -63,7 +66,7 @@ def pareado(a, b, insts, k):
     y = np.array([b[i][k] for i in insts])
     dif = x - y
     if not np.any(np.abs(dif) > 1e-12):
-        return 0.0, 1.0
+        return 0.0, 1.0, 0.0, 0.0, 0.0
     w = stats.wilcoxon(x, y, method="exact", zero_method="wilcox")
     # z y tamano del efecto, en el formato que usa el articulo
     n = int(np.sum(np.abs(dif) > 1e-12))
@@ -74,7 +77,11 @@ def pareado(a, b, insts, k):
         z = abs(z)
     else:
         z = -abs(z)
-    return float(dif.mean()), float(w.pvalue), z, abs(z) / n ** 0.5
+    # el cuarto valor es |z|/sqrt(n), que se conserva por compatibilidad
+    # con lo ya citado en paper_gp; el quinto es la biserial por rangos,
+    # que es el |r| que define el articulo
+    return (float(dif.mean()), float(w.pvalue), z, abs(z) / n ** 0.5,
+            biserial(list(x), list(y)))
 
 
 def main():
@@ -106,12 +113,13 @@ def main():
         for x, y in PARES:
             if x not in d or y not in d:
                 continue
-            de, pe, ze, re_ = pareado(d[x], d[y], insts, 0)
-            da, pa, za, ra = pareado(d[x], d[y], insts, 1)
+            de, pe, ze, re_, rbe = pareado(d[x], d[y], insts, 0)
+            da, pa, za, ra, rba = pareado(d[x], d[y], insts, 1)
             contrastes[f"{x} vs {y}"] = {"d_eps": de, "p_eps": pe,
                                          "d_abs": da, "p_abs": pa,
                                          "z_eps": ze, "r_eps": re_,
-                                         "z_abs": za, "r_abs": ra}
+                                         "z_abs": za, "r_abs": ra,
+                                         "rb_eps": rbe, "rb_abs": rba}
             aviso = "  <-- cambia de signo" if de * da < 0 else ""
             print(f"  {x + ' vs ' + y:<26} {de:8.2f} {pe:8.4f} "
                   f"{da:9.2f} {pa:8.4f}  z={za:+6.2f} r={ra:.2f}{aviso}")

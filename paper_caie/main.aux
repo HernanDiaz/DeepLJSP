@@ -1,0 +1,252 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\emailauthor{diazhernan@uniovi.es}{Hern\'an D\'iaz Rodr\'iguez}
+\citation{Allahverdi2022}
+\citation{DiazGA2020,DiazFEABC2023,DiazICAE2023}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{2}{section.1}\protected@file@percent }
+\newlabel{sec:intro}{{1}{2}{Introduction}{section.1}{}}
+\citation{Branke2016,Nguyen2017}
+\citation{DiazGA2020}
+\citation{Palacios2015}
+\citation{Allahverdi2014}
+\citation{Xu2023}
+\citation{Allahverdi2022}
+\citation{Zheng2024}
+\citation{Afsar2025}
+\citation{Sotskov2013}
+\citation{Sotskov2020}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{5}{section.2}\protected@file@percent }
+\newlabel{sec:related}{{2}{5}{Related Work}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Job shop scheduling under interval uncertainty}{5}{subsection.2.1}\protected@file@percent }
+\citation{Lei2011}
+\citation{DiazGA2020}
+\citation{DiazFEABC2023,DiazICAE2023}
+\citation{DiazTardiness2022}
+\citation{Kazimipour2014}
+\citation{Panwalkar1977,Haupt1989}
+\citation{Durasevic2018}
+\citation{Giffler1960}
+\citation{Adams1988}
+\citation{Carlier1982}
+\citation{Haupt1989}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Dispatching rules for job shop scheduling}{7}{subsection.2.2}\protected@file@percent }
+\citation{Koza1992,Poli2008}
+\citation{Branke2016,Nguyen2017}
+\citation{Hildebrandt2015}
+\citation{Mei2017}
+\citation{Nguyen2014}
+\citation{GilGala2021Ensembles}
+\citation{GilGala2025SSHE}
+\citation{Karunakaran2017}
+\citation{Xu2025}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Automated design of dispatching rules}{8}{subsection.2.3}\protected@file@percent }
+\citation{Zhang2020L2D,Park2021GNN}
+\citation{Xu2025}
+\citation{Moore2009}
+\citation{DiazGA2020}
+\citation{DiazGA2020}
+\citation{DiazICAE2023}
+\citation{Sprecher1995}
+\@writefile{toc}{\contentsline {section}{\numberline {3}The Interval Job Shop Scheduling Problem}{9}{section.3}\protected@file@percent }
+\newlabel{sec:problem}{{3}{9}{The Interval Job Shop Scheduling Problem}{section.3}{}}
+\citation{DiazGA2020,DiazICAE2023}
+\citation{Ishibuchi1990}
+\citation{DiazGA2020}
+\newlabel{eq:sgs}{{3}{10}{The Interval Job Shop Scheduling Problem}{equation.3}{}}
+\newlabel{eq:obj}{{4}{10}{The Interval Job Shop Scheduling Problem}{equation.4}{}}
+\newlabel{eq:cmax}{{5}{10}{The Interval Job Shop Scheduling Problem}{equation.5}{}}
+\newlabel{eq:prec}{{6}{10}{The Interval Job Shop Scheduling Problem}{equation.6}{}}
+\newlabel{eq:cap}{{7}{10}{The Interval Job Shop Scheduling Problem}{equation.7}{}}
+\newlabel{eq:rank}{{8}{10}{The Interval Job Shop Scheduling Problem}{equation.8}{}}
+\citation{Taillard1993}
+\citation{DiazFEABC2023}
+\citation{Leon1994}
+\citation{DiazGA2020}
+\newlabel{eq:eps}{{10}{11}{The Interval Job Shop Scheduling Problem}{equation.10}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Interval-aware terminal set, with exact definitions. For an eligible operation $o$ of job $j$ on machine $\mu (o)$: $\mathbf  {p}_o = [\underline  {p}_o, \overline  {p}_o]$ is its duration interval; $\mathbf  {C}_j$ and $\mathbf  {C}_{\mu (o)}$ are the interval completion times of the last scheduled operation of job $j$ and of machine $\mu (o)$; $\mathcal  {R}_o$ is the set of operations of $j$ after $o$; $\mathcal  {E}$ is the current eligible set. Terminals are evaluated on \emph  {raw} (unnormalized) values.}}{12}{table.1}\protected@file@percent }
+\newlabel{tab:terminals}{{1}{12}{Interval-aware terminal set, with exact definitions. For an eligible operation $o$ of job $j$ on machine $\mu (o)$: $\mathbf {p}_o = [\underline {p}_o, \overline {p}_o]$ is its duration interval; $\mathbf {C}_j$ and $\mathbf {C}_{\mu (o)}$ are the interval completion times of the last scheduled operation of job $j$ and of machine $\mu (o)$; $\mathcal {R}_o$ is the set of operations of $j$ after $o$; $\mathcal {E}$ is the current eligible set. Terminals are evaluated on \emph {raw} (unnormalized) values}{table.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}GP Hyper-Heuristic for the IJSP}{12}{section.4}\protected@file@percent }
+\newlabel{sec:method}{{4}{12}{GP Hyper-Heuristic for the IJSP}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Hyper-heuristic view: from expression trees to schedules}{12}{subsection.4.1}\protected@file@percent }
+\newlabel{sec:hhview}{{4.1}{12}{Hyper-heuristic view: from expression trees to schedules}{subsection.4.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces An individual is a priority expression tree; leaves are interval-aware attributes of the candidate operation (here the illustrative rule $\mathit  {SLACK}/\mathit  {PT} + \mathit  {EST} - \mathit  {WKR}\cdot \mathit  {PTW}$). At each decision point the tree is evaluated on every eligible operation and the one with the lowest value is dispatched.}}{13}{figure.1}\protected@file@percent }
+\newlabel{fig:tree}{{1}{13}{An individual is a priority expression tree; leaves are interval-aware attributes of the candidate operation (here the illustrative rule $\mathit {SLACK}/\mathit {PT} + \mathit {EST} - \mathit {WKR}\cdot \mathit {PTW}$). At each decision point the tree is evaluated on every eligible operation and the one with the lowest value is dispatched}{figure.1}{}}
+\citation{Koza1992,Poli2008}
+\citation{Koza1992,Poli2008}
+\citation{Koza1992,Poli2008}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Evolution parameters: the configuration selected by irace (Section~\ref {sec:irace}), used for every experiment reported in this paper unless a section states otherwise.}}{14}{table.2}\protected@file@percent }
+\newlabel{tab:gpparams}{{2}{14}{Evolution parameters: the configuration selected by irace (Section~\ref {sec:irace}), used for every experiment reported in this paper unless a section states otherwise}{table.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Evolutionary components}{14}{subsection.4.2}\protected@file@percent }
+\newlabel{sec:evoview}{{4.2}{14}{Evolutionary components}{subsection.4.2}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces GP hyper-heuristic for the IJSP}}{15}{algorithm.1}\protected@file@percent }
+\newlabel{alg:gp}{{1}{15}{Evolutionary components}{algorithm.1}{}}
+\citation{Feo1995}
+\citation{GilGala2025GRASB}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Randomized multi-start extension}{16}{subsection.4.3}\protected@file@percent }
+\newlabel{sec:grasp}{{4.3}{16}{Randomized multi-start extension}{subsection.4.3}{}}
+\citation{DiazGA2020,DiazFEABC2023,DiazICAE2023}
+\citation{Taillard1993}
+\citation{FisherThompson1963}
+\citation{Lawrence1984}
+\citation{Adams1988}
+\citation{DiazGA2020}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Experimental Setup}{17}{section.5}\protected@file@percent }
+\newlabel{sec:setup}{{5}{17}{Experimental Setup}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Benchmark instances}{17}{subsection.5.1}\protected@file@percent }
+\newlabel{sec:instances}{{5.1}{17}{Benchmark instances}{subsection.5.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Training protocol and data split}{18}{subsection.5.2}\protected@file@percent }
+\newlabel{sec:protocol}{{5.2}{18}{Training protocol and data split}{subsection.5.2}{}}
+\citation{DiazGA2020}
+\citation{LopezIbanez2016}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Reference methods}{19}{subsection.5.3}\protected@file@percent }
+\newlabel{sec:reference}{{5.3}{19}{Reference methods}{subsection.5.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Hyperparameter space explored by irace (200 experiments; cost = development-set RE of the evolved rule) and the winning configuration.}}{20}{table.3}\protected@file@percent }
+\newlabel{tab:irace}{{3}{20}{Hyperparameter space explored by irace (200 experiments; cost = development-set RE of the evolved rule) and the winning configuration}{table.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Hyperparameter configuration with irace}{20}{subsection.5.4}\protected@file@percent }
+\newlabel{sec:irace}{{5.4}{20}{Hyperparameter configuration with irace}{subsection.5.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Evaluation measures and statistical analysis}{20}{subsection.5.5}\protected@file@percent }
+\newlabel{sec:stats}{{5.5}{20}{Evaluation measures and statistical analysis}{subsection.5.5}{}}
+\citation{LopezIbanez2016}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.6}Computing environment}{21}{subsection.5.6}\protected@file@percent }
+\newlabel{sec:env}{{5.6}{21}{Computing environment}{subsection.5.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Best training fitness per generation over the 30 independent evolutions: each individual run and their mean.}}{22}{figure.2}\protected@file@percent }
+\newlabel{fig:convergence}{{2}{22}{Best training fitness per generation over the 30 independent evolutions: each individual run and their mean}{figure.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Results}{22}{section.6}\protected@file@percent }
+\newlabel{sec:results}{{6}{22}{Results}{section.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Evolution behavior and seed stability}{22}{subsection.6.1}\protected@file@percent }
+\newlabel{eq:besttree}{{12}{22}{Evolution behavior and seed stability}{equation.12}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces The featured rule (seed~1), which attains $17.71\%$ $\mathrm  {RE}$ over the 70 instances. Circles are functions and shaded boxes the interval-aware terminals of Table~\ref {tab:terminals}; the operation with the lowest value of the expression is dispatched. The tree is shown exactly as evolved; Eq.~\eqref  {eq:besttree} gives its simplified form.}}{23}{figure.3}\protected@file@percent }
+\newlabel{fig:besttree}{{3}{23}{The featured rule (seed~1), which attains $17.71\%$ $\RE $ over the 70 instances. Circles are functions and shaded boxes the interval-aware terminals of Table~\ref {tab:terminals}; the operation with the lowest value of the expression is dispatched. The tree is shown exactly as evolved; Eq.~\eqref {eq:besttree} gives its simplified form}{figure.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Position among constructive methods}{23}{subsection.6.2}\protected@file@percent }
+\newlabel{sec:baselines}{{6.2}{23}{Position among constructive methods}{subsection.6.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Constructive baselines on the 70 interval Taillard instances: mean RE (\%), standard deviation across instances, and mean time in seconds of one constructive pass.}}{25}{table.4}\protected@file@percent }
+\newlabel{tab:baselines}{{4}{25}{Constructive baselines on the 70 interval Taillard instances: mean RE (\%), standard deviation across instances, and mean time in seconds of one constructive pass}{table.4}{}}
+\citation{DiazGA2020}
+\citation{DiazFEABC2023}
+\citation{DiazICAE2023}
+\citation{DiazGA2020}
+\citation{DiazFEABC2023}
+\citation{DiazICAE2023}
+\citation{DiazGA2020}
+\citation{DiazFEABC2023,DiazICAE2023}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces RE (\%) per size class, single deterministic rollout, over all 70 Taillard interval instances: mean $\pm $ sd across the 30 independently evolved rules, and the best evolved rule.}}{26}{table.5}\protected@file@percent }
+\newlabel{tab:gp70}{{5}{26}{RE (\%) per size class, single deterministic rollout, over all 70 Taillard interval instances: mean $\pm $ sd across the 30 independently evolved rules, and the best evolved rule}{table.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Generalization across sizes and instance families}{26}{subsection.6.3}\protected@file@percent }
+\newlabel{sec:generalization}{{6.3}{26}{Generalization across sizes and instance families}{subsection.6.3}{}}
+\newlabel{sec:classics}{{6.3}{26}{Generalization across sizes and instance families}{subsection.6.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces RE (\%) on the 12 classical interval instances: our methods (deterministic single pass and GP-best-of-$N$; rule evolved on interval Taillard $20{\times }15$, applied zero-shot) versus the published average results (30 runs per instance) of the IJSP metaheuristics GA~\citep  {DiazGA2020}, ABC$_{E3}$, fEABC~\citep  {DiazFEABC2023} and ESABC~\citep  {DiazICAE2023}. LB is the best-known lower bound of the expected makespan.}}{27}{table.6}\protected@file@percent }
+\newlabel{tab:classics}{{6}{27}{RE (\%) on the 12 classical interval instances: our methods (deterministic single pass and GP-best-of-$N$; rule evolved on interval Taillard $20{\times }15$, applied zero-shot) versus the published average results (30 runs per instance) of the IJSP metaheuristics GA~\citep {DiazGA2020}, ABC$_{E3}$, fEABC~\citep {DiazFEABC2023} and ESABC~\citep {DiazICAE2023}. LB is the best-known lower bound of the expected makespan}{table.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Comparison with per-instance search}{27}{subsection.6.4}\protected@file@percent }
+\newlabel{sec:metaheur}{{6.4}{27}{Comparison with per-instance search}{subsection.6.4}{}}
+\newlabel{sec:budget}{{6.4}{27}{Comparison with per-instance search}{subsection.6.4}{}}
+\citation{DiazGA2020,DiazFEABC2023}
+\citation{DiazFEABC2023}
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces RE (\%) of a genetic algorithm of the same design, run on this paper's decoder and evaluator, as a function of the schedules it constructs; mean over the 12 classical instances and 3 runs. The evolved rule constructs one.}}{29}{table.7}\protected@file@percent }
+\newlabel{tab:gapbudget}{{7}{29}{RE (\%) of a genetic algorithm of the same design, run on this paper's decoder and evaluator, as a function of the schedules it constructs; mean over the 12 classical instances and 3 runs. The evolved rule constructs one}{table.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces RE over the 70 instances against budget, measured in schedules constructed (a) and in seconds of this implementation (b). No curve is drawn beyond the budget at which it was measured.}}{30}{figure.4}\protected@file@percent }
+\newlabel{fig:budget}{{4}{30}{RE over the 70 instances against budget, measured in schedules constructed (a) and in seconds of this implementation (b). No curve is drawn beyond the budget at which it was measured}{figure.4}{}}
+\citation{Kazimipour2014}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Terminal usage across the 30 evolved rules, as a share of all terminals. Interval-width terminals (amber) expose the magnitude of the uncertainty to the rule.}}{32}{figure.5}\protected@file@percent }
+\newlabel{fig:terminals}{{5}{32}{Terminal usage across the 30 evolved rules, as a share of all terminals. Interval-width terminals (amber) expose the magnitude of the uncertainty to the rule}{figure.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Analysis}{32}{section.7}\protected@file@percent }
+\newlabel{sec:analysis}{{7}{32}{Analysis}{section.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Rule anatomy and interpretability}{32}{subsection.7.1}\protected@file@percent }
+\newlabel{sec:anatomy}{{7.1}{32}{Rule anatomy and interpretability}{subsection.7.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Sensitivity of the featured rule to the two weights of its simplified form, Eq.~\eqref  {eq:besttree}: mean $\mathrm  {RE}$ over the 70 instances when each weight is varied and the other is held at its evolved value. Dashed lines mark the evolved weights, the dotted line the mean over the 30 evolved rules. $\beta = 0$ is the rule with its interval-width term switched off.}}{33}{figure.6}\protected@file@percent }
+\newlabel{fig:sensitivity}{{6}{33}{Sensitivity of the featured rule to the two weights of its simplified form, Eq.~\eqref {eq:besttree}: mean $\RE $ over the 70 instances when each weight is varied and the other is held at its evolved value. Dashed lines mark the evolved weights, the dotted line the mean over the 30 evolved rules. $\beta = 0$ is the rule with its interval-width term switched off}{figure.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}A worked example}{34}{subsection.7.2}\protected@file@percent }
+\newlabel{sec:case}{{7.2}{34}{A worked example}{subsection.7.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Terminals and priority scores at the third dispatching decision of the worked example. The lowest score is dispatched.}}{35}{table.8}\protected@file@percent }
+\newlabel{tab:case}{{8}{35}{Terminals and priority scores at the third dispatching decision of the worked example. The lowest score is dispatched}{table.8}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces The worked example scheduled by the evolved rule and by the same rule without the width term. The outlined operation is the one that separates the two traces.}}{36}{figure.7}\protected@file@percent }
+\newlabel{fig:case}{{7}{36}{The worked example scheduled by the evolved rule and by the same rule without the width term. The outlined operation is the one that separates the two traces}{figure.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}Interval handling and the decoder}{36}{subsection.7.3}\protected@file@percent }
+\newlabel{sec:decoder}{{7.3}{36}{Interval handling and the decoder}{subsection.7.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces RE (\%) over the 70 instances for the two decoders and the two priority rules, one deterministic pass. The GP entries are the mean over the 30 evolved rules.}}{38}{table.9}\protected@file@percent }
+\newlabel{tab:decoder}{{9}{38}{RE (\%) over the 70 instances for the two decoders and the two priority rules, one deterministic pass. The GP entries are the mean over the 30 evolved rules}{table.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.4}The value of interval awareness: ablations}{38}{subsection.7.4}\protected@file@percent }
+\newlabel{sec:ablation}{{7.4}{38}{The value of interval awareness: ablations}{subsection.7.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {10}{\ignorespaces Ablations of the interval machinery (30 independent evolutions per arm; paired rank tests between arms): the terminal ablation under two fitness objectives, and the crisp-midpoint control, evolved with scalar fitness and no interval information, tested against the interval-trained arm above it. \emph  {Width} is the relative width of the predicted makespan interval.}}{39}{table.10}\protected@file@percent }
+\newlabel{tab:ablation}{{10}{39}{Ablations of the interval machinery (30 independent evolutions per arm; paired rank tests between arms): the terminal ablation under two fitness objectives, and the crisp-midpoint control, evolved with scalar fitness and no interval information, tested against the interval-trained arm above it. \emph {Width} is the relative width of the predicted makespan interval}{table.10}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.5}The robust objective: trading expected makespan for predictability}{40}{subsection.7.5}\protected@file@percent }
+\newlabel{sec:frontier}{{7.5}{40}{The robust objective: trading expected makespan for predictability}{subsection.7.5}{}}
+\newlabel{eq:robustfit}{{13}{40}{The robust objective: trading expected makespan for predictability}{equation.13}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Quality--predictability plane over the 70 instances. Faint markers are individual evolved rules: amber with the interval-width terminals, grey without them; open markers for the makespan objective, filled for the robust one at any $\lambda $. Solid curves join the mean of each arm at each $\lambda $ of the robust-fitness sweep, Eq.~\eqref  {eq:robustfit}. With the width terminals, increasing $\lambda $ trades expected makespan for narrower intervals; without them the five means, $\lambda = 0$ to $4$, fall within $0.13$ points of width and are left unlabeled.}}{41}{figure.8}\protected@file@percent }
+\newlabel{fig:lambda}{{8}{41}{Quality--predictability plane over the 70 instances. Faint markers are individual evolved rules: amber with the interval-width terminals, grey without them; open markers for the makespan objective, filled for the robust one at any $\lambda $. Solid curves join the mean of each arm at each $\lambda $ of the robust-fitness sweep, Eq.~\eqref {eq:robustfit}. With the width terminals, increasing $\lambda $ trades expected makespan for narrower intervals; without them the five means, $\lambda = 0$ to $4$, fall within $0.13$ points of width and are left unlabeled}{figure.8}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {11}{\ignorespaces Predicted quality and executional robustness over the 70 instances (lower is better on all measures): mean $\mathrm  {RE}$, relative width of the predicted makespan interval, and $\bar  \varepsilon $ ($\times 10^3$) at nominal interval widths and widened by $+20\%$ and $+40\%$ (Monte Carlo, $K{=}1000$ realizations, common random numbers across methods). The last column is $|\Delta |$ at nominal widths. Each GP arm is represented by one rule: the makespan arms by their best $\mathrm  {RE}$, the robust arms by their narrowest predicted interval, which is what their fitness optimizes.}}{43}{table.11}\protected@file@percent }
+\newlabel{tab:robustness}{{11}{43}{Predicted quality and executional robustness over the 70 instances (lower is better on all measures): mean $\RE $, relative width of the predicted makespan interval, and $\bar \varepsilon $ ($\times 10^3$) at nominal interval widths and widened by $+20\%$ and $+40\%$ (Monte Carlo, $K{=}1000$ realizations, common random numbers across methods). The last column is $|\Delta |$ at nominal widths. Each GP arm is represented by one rule: the makespan arms by their best $\RE $, the robust arms by their narrowest predicted interval, which is what their fitness optimizes}{table.11}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.6}Robustness under executional uncertainty}{43}{subsection.7.6}\protected@file@percent }
+\newlabel{sec:robustness}{{7.6}{43}{Robustness under executional uncertainty}{subsection.7.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Per-instance $\bar  \varepsilon $ by method, with the duration intervals at their nominal widths and widened by $+20\%$ and $+40\%$ (lower is better). The robust $\lambda {=}1$ entries are the narrowest rule of that arm and its counterpart evolved without the width terminals, as in Table~\ref {tab:robustness}.}}{44}{figure.9}\protected@file@percent }
+\newlabel{fig:robustness}{{9}{44}{Per-instance $\bar \varepsilon $ by method, with the duration intervals at their nominal widths and widened by $+20\%$ and $+40\%$ (lower is better). The robust $\lambda {=}1$ entries are the narrowest rule of that arm and its counterpart evolved without the width terminals, as in Table~\ref {tab:robustness}}{figure.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.7}Sensitivity to the training set}{47}{subsection.7.7}\protected@file@percent }
+\newlabel{sec:trainset}{{7.7}{47}{Sensitivity to the training set}{subsection.7.7}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {12}{\ignorespaces RE (\%) over the 60 instances no campaign trains on, by training set: mean $\pm $ sd across 30 independently evolved rules, best rule, and the seed-paired Wilcoxon contrast against the reference.}}{49}{table.12}\protected@file@percent }
+\newlabel{tab:trainset}{{12}{49}{RE (\%) over the 60 instances no campaign trains on, by training set: mean $\pm $ sd across 30 independently evolved rules, best rule, and the seed-paired Wilcoxon contrast against the reference}{table.12}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.8}Asymmetric intervals}{49}{subsection.7.8}\protected@file@percent }
+\newlabel{sec:asym}{{7.8}{49}{Asymmetric intervals}{subsection.7.8}{}}
+\citation{Xu2025}
+\@writefile{lot}{\contentsline {table}{\numberline {13}{\ignorespaces The four arms re-evolved on asymmetric intervals and evaluated over the 70 asymmetric instances: mean $\pm $ sd across 15 seeds of $\mathrm  {RE}$, of the relative width of the predicted makespan interval, and of the absolute deviation of the executed makespan.}}{50}{table.13}\protected@file@percent }
+\newlabel{tab:asym}{{13}{50}{The four arms re-evolved on asymmetric intervals and evaluated over the 70 asymmetric instances: mean $\pm $ sd across 15 seeds of $\RE $, of the relative width of the predicted makespan interval, and of the absolute deviation of the executed makespan}{table.13}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.9}Limitations}{51}{subsection.7.9}\protected@file@percent }
+\newlabel{sec:limitations}{{7.9}{51}{Limitations}{subsection.7.9}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {8}Conclusions and Future Work}{52}{section.8}\protected@file@percent }
+\newlabel{sec:conclusions}{{8}{52}{Conclusions and Future Work}{section.8}{}}
+\citation{Keijzer2003}
+\citation{GilGala2021Ensembles}
+\citation{Xu2025}
+\citation{DiazDataset2026}
+\bibstyle{elsarticle-harv}
+\bibdata{refs}
+\bibcite{Adams1988}{{1}{1988}{{Adams et~al.}}{{Adams, Balas and Zawack}}}
+\bibcite{Afsar2025}{{2}{2025}{{Af{\c {s}}ar et~al.}}{{Af{\c {s}}ar, Puente, Palacios, Gonz{\'a}lez-Rodr{\'i}guez and Vela}}}
+\bibcite{Allahverdi2022}{{3}{2022}{{Allahverdi}}{{}}}
+\bibcite{Allahverdi2014}{{4}{2014}{{Allahverdi et~al.}}{{Allahverdi, Aydilek and Aydilek}}}
+\bibcite{Branke2016}{{5}{2016}{{Branke et~al.}}{{Branke, Nguyen, Pickardt and Zhang}}}
+\bibcite{Carlier1982}{{6}{1982}{{Carlier}}{{}}}
+\bibcite{DiazGA2020}{{7}{2020}{{D{\'i}az et~al.}}{{D{\'i}az, Gonz{\'a}lez-Rodr{\'i}guez, Palacios, D{\'i}az and Vela}}}
+\bibcite{DiazTardiness2022}{{8}{2022}{{D{\'i}az et~al.}}{{D{\'i}az, Palacios, D{\'i}az, Vela and Gonz{\'a}lez-Rodr{\'i}guez}}}
+\bibcite{DiazICAE2023}{{9}{2023a}{{D{\'i}az et~al.}}{{D{\'i}az, Palacios, Gonz{\'a}lez-Rodr{\'i}guez and Vela}}}
+\bibcite{DiazFEABC2023}{{10}{2023b}{{D{\'i}az et~al.}}{{D{\'i}az, Palacios, Gonz{\'a}lez-Rodr{\'i}guez and Vela}}}
+\bibcite{DiazDataset2026}{{11}{2026}{{D{\'i}az~Rodr{\'i}guez}}{{}}}
+\bibcite{Feo1995}{{12}{1995}{{Feo and Resende}}{{}}}
+\bibcite{FisherThompson1963}{{13}{1963}{{Fisher and Thompson}}{{}}}
+\bibcite{Giffler1960}{{14}{1960}{{Giffler and Thompson}}{{}}}
+\bibcite{GilGala2021Ensembles}{{15}{2021}{{Gil-Gala et~al.}}{{Gil-Gala, Menc{\'i}a, Sierra and Varela}}}
+\bibcite{GilGala2025GRASB}{{16}{2025a}{{Gil-Gala et~al.}}{{Gil-Gala, {\DJ }ura{\v {s}}evi{\'c}, Sierra and Puente}}}
+\bibcite{GilGala2025SSHE}{{17}{2025b}{{Gil-Gala et~al.}}{{Gil-Gala, {\DJ }ura{\v {s}}evi{\'c}, Sierra and Varela}}}
+\bibcite{Haupt1989}{{18}{1989}{{Haupt}}{{}}}
+\bibcite{Hildebrandt2015}{{19}{2015}{{Hildebrandt and Branke}}{{}}}
+\bibcite{Ishibuchi1990}{{20}{1990}{{Ishibuchi and Tanaka}}{{}}}
+\bibcite{Karunakaran2017}{{21}{2017}{{Karunakaran et~al.}}{{Karunakaran, Mei, Chen and Zhang}}}
+\bibcite{Kazimipour2014}{{22}{2014}{{Kazimipour et~al.}}{{Kazimipour, Li and Qin}}}
+\bibcite{Keijzer2003}{{23}{2003}{{Keijzer}}{{}}}
+\bibcite{Koza1992}{{24}{1992}{{Koza}}{{}}}
+\bibcite{Lawrence1984}{{25}{1984}{{Lawrence}}{{}}}
+\bibcite{Lei2011}{{26}{2011}{{Lei}}{{}}}
+\bibcite{Leon1994}{{27}{1994}{{Leon et~al.}}{{Leon, Wu and Storer}}}
+\bibcite{LopezIbanez2016}{{28}{2016}{{L{\'o}pez-Ib{\'a}{\~n}ez et~al.}}{{L{\'o}pez-Ib{\'a}{\~n}ez, Dubois-Lacoste, P{\'e}rez~C{\'a}ceres, Birattari and St{\"u}tzle}}}
+\bibcite{Mei2017}{{29}{2017}{{Mei et~al.}}{{Mei, Nguyen, Xue and Zhang}}}
+\bibcite{Moore2009}{{30}{2009}{{Moore et~al.}}{{Moore, Kearfott and Cloud}}}
+\bibcite{Nguyen2017}{{31}{2017}{{Nguyen et~al.}}{{Nguyen, Mei and Zhang}}}
+\bibcite{Nguyen2014}{{32}{2014}{{Nguyen et~al.}}{{Nguyen, Zhang, Johnston and Tan}}}
+\bibcite{Palacios2015}{{33}{2015}{{Palacios et~al.}}{{Palacios, Gonz{\'a}lez-Rodr{\'i}guez, Vela and Puente}}}
+\bibcite{Panwalkar1977}{{34}{1977}{{Panwalkar and Iskander}}{{}}}
+\bibcite{Park2021GNN}{{35}{2021}{{Park et~al.}}{{Park, Chun, Kim, Kim and Park}}}
+\bibcite{Poli2008}{{36}{2008}{{Poli et~al.}}{{Poli, Langdon and McPhee}}}
+\bibcite{Sotskov2013}{{37}{2013}{{Sotskov et~al.}}{{Sotskov, Lai and Werner}}}
+\bibcite{Sotskov2020}{{38}{2020}{{Sotskov et~al.}}{{Sotskov, Matsveichuk and Hatsura}}}
+\bibcite{Sprecher1995}{{39}{1995}{{Sprecher et~al.}}{{Sprecher, Kolisch and Drexl}}}
+\bibcite{Taillard1993}{{40}{1993}{{Taillard}}{{}}}
+\bibcite{Durasevic2018}{{41}{2018}{{{\DJ }ura{\v {s}}evi{\'c} and Jakobovi{\'c}}}{{}}}
+\bibcite{Xu2025}{{42}{2025}{{Xu et~al.}}{{Xu, Mei, Zhang and Zhang}}}
+\bibcite{Xu2023}{{43}{2023}{{Xu et~al.}}{{Xu, Wu, Wang, He and Lei}}}
+\bibcite{Zhang2020L2D}{{44}{2020}{{Zhang et~al.}}{{Zhang, Song, Cao, Zhang, Tan and Xu}}}
+\bibcite{Zheng2024}{{45}{2024}{{Zheng et~al.}}{{Zheng, Xiao, Zhang and Lv}}}
+\@writefile{toc}{\let\numberline\tmptocnumberline}
+\@writefile{toc}{\contentsline {section}{\numberline {Appendix~A}Per-instance results}{62}{appendix.A}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {A.1}{\ignorespaces Per-instance $\mathrm  {RE}$ (\%) of the evolved rule (GP) and of the two strongest baselines, EST and G\&T-MWKR (single deterministic pass). LB is the crisp Taillard lower bound.}}{63}{table.1}\protected@file@percent }
+\newlabel{tab:perinstance}{{A.1}{63}{Per-instance $\RE $ (\%) of the evolved rule (GP) and of the two strongest baselines, EST and G\&T-MWKR (single deterministic pass). LB is the crisp Taillard lower bound}{table.1}{}}
+\gdef \@abspage@last{63}
