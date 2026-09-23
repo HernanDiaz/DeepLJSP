@@ -25,6 +25,9 @@ One or more results of every experiment of the article are re-derived:
     (``budget/curves.csv``).
 11. The worked example and the census of 800 random 3x3 instances
     (``worked_example.json``).
+12. The featured rule's conditional value-at-risk of the overrun beyond
+    the predicted makespan, instance by instance
+    (``tail_risk/per_instance.csv``).
 
 Run from the ``code/`` directory:  python test_equivalence.py
 """
@@ -51,6 +54,7 @@ from ijsp_gp.env import make_env
 from ijsp_gp.ga import evolve, random_search
 from ijsp_gp.heuristics import GTHeuristic, MWKRHeuristic, SPTHeuristic
 from ijsp_gp.interval import Interval
+from ijsp_gp.robustness import overrun_cvar_of_rule
 from ijsp_gp.rules import GPRuleHeuristic
 from ijsp_gp.simulate import (Instance, better, dispatch, gt_mwkr,
                               gt_policy, gt_tree, policy_from_tree)
@@ -383,6 +387,25 @@ def main():
     exp = {k: case["censo"][k] for k in census}
     check("census of 800 instances", census == exp,
           f"({census} vs {exp})")
+
+    # ------------------------------------------------------------------
+    # 12. tail risk: CVaR of the overrun of the featured rule
+    # ------------------------------------------------------------------
+    print("\n12. CVaR_0.95 of the overrun of the featured rule "
+          "(K=1000, ~1 minute)")
+    with open(results("tail_risk", "per_instance.csv"),
+              encoding="utf-8") as f:
+        exp_cvar = {row["instance"]: float(row["cvar95_over"])
+                    for row in csv.DictReader(f)
+                    if row["law"] == "uniform" and row["method"] == "GP"}
+    # the tail-risk experiment seeded its realizations as the realization-
+    # law one did, ten positions further on (see executed_makespans)
+    got_cvar = overrun_cvar_of_rule(featured, taillard, K=1000,
+                                    seed_offset=10)
+    worst = max(abs(round(got_cvar[n], 4) - exp_cvar[n]) for n in exp_cvar)
+    check("CVaR of the overrun, 70 instances",
+          len(exp_cvar) == 70 and worst < 1e-3,
+          f"(largest difference {worst:.1e})")
 
     print(f"\n{PASS} passed, {FAIL} failed")
     sys.exit(1 if FAIL else 0)

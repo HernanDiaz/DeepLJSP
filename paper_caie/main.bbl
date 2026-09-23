@@ -1,4 +1,4 @@
-\begin{thebibliography}{45}
+\begin{thebibliography}{47}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \providecommand{\url}[1]{\texttt{#1}}
 \providecommand{\href}[2]{#2}
@@ -60,6 +60,16 @@
 \newblock \bibinfo{journal}{IEEE Transactions on Evolutionary Computation}
   \bibinfo{volume}{20}, \bibinfo{pages}{110--124}.
 \newblock \DOIprefix\doi{10.1109/tevc.2015.2429314}.
+%Type = Article
+\bibitem[{Calamita et~al.(2025)Calamita, Meloni, Pranzo and
+  Sam{\`a}}]{Calamita2025}
+\bibinfo{author}{Calamita, A.}, \bibinfo{author}{Meloni, C.},
+  \bibinfo{author}{Pranzo, M.}, \bibinfo{author}{Sam{\`a}, M.},
+  \bibinfo{year}{2025}.
+\newblock \bibinfo{title}{Fast risk estimation for job shop scheduling
+  solutions under interval uncertainty via machine learning}.
+\newblock \bibinfo{journal}{Flexible Services and Manufacturing Journal}
+  \DOIprefix\doi{10.1007/s10696-025-09640-7}.
 %Type = Article
 \bibitem[{Carlier(1982)}]{Carlier1982}
 \bibinfo{author}{Carlier, J.}, \bibinfo{year}{1982}.
@@ -176,6 +186,15 @@
 \newblock \bibinfo{journal}{Journal of Heuristics} \bibinfo{volume}{31},
   \bibinfo{pages}{25}.
 \newblock \DOIprefix\doi{10.1007/s10732-025-09560-7}.
+%Type = Article
+\bibitem[{Han et~al.(2026)Han, Liu and Huang}]{Han2026RAPO}
+\bibinfo{author}{Han, P.}, \bibinfo{author}{Liu, Y.}, \bibinfo{author}{Huang,
+  M.}, \bibinfo{year}{2026}.
+\newblock \bibinfo{title}{{RAPO-RL-TAC}: Risk-aware partial-order reinforcement
+  learning with timed automata completion for the interval job shop problem}.
+\newblock \bibinfo{journal}{Processes} \bibinfo{volume}{14},
+  \bibinfo{pages}{2995}.
+\newblock \DOIprefix\doi{10.3390/pr14182995}.
 %Type = Article
 \bibitem[{Haupt(1989)}]{Haupt1989}
 \bibinfo{author}{Haupt, R.}, \bibinfo{year}{1989}.

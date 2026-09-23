@@ -7,7 +7,7 @@ ella y anade lo que la revision genero:
 
   - instances/asymmetric_taillard/: el banco asimetrico de E4;
   - rules/training_sets/ (E2, 150) y rules/asymmetric/ (E4, 60);
-  - results/: E0, E1, E2, E3, E4, E5, E6 y la tabla de baselines;
+  - results/: E0, E1, E2, E3, E4, E5, E6, E7 y la tabla de baselines;
   - code/ijsp_gp/: simulador comun, genetico y generador asimetrico,
     y el test de equivalencia ampliado con una comprobacion por
     experimento nuevo.
@@ -138,6 +138,10 @@ def main():
           os.path.join(R, "budget", "ga_calibration_training.json"))
     copia("benchmarks/e6_presupuesto/calibracion_clasicas.json",
           os.path.join(R, "budget", "ga_calibration_classical.json"))
+    copia("benchmarks/e7_cvar/por_instancia.csv",
+          os.path.join(R, "tail_risk", "per_instance.csv"))
+    copia("benchmarks/e7_cvar/resumen.json",
+          os.path.join(R, "tail_risk", "summary.json"))
 
     # las curvas de los seis carriles, en un solo fichero
     filas, cab = [], None

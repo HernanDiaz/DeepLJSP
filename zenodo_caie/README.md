@@ -12,7 +12,9 @@ training sets and on the asymmetric instances; a genetic algorithm and a
 fast simulator shared by all methods of the budget comparison; and the
 results of the experiments on training-set sensitivity, asymmetric
 intervals, alternative realization laws, interval conventions and
-decoders, the worked example, and quality against computational budget.
+decoders, the worked example, quality against computational budget, and
+the tail risk (value-at-risk and conditional value-at-risk) of the
+executed makespan.
 
 ## Contents
 
@@ -70,7 +72,8 @@ layout (`env.py`), the hand-crafted baselines including Giffler-Thompson
 instance loading and reference bounds (`instances.py`), deterministic
 evaluation in RE and interval width (`evaluate.py`), the GP evolution
 (`evolve.py`), and the Monte Carlo executional-robustness measure
-(`robustness.py`). Version 2.0 adds a fast simulator that dispatches with a
+(`robustness.py`, which since 2.0 also returns the executed makespans
+and their tail measures). Version 2.0 adds a fast simulator that dispatches with a
 rule or decodes a permutation on the same semi-active scheme
 (`simulate.py`), the genetic algorithm of the budget comparison (`ga.py`),
 and the generator of the asymmetric instances (`asymmetric.py`).
@@ -89,8 +92,9 @@ article: rules from several arms on the 70 interval instances and on the
 G&T-MWKR baseline, a small evolution end to end, the asymmetric instances
 file by file, rules of the training-set and asymmetric campaigns, the
 featured rule inside the Giffler-Thompson conflict set, the budget curves
-of one instance for five methods, and the worked example with its census
-of 800 random instances. Every recomputed figure is compared against the
+of one instance for five methods, the worked example with its census
+of 800 random instances, and the conditional value-at-risk of the
+featured rule instance by instance. Every recomputed figure is compared against the
 deposited files, most of them to four decimals. It takes a few minutes.
 
 Evaluate any rule set:
@@ -146,6 +150,7 @@ python -m ijsp_gp.asymmetric --source ../instances/interval_taillard \
 | Robustness table (per instance)                   | robustness_seis.csv |
 | Arm-level robustness                              | eps_por_regla.csv |
 | Absolute deviation and other realization laws     | realization_laws/*.csv, realization_laws/summary.json |
+| Tail risk (VaR and CVaR at 0.95)                  | tail_risk/per_instance.csv, tail_risk/summary.json |
 | Sensitivity to the training set                   | training_sets/summary.json |
 | Asymmetric intervals                              | asymmetric/summary.json, asymmetric/generation.json |
 
@@ -158,7 +163,12 @@ seed), `media` (mean), `anchura` / `ancho` (relative width), `abs`
 featured rule), `censo` (census). In `budget/curves.csv` the methods are
 `regla` (the evolved rule, one pass), `regla_bon` (its best-of-N sampled
 variant), `gt_mwkr`, `azar` (random permutations), `ga` and `ga_sembrado`
-(the genetic algorithm seeded with the rule's permutation).
+(the genetic algorithm seeded with the rule's permutation). In
+`tail_risk/per_instance.csv`, `law` is the realization law, `over` the
+overrun `Cmax_ex - E[Cmax]`, `cvar95_*` and `var95_*` the conditional
+value-at-risk and value-at-risk at 0.95, `re_cvar` the CVaR of the
+executed makespan expressed as RE over the reference bound; `leyes`
+(laws) and `reglas` (rules) in `summary.json`.
 
 ## Licenses
 

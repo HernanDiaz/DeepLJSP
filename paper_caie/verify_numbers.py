@@ -472,6 +472,97 @@ else:
               f"{_R[_d]['metodos']['GP']['abs']:.2f}",
               f'e1_robustez/{_d}')
 
+# E7: la cola del makespan ejecutado (CVaR al 0.95). Se recomputa desde
+# las cifras por instancia de scripts/e7_cvar.py, no desde su resumen:
+# medias, contrastes pareados y recuentos.
+_e7 = os.path.join(REPO, 'benchmarks/e7_cvar/por_instancia.csv')
+if not os.path.exists(_e7):
+    print('\n== E7: sin benchmarks/e7_cvar/por_instancia.csv ==')
+else:
+    import numpy as _np
+    from scipy import stats as _st
+    sys.path.insert(0, os.path.join(REPO, 'scripts'))
+    from efecto import biserial as _bis
+    print('\n== E7: cola del makespan ejecutado (CVaR 0.95) ==')
+    _T = defaultdict(lambda: defaultdict(dict))
+    for _r in csv.DictReader(open(_e7, encoding='utf-8')):
+        _T[_r['law']][_r['method']][_r['instance']] = (
+            float(_r['cvar95_over']), float(_r['re_cvar']))
+
+    def _media(ley, m, k):
+        v = _T[ley][m]
+        return sum(x[k] for x in v.values()) / len(v)
+
+    def _contraste(ley, a, b, k):
+        ins = sorted(_T[ley][a])
+        x = [_T[ley][a][i][k] for i in ins]
+        y = [_T[ley][b][i][k] for i in ins]
+        d = _np.array(x) - _np.array(y)
+        w = _st.wilcoxon(x, y, method='exact', zero_method='wilcox')
+        n = int(_np.sum(_np.abs(d) > 1e-12))
+        z = (w.statistic - n * (n + 1) / 4) / (
+            n * (n + 1) * (2 * n + 1) / 24) ** 0.5
+        z = abs(z) if d.mean() > 0 else -abs(z)
+        return z, float(w.pvalue), _bis(x, y), int(_np.sum(d > 0))
+
+    for _m in ('GP', 'GP-nowidth', 'GP-rob1', 'GP-rob4', 'GT-MWKR', 'EST'):
+        check(f'CVaR del exceso, {_m}', f"${_media('uniform', _m, 0):.2f}",
+              'e7_cvar/uniform')
+    for _m in ('GP', 'GP-rob1', 'GP-rob4', 'GT-MWKR'):
+        check(f'cola en RE, {_m}', f"{_media('uniform', _m, 1):.2f}",
+              'e7_cvar/uniform')
+    _g = _media('uniform', 'GP', 0)
+    check('reduccion de la cola, lambda=1',
+          f"${100 * (1 - _media('uniform', 'GP-rob1', 0) / _g):.1f}\\%$ less",
+          'e7_cvar/uniform')
+    check('reduccion de la cola a RE parecido',
+          f"${100 * (1 - _media('uniform', 'GP-rob4', 0) / _media('uniform', 'GT-MWKR', 0)):.1f}\\%$ less",
+          'e7_cvar/uniform')
+    _d = _media('uniform', 'GP-rob1', 0) - _media('uniform', 'GP-rob1-nw', 0)
+    check('lambda=1 contra su ablacion', f'${abs(_d):.2f}$ less than its own',
+          'e7_cvar/uniform')
+    # z sueltos y z con |r|
+    for _a, _b, _k, _conr in (('GP', 'GT-MWKR', 0, False),
+                              ('GP', 'EST', 0, False),
+                              ('GP', 'GP-nowidth', 0, False),
+                              ('GP-rob1', 'GP', 0, True),
+                              ('GP-rob1', 'GP-rob1-nw', 0, True),
+                              ('GP-rob4', 'GT-MWKR', 0, True),
+                              ('GP-rob4', 'GT-MWKR', 1, True)):
+        _z, _p, _rb, _ = _contraste('uniform', _a, _b, _k)
+        if _conr:
+            check_zr(f'CVaR, {_a} vs {_b} ({_k})', f'{_z:.2f}', f'{_rb:.2f}',
+                     'e7_cvar/uniform')
+        else:
+            check(f'CVaR, z de {_a} vs {_b}', f'z={_z:.2f}$',
+                  'e7_cvar/uniform')
+        if _k == 1:
+            check('p de la cola lambda=4 contra G&T-MWKR', f'p={_p:.3f}$',
+                  'e7_cvar/uniform')
+    # en cuantas instancias la cola del robusto es mas larga
+    _n1 = _contraste('uniform', 'GP-rob1', 'GP', 1)[3]
+    _n4 = _contraste('uniform', 'GP-rob4', 'GP', 1)[3]
+    check('colas mas largas de los robustos',
+          f'higher on {_n1} and on {_n4} of the 70 instances', 'e7_cvar')
+    # las otras dos leyes: las reducciones citadas, y que todo conserva el
+    # signo y la significacion salvo el contraste marginal que se nombra
+    for _ley in ('triangular', 'pessimistic'):
+        _v = _media(_ley, 'GP', 0) - _media(_ley, 'GP-rob1', 0)
+        check(f'reduccion de la cola lambda=1, {_ley}', f'${_v:.2f}$',
+              f'e7_cvar/{_ley}')
+        for _a, _b, _k in (('GP', 'GT-MWKR', 0), ('GP', 'EST', 0),
+                           ('GP-rob1', 'GP', 0), ('GP-rob1', 'GP-rob1-nw', 0),
+                           ('GP-rob4', 'GT-MWKR', 0), ('GP-rob4', 'GT-MWKR', 1),
+                           ('GP-rob1', 'GP', 1), ('GP-rob4', 'GP', 1)):
+            _z, _p, _, _ = _contraste(_ley, _a, _b, _k)
+            _z0 = _contraste('uniform', _a, _b, _k)[0]
+            assert _z * _z0 > 0 and _p < 0.05, (_ley, _a, _b, _k, _z, _p)
+            if _p > 0.01:
+                check(f'contraste marginal, {_ley}', f'p={_p:.3f}$',
+                      f'e7_cvar/{_ley}')
+        _z, _p, _, _ = _contraste(_ley, 'GP', 'GP-nowidth', 0)
+        assert _p > 0.05, ('la ablacion se separa', _ley, _p)
+
 # E2 (revision r1.1 y r2): sensibilidad al conjunto de entrenamiento.
 # Las cifras salen de scripts/e2_analiza.py sobre
 # benchmarks/e2_entrenamiento/. El nombre de cada campana en el json

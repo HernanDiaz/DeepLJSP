@@ -60,8 +60,8 @@ Version 2.0 adds the asymmetric instances, the 210 rules of the
 training-set and asymmetric campaigns, the genetic algorithm and the fast
 simulator, and the results of the experiments on training-set
 sensitivity, asymmetric intervals, alternative realization laws, interval
-conventions and decoders, the worked example, and quality against
-computational budget.
+conventions and decoders, the worked example, quality against
+computational budget, and the tail risk of the executed makespan.
 
 **Keywords** (se heredan; añadir `computational budget` si se quiere):
 interval job shop scheduling; genetic programming; hyper-heuristics;
