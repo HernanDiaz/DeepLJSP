@@ -62,8 +62,8 @@ interval Taillard instances, 30 evolutions average $18.99\%$
 improving on the strongest constructive baseline, Giffler--Thompson/MWKR
 ($29.5\%$), on every instance. Evolved on four $20{\times}15$ instances,
 the rules transfer zero-shot to all size classes and to a second
-benchmark, remain human-readable, and vary less with the training set
-than between evolution seeds. On a common implementation, a genetic
+benchmark, remain human-readable, and are insensitive to the choice of
+training instances. On a common implementation, a genetic
 algorithm needs some $7.6\times10^{4}$ schedule constructions to match
 one pass of the evolved rule, and, seeded with the rule, it outperforms every other method compared. Ablations delimit what interval awareness
 contributes. Under the default expected-makespan objective it is
@@ -145,13 +145,13 @@ This paper makes the following contributions:
   and~\ref{sec:anatomy}).
 \item An empirical study on the 70 interval Taillard instances showing
   that evolved rules (i) outperform every deterministic constructive
-  baseline by a wide margin at equal cost, whichever of the two
-  decoders is used, (ii) generalize zero-shot across instance sizes
-  (evolved on $20{\times}15$, best class $50{\times}15$) and to a second
-  benchmark of classical instances, and (iii) vary less with the choice
-  and size of the training set than between evolution seeds
-  (Sections~\ref{sec:results}, \ref{sec:decoder}
-  and~\ref{sec:trainset}).
+  baseline by a wide margin at equal cost, (ii) generalize zero-shot
+  across instance sizes and to a second benchmark of classical
+  instances, and (iii) do not depend on the particular instances used
+  for training: five alternative training sets of two to eight
+  instances change the mean relative error by less than half a point,
+  less than the variation between independent evolution runs
+  (Sections~\ref{sec:results} and~\ref{sec:trainset}).
 \item A comparison with per-instance search on a common implementation
   and across budgets. A genetic algorithm of the design published for
   the IJSP needs about $7.6\times10^{4}$ schedule constructions to match
