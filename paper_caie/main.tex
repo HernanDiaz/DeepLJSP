@@ -143,14 +143,13 @@ This paper makes the following contributions:
   interval arithmetic. The rules it produces are compact enough to be
   simplified and read by hand (Sections~\ref{sec:method}
   and~\ref{sec:anatomy}).
-\item An empirical study on the 70 interval Taillard instances showing
-  that evolved rules (i) outperform every deterministic constructive
-  baseline by a wide margin at equal cost, (ii) generalize zero-shot
-  across instance sizes and to a second benchmark of classical
-  instances, and (iii) do not depend on the particular instances used
-  for training: five alternative training sets of two to eight
-  instances change the mean relative error by less than half a point,
-  less than the variation between independent evolution runs
+\item An empirical study of the evolved rules on the 70 interval
+  Taillard instances comprising (i) a comparison with deterministic
+  constructive methods at equal computational cost, (ii) an
+  evaluation of zero-shot generalization across instance sizes and to
+  a second benchmark of classical instances, and (iii) an analysis of
+  sensitivity to the choice and size of the training set, measured
+  against the variation between independent evolution runs
   (Sections~\ref{sec:results} and~\ref{sec:trainset}).
 \item A comparison with per-instance search on a common implementation
   and across budgets. A genetic algorithm of the design published for

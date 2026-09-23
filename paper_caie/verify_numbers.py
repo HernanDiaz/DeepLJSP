@@ -522,13 +522,6 @@ else:
                                        for _v in _S['campanas'].values()]
     check('rango de sd entre semillas',
           f'${min(_sds):.2f}$--${max(_sds):.2f}$', 'e2, derivado')
-    # la contribucion 2: ninguna campana se aleja de la referencia medio
-    # punto, y eso queda por debajo de la sd entre semillas
-    _dmax = max(abs(_v['d_vs_ref']) for _v in _S['campanas'].values())
-    assert _dmax < 0.5 < min(_sds), (_dmax, min(_sds))
-    check('contribucion 2, menos de medio punto',
-          'change the mean relative error by less than half a point',
-          f'e2, max |d| = {_dmax:.2f}')
     # el uso de terminales, los tres que el texto cita
     _fr = {_c: {_k: 100.0 * _n / sum(_u.values())
                 for _k, _n in _u.items()}
