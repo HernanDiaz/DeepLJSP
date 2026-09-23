@@ -927,6 +927,22 @@ if os.path.exists(_cg):
                f"${_G['presupuesto'] // 100000}\\times10^{{5}}$ constructions"):
         check('configuracion del genetico', _f, 'calibracion.json')
 
+# ---- el deposito de Zenodo: lo que el articulo dice que contiene ---------
+_zp = os.path.join(REPO, 'zenodo_caie', 'ijsp_gp_dataset.zip')
+if os.path.exists(_zp):
+    import zipfile as _zf
+    with _zf.ZipFile(_zp) as _z:
+        _nz = _z.namelist()
+    print('\n== deposito de Zenodo (zenodo_caie/ijsp_gp_dataset.zip) ==')
+    _nr = sum(1 for x in _nz if x.startswith('rules/') and x.endswith('.json'))
+    check('reglas en el deposito', f'the {_nr} evolved rules', 'zip')
+    for _d in ('interval_taillard', 'asymmetric_taillard', 'interval_classical'):
+        _ni = sum(1 for x in _nz if x.startswith(f'instances/{_d}/'))
+        assert _ni == {'interval_classical': 12}.get(_d, 70), (
+            f'{_d}: {_ni} instancias en el deposito')
+else:
+    print('\n== deposito de Zenodo: PEND (falta zenodo_caie/ijsp_gp_dataset.zip) ==')
+
 # ---- conformidad con la revista (Computers & Industrial Engineering) ----
 print('\n== conformidad con C&IE ==')
 _ab = re.search(r'\\begin\{abstract\}(.*?)\\end\{abstract\}', TEX, re.S).group(1)

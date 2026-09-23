@@ -1,0 +1,172 @@
+# Genetic Programming Dispatching Rules for the Interval Job Shop: Data and Code
+
+Companion deposit of the article *Genetic Programming Hyper-Heuristics for
+the Job Shop Scheduling Problem with Interval Durations* (Hernán Díaz,
+University of Oviedo). It contains every benchmark instance, every evolved
+rule, the primary result files behind each table and figure of the article,
+and a self-contained Python package that reproduces them.
+
+Version 2.0 adds the material of the revised article: a right-skewed
+version of the 70 Taillard instances; the rules evolved on five other
+training sets and on the asymmetric instances; a genetic algorithm and a
+fast simulator shared by all methods of the budget comparison; and the
+results of the experiments on training-set sensitivity, asymmetric
+intervals, alternative realization laws, interval conventions and
+decoders, the worked example, and quality against computational budget.
+
+## Contents
+
+```
+instances/
+  interval_taillard/    the 70 interval Taillard instances (TA1-TA70)
+  asymmetric_taillard/  their right-skewed versions (new in 2.0)
+  crisp_taillard/       crisp counterparts of the four training instances
+  interval_classical/   the 12 classical interval instances (FT, La, ABZ)
+rules/
+  main_arm/             30 rules, makespan objective, full terminal set
+  ablation_nowidth/     30 rules, makespan objective, no width terminals
+  robust_lambda1_full/  30 rules, robust objective (lambda=1), full set
+  robust_lambda1_nowidth/  30 rules, robust objective, no width terminals
+  lambda_sweep_full/    30 rules, robust objective, lambda in {0.5, 2, 4}
+  lambda_sweep_nowidth/ 40 rules, same sweep plus lambda=0, no widths
+  midpoint_control/     30 rules evolved on the crisp midpoint instances
+  training_sets/        150 rules, 30 per training set (new in 2.0)
+  asymmetric/           60 rules, 15 per arm, on asymmetric intervals (new)
+results/                the primary files behind the article's numbers
+code/
+  ijsp_gp/              self-contained Python package (see below)
+  test_equivalence.py   re-derives deposited results from scratch
+  requirements.txt      numpy is the only dependency
+```
+
+In total the deposit holds 430 evolved rules: the 220 of version 1.0 and
+the 210 of the campaigns added in version 2.0.
+
+## Instance formats
+
+Taillard-derived files: an optional `#` comment line, then `n m`, then `n`
+rows with the machine sequence of each job, then `n` rows of durations,
+written as `(lo,up)` pairs for interval instances and plain integers for
+crisp instances. The classical files are kept verbatim in their original
+formats (both are parsed by `ijsp_gp.instances.load_instance`). File names
+of the classical set encode the generation parameters (`F0.15.0` = symmetric
+±15% intervals around the original crisp durations).
+
+The asymmetric instances (`int__ataiNN_MM_KK`) are generated from the
+symmetric ones by `ijsp_gp.asymmetric`: the crisp duration is the midpoint
+of the symmetric interval, and the bounds are `p - round(p*U[0,0.05])` and
+`p + round(p*U[0,0.25])`, with a fixed seed per instance. Machine routes and
+reference bounds are those of the symmetric version.
+
+Rule files are JSON: the expression tree (nested lists), its printable form,
+the training fitness and the evolution parameters.
+
+## The code
+
+`ijsp_gp` implements: interval arithmetic with component-wise `max` and `+`
+(`interval.py`), the semi-active decoder and the per-operation attribute
+layout (`env.py`), the hand-crafted baselines including Giffler-Thompson
+(`heuristics.py`), evolved-rule trees and their evaluation (`rules.py`),
+instance loading and reference bounds (`instances.py`), deterministic
+evaluation in RE and interval width (`evaluate.py`), the GP evolution
+(`evolve.py`), and the Monte Carlo executional-robustness measure
+(`robustness.py`). Version 2.0 adds a fast simulator that dispatches with a
+rule or decodes a permutation on the same semi-active scheme
+(`simulate.py`), the genetic algorithm of the budget comparison (`ga.py`),
+and the generator of the asymmetric instances (`asymmetric.py`).
+
+Quick start:
+
+```
+cd code
+pip install -r requirements.txt
+python test_equivalence.py
+```
+
+The test re-derives at least one result of every experiment of the
+article: rules from several arms on the 70 interval instances and on the
+12 classical ones, the Monte Carlo robustness of the featured rule, the
+G&T-MWKR baseline, a small evolution end to end, the asymmetric instances
+file by file, rules of the training-set and asymmetric campaigns, the
+featured rule inside the Giffler-Thompson conflict set, the budget curves
+of one instance for five methods, and the worked example with its census
+of 800 random instances. Every recomputed figure is compared against the
+deposited files, most of them to four decimals. It takes a few minutes.
+
+Evaluate any rule set:
+
+```
+python -m ijsp_gp.evaluate --rules "../rules/main_arm/*.json" \
+    --instances ../instances/interval_taillard
+```
+
+Evolve a new rule with the article's configuration:
+
+```
+python -m ijsp_gp.evolve --pop 100 --gens 50 --seed 1 \
+    --tournament 7 --crossover 0.7695 --maxtree 30 --elitism 2 \
+    --train ../instances/interval_taillard \
+    --train-ids int__tai20_15_01,int__tai20_15_02,int__tai20_15_03,int__tai20_15_04 \
+    --out my_rule.json
+```
+
+Run the genetic algorithm on one instance and print its budget curve:
+
+```
+python -m ijsp_gp.ga --instance ../instances/interval_taillard/int__tai15_15_01.txt \
+    --budget 131072 --seed 1
+```
+
+Regenerate the asymmetric instances:
+
+```
+python -m ijsp_gp.asymmetric --source ../instances/interval_taillard \
+    --out asymmetric_taillard
+```
+
+## Map from the article to the result files
+
+| Article element                                   | File in results/ |
+|---------------------------------------------------|------------------|
+| Main-arm per-instance RE                          | summary.csv |
+| Selection of the featured rule on the development set | featured_rule_selection.json |
+| Constructive baselines (RE column)                | all_baselines.csv |
+| Timing of the baselines                           | timing_tuned.csv, timing_gp_arm.csv |
+| Generalization to the classical instances         | classic12_tuned.csv |
+| Genetic algorithm against published results       | budget/ga_calibration_classical.json |
+| Configuration of the genetic algorithm            | budget/ga_calibration_training.json |
+| Quality against budget (70 instances)             | budget/curves.csv, budget/summary.json |
+| Terminal usage and rule sizes                     | rule_anatomy.csv |
+| Coefficient sensitivity sweep                     | coefficient_sweep.csv |
+| Worked example and census                         | worked_example.json |
+| Interval conventions and decoders                 | decoder_and_conventions.json |
+| Terminal ablation and midpoint control            | ablation_por_regla.csv, midpoint_control_por_regla.csv |
+| Lambda sweep, full arm                            | lambda_sweep_tuned.csv, lambda_por_regla.csv |
+| Lambda sweep, no-width arm                        | lambda_nowidth_por_regla_completo.csv |
+| Robustness table (per instance)                   | robustness_seis.csv |
+| Arm-level robustness                              | eps_por_regla.csv |
+| Absolute deviation and other realization laws     | realization_laws/*.csv, realization_laws/summary.json |
+| Sensitivity to the training set                   | training_sets/summary.json |
+| Asymmetric intervals                              | asymmetric/summary.json, asymmetric/generation.json |
+
+Some field names in the result files are in Spanish, as written by the
+experiment scripts: `metodo` (method), `semilla` (seed), `instancia`
+(instance), `presupuesto` (budget, in schedule constructions), `segundos`
+(seconds), `ramas` (arms), `campanas` (campaigns), `por_semilla` (per
+seed), `media` (mean), `anchura` / `ancho` (relative width), `abs`
+(absolute deviation), `contrastes` (paired contrasts), `destacada` (the
+featured rule), `censo` (census). In `budget/curves.csv` the methods are
+`regla` (the evolved rule, one pass), `regla_bon` (its best-of-N sampled
+variant), `gt_mwkr`, `azar` (random permutations), `ga` and `ga_sembrado`
+(the genetic algorithm seeded with the rule's permutation).
+
+## Licenses
+
+* Code (`code/`): MIT License, see `code/LICENSE`.
+* Data (`instances/`, `rules/`, `results/`): Creative Commons Attribution
+  4.0 International (CC BY 4.0), see `LICENSE-DATA`.
+
+## Funding
+
+Supported by the Spanish Ministry of Science, Innovation and Universities
+(MCIN/AEI/10.13039/501100011033) under grant PID2022-141746OB-I00.

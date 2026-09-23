@@ -1,0 +1,62 @@
+{
+  "fitness_re": 20.986390657343414,
+  "rule": "((((min(NOR, NOR) - (SLACK * SLACK)) - ONE) / min((-PTW), (-ONE))) - ((-(PT / NOR)) - ((SLACK * SLACK) - NOR)))",
+  "tree": [
+    "sub",
+    [
+      "div",
+      [
+        "sub",
+        [
+          "sub",
+          [
+            "min",
+            "NOR",
+            "NOR"
+          ],
+          [
+            "mul",
+            "SLACK",
+            "SLACK"
+          ]
+        ],
+        "ONE"
+      ],
+      [
+        "min",
+        [
+          "neg",
+          "PTW"
+        ],
+        [
+          "neg",
+          "ONE"
+        ]
+      ]
+    ],
+    [
+      "sub",
+      [
+        "neg",
+        [
+          "div",
+          "PT",
+          "NOR"
+        ]
+      ],
+      [
+        "sub",
+        [
+          "mul",
+          "SLACK",
+          "SLACK"
+        ],
+        "NOR"
+      ]
+    ]
+  ],
+  "pop": 100,
+  "gens": 50,
+  "seed": 9,
+  "train_ids": "int__atai20_15_01,int__atai20_15_02,int__atai20_15_03,int__atai20_15_04"
+}

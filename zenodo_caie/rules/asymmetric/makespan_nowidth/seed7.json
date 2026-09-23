@@ -1,0 +1,37 @@
+{
+  "fitness_re": 23.734789345663472,
+  "rule": "(max((max((WKR / EST), ONE) - max(NOR, SLACK)), SLACK) - (WKR / SLACK))",
+  "tree": [
+    "sub",
+    [
+      "max",
+      [
+        "sub",
+        [
+          "max",
+          [
+            "div",
+            "WKR",
+            "EST"
+          ],
+          "ONE"
+        ],
+        [
+          "max",
+          "NOR",
+          "SLACK"
+        ]
+      ],
+      "SLACK"
+    ],
+    [
+      "div",
+      "WKR",
+      "SLACK"
+    ]
+  ],
+  "pop": 100,
+  "gens": 50,
+  "seed": 7,
+  "train_ids": "int__atai20_15_01,int__atai20_15_02,int__atai20_15_03,int__atai20_15_04"
+}

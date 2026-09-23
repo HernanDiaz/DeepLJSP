@@ -1,0 +1,53 @@
+{
+  "fitness_re": 12.9785597883364,
+  "rule": "(EST - min(min((max(PTW, max(ESTW, NOR)) + max(PT, PT)), ((WKR - PT) / PT)), min(WKR, (WKR - ESTW))))",
+  "tree": [
+    "sub",
+    "EST",
+    [
+      "min",
+      [
+        "min",
+        [
+          "add",
+          [
+            "max",
+            "PTW",
+            [
+              "max",
+              "ESTW",
+              "NOR"
+            ]
+          ],
+          [
+            "max",
+            "PT",
+            "PT"
+          ]
+        ],
+        [
+          "div",
+          [
+            "sub",
+            "WKR",
+            "PT"
+          ],
+          "PT"
+        ]
+      ],
+      [
+        "min",
+        "WKR",
+        [
+          "sub",
+          "WKR",
+          "ESTW"
+        ]
+      ]
+    ]
+  ],
+  "pop": 100,
+  "gens": 50,
+  "seed": 18,
+  "train_ids": "int__tai20_15_01,int__tai20_15_02"
+}

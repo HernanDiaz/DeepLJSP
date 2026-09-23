@@ -1,0 +1,65 @@
+{
+  "fitness_re": 17.654185752275314,
+  "rule": "(EST / (WKR / (SLACK * ((SLACK * NOR) / ((WKR / (SLACK * ((SLACK * NOR) / (max(WKR, ESTW) / (SLACK * NOR))))) / (SLACK * NOR))))))",
+  "tree": [
+    "div",
+    "EST",
+    [
+      "div",
+      "WKR",
+      [
+        "mul",
+        "SLACK",
+        [
+          "div",
+          [
+            "mul",
+            "SLACK",
+            "NOR"
+          ],
+          [
+            "div",
+            [
+              "div",
+              "WKR",
+              [
+                "mul",
+                "SLACK",
+                [
+                  "div",
+                  [
+                    "mul",
+                    "SLACK",
+                    "NOR"
+                  ],
+                  [
+                    "div",
+                    [
+                      "max",
+                      "WKR",
+                      "ESTW"
+                    ],
+                    [
+                      "mul",
+                      "SLACK",
+                      "NOR"
+                    ]
+                  ]
+                ]
+              ]
+            ],
+            [
+              "mul",
+              "SLACK",
+              "NOR"
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "pop": 100,
+  "gens": 50,
+  "seed": 10,
+  "train_ids": "int__tai20_15_01,int__tai20_15_02"
+}
