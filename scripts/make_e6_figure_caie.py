@@ -1,0 +1,117 @@
+# -*- coding: utf-8 -*-
+"""Figura de E6 para el articulo de C&IE: calidad frente a presupuesto.
+
+Rehace la de make_e6_figure.py (que sigue siendo la de paper_gp) para que
+se lea sin el texto:
+
+  - el eje (a) se llama como en el articulo, schedules construidos;
+  - la regla de una pasada y G&T-MWKR son un punto, no una curva: se
+    dibujan como marcador en su coste real (un schedule en (a), su
+    tiempo medio en (b)) y una linea de referencia fina para leer
+    contra ella las demas curvas;
+  - en (b) se marcan los tres tiempos de la tabla (1, 5 y 20 s);
+  - la leyenda nombra el genetico como lo que es, nuestra
+    implementacion.
+
+Lee benchmarks/e6_presupuesto/resumen.json (e6_analiza.py) y
+tabla.json (e6_tabla.py).
+
+    python scripts/make_e6_figure_caie.py
+
+Escribe paper_caie/figures/fig_budget.pdf
+"""
+import json
+import os
+import sys
+
+import matplotlib
+import numpy as np
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt                    # noqa: E402
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+RESUMEN = "benchmarks/e6_presupuesto/resumen.json"
+TABLA = "benchmarks/e6_presupuesto/tabla.json"
+SALIDA = "paper_caie/figures/fig_budget.pdf"
+
+AZUL, AMBAR, GRIS, TEAL = "#1f5fa8", "#d68910", "#5d6d7e", "#0e8a7d"
+GRANATE = "#8e2f4a"
+CURVAS = [
+    ("regla_bon", AMBAR, "-", "evolved rule, best-of-$N$"),
+    ("ga", GRANATE, "-", "genetic algorithm (our implementation)"),
+    ("ga_sembrado", TEAL, "--", "genetic algorithm seeded with the rule"),
+    ("azar", GRIS, ":", "random permutations"),
+]
+PUNTOS = [("regla", AZUL, "D", "evolved rule, one pass"),
+          ("gt_mwkr", "0.35", "s", "G&T-MWKR, one pass")]
+plt.rcParams.update({"font.size": 8.0, "figure.facecolor": "white",
+                     "pdf.fonttype": 42})
+
+
+def main():
+    d = json.load(open(RESUMEN, encoding="utf-8"))
+    tab = json.load(open(TABLA, encoding="utf-8"))
+    fig, axes = plt.subplots(1, 2, figsize=(5.0, 2.45), sharey=True)
+    t = np.array(d["rejilla_reloj"], dtype=float)
+
+    for k, ax in enumerate(axes):
+        for m, col, ls, etq in CURVAS:
+            if k == 0:
+                fila = {int(b): v for b, v in d["por_evaluaciones"][m].items()}
+                x = sorted(fila)
+                y = [fila[b] for b in x]
+            else:
+                y = np.array(d["por_reloj"][m], dtype=float)
+                ok = ~np.isnan(y)
+                x, y = t[ok], y[ok]
+            ax.plot(x, y, ls, color=col, lw=1.4, label=etq)
+        for m, col, mk, etq in PUNTOS:
+            nivel = float(d["por_evaluaciones"][m]["1"])
+            coste = 1 if k == 0 else tab["segundos_una_pasada"][m]["media"]
+            ax.axhline(nivel, color=col, lw=0.6, ls=(0, (4, 3)), zorder=1)
+            ax.plot([coste], [nivel], mk, color=col, ms=5, zorder=5,
+                    label=etq)
+
+    ax = axes[0]
+    ax.set_xscale("log")
+    ax.set_xlim(0.6, 3e5)
+    ax.set_xlabel("schedules constructed")
+    ax.set_ylabel("RE (%)")
+    ax.set_title("(a) budget in schedules", loc="left", fontsize=8, pad=3)
+
+    ax = axes[1]
+    ax.set_xscale("log")
+    ax.set_xlim(0.015, 40)
+    for s in tab["tiempos"]:
+        ax.axvline(s, color="0.75", lw=0.6, ls="-", zorder=0)
+    ax.set_xlabel("seconds per instance")
+    ax.set_title("(b) budget in seconds", loc="left", fontsize=8, pad=3)
+
+    # escala logaritmica en RE: las permutaciones al azar viven por encima
+    # del 60 % y la zona que interesa esta entre 13 y 30
+    for ax in axes:
+        ax.set_yscale("log")
+        ax.set_ylim(10, 140)
+        ax.set_yticks([10, 15, 20, 30, 50, 100])
+        ax.set_yticklabels(["10", "15", "20", "30", "50", "100"])
+        ax.minorticks_off()
+        ax.spines[["top", "right"]].set_visible(False)
+        ax.grid(alpha=0.25, linestyle=":", linewidth=0.6)
+
+    h, l = axes[0].get_legend_handles_labels()
+    orden = [4, 5, 0, 1, 2, 3]          # las dos pasadas, luego las curvas
+    fig.legend([h[i] for i in orden], [l[i] for i in orden],
+               loc="lower center", ncol=2, frameon=False, fontsize=7,
+               bbox_to_anchor=(0.5, -0.2), handlelength=2.4)
+    fig.tight_layout(w_pad=1.2)
+    os.makedirs(os.path.dirname(SALIDA), exist_ok=True)
+    fig.savefig(SALIDA, bbox_inches="tight")
+    plt.close(fig)
+    print(f"escrito {SALIDA}")
+
+
+if __name__ == "__main__":
+    main()

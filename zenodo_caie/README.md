@@ -139,7 +139,7 @@ python -m ijsp_gp.asymmetric --source ../instances/interval_taillard \
 | Generalization to the classical instances         | classic12_tuned.csv |
 | Genetic algorithm against published results       | budget/ga_calibration_classical.json |
 | Configuration of the genetic algorithm            | budget/ga_calibration_training.json |
-| Quality against budget (70 instances)             | budget/curves.csv, budget/summary.json |
+| Quality against budget (70 instances)             | budget/curves.csv, budget/summary.json, budget/table.json |
 | Terminal usage and rule sizes                     | rule_anatomy.csv |
 | Coefficient sensitivity sweep                     | coefficient_sweep.csv |
 | Worked example and census                         | worked_example.json |

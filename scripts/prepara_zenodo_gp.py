@@ -134,6 +134,8 @@ def main():
           os.path.join(R, "decoder_and_conventions.json"))
     copia("benchmarks/e6_presupuesto/resumen.json",
           os.path.join(R, "budget", "summary.json"))
+    copia("benchmarks/e6_presupuesto/tabla.json",
+          os.path.join(R, "budget", "table.json"))
     copia("benchmarks/e6_presupuesto/calibracion.json",
           os.path.join(R, "budget", "ga_calibration_training.json"))
     copia("benchmarks/e6_presupuesto/calibracion_clasicas.json",
