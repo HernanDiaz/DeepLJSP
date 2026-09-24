@@ -1059,46 +1059,23 @@ algorithm}
 \label{sec:budget}
 The comparisons of Section~\ref{sec:metaheur} set our Python
 implementation against published C\texttt{++} results, each obtained
-under its authors' own stopping rule, and do not show what either
-family attains at a given budget. For a fair comparison we use our
-Python implementation of the genetic algorithm of \citet{DiazGA2020},
-described in Section~\ref{sec:reference}. It is a faithful reference: on
-the 12 classical instances, averaged over three runs, it reaches $9.0\%$
-at $10^{5}$ schedule constructions and $7.9\%$ at $5\times10^{5}$, ahead
-of the $9.8\%$ published for the original. It remains short of the
-$5.5\%$ of ESABC, and it levels off before reaching it, so the last few
-points that separate the evolved rules from the best published methods
-are attributable to the neighborhood structures and local search that
-the ABC variants incorporate and a plain population method lacks, not to
-budget.
-
-The comparison itself is run on the 70 Taillard instances. All methods
-share one simulator, an optimized implementation of the decoder of
-Section~\ref{sec:problem} that builds exactly the same schedules, which
-is why a pass of a rule takes $0.03$~s here against the $0.34$~s of
-Table~\ref{tab:baselines}. Five methods are compared: the featured rule
-in a single pass; its sampled variant GP-best-of-$N$, up to $N=1024$;
-the genetic algorithm; the same algorithm started from the permutation
-the rule builds, which tests whether the rule can support a
-metaheuristic rather than compete with it; and uniformly sampled
-permutations, which is what a search with no structure attains.
-G\&T-MWKR is added as a reference. Each stochastic method keeps its
-best-so-far solution, so one run yields its whole curve; the search
-methods run to $2^{17}$ constructions, with two runs per instance for
-the sampled rule and both genetic algorithms and one for random
-permutations.
-
-The budget is measured in two ways. The number of schedules constructed
-does not depend on the implementation; the time in seconds does, and it
-also charges each method for what a construction costs it. Dispatching
-with a rule evaluates nine attributes for every eligible operation at
-each of the $nm$ decisions, while decoding a fixed permutation evaluates
-none, so one pass of the rule costs what $36$ to $134$ decodings of the
-genetic algorithm cost, depending on instance size. That ratio is
-structural and would survive a reimplementation; the absolute times
-would not. Table~\ref{tab:budget} gives the error of each method at
-fixed budgets in both measures, and Figure~\ref{fig:budget} gives the
-complete curves.
+under its authors' own stopping rule. For a comparison at matched budget
+we use our implementation of the genetic algorithm of
+\citet{DiazGA2020} (Section~\ref{sec:reference}). It is a faithful
+reference: on the 12 classical instances it reaches $7.9\%$ at
+$5\times10^{5}$ schedule constructions, ahead of the $9.8\%$ published
+for the original, and it levels off short of the $5.5\%$ of ESABC, a
+distance due to the local search of the ABC variants rather than to
+budget. The comparison is run on the 70 Taillard instances with a common
+simulator that builds the same schedules as the decoder of
+Section~\ref{sec:problem}, only faster, which is why a pass of a rule
+takes $0.03$~s here and $0.34$~s in Table~\ref{tab:baselines}. Budget is
+measured in schedules constructed, which does not depend on the
+implementation, and in seconds per instance, which also charges each
+method for what a construction costs it: one pass of the rule costs as
+much as $36$ to $134$ decodings of the genetic algorithm.
+Table~\ref{tab:budget} gives the error at fixed budgets and
+Figure~\ref{fig:budget} the complete curves.
 
 \begin{table}[t]
 \centering\small
@@ -1137,41 +1114,22 @@ was measured.}
 \label{fig:budget}
 \end{figure}
 
-Measured in schedules constructed, the genetic algorithm starts from the
-level of random sampling, $112\%$ $\RE$, and needs about
-$7.6\times10^{4}$ constructions to match the single pass of the rule at
-$17.71\%$. It does not reach what the same rule attains with $1024$
-samples, $13.71\%$: at $2^{17}$ constructions, $128$ times the sampled
-rule's budget, it reaches $15.84\%$. Over this whole range, from one
-construction to a hundred thousand, the evolved rule is the better use
-of the budget. Its advantage is not that it optimizes better, but that
-it is effective at budgets too small for search-based optimizers to be
-so.
-
-Measured in seconds, the conclusion is stronger, although each
-construction of the rule is the more expensive one. One pass of the rule
-takes $0.03$~s; after $20$~s per instance, some six hundred times as
-long, the genetic algorithm is still at $24.01\%$, above the single pass
-on $43$ of the 70 instances ($z=-3.72$, $p<0.001$, $|r|=0.51$). The
-sampled rule leads the genetic algorithm at every time where both were
-measured: $15.57\%$ against $60.29\%$ at $1$~s, and $14.61\%$ against
-$41.76\%$ at $5$~s, lower on all 70 instances ($z=-7.27$, $|r|=1.00$). In
-a C\texttt{++} implementation both curves would shift towards shorter
-times, but the ratio between the two costs, and with it the ordering,
-would remain.
-
-The seeded genetic algorithm changes the interpretation. Started from the
-rule's permutation instead of at random, it begins at $17.71\%$ by
-construction and finishes at $13.35\%$, falling below the sampled rule at
-about $9.4\times10^{4}$ constructions; at $20$~s it is at
-$14.58\%$, $9.43$ points below the same algorithm started at random
-($z=-7.00$, $|r|=0.96$). It is the only method that finishes below the
-sampled rule, and it does so by starting from the rule. The natural
-place for an evolved dispatching rule alongside a per-instance
-metaheuristic is therefore not as its competitor but as its starting
-point, the role constructive heuristics commonly play in the
-initialization of population methods~\citep{Kazimipour2014}, and the
-cheapest way to give such a method a good first incumbent.
+Two results stand out. The first is how much budget per-instance search
+needs to reach the rule. The genetic algorithm needs about
+$7.6\times10^{4}$ schedules to match a single pass of the rule, and in
+time it is still above it after $20$~s per instance, some six hundred
+times what the pass takes (above it on $43$ of the 70 instances,
+$z=-3.72$, $p<0.001$, $|r|=0.51$). The advantage of
+the rule is therefore not that it optimizes better, but that it is
+effective at budgets too small for search to be so. The second is that
+the rule is most useful as a starting point: seeded with the rule's
+permutation, the genetic algorithm is the only method that ends below
+the sampled rule, and at $20$~s it is $9.43$ points below the
+same algorithm started at random ($z=-7.00$, $|r|=0.96$).
+An evolved dispatching rule is thus not a competitor of a per-instance
+metaheuristic but the cheapest way to give it a good first incumbent,
+the role constructive heuristics commonly play in the initialization of
+population methods~\citep{Kazimipour2014}.
 
 \section{Analysis}
 \label{sec:analysis}

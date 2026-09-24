@@ -774,8 +774,6 @@ else:
     _ga = {int(_k): _v for _k, _v in _m['ga'].items()}
     # la calibracion que abre 6.5: dos puntos de la curva y las dos
     # referencias publicadas
-    check('el genetico a 10^5 construcciones',
-          f'${_ga[100000]:.1f}\\%$ at $10^{{5}}$', 'e6/calibracion_clasicas')
     check('el genetico a 5x10^5 construcciones',
           f'${_ga[500000]:.1f}\\%$ at $5\\times10^{{5}}$',
           'e6/calibracion_clasicas')
@@ -806,16 +804,6 @@ else:
     _E = _B['por_evaluaciones']
     check('la regla en una pasada', f"${_E['regla']['1']:.2f}\\%$",
           'e6/por_evaluaciones')
-    check('el mejor-de-1024 de la regla',
-          f"${_E['regla_bon']['1024']:.2f}\\%$",
-          'e6/por_evaluaciones')
-    check('donde arranca el genetico',
-          f"${_E['ga']['1']:.0f}\\%$", 'e6/por_evaluaciones')
-    check('el genetico al final del rango',
-          f"${_E['ga']['131072']:.2f}\\%$", 'e6/por_evaluaciones')
-    check('el sembrado al final del rango',
-          f"${_E['ga_sembrado']['131072']:.2f}\\%$",
-          'e6/por_evaluaciones')
     # los dos cruces, interpolados en log sobre la rejilla
 
     def _cruza(_tab, _obj):
@@ -834,16 +822,10 @@ else:
 
     check('donde el genetico iguala la pasada unica',
           _sci(_cruza(_E['ga'], _E['regla']['1'])), 'e6, derivado')
-    check('donde el sembrado pasa al mejor-de-1024',
-          _sci(_cruza(_E['ga_sembrado'], _E['regla_bon']['1024'])),
-          'e6, derivado')
     # y que el genetico NO alcanza al mejor-de-1024 en el rango, que
     # es la afirmacion que sostiene la seccion entera
     assert _cruza(_E['ga'], _E['regla_bon']['1024']) is None, (
         'el genetico ya alcanza al mejor-de-1024: reescribir 6.5')
-    # cuantas veces el presupuesto del mejor-de-1024
-    check('cuantas veces el presupuesto del muestreo',
-          f'${131072 // 1024}$ times', 'e6, derivado')
     # el coste de una pasada en evaluaciones del genetico
     _c = _B['coste_pasada_en_decodificaciones']
     check('lo que cuesta una pasada de la regla',
@@ -887,18 +869,7 @@ else:
         _v = _pt6[(_m, _s)]
         return f'{sum(_v) / len(_v):.2f}'
 
-    check('el genetico a 20 s', f"still at ${_m6('ga', 20.0)}\\%$",
-          'e6 curvas')
-    check('mejor-de-N y genetico a 1 s',
-          f"${_m6('regla_bon', 1.0)}\\%$ against ${_m6('ga', 1.0)}\\%$ at $1$~s",
-          'e6 curvas')
-    check('mejor-de-N y genetico a 5 s',
-          f"${_m6('regla_bon', 5.0)}\\%$ against ${_m6('ga', 5.0)}\\%$ at $5$~s",
-          'e6 curvas')
-    check('el sembrado a 20 s', f"it is at ${_m6('ga_sembrado', 20.0)}\\%$",
-          'e6 curvas')
     for _a, _b, _s, _et in (('regla', 'ga', 20.0, 'pasada contra genetico'),
-                            ('regla_bon', 'ga', 5.0, 'mejor-de-N contra genetico'),
                             ('ga_sembrado', 'ga', 20.0, 'sembrado contra genetico')):
         _c6 = _t6.contraste(_pt6[(_a, _s)], _pt6[(_b, _s)])
         check_zr(f'{_et} a {_s:g} s', f"{_c6['z']:.2f}", f"{_c6['rb']:.2f}",
@@ -906,18 +877,10 @@ else:
         if _a == 'regla':
             check('instancias en que el genetico sigue por encima',
                   f"on ${_c6['menor']}$ of the 70", 'e6 curvas')
-            assert _c6['p'] < 0.001
-        if _a == 'regla_bon':
-            assert _c6['menor'] == 70, 'el mejor-de-N ya no gana en las 70'
+            assert _c6['p'] < 0.001 and _c6['d'] < 0
         if _a == 'ga_sembrado':
             check('ventaja del sembrado a 20 s',
                   f"${abs(_c6['d']):.2f}$ points below", 'e6 curvas')
-    # el mejor-de-N va por delante del genetico en todo tiempo medido
-    _t = _B['rejilla_reloj']
-    for _k, (_x, _y) in enumerate(zip(_B['por_reloj']['regla_bon'],
-                                      _B['por_reloj']['ga'])):
-        if _x == _x and _y == _y:
-            assert _x < _y, f'el genetico alcanza al mejor-de-N a {_t[_k]:.2f} s'
 
 # E4 (revision r3.4): los cuatro brazos sobre intervalos asimetricos.
 # Las cifras salen de scripts/e4_analiza.py sobre el banco que genera
