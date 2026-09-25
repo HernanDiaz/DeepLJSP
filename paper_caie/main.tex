@@ -799,7 +799,12 @@ processor (4 cores, 8 threads) and 32~GB of RAM under Windows~10~Pro.
 The hyper-heuristic, the decoder, the baselines and the genetic
 algorithm are implemented in Python~3.12 with NumPy~2.3, statistical
 tests use SciPy~1.17, and the configuration study used
-irace~4.4.3~\citep{LopezIbanez2016}.
+irace~4.4.3~\citep{LopezIbanez2016}. All times reported are wall-clock
+times of a single simulator, an implementation of the decoder of
+Section~\ref{sec:problem} in the same language that builds exactly the
+same schedules as the one used during evolution, measured with six runs
+executing in parallel; they are comparable with one another, not with
+times obtained on other hardware or in other languages.
 
 \section{Results}
 \label{sec:results}
@@ -852,12 +857,11 @@ with the random dispatcher of Section~\ref{sec:reference}. Since these rules are
 deterministic, the standard deviation is taken across instances and
 measures how uniform a method is over the benchmark rather than any
 run-to-run variability; the random dispatcher, the one stochastic entry,
-is averaged over 10 dispatches per instance. Times are wall-clock
-averages over the same 70 instances with 5 repetitions each; being
-implementation-bound, they are informative only in comparison between
-rows. The two GP entries are the mean over the 30 evolved rules and the
-best of them, the mean being what a single evolution should be expected
-to yield.
+is averaged over 10 dispatches per instance. Times are averages over
+the 70 instances with 5 repetitions each. The GP entries are the mean
+over the 30 evolved rules, the mean being what a single evolution should
+be expected to yield, and the best of them, both timed as evolved, and
+the best rule in its simplified form, which takes the same decisions.
 
 Two observations are needed to read the table correctly. First, the
 plain rules that ignore machine availability (SPT, LPT and the critical
@@ -882,26 +886,27 @@ attains $17.71\%$.
 \centering\small
 \caption{Constructive baselines on the 70 interval Taillard instances:
 mean RE (\%), standard deviation across instances, and mean time in
-seconds of one constructive pass.}
+milliseconds of one constructive pass.}
 \label{tab:baselines}
 \begin{tabular}{lccc}
 \toprule
-Method & RE (\%) & sd & Time (s) \\
+Method & RE (\%) & sd & Time (ms) \\
 \midrule
-LPT & 703.6 & 168.0 & 0.23 \\
-SPT & 627.2 & 152.2 & 0.23 \\
-CR & 625.7 & 140.6 & 0.26 \\
+LPT & 703.6 & 168.0 & 21.3 \\
+SPT & 627.2 & 152.2 & 20.9 \\
+CR & 625.7 & 140.6 & 22.5 \\
 \midrule
-\textit{Random dispatcher} & \textit{127.2} & \textit{13.9} & \textit{0.09} \\
+\textit{Random dispatcher} & \textit{127.2} & \textit{13.9} & \textit{2.5} \\
 \midrule
-G\&T-SPT & 70.6 & 10.0 & 0.29 \\
-MWKR & 64.7 & 10.4 & 0.33 \\
-MOR & 45.5 & 10.1 & 0.33 \\
-EST & 42.3 & 10.6 & 0.28 \\
-G\&T-MWKR & \textbf{29.5} & 6.4 & 0.38 \\
+G\&T-SPT & 70.6 & 10.0 & 29.5 \\
+MWKR & 64.7 & 10.4 & 28.7 \\
+MOR & 45.5 & 10.1 & 26.7 \\
+EST & 42.3 & 10.6 & 22.3 \\
+G\&T-MWKR & \textbf{29.5} & 6.4 & 37.8 \\
 \midrule
-GP rule (mean of 30) & 18.99 & 4.96 & 0.34 \\
-GP rule (best of 30) & \textbf{17.71} & 5.23 & 0.34 \\
+GP rule (mean of 30) & 18.99 & 4.96 & 47.7 \\
+GP rule (best of 30) & \textbf{17.71} & 5.23 & 44.7 \\
+\quad simplified, Eq.~\eqref{eq:besttree} & 17.71 & 5.23 & 32.6 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -915,14 +920,12 @@ margin over the whole comparison is $3.9$ points, against G\&T-MWKR on a
 single $20{\times}15$ instance; against the best plain rule (EST) the
 smallest margin is $6.3$ points. Per-instance figures are given in
 Table~\ref{tab:perinstance} (appendix). This quality comes at
-no evaluation penalty over hand-crafted rules: evaluating the evolved
-expression tree over the eligible set costs what evaluating a
-hand-crafted criterion costs. Averaged over the 70 instances, a complete
-constructive pass takes $0.34$~s with the evolved rule against
-$0.33$~s with MOR and $0.38$~s with G\&T-MWKR, a spread of $14\%$ between the
-three; all of them reduce to one vectorized pass over the eligible
-operations per decision, so the choice of priority expression
-contributes little to the cost of a pass. Both cost and quality thus
+a small evaluation cost. A pass of the best rule takes
+$44.7$~ms as evolved, against $26.7$~ms
+for MOR and $37.8$~ms for G\&T-MWKR: evaluating a tree of up
+to $30$ nodes on every eligible operation costs more than reading one
+attribute, but not by an order of magnitude, and in its simplified form
+the same rule takes $32.6$~ms. Both cost and quality thus
 place the evolved rule with the constructive methods, while closing much
 of the quality gap that separated them from search-based methods; that
 comparison is the subject of Sections~\ref{sec:metaheur}
@@ -1046,14 +1049,14 @@ GP-1024 evaluates $1024$ mutually independent samples per instance,
 whereas the metaheuristics evolve a population of $250$
 individuals~\citep{DiazGA2020,DiazFEABC2023} through successive
 generations, each of which depends on the previous one. In wall-clock
-terms, a single constructive pass over these instances takes
-$0.03$--$0.13$~s in our Python implementation, $0.07$~s on average,
-against the $0.5$--$2.2$~s reported for the genetic algorithm and the
-$1.9$--$6.8$~s reported for fEABC on the same
+terms, a single pass of the rule, in its simplified form, over these
+instances takes $2$--$11$~ms
+in our Python implementation, against the $0.5$--$2.2$~s reported for the
+genetic algorithm and the $1.9$--$6.8$~s reported for fEABC on the same
 instances~\citep{DiazFEABC2023}, both implemented in C\texttt{++}.
-GP-1024, however, requires $37$--$134$~s of sequential Python time
+GP-1024, however, requires $2.1$--$10.4$~s
 depending on instance size, and is therefore \emph{not} faster than the
-published metaheuristics.
+published genetic algorithm, and of the same order as fEABC.
 
 \subsection{Comparison at matched budget with a reimplemented genetic
 algorithm}
@@ -1067,16 +1070,16 @@ reference: on the 12 classical instances it reaches $7.9\%$ at
 $5\times10^{5}$ schedule constructions, ahead of the $9.8\%$ published
 for the original, and it levels off short of the $5.5\%$ of ESABC, a
 distance due to the local search of the ABC variants rather than to
-budget. The comparison is run on the 70 Taillard instances with a common
-simulator that builds the same schedules as the decoder of
-Section~\ref{sec:problem}, only faster, which is why a pass of a rule
-takes $0.03$~s here and $0.34$~s in Table~\ref{tab:baselines}. Budget is
+budget. The comparison is run on the 70 Taillard instances, and the
+rule is dispatched in its simplified form, Eq.~\eqref{eq:besttree},
+which takes the same decisions as the evolved tree at a lower cost
+(Table~\ref{tab:baselines}). Budget is
 measured in schedules constructed, which does not depend on the
 implementation, and in seconds per instance, which also charges each
 method for what a construction costs it: one pass of the rule costs as
-much as $36$ to $134$ decodings of the genetic algorithm. The genetic
-algorithm runs to $2^{20}$ schedules per instance, the sampled rule to
-$2^{13}$, and the seeded algorithm and random permutations to $2^{17}$.
+much as $36$ to $134$ decodings of the genetic algorithm. The search
+methods run to $2^{20}$ schedules per instance, and the sampled rule to
+$2^{13}$ samples or $160$~s, whichever is reached later.
 Table~\ref{tab:budget} gives the error at fixed budgets and
 Figure~\ref{fig:budget} the complete curves.
 
@@ -1097,10 +1100,10 @@ Method & $1$ & $2^{10}$ & $2^{13}$ & $2^{17}$ & $2^{20}$ & $5$ & $20$ & $50$ & $
 \midrule
 Evolved rule, one pass & 17.71 & --- & --- & --- & --- & 17.71 & 17.71 & 17.71 & 17.71 \\
 G\&T-MWKR, one pass & 29.52 & --- & --- & --- & --- & 29.52 & 29.52 & 29.52 & 29.52 \\
-Evolved rule, best-of-$N$ & 17.71 & 13.71 & 12.71 & --- & --- & 14.62 & 13.83 & 13.33 & --- \\
+Evolved rule, best-of-$N$ & 17.71 & 13.71 & 12.71 & --- & --- & 14.62 & 13.83 & 13.35 & 12.85 \\
 Genetic algorithm & 112.09 & 66.60 & 45.19 & 15.84 & 12.53 & 42.50 & 24.79 & 17.70 & 14.68 \\
-Genetic algorithm, seeded & 17.71 & 17.71 & 16.52 & 13.35 & --- & 16.02 & 14.58 & --- & --- \\
-Random permutations & 114.69 & 70.67 & 66.08 & 60.84 & --- & 65.79 & 63.28 & --- & --- \\
+Genetic algorithm, seeded & 17.71 & 17.71 & 16.52 & 13.35 & 11.68 & 16.07 & 14.63 & 13.53 & 12.70 \\
+Random permutations & 114.69 & 70.67 & 66.08 & 60.84 & 57.23 & 66.00 & 63.47 & 61.72 & 60.02 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1124,19 +1127,21 @@ it is still above the pass after $20$~s per instance (on $44$
 of the 70 instances, $z=-3.95$, $p<0.001$, $|r|=0.54$)
 and draws level at about $50$~s, some fifteen hundred times what the pass
 takes ($z=0.56$, n.s.). It does not match the sampled rule at
-any budget where both were measured: at $50$~s the sampled rule is
-$4.36$ points below it ($z=-5.70$, $|r|=0.78$).
-The advantage of the rule is therefore not that it optimizes better, but
-that it is effective at budgets too small for search to be so. The
-second is that the rule is a good starting point for search: seeded with
-the rule's permutation, the genetic algorithm reaches in $2^{17}$
-schedules the $13.35\%$ that it needs about $4.6\times10^{5}$ to reach
-from a random start, and at $20$~s it is $10.21$ points below
-the unseeded algorithm ($z=-7.01$, $|r|=0.96$). An
-evolved dispatching rule is thus the cheapest way to give a per-instance
-metaheuristic a good first incumbent, the role constructive heuristics
-commonly play in the initialization of population
-methods~\citep{Kazimipour2014}.
+any budget where both were measured: at $150$~s the sampled rule is
+still $1.83$ points below it ($z=-3.84$,
+$|r|=0.53$). The advantage of the rule is therefore not that
+it optimizes better, but that it is effective at budgets too small for
+search to be so. The second is that the rule is a good starting point
+for search. Seeded with the rule's permutation, the genetic algorithm is
+$10.17$ points below its unseeded version at $20$~s
+($z=-6.99$, $|r|=0.96$), and it is the only search
+method that catches up with the sampled rule: the two draw level at about
+$91$~s and are indistinguishable at $150$~s
+($12.70\%$ against $12.85\%$,
+$z=-1.00$, n.s.). An evolved dispatching rule is thus the
+cheapest way to give a per-instance metaheuristic a good first
+incumbent, the role constructive heuristics commonly play in the
+initialization of population methods~\citep{Kazimipour2014}.
 
 \section{Analysis}
 \label{sec:analysis}

@@ -37,7 +37,8 @@ PRESUPUESTOS = [1, 1024, 8192, 131072, 1048576]
 TIEMPOS = [5.0, 20.0, 50.0, 150.0]
 # los contrastes que el texto cita, en segundos
 CONTRASTES = [("regla", "ga", 20.0), ("regla", "ga", 50.0),
-              ("regla_bon", "ga", 50.0), ("ga_sembrado", "ga", 20.0)]
+              ("regla_bon", "ga", 50.0), ("ga_sembrado", "ga", 20.0),
+              ("regla_bon", "ga", 150.0), ("ga_sembrado", "regla_bon", 150.0)]
 
 
 def carga_completa():
@@ -153,6 +154,17 @@ def main():
         res["contrastes"][f"{a} vs {b} a {t}s"] = c
         print(f"  {a} vs {b} a {t:g} s: d={c['d']:+.2f} z={c['z']:+.2f} "
               f"p={c['p']:.1e} r={c['rb']:.2f} menor en {c['menor']}/70")
+    # donde el sembrado alcanza al mejor-de-N en segundos, en una rejilla
+    # fina: el primer tiempo en que su media queda por debajo
+    cruce = None
+    for s in np.logspace(0, np.log10(TIEMPOS[-1]), 120):
+        a = por_instancia_tiempo(d, "ga_sembrado", float(s), insts)
+        b = por_instancia_tiempo(d, "regla_bon", float(s), insts)
+        if a and b and np.mean(a) < np.mean(b):
+            cruce = float(s)
+            break
+    res["cruce_sembrado_bon_s"] = cruce
+    print(f"\n  el sembrado alcanza al mejor-de-N a los {cruce} s")
     print(f"\n  una pasada: {res['segundos_una_pasada']}")
     print(f"  corridas por instancia: {res['corridas']}")
     json.dump(res, open(SALIDA, "w", encoding="utf-8"), indent=1)

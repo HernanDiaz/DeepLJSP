@@ -135,11 +135,11 @@ python -m ijsp_gp.asymmetric --source ../instances/interval_taillard \
 | Main-arm per-instance RE                          | summary.csv |
 | Selection of the featured rule on the development set | featured_rule_selection.json |
 | Constructive baselines (RE column)                | all_baselines.csv |
-| Timing of the baselines                           | timing_tuned.csv, timing_gp_arm.csv |
+| Timing (all times in the article)                 | timing.json |
 | Generalization to the classical instances         | classic12_tuned.csv |
 | Genetic algorithm against published results       | budget/ga_calibration_classical.json |
 | Configuration of the genetic algorithm            | budget/ga_calibration_training.json |
-| Quality against budget (70 instances)             | budget/curves.csv, budget/curves_extension.csv, budget/summary.json, budget/table.json |
+| Quality against budget (70 instances)             | budget/curves.csv, budget/curves_extension.csv, budget/curves_extension2.csv, budget/summary.json, budget/table.json |
 | Terminal usage and rule sizes                     | rule_anatomy.csv |
 | Coefficient sensitivity sweep                     | coefficient_sweep.csv |
 | Worked example and census                         | worked_example.json |
@@ -166,8 +166,14 @@ variant), `gt_mwkr`, `azar` (random permutations), `ga` and `ga_sembrado`
 (the genetic algorithm seeded with the rule's permutation).
 `budget/curves_extension.csv` repeats `ga` to 2^20 constructions and
 `regla_bon` to 2^13 samples with the same seeds, which reproduce the
-values of `curves.csv` at every common budget; the article uses these
-longer curves for the two methods. In
+values of `curves.csv` at every common budget;
+`budget/curves_extension2.csv` does the same for `ga_sembrado` and
+`azar` to 2^20 and for `regla_bon` to 160 s where the first extension
+stopped earlier. The article uses the longest curve of each method.
+`timing.json` holds the times of every method on the fast simulator,
+measured in six simultaneous copies; `timing_tuned.csv` and
+`timing_gp_arm.csv` are the version 1.0 times, measured on the slower
+learning environment and no longer used. In
 `tail_risk/per_instance.csv`, `law` is the realization law, `over` the
 overrun `Cmax_ex - E[Cmax]`, `cvar95_*` and `var95_*` the conditional
 value-at-risk and value-at-risk at 0.95, `re_cvar` the CVaR of the

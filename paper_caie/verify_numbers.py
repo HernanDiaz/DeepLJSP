@@ -337,37 +337,63 @@ if os.path.exists(epr):
         mu, sd = stats(braz[a])
         check(f"brazo {a}: eps", f"{mu:.2f} \\pm {sd:.2f}", epr)
 
-# ---- columna Time de tab:baselines -------------------------------------
-# esta columna no estaba comprobada, y por eso sobrevivio una celda medida en
-# otra tirada y con deriva de maquina. Todos los tiempos que el paper imprime
-# tienen que venir de timing_tuned.csv, que es una sola tirada.
-tim = os.path.join(REPO, "benchmarks/timing_tuned.csv")
-if os.path.exists(tim):
-    ms = {r["method"]: float(r["mean_ms"])
-          for r in csv.DictReader(open(tim, encoding="utf-8"))}
-    print("\n== tiempos de tab:baselines (timing_tuned.csv) ==")
-    for m in ("LPT", "SPT", "CR", "Random", "G&T-SPT", "MWKR", "MOR", "EST",
-              "G&T-MWKR", "GP rule"):
-        check(f"{m}: s por pase", f"{ms[m] / 1000:.2f}", "timing_tuned.csv")
-    # la dispersion que el texto afirma entre las tres filas comparables
-    tres = [ms[m] for m in ("MOR", "GP rule", "G&T-MWKR")]
-    check("dispersion MOR/GP/G&T-MWKR",
-          f"{(max(tres) / min(tres) - 1) * 100:.0f}\\%", "timing_tuned.csv")
-
-    # la celda 'GP rule (mean of 30)': por decision del autor el paper no
-    # lleva nota, asi que la metodologia queda AQUI. Media del bloque limpio
-    # de timing_gp_arm.csv (semillas 1 y 10-17, las 9 primeras en orden de
-    # medicion, antes del escalon del 23% de deriva de maquina), calibrada a
-    # la tirada de la columna por la regla compartida (seed1 en ambas).
-    tga = os.path.join(REPO, "benchmarks/timing_gp_arm.csv")
-    if os.path.exists(tga):
-        arm = {r["rule"]: float(r["mean_ms"])
-               for r in csv.DictReader(open(tga, encoding="utf-8"))}
-        limpio = [arm[f"gp_tuned_seed{s}"]
-                  for s in (1, 10, 11, 12, 13, 14, 15, 16, 17)]
-        cal = (sum(limpio) / len(limpio)) * ms["GP rule"] / arm["gp_tuned_seed1"]
-        check("GP rule (mean of 30): s por pase, calibrado",
-              f"{cal / 1000:.2f}", tga)
+# ---- tiempos: tabla de baselines, 6.2 y 6.4 ----------------------------
+# Todos los tiempos del articulo salen del simulador rapido, medidos en
+# seis copias simultaneas (scripts/tiempos_fast.py, tiempos_fast_brazo.py
+# y tiempos_fast_promedia.py). Se comprueba la fila entera, no solo la
+# cifra, para que un numero no pase por aparecer en otro sitio.
+tfj = os.path.join(REPO, "benchmarks/tiempos_fast.json")
+if not os.path.exists(tfj):
+    print("\n== tiempos: sin benchmarks/tiempos_fast.json ==")
+else:
+    import json as _json
+    TF = _json.load(open(tfj, encoding="utf-8"))
+    print("\n== tiempos (simulador rapido, seis copias) ==")
+    _ms = {m: v["ms_media"] for m, v in TF["taillard"].items()}
+    _ab = {r["method"]: r for r in csv.DictReader(open(os.path.join(
+        REPO, "benchmarks/all_baselines.csv"), encoding="utf-8-sig"))}
+    for _m, _et in (("LPT", "LPT"), ("SPT", "SPT"), ("CR", "CR"),
+                    ("G&T-SPT", "G\\&T-SPT"), ("MWKR", "MWKR"),
+                    ("MOR", "MOR"), ("EST", "EST"),
+                    ("G&T-MWKR", "G\\&T-MWKR")):
+        _r = _ab[_m]
+        # cada baseline del simulador reproduce su RE de la tabla
+        assert abs(TF["taillard"][_m]["re"] - float(_r["all"])) < 0.01, _m
+        check(f"fila de baselines, {_m}",
+              f"{_et} & {float(_r['all']):.1f} & {float(_r['sd']):.1f} & "
+              f"{_ms[_m]:.1f} \\\\", "tiempos_fast.json")
+    check("fila del despachador aleatorio",
+          f"\\textit{{127.2}} & \\textit{{13.9}} & \\textit{{{_ms['Random']:.1f}}}",
+          "tiempos_fast.json")
+    _br = TF["brazo"]
+    assert abs(_br["re_media"] - 18.99) < 0.005
+    check("fila GP media de 30",
+          f"GP rule (mean of 30) & 18.99 & 4.96 & {_br['ms_media']:.1f} \\\\",
+          "tiempos_fast.json")
+    check("fila GP mejor de 30",
+          f"GP rule (best of 30) & 17.71 & 5.23 & {_br['ms_destacada_arbol']:.1f} \\\\",
+          "tiempos_fast.json")
+    check("fila GP simplificada",
+          f"& 17.71 & 5.23 & {_ms['GP rule']:.1f} \\\\", "tiempos_fast.json")
+    check("6.2, coste de la regla",
+          f"${_br['ms_destacada_arbol']:.1f}$~ms as evolved, against "
+          f"${_ms['MOR']:.1f}$~ms for MOR and ${_ms['G&T-MWKR']:.1f}$~ms",
+          "tiempos_fast.json")
+    check("6.2, forma simplificada",
+          f"the same rule takes ${_ms['GP rule']:.1f}$~ms", "tiempos_fast.json")
+    # la regla es mas cara que un atributo, pero no un orden de magnitud
+    assert _br["ms_destacada_arbol"] < 10 * _ms["MOR"]
+    _rc = TF["resumen_clasicas"]
+    check("6.4, una pasada en las clasicas",
+          f"${_rc['una_min'] * 1000:.0f}$--${_rc['una_max'] * 1000:.0f}$~ms",
+          "tiempos_fast.json")
+    check("6.4, mejor-de-1024 en las clasicas",
+          f"${_rc['bon_min']:.1f}$--${_rc['bon_max']:.1f}$~s",
+          "tiempos_fast.json")
+    # no mas rapido que el genetico publicado (0.5-2.2 s) y del orden de
+    # fEABC (1.9-6.8 s)
+    assert _rc["bon_min"] > 0.5 and _rc["bon_max"] > 2.2
+    assert _rc["bon_min"] < 6.8 and _rc["bon_max"] < 3 * 6.8
 
 # ---- apendice ----------------------------------------------------------
 print("\n== apendice ==")
@@ -862,8 +888,8 @@ else:
               _nom + ' & ' + ' & '.join(_cel) + ' \\\\', 'e6 curvas')
     # el tiempo de una pasada que el texto y la leyenda citan
     _seg = [_d6['regla'][_i][0][0][2] for _i in _in6]
-    check('segundos de una pasada', f'${sum(_seg) / len(_seg):.2f}$~s here',
-          'e6 curvas')
+    check('segundos de una pasada',
+          f'complete after ${sum(_seg) / len(_seg):.2f}$~s', 'e6 curvas')
 
     def _m6(_m, _s):
         _v = _pt6[(_m, _s)]
@@ -886,11 +912,31 @@ else:
     assert _c6['p'] > 0.05, 'a 50 s el genetico ya no empata con la pasada'
     check('empate con la pasada a 50 s', f"($z={_c6['z']:.2f}$, n.s.)",
           'e6 curvas')
-    _c6 = _t6.contraste(_pt6[('regla_bon', 50.0)], _pt6[('ga', 50.0)])
-    check_zr('mejor-de-N contra genetico a 50 s', f"{_c6['z']:.2f}",
+    _c6 = _t6.contraste(_pt6[('regla_bon', 150.0)], _pt6[('ga', 150.0)])
+    assert _c6['p'] < 0.001
+    check('mejor-de-N contra genetico a 150 s',
+          f"still ${abs(_c6['d']):.2f}$ points below it ($z={_c6['z']:.2f}$",
+          'e6 curvas')
+    check_zr('mejor-de-N contra genetico a 150 s', f"{_c6['z']:.2f}",
              f"{_c6['rb']:.2f}", 'e6 curvas')
-    check('ventaja del mejor-de-N a 50 s',
-          f"${abs(_c6['d']):.2f}$ points below it", 'e6 curvas')
+    # el sembrado alcanza al mejor-de-N: cruce y empate a 150 s
+    _c6 = _t6.contraste(_pt6[('ga_sembrado', 150.0)], _pt6[('regla_bon', 150.0)])
+    assert _c6['p'] > 0.05
+    _a6 = _pt6[('ga_sembrado', 150.0)]
+    _b6 = _pt6[('regla_bon', 150.0)]
+    check('sembrado y mejor-de-N a 150 s',
+          f"${sum(_a6) / len(_a6):.2f}\\%$ against ${sum(_b6) / len(_b6):.2f}\\%$,"
+          f" $z={_c6['z']:.2f}$, n.s.", 'e6 curvas')
+    import numpy as _np6
+    _cr6 = None
+    for _s in _np6.logspace(0, _np6.log10(150.0), 120):
+        _a = _t6.por_instancia_tiempo(_d6, 'ga_sembrado', float(_s), _in6)
+        _b = _t6.por_instancia_tiempo(_d6, 'regla_bon', float(_s), _in6)
+        if _a and _b and sum(_a) < sum(_b):
+            _cr6 = float(_s)
+            break
+    check('donde el sembrado alcanza al mejor-de-N',
+          f"draw level at about ${_cr6:.0f}$~s", 'e6 curvas')
     # el genetico no alcanza al mejor-de-N en ningun presupuesto comun:
     # en schedules, hasta 2^13; en segundos, en una rejilla fina hasta
     # donde el mejor-de-N fue medido en las 70
@@ -913,9 +959,6 @@ else:
         if _gac[_a] >= _sf > _gac[_b]:
             _f = (_gac[_a] - _sf) / (_gac[_a] - _gac[_b])
             _xs = 10 ** (_math.log10(_a) + _f * (_math.log10(_b) - _math.log10(_a)))
-    check('lo que alcanza el sembrado', f"the ${_sf:.2f}\\%$ that it needs",
-          'e6 curvas')
-    check('lo que tarda el genetico sin sembrar', _sci(_xs), 'e6 curvas')
     assert 131072 / _xs < 1 / 3, 'la siembra ya no ahorra dos tercios'
 
 # E4 (revision r3.4): los cuatro brazos sobre intervalos asimetricos.

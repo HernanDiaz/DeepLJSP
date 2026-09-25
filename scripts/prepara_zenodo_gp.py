@@ -163,23 +163,30 @@ def main():
     insts = {r[2] for r in filas}
     assert len(insts) == 70, f"curvas de {len(insts)} instancias"
 
-    # la extension: el genetico hasta 2^20 y el mejor-de-N hasta 2^13,
-    # con las mismas semillas (e6_extension.py)
-    ext, cab_ext = [], None
-    for f in sorted(glob.glob("benchmarks/e6_presupuesto/curva_ext_carril*.csv")):
-        with open(f, encoding="utf-8") as h:
-            lector = csv.reader(h)
-            c = next(lector)
-            assert cab_ext in (None, c), "cabeceras distintas en la extension"
-            cab_ext = c
-            ext.extend(lector)
-    ext.sort(key=lambda r: (r[2], r[0], int(r[1]), int(r[3])))
-    with open(os.path.join(R, "budget", "curves_extension.csv"), "w",
-              newline="", encoding="utf-8") as h:
-        w = csv.writer(h)
-        w.writerow(cab_ext)
-        w.writerows(ext)
-    assert len({r[2] for r in ext}) == 70, "la extension no cubre las 70"
+    # las dos extensiones, con las mismas semillas: la 1 (e6_extension.py)
+    # lleva el genetico a 2^20 y el mejor-de-N a 2^13; la 2
+    # (e6_extension2.py) el sembrado y el azar a 2^20 y el mejor-de-N a
+    # 160 s donde la 1 no llego
+    for patron, destino in (("curva_ext_carril*.csv", "curves_extension.csv"),
+                            ("curva_ext2_carril*.csv", "curves_extension2.csv")):
+        ext, cab_ext = [], None
+        for f in sorted(glob.glob(f"benchmarks/e6_presupuesto/{patron}")):
+            with open(f, encoding="utf-8") as h:
+                lector = csv.reader(h)
+                c = next(lector)
+                assert cab_ext in (None, c), "cabeceras distintas"
+                cab_ext = c
+                ext.extend(lector)
+        ext.sort(key=lambda r: (r[2], r[0], int(r[1]), int(r[3])))
+        with open(os.path.join(R, "budget", destino), "w",
+                  newline="", encoding="utf-8") as h:
+            w = csv.writer(h)
+            w.writerow(cab_ext)
+            w.writerows(ext)
+        assert len({r[2] for r in ext}) == 70, f"{destino} no cubre las 70"
+
+    # los tiempos del articulo, todos del simulador rapido
+    copia("benchmarks/tiempos_fast.json", os.path.join(R, "timing.json"))
 
     # la tabla de baselines, sin la fila 'GP (best)', que es de una
     # campana anterior: las filas GP del articulo salen de summary.csv
