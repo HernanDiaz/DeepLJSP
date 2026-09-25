@@ -140,6 +140,14 @@ def main():
           os.path.join(R, "budget", "ga_calibration_training.json"))
     copia("benchmarks/e6_presupuesto/calibracion_clasicas.json",
           os.path.join(R, "budget", "ga_calibration_classical.json"))
+    # la anatomia de las reglas: la 1.0 publico la de una campana anterior
+    # (3 reglas); la del articulo son las 30 del brazo principal
+    with open("benchmarks/rule_anatomy.csv", encoding="utf-8") as h:
+        filas_an = list(csv.DictReader(h))
+    assert len(filas_an) == 30 and all(
+        r["rule"].startswith("gp_tuned_seed") for r in filas_an), \
+        "rule_anatomy.csv no es la de las 30 reglas del articulo"
+    copia("benchmarks/rule_anatomy.csv", os.path.join(R, "rule_anatomy.csv"))
     copia("benchmarks/e7_cvar/por_instancia.csv",
           os.path.join(R, "tail_risk", "per_instance.csv"))
     copia("benchmarks/e7_cvar/resumen.json",

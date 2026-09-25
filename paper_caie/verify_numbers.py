@@ -395,6 +395,41 @@ else:
     assert _rc["bon_min"] > 0.5 and _rc["bon_max"] > 2.2
     assert _rc["bon_min"] < 6.8 and _rc["bon_max"] < 3 * 6.8
 
+# ---- anatomia de las 30 reglas (7.1) -----------------------------------
+# Se recomputa desde los arboles, con las funciones de rule_anatomy.py, y
+# el CSV que va al deposito tiene que coincidir fila a fila.
+sys.path.insert(0, os.path.join(REPO, "scripts"))
+sys.path.insert(0, REPO)
+import glob as _glob
+import json as _json
+import rule_anatomy as _ra
+_an = {}
+for _f in sorted(_glob.glob(os.path.join(
+        REPO, "benchmarks/reevo_fixedfit/gp_tuned_seed*.json"))):
+    _tr = _json.load(open(_f, encoding="utf-8"))["tree"]
+    _nodos = list(_ra.walk(_tr))
+    _ts = [_n for _n in _nodos if _n in _ra.TERMINALS]
+    _an[os.path.basename(_f)] = (len(_nodos), _ra.depth(_tr), len(_ts),
+                                 sum(_t in _ra.WIDTH_TERMS for _t in _ts))
+assert len(_an) == 30, len(_an)
+print("\n== anatomia de las 30 reglas ==")
+_csv = {r["rule"]: (int(r["size"]), int(r["depth"]), int(r["n_terminals"]),
+                    int(r["width_terms"]))
+        for r in csv.DictReader(open(os.path.join(
+            REPO, "benchmarks/rule_anatomy.csv"), encoding="utf-8"))}
+assert _csv == _an, "rule_anatomy.csv no coincide con los arboles"
+_sz = [v[0] for v in _an.values()]
+_dp = [v[1] for v in _an.values()]
+check("tamano medio y rango",
+      f"mean tree size of ${sum(_sz) / 30:.0f}$ nodes (${min(_sz)}$--${max(_sz)}$)",
+      "reglas")
+check("profundidad media", f"mean depth ${sum(_dp) / 30:.0f}$", "reglas")
+check("cuota de terminales de anchura",
+      f"account for ${100 * sum(v[3] for v in _an.values()) / sum(v[2] for v in _an.values()):.1f}\\%$",
+      "reglas")
+check("reglas con algun terminal de anchura",
+      f"appear in ${sum(v[3] > 0 for v in _an.values())}$ of the $30$", "reglas")
+
 # ---- apendice ----------------------------------------------------------
 print("\n== apendice ==")
 blk = TEX[TEX.index("\\label{tab:perinstance}"):]
