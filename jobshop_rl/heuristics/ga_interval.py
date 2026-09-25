@@ -52,7 +52,8 @@ def muta(perm, rng):
 
 
 def evoluciona(inst, presupuesto, rng, pop=250, torneo=3, p_cruce=0.9,
-               p_muta=0.2, elite=2, siembra=None, puntos=None):
+               p_muta=0.2, elite=2, siembra=None, puntos=None,
+               limite_s=None):
     # pop=250 es la poblacion del genetico publicado para el IJSP, y es
     # ademas la mejor de las cuatro configuraciones que se probaron a
     # presupuesto alto (scripts/e6_calibra_ga.py): a 200.000
@@ -62,6 +63,10 @@ def evoluciona(inst, presupuesto, rng, pop=250, torneo=3, p_cruce=0.9,
     Devuelve {evaluaciones: (mejor makespan, segundos)} en los `puntos`
     pedidos, de modo que una sola tirada da la curva entera y su coste
     en reloj, que es la segunda moneda de la comparacion.
+
+    Con limite_s se para tambien al agotar ese tiempo, y entonces no se
+    rellenan los puntos no alcanzados: la curva acaba en el ultimo que
+    se midio, mas un punto final en las evaluaciones hechas.
     """
     puntos = sorted(puntos or [presupuesto])
     t0 = time.time()
@@ -73,6 +78,10 @@ def evoluciona(inst, presupuesto, rng, pop=250, torneo=3, p_cruce=0.9,
         poblacion.append(aleatoria(inst, rng))
 
     mejor_cm = None
+
+    def agotado():
+        return usadas >= presupuesto or (
+            limite_s is not None and time.time() - t0 >= limite_s)
 
     def anota(cm):
         nonlocal mejor_cm, usadas
@@ -87,13 +96,13 @@ def evoluciona(inst, presupuesto, rng, pop=250, torneo=3, p_cruce=0.9,
         cm = decodifica(inst, ind)
         anota(cm)
         puntuada.append((cm, ind))
-        if usadas >= presupuesto:
+        if agotado():
             break
 
-    while usadas < presupuesto:
+    while not agotado():
         puntuada.sort(key=lambda x: (x[0][1], x[0][0]))
         nueva = [p for p in puntuada[:elite]]
-        while len(nueva) < pop and usadas < presupuesto:
+        while len(nueva) < pop and not agotado():
             a = min((puntuada[rng.randrange(len(puntuada))]
                      for _ in range(torneo)), key=lambda x: (x[0][1], x[0][0]))
             b = min((puntuada[rng.randrange(len(puntuada))]
@@ -107,6 +116,9 @@ def evoluciona(inst, presupuesto, rng, pop=250, torneo=3, p_cruce=0.9,
             nueva.append((cm, hijo))
         puntuada = nueva
 
+    if limite_s is not None:    # parado por tiempo: el ultimo punto real
+        curva[usadas] = (mejor_cm, time.time() - t0)
+        return curva, mejor_cm
     for p in puntos:            # por si el presupuesto acabo antes
         curva[p] = (mejor_cm, time.time() - t0)
     return curva, mejor_cm

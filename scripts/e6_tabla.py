@@ -51,7 +51,8 @@ def carga_completa():
     d = carga()
     # primero la extension 1 y luego la 2 (e6_extension2.py); una curva
     # sustituye a la que habia solo si llega al menos igual de lejos
-    for patron in ("curva_ext_carril*.csv", "curva_ext2_carril*.csv"):
+    for patron in ("curva_ext_carril*.csv", "curva_ext2_carril*.csv",
+                   "curva_ext3_carril*.csv"):
         ext = {}
         for f in sorted(glob.glob(os.path.join(
                 "benchmarks/e6_presupuesto", patron))):
