@@ -46,6 +46,7 @@ CURVAS = [
 PUNTOS = [("regla", AZUL, "D", "evolved rule, one pass"),
           ("gt_mwkr", "0.35", "s", "G&T-MWKR, one pass")]
 plt.rcParams.update({"font.size": 8.0, "figure.facecolor": "white",
+                     "font.family": "sans-serif", "font.sans-serif": ["Arial"],
                      "pdf.fonttype": 42})
 
 

@@ -5,8 +5,8 @@ La de paper_gp/make_figures.py (que sigue siendo la de paper_gp) pintaba
 las 30 curvas casi transparentes y la media gruesa en ambar con halo, en
 tipografia sin serifa: se leia como un grafico de divulgacion. Aqui:
 
-  - tipografia Computer Modern, la del cuerpo del articulo (cmr10 va con
-    matplotlib; fonttype 42 la incrusta como TrueType, sin Type 3);
+  - tipografia Arial, la que Elsevier pide en las figuras, como el resto
+    (fonttype 42 la incrusta como TrueType, sin Type 3);
   - la mediana en trazo fino, el rango intercuartilico sombreado y el
     rango completo en gris claro: la distribucion de las 30 evoluciones
     sin dibujar treinta lineas;
@@ -32,13 +32,9 @@ DATOS = "paper_caie/figures/convergence_data.json"
 SALIDA = "paper_caie/figures/fig_convergence.pdf"
 
 plt.rcParams.update({
-    "font.family": "serif", "font.serif": ["cmr10"],
-    "mathtext.fontset": "cm", "axes.formatter.use_mathtext": True,
-    "axes.unicode_minus": False, "font.size": 8.5,
-    "axes.linewidth": 0.6, "xtick.major.width": 0.6,
-    "ytick.major.width": 0.6, "xtick.direction": "in",
-    "ytick.direction": "in", "xtick.top": True, "ytick.right": True,
-    "legend.fontsize": 8, "pdf.fonttype": 42, "figure.facecolor": "white",
+    "font.family": "sans-serif", "font.sans-serif": ["Arial"],
+    "font.size": 8.0, "legend.fontsize": 7.5, "pdf.fonttype": 42,
+    "figure.facecolor": "white",
 })
 
 
@@ -55,6 +51,7 @@ def main():
     ax.plot(g, q2, color="black", lw=1.0, label="Median")
     ax.set_xlim(0, L - 1)
     ax.set_ylim(10, 42)
+    ax.spines[["top", "right"]].set_visible(False)
     ax.set_xlabel("Generation")
     ax.set_ylabel("Best training RE (%)")
     ax.legend(frameon=False, loc="upper right", handlelength=1.8)
