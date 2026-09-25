@@ -838,7 +838,7 @@ else:
     os.chdir(REPO)
     try:
         import e6_tabla as _t6
-        _d6 = _t6.carga()
+        _d6 = _t6.carga_completa()
     finally:
         os.chdir(_cwd)
     _in6 = sorted(_d6['ga'])
@@ -881,6 +881,42 @@ else:
         if _a == 'ga_sembrado':
             check('ventaja del sembrado a 20 s',
                   f"${abs(_c6['d']):.2f}$ points below", 'e6 curvas')
+    # la extension: el genetico se iguala con la pasada hacia los 50 s
+    _c6 = _t6.contraste(_pt6[('regla', 50.0)], _pt6[('ga', 50.0)])
+    assert _c6['p'] > 0.05, 'a 50 s el genetico ya no empata con la pasada'
+    check('empate con la pasada a 50 s', f"($z={_c6['z']:.2f}$, n.s.)",
+          'e6 curvas')
+    _c6 = _t6.contraste(_pt6[('regla_bon', 50.0)], _pt6[('ga', 50.0)])
+    check_zr('mejor-de-N contra genetico a 50 s', f"{_c6['z']:.2f}",
+             f"{_c6['rb']:.2f}", 'e6 curvas')
+    check('ventaja del mejor-de-N a 50 s',
+          f"${abs(_c6['d']):.2f}$ points below it", 'e6 curvas')
+    # el genetico no alcanza al mejor-de-N en ningun presupuesto comun:
+    # en schedules, hasta 2^13; en segundos, en una rejilla fina hasta
+    # donde el mejor-de-N fue medido en las 70
+    for _k in range(14):
+        _x = _t6.por_instancia_presupuesto(_d6, 'regla_bon', 2 ** _k, _in6)
+        _y = _t6.por_instancia_presupuesto(_d6, 'ga', 2 ** _k, _in6)
+        assert sum(_x) < sum(_y), f'el genetico alcanza al mejor-de-N en 2^{_k}'
+    for _s in [float(_v) for _v in __import__('numpy').logspace(-1, 3, 80)]:
+        _x = _t6.por_instancia_tiempo(_d6, 'regla_bon', _s, _in6)
+        _y = _t6.por_instancia_tiempo(_d6, 'ga', _s, _in6)
+        if _x and _y:
+            assert sum(_x) < sum(_y), f'el genetico alcanza al mejor-de-N a {_s:.1f} s'
+    # la siembra: el final del sembrado, y lo que tarda el de inicio al azar
+    _gac = {2 ** _k: sum(_v) / len(_v) for _k in range(21)
+            for _v in [_t6.por_instancia_presupuesto(_d6, 'ga', 2 ** _k, _in6)]}
+    _sv = _t6.por_instancia_presupuesto(_d6, 'ga_sembrado', 131072, _in6)
+    _sf = sum(_sv) / len(_sv)
+    _ks = sorted(_gac)
+    for _a, _b in zip(_ks, _ks[1:]):
+        if _gac[_a] >= _sf > _gac[_b]:
+            _f = (_gac[_a] - _sf) / (_gac[_a] - _gac[_b])
+            _xs = 10 ** (_math.log10(_a) + _f * (_math.log10(_b) - _math.log10(_a)))
+    check('lo que alcanza el sembrado', f"the ${_sf:.2f}\\%$ that it needs",
+          'e6 curvas')
+    check('lo que tarda el genetico sin sembrar', _sci(_xs), 'e6 curvas')
+    assert 131072 / _xs < 1 / 3, 'la siembra ya no ahorra dos tercios'
 
 # E4 (revision r3.4): los cuatro brazos sobre intervalos asimetricos.
 # Las cifras salen de scripts/e4_analiza.py sobre el banco que genera

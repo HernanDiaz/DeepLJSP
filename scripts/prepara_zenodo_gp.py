@@ -163,6 +163,24 @@ def main():
     insts = {r[2] for r in filas}
     assert len(insts) == 70, f"curvas de {len(insts)} instancias"
 
+    # la extension: el genetico hasta 2^20 y el mejor-de-N hasta 2^13,
+    # con las mismas semillas (e6_extension.py)
+    ext, cab_ext = [], None
+    for f in sorted(glob.glob("benchmarks/e6_presupuesto/curva_ext_carril*.csv")):
+        with open(f, encoding="utf-8") as h:
+            lector = csv.reader(h)
+            c = next(lector)
+            assert cab_ext in (None, c), "cabeceras distintas en la extension"
+            cab_ext = c
+            ext.extend(lector)
+    ext.sort(key=lambda r: (r[2], r[0], int(r[1]), int(r[3])))
+    with open(os.path.join(R, "budget", "curves_extension.csv"), "w",
+              newline="", encoding="utf-8") as h:
+        w = csv.writer(h)
+        w.writerow(cab_ext)
+        w.writerows(ext)
+    assert len({r[2] for r in ext}) == 70, "la extension no cubre las 70"
+
     # la tabla de baselines, sin la fila 'GP (best)', que es de una
     # campana anterior: las filas GP del articulo salen de summary.csv
     with open("benchmarks/all_baselines.csv", encoding="utf-8") as h:

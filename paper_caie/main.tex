@@ -65,7 +65,8 @@ the rules transfer zero-shot to all size classes and to a second
 benchmark, remain human-readable, and are insensitive to the choice of
 training instances. A reimplementation of a published genetic
 algorithm, sharing the rule's decoder, needs some $7.6\times10^{4}$ schedule constructions to match
-one pass of the evolved rule, and, seeded with the rule, it outperforms every other method compared. Ablations delimit what interval awareness
+one pass of the evolved rule, and gains markedly from being seeded
+with it. Ablations delimit what interval awareness
 contributes. Under the default expected-makespan objective it is
 unnecessary: removing the width terminals, or evolving on crisp
 midpoints, does equally well. Its value lies in robustness: an
@@ -1073,31 +1074,33 @@ takes $0.03$~s here and $0.34$~s in Table~\ref{tab:baselines}. Budget is
 measured in schedules constructed, which does not depend on the
 implementation, and in seconds per instance, which also charges each
 method for what a construction costs it: one pass of the rule costs as
-much as $36$ to $134$ decodings of the genetic algorithm.
+much as $36$ to $134$ decodings of the genetic algorithm. The genetic
+algorithm runs to $2^{20}$ schedules per instance, the sampled rule to
+$2^{13}$, and the seeded algorithm and random permutations to $2^{17}$.
 Table~\ref{tab:budget} gives the error at fixed budgets and
 Figure~\ref{fig:budget} the complete curves.
 
 \begin{table}[t]
-\centering\small
+\centering\footnotesize
 \caption{RE (\%) over the 70 Taillard instances at matched budgets,
 measured in schedules constructed and in seconds per instance. A dash
 marks a budget the method does not reach; a single pass is complete
 after $0.03$~s and keeps its value at any later time.}
 \label{tab:budget}
 \setlength{\tabcolsep}{2.5pt}
-\begin{tabular}{lcccccccc}
+\begin{tabular}{lccccccccc}
 \toprule
 & \multicolumn{5}{c}{Schedules constructed} &
-\multicolumn{3}{c}{Seconds per instance} \\
-\cmidrule(lr){2-6}\cmidrule(l){7-9}
-Method & $1$ & $32$ & $1024$ & $2^{14}$ & $2^{17}$ & $1$ & $5$ & $20$ \\
+\multicolumn{4}{c}{Seconds per instance} \\
+\cmidrule(lr){2-6}\cmidrule(l){7-10}
+Method & $1$ & $2^{10}$ & $2^{13}$ & $2^{17}$ & $2^{20}$ & $5$ & $20$ & $50$ & $150$ \\
 \midrule
-Evolved rule, one pass & 17.71 & --- & --- & --- & --- & 17.71 & 17.71 & 17.71 \\
-G\&T-MWKR, one pass & 29.52 & --- & --- & --- & --- & 29.52 & 29.52 & 29.52 \\
-Evolved rule, best-of-$N$ & 17.71 & 15.72 & 13.71 & --- & --- & 15.57 & 14.61 & --- \\
-Genetic algorithm & 112.09 & 82.26 & 66.60 & 33.80 & 15.84 & 60.29 & 41.76 & 24.01 \\
-Genetic algorithm, seeded & 17.71 & 17.71 & 17.71 & 15.64 & 13.35 & 17.61 & 16.02 & 14.58 \\
-Random permutations & 114.69 & 83.21 & 70.67 & 64.83 & 60.84 & 70.08 & 65.79 & 63.28 \\
+Evolved rule, one pass & 17.71 & --- & --- & --- & --- & 17.71 & 17.71 & 17.71 & 17.71 \\
+G\&T-MWKR, one pass & 29.52 & --- & --- & --- & --- & 29.52 & 29.52 & 29.52 & 29.52 \\
+Evolved rule, best-of-$N$ & 17.71 & 13.71 & 12.71 & --- & --- & 14.62 & 13.83 & 13.33 & --- \\
+Genetic algorithm & 112.09 & 66.60 & 45.19 & 15.84 & 12.53 & 42.50 & 24.79 & 17.70 & 14.68 \\
+Genetic algorithm, seeded & 17.71 & 17.71 & 16.52 & 13.35 & --- & 16.02 & 14.58 & --- & --- \\
+Random permutations & 114.69 & 70.67 & 66.08 & 60.84 & --- & 65.79 & 63.28 & --- & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1116,20 +1119,24 @@ was measured.}
 
 Two results stand out. The first is how much budget per-instance search
 needs to reach the rule. The genetic algorithm needs about
-$7.6\times10^{4}$ schedules to match a single pass of the rule, and in
-time it is still above it after $20$~s per instance, some six hundred
-times what the pass takes (above it on $43$ of the 70 instances,
-$z=-3.72$, $p<0.001$, $|r|=0.51$). The advantage of
-the rule is therefore not that it optimizes better, but that it is
-effective at budgets too small for search to be so. The second is that
-the rule is most useful as a starting point: seeded with the rule's
-permutation, the genetic algorithm is the only method that ends below
-the sampled rule, and at $20$~s it is $9.43$ points below the
-same algorithm started at random ($z=-7.00$, $|r|=0.96$).
-An evolved dispatching rule is thus not a competitor of a per-instance
-metaheuristic but the cheapest way to give it a good first incumbent,
-the role constructive heuristics commonly play in the initialization of
-population methods~\citep{Kazimipour2014}.
+$7.6\times10^{4}$ schedules to match a single pass of the rule; in time
+it is still above the pass after $20$~s per instance (on $44$
+of the 70 instances, $z=-3.95$, $p<0.001$, $|r|=0.54$)
+and draws level at about $50$~s, some fifteen hundred times what the pass
+takes ($z=0.56$, n.s.). It does not match the sampled rule at
+any budget where both were measured: at $50$~s the sampled rule is
+$4.36$ points below it ($z=-5.70$, $|r|=0.78$).
+The advantage of the rule is therefore not that it optimizes better, but
+that it is effective at budgets too small for search to be so. The
+second is that the rule is a good starting point for search: seeded with
+the rule's permutation, the genetic algorithm reaches in $2^{17}$
+schedules the $13.35\%$ that it needs about $4.6\times10^{5}$ to reach
+from a random start, and at $20$~s it is $10.21$ points below
+the unseeded algorithm ($z=-7.01$, $|r|=0.96$). An
+evolved dispatching rule is thus the cheapest way to give a per-instance
+metaheuristic a good first incumbent, the role constructive heuristics
+commonly play in the initialization of population
+methods~\citep{Kazimipour2014}.
 
 \section{Analysis}
 \label{sec:analysis}
@@ -1880,13 +1887,15 @@ default one.
 question of budget, and it has a measurable answer. Our Python
 implementation of the genetic algorithm published for this problem,
 which shares decoder, evaluator and language with the rule, needs
-about $7.6\times10^{4}$ schedule constructions to match a single pass of the evolved rule, and at
-$1.3\times10^{5}$ it has still not reached what the same rule attains
-with $1024$ samples. Below roughly $10^{5}$ constructions the evolved
-rule is the better use of the budget; above it, per-instance search becomes preferable, and the remaining distance to the best published ABC
+about $7.6\times10^{4}$ schedule constructions, or about $50$~s per
+instance, to match a single pass of the evolved rule, and it does not
+match the sampled rule at any budget where both were measured. The
+remaining distance to the best published ABC
 variants is not a matter of budget at all --- a plain population method levels off well short of it --- but of the neighborhood structures and local search those methods incorporate. What this paper contributes is therefore a
 high-quality, interpretable, fast-decision baseline for the IJSP, not a
-general solver; and its most useful role alongside a solver is to initialize it, since the same genetic algorithm seeded with the rule's permutation is the only method that attains a lower error than the sampled rule.
+general solver; and its most useful role alongside a solver is to initialize it: seeded
+with the rule's permutation, the genetic algorithm reaches the same
+error with less than a third of the constructions.
 
 Returning to the questions of Section~\ref{sec:intro}: the evolution
 selects the classical scheduling attributes most often, with the width

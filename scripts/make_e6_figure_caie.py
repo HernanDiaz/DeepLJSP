@@ -13,8 +13,8 @@ se lea sin el texto:
   - la leyenda nombra el genetico como lo que es, nuestra
     implementacion.
 
-Lee benchmarks/e6_presupuesto/resumen.json (e6_analiza.py) y
-tabla.json (e6_tabla.py).
+Calcula las curvas desde las de E6 unidas a las de su extension, con
+las funciones de e6_tabla.py, y lee tabla.json para los tiempos.
 
     python scripts/make_e6_figure_caie.py
 
@@ -33,7 +33,6 @@ import matplotlib.pyplot as plt                    # noqa: E402
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-RESUMEN = "benchmarks/e6_presupuesto/resumen.json"
 TABLA = "benchmarks/e6_presupuesto/tabla.json"
 SALIDA = "paper_caie/figures/fig_budget.pdf"
 
@@ -51,25 +50,47 @@ plt.rcParams.update({"font.size": 8.0, "figure.facecolor": "white",
                      "pdf.fonttype": 42})
 
 
+def curvas():
+    """Las curvas medias sobre las 70, en schedules y en segundos, desde
+    las curvas de E6 unidas a las de su extension (e6_tabla.py)."""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from e6_tabla import (carga_completa, por_instancia_presupuesto,
+                          por_instancia_tiempo)
+    d = carga_completa()
+    insts = sorted(d["ga"])
+    rejilla = np.logspace(-2, 3, 90)
+    ev, rl = {}, {}
+    for m, *_ in CURVAS + PUNTOS:
+        ev[m] = {}
+        for k in range(0, 21):
+            v = por_instancia_presupuesto(d, m, 2 ** k, insts)
+            if v is not None:
+                ev[m][2 ** k] = float(np.mean(v))
+        xs, ys = [], []
+        for t in rejilla:
+            v = por_instancia_tiempo(d, m, float(t), insts)
+            if v is not None:
+                xs.append(float(t))
+                ys.append(float(np.mean(v)))
+        rl[m] = (xs, ys)
+    return ev, rl
+
+
 def main():
-    d = json.load(open(RESUMEN, encoding="utf-8"))
     tab = json.load(open(TABLA, encoding="utf-8"))
+    ev, rl = curvas()
     fig, axes = plt.subplots(1, 2, figsize=(5.0, 2.45), sharey=True)
-    t = np.array(d["rejilla_reloj"], dtype=float)
 
     for k, ax in enumerate(axes):
         for m, col, ls, etq in CURVAS:
             if k == 0:
-                fila = {int(b): v for b, v in d["por_evaluaciones"][m].items()}
-                x = sorted(fila)
-                y = [fila[b] for b in x]
+                x = sorted(ev[m])
+                y = [ev[m][b] for b in x]
             else:
-                y = np.array(d["por_reloj"][m], dtype=float)
-                ok = ~np.isnan(y)
-                x, y = t[ok], y[ok]
+                x, y = rl[m]
             ax.plot(x, y, ls, color=col, lw=1.4, label=etq)
         for m, col, mk, etq in PUNTOS:
-            nivel = float(d["por_evaluaciones"][m]["1"])
+            nivel = ev[m][1]
             coste = 1 if k == 0 else tab["segundos_una_pasada"][m]["media"]
             ax.axhline(nivel, color=col, lw=0.6, ls=(0, (4, 3)), zorder=1)
             ax.plot([coste], [nivel], mk, color=col, ms=5, zorder=5,
@@ -77,14 +98,14 @@ def main():
 
     ax = axes[0]
     ax.set_xscale("log")
-    ax.set_xlim(0.6, 3e5)
+    ax.set_xlim(0.6, 2 * max(max(ev[m]) for m, *_ in CURVAS))
     ax.set_xlabel("schedules constructed")
     ax.set_ylabel("RE (%)")
     ax.set_title("(a) budget in schedules", loc="left", fontsize=8, pad=3)
 
     ax = axes[1]
     ax.set_xscale("log")
-    ax.set_xlim(0.015, 40)
+    ax.set_xlim(0.015, 1.6 * max(max(rl[m][0]) for m, *_ in CURVAS))
     for s in tab["tiempos"]:
         ax.axvline(s, color="0.75", lw=0.6, ls="-", zorder=0)
     ax.set_xlabel("seconds per instance")

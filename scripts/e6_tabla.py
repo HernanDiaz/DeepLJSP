@@ -33,11 +33,35 @@ if hasattr(sys.stdout, "reconfigure"):
 
 SALIDA = "benchmarks/e6_presupuesto/tabla.json"
 METODOS = ["regla", "gt_mwkr", "regla_bon", "ga", "ga_sembrado", "azar"]
-PRESUPUESTOS = [1, 32, 1024, 16384, 131072]
-TIEMPOS = [1.0, 5.0, 20.0]
+PRESUPUESTOS = [1, 1024, 8192, 131072, 1048576]
+TIEMPOS = [5.0, 20.0, 50.0, 150.0]
 # los contrastes que el texto cita, en segundos
-CONTRASTES = [("regla_bon", "ga", 1.0), ("regla_bon", "ga", 5.0),
-              ("regla", "ga", 20.0), ("ga_sembrado", "ga", 20.0)]
+CONTRASTES = [("regla", "ga", 20.0), ("regla", "ga", 50.0),
+              ("regla_bon", "ga", 50.0), ("ga_sembrado", "ga", 20.0)]
+
+
+def carga_completa():
+    """Las curvas de E6 con las de la extension (e6_extension.py) en lugar
+    de las originales para el genetico y el mejor-de-N, alli donde la
+    extension ya ha corrido. Las semillas son las mismas, asi que en los
+    presupuestos comunes el RE tiene que coincidir: si no, se aborta."""
+    import csv
+    import glob
+    d = carga()
+    ext = {}
+    for f in sorted(glob.glob(os.path.join(
+            "benchmarks/e6_presupuesto", "curva_ext_carril*.csv"))):
+        for r in csv.DictReader(open(f, encoding="utf-8")):
+            ext.setdefault((r["metodo"], r["instancia"], int(r["semilla"])),
+                           []).append((int(r["presupuesto"]), float(r["re"]),
+                                       float(r["segundos"])))
+    for (m, i, s), puntos in ext.items():
+        viejo = {p: re for p, re, _ in d[m][i].get(s, [])}
+        for p, re, _ in puntos:
+            if p in viejo:
+                assert abs(viejo[p] - re) < 1e-3, (m, i, s, p, viejo[p], re)
+        d[m][i][s] = sorted(puntos)
+    return d
 
 
 def por_instancia_presupuesto(d, m, b, insts):
@@ -84,7 +108,7 @@ def contraste(x, y):
 
 
 def main():
-    d = carga()
+    d = carga_completa()
     insts = sorted(d["ga"])
     assert len(insts) == 70, len(insts)
     res = {"presupuestos": PRESUPUESTOS, "tiempos": TIEMPOS,
