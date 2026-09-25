@@ -48,19 +48,24 @@ def carga_completa():
     import csv
     import glob
     d = carga()
-    ext = {}
-    for f in sorted(glob.glob(os.path.join(
-            "benchmarks/e6_presupuesto", "curva_ext_carril*.csv"))):
-        for r in csv.DictReader(open(f, encoding="utf-8")):
-            ext.setdefault((r["metodo"], r["instancia"], int(r["semilla"])),
-                           []).append((int(r["presupuesto"]), float(r["re"]),
-                                       float(r["segundos"])))
-    for (m, i, s), puntos in ext.items():
-        viejo = {p: re for p, re, _ in d[m][i].get(s, [])}
-        for p, re, _ in puntos:
-            if p in viejo:
-                assert abs(viejo[p] - re) < 1e-3, (m, i, s, p, viejo[p], re)
-        d[m][i][s] = sorted(puntos)
+    # primero la extension 1 y luego la 2 (e6_extension2.py); una curva
+    # sustituye a la que habia solo si llega al menos igual de lejos
+    for patron in ("curva_ext_carril*.csv", "curva_ext2_carril*.csv"):
+        ext = {}
+        for f in sorted(glob.glob(os.path.join(
+                "benchmarks/e6_presupuesto", patron))):
+            for r in csv.DictReader(open(f, encoding="utf-8")):
+                ext.setdefault((r["metodo"], r["instancia"],
+                                int(r["semilla"])), []).append(
+                    (int(r["presupuesto"]), float(r["re"]),
+                     float(r["segundos"])))
+        for (m, i, s), puntos in ext.items():
+            viejo = {p: re for p, re, _ in d[m][i].get(s, [])}
+            for p, re, _ in puntos:
+                if p in viejo:
+                    assert abs(viejo[p] - re) < 1e-3, (m, i, s, p, viejo[p], re)
+            if not viejo or max(p for p, _, _ in puntos) >= max(viejo):
+                d[m][i][s] = sorted(puntos)
     return d
 
 

@@ -6,9 +6,8 @@ se lea sin el texto:
 
   - el eje (a) se llama como en el articulo, schedules construidos;
   - la regla de una pasada y G&T-MWKR son un punto, no una curva: se
-    dibujan como marcador en su coste real (un schedule en (a), su
-    tiempo medio en (b)) y una linea de referencia fina para leer
-    contra ella las demas curvas;
+    dibujan como una linea de referencia fina, para leer contra ella
+    las demas curvas, con su marcador en el extremo derecho;
   - en (b) se marcan los tres tiempos de la tabla (1, 5 y 20 s);
   - la leyenda nombra el genetico como lo que es, nuestra
     implementacion.
@@ -90,26 +89,30 @@ def main():
                 x, y = rl[m]
             ax.plot(x, y, ls, color=col, lw=1.4, label=etq)
         for m, col, mk, etq in PUNTOS:
-            nivel = ev[m][1]
-            coste = 1 if k == 0 else tab["segundos_una_pasada"][m]["media"]
-            ax.axhline(nivel, color=col, lw=0.6, ls=(0, (4, 3)), zorder=1)
-            ax.plot([coste], [nivel], mk, color=col, ms=5, zorder=5,
-                    label=etq)
+            ax.axhline(ev[m][1], color=col, lw=0.6, ls=(0, (4, 3)), zorder=1)
 
     ax = axes[0]
     ax.set_xscale("log")
-    ax.set_xlim(0.6, 2 * max(max(ev[m]) for m, *_ in CURVAS))
+    ax.set_xlim(0.6, 5 * max(max(ev[m]) for m, *_ in CURVAS))
     ax.set_xlabel("schedules constructed")
     ax.set_ylabel("RE (%)")
     ax.set_title("(a) budget in schedules", loc="left", fontsize=8, pad=3)
 
     ax = axes[1]
     ax.set_xscale("log")
-    ax.set_xlim(0.015, 1.6 * max(max(rl[m][0]) for m, *_ in CURVAS))
+    ax.set_xlim(0.015, 4 * max(max(rl[m][0]) for m, *_ in CURVAS))
     for s in tab["tiempos"]:
         ax.axvline(s, color="0.75", lw=0.6, ls="-", zorder=0)
     ax.set_xlabel("seconds per instance")
     ax.set_title("(b) budget in seconds", loc="left", fontsize=8, pad=3)
+
+    # las dos pasadas unicas, rotuladas con su marcador al extremo
+    # derecho de su linea de referencia
+    for ax in axes:
+        x = ax.get_xlim()[1] / 1.5
+        for m, col, mk, etq in PUNTOS:
+            ax.plot([x], [ev[m][1]], mk, color=col, ms=5, zorder=5,
+                    clip_on=False, label=etq)
 
     # escala logaritmica en RE: las permutaciones al azar viven por encima
     # del 60 % y la zona que interesa esta entre 13 y 30

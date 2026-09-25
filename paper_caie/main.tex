@@ -1088,9 +1088,9 @@ marks a budget the method does not reach; a single pass is complete
 after $0.03$~s and keeps its value at any later time.}
 \label{tab:budget}
 \setlength{\tabcolsep}{2.5pt}
-\begin{tabular}{lccccccccc}
+\begin{tabular}{lccccc|cccc}
 \toprule
-& \multicolumn{5}{c}{Schedules constructed} &
+& \multicolumn{5}{c|}{Schedules constructed} &
 \multicolumn{4}{c}{Seconds per instance} \\
 \cmidrule(lr){2-6}\cmidrule(l){7-10}
 Method & $1$ & $2^{10}$ & $2^{13}$ & $2^{17}$ & $2^{20}$ & $5$ & $20$ & $50$ & $150$ \\
@@ -1110,8 +1110,8 @@ Random permutations & 114.69 & 70.67 & 66.08 & 60.84 & --- & 65.79 & 63.28 & ---
 \includegraphics[width=\linewidth]{figures/fig_budget.pdf}
 \caption{RE over the 70 Taillard instances against budget, measured in
 schedules constructed (a) and in seconds per instance (b). The two
-single-pass methods are points, drawn at their cost and extended as
-horizontal reference lines; the vertical lines in (b) mark the times of
+single-pass methods are horizontal reference lines, marked at their
+right end; the vertical lines in (b) mark the times of
 Table~\ref{tab:budget}. No curve is drawn beyond the budget at which it
 was measured.}
 \label{fig:budget}
