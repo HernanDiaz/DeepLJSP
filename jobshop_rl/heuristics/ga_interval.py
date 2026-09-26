@@ -124,9 +124,12 @@ def evoluciona(inst, presupuesto, rng, pop=250, torneo=3, p_cruce=0.9,
     return curva, mejor_cm
 
 
-def azar(inst, presupuesto, rng, puntos=None):
+def azar(inst, presupuesto, rng, puntos=None, limite_s=None):
     """Muestreo uniforme de permutaciones: el suelo contra el que se mide
-    cualquier busqueda, con el mismo decodificador."""
+    cualquier busqueda, con el mismo decodificador.
+
+    Con `limite_s` se para tambien al agotar ese tiempo, sin rellenar los
+    puntos no alcanzados, como en evoluciona."""
     puntos = sorted(puntos or [presupuesto])
     t0 = time.time()
     curva, mejor_cm = {}, None
@@ -136,6 +139,9 @@ def azar(inst, presupuesto, rng, puntos=None):
             mejor_cm = cm
         while puntos and k >= puntos[0]:
             curva[puntos.pop(0)] = (mejor_cm, time.time() - t0)
+        if limite_s is not None and time.time() - t0 >= limite_s:
+            curva[k] = (mejor_cm, time.time() - t0)
+            return curva, mejor_cm
     for p in puntos:
         curva[p] = (mejor_cm, time.time() - t0)
     return curva, mejor_cm

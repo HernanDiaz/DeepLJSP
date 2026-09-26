@@ -34,12 +34,12 @@ if hasattr(sys.stdout, "reconfigure"):
 SALIDA = "benchmarks/e6_presupuesto/tabla.json"
 METODOS = ["regla", "gt_mwkr", "regla_bon", "ga", "ga_sembrado", "azar"]
 PRESUPUESTOS = [1, 1024, 8192, 131072, 1048576]
-TIEMPOS = [5.0, 20.0, 50.0, 150.0, 700.0]
+TIEMPOS = [5.0, 20.0, 50.0, 150.0, 800.0]
 # los contrastes que el texto cita, en segundos
 CONTRASTES = [("regla", "ga", 20.0), ("regla", "ga", 50.0),
               ("regla_bon", "ga", 50.0), ("ga_sembrado", "ga", 20.0),
               ("regla_bon", "ga", 150.0), ("ga_sembrado", "regla_bon", 150.0),
-              ("regla_bon", "ga", 700.0), ("ga_sembrado", "regla_bon", 700.0)]
+              ("regla_bon", "ga", 800.0), ("ga_sembrado", "regla_bon", 800.0)]
 
 
 def carga_completa():

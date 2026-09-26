@@ -60,7 +60,10 @@ def curvas():
                           por_instancia_tiempo)
     d = carga_completa()
     insts = sorted(d["ga"])
-    rejilla = np.logspace(-2, 3, 90)
+    # la rejilla incluye los tiempos exactos de la tabla, para que la
+    # figura pase por los mismos valores que la tabla
+    rejilla = sorted(set(np.logspace(-2, np.log10(800), 90))
+                     | {1.0, 5.0, 20.0, 50.0, 150.0, 800.0})
     ev, rl = {}, {}
     for m, *_ in CURVAS + PUNTOS:
         ev[m] = {}
@@ -97,6 +100,12 @@ def main():
     ax = axes[0]
     ax.set_xscale("log")
     ax.set_xlim(0.6, 5 * max(max(ev[m]) for m, *_ in CURVAS))
+    # los presupuestos de la tabla, rotulados y marcados como en (b)
+    for b in tab["presupuestos"]:
+        ax.axvline(b, color="0.75", lw=0.6, ls="-", zorder=0)
+    ax.set_xticks(tab["presupuestos"])
+    ax.set_xticklabels(["1" if b == 1 else f"$2^{{{int(np.log2(b))}}}$"
+                        for b in tab["presupuestos"]])
     ax.set_xlabel("schedules constructed")
     ax.set_ylabel("RE (%)")
     ax.set_title("(a) budget in schedules", loc="left", fontsize=8, pad=3)
@@ -106,6 +115,8 @@ def main():
     ax.set_xlim(0.015, 4 * max(max(rl[m][0]) for m, *_ in CURVAS))
     for s in tab["tiempos"]:
         ax.axvline(s, color="0.75", lw=0.6, ls="-", zorder=0)
+    ax.set_xticks([0.1, 1] + tab["tiempos"])
+    ax.set_xticklabels([f"{s:g}" for s in [0.1, 1] + tab["tiempos"]])
     ax.set_xlabel("seconds per instance")
     ax.set_title("(b) budget in seconds", loc="left", fontsize=8, pad=3)
 

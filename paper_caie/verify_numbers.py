@@ -984,19 +984,23 @@ else:
           'e6 curvas')
     check_zr('mejor-de-N contra genetico a 150 s', f"{_c6['z']:.2f}",
              f"{_c6['rb']:.2f}", 'e6 curvas')
-    # el genetico empata con el mejor-de-N a 700 s
-    _c6 = _t6.contraste(_pt6[('regla_bon', 700.0)], _pt6[('ga', 700.0)])
-    assert _c6['p'] > 0.05, 'a 700 s el genetico ya no empata con el mejor-de-N'
-    _a6, _b6 = _pt6[('ga', 700.0)], _pt6[('regla_bon', 700.0)]
-    check('genetico y mejor-de-N a 700 s',
+    # el genetico cruza al mejor-de-N entre 700 y 800 s, y empata a 800
+    _c6 = _t6.contraste(_pt6[('regla_bon', 800.0)], _pt6[('ga', 800.0)])
+    assert _c6['p'] > 0.05, 'a 800 s el genetico ya no empata con el mejor-de-N'
+    _g7 = _t6.por_instancia_tiempo(_d6, 'ga', 700.0, _in6)
+    _b7 = _t6.por_instancia_tiempo(_d6, 'regla_bon', 700.0, _in6)
+    assert sum(_g7) > sum(_b7), 'el genetico ya cruza antes de 700 s'
+    _a6, _b6 = _pt6[('ga', 800.0)], _pt6[('regla_bon', 800.0)]
+    assert sum(_a6) < sum(_b6), 'el genetico no cruza antes de 800 s'
+    check('genetico y mejor-de-N a 800 s',
           f"${sum(_a6) / len(_a6):.2f}\\%$ against ${sum(_b6) / len(_b6):.2f}\\%$,"
           f" $z={_c6['z']:.2f}$, n.s.", 'e6 curvas')
-    # el sembrado pasa al mejor-de-N: donde, y cuanto a 700 s
-    _c6 = _t6.contraste(_pt6[('ga_sembrado', 700.0)], _pt6[('regla_bon', 700.0)])
-    assert _c6['p'] < 0.01 and _c6['d'] < 0
-    check('sembrado contra mejor-de-N a 700 s',
+    # el sembrado pasa al mejor-de-N: donde, y cuanto a 800 s
+    _c6 = _t6.contraste(_pt6[('ga_sembrado', 800.0)], _pt6[('regla_bon', 800.0)])
+    assert _c6['p'] < 0.001 and _c6['d'] < 0
+    check('sembrado contra mejor-de-N a 800 s',
           f"${abs(_c6['d']):.2f}$ points below it ($z={_c6['z']:.2f}$,"
-          f" $p={_c6['p']:.3f}$, $|r|={_c6['rb']:.2f}$)", 'e6 curvas')
+          f" $p<0.001$, $|r|={_c6['rb']:.2f}$)", 'e6 curvas')
     import numpy as _np6
     _cr6 = None
     for _s in _np6.logspace(0, _np6.log10(_t6.TIEMPOS[-1]), 120):
