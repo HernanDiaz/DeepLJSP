@@ -987,11 +987,17 @@ else:
     # el genetico cruza al mejor-de-N entre 700 y 800 s, y empata a 800
     _c6 = _t6.contraste(_pt6[('regla_bon', 800.0)], _pt6[('ga', 800.0)])
     assert _c6['p'] > 0.05, 'a 800 s el genetico ya no empata con el mejor-de-N'
-    _g7 = _t6.por_instancia_tiempo(_d6, 'ga', 700.0, _in6)
-    _b7 = _t6.por_instancia_tiempo(_d6, 'regla_bon', 700.0, _in6)
-    assert sum(_g7) > sum(_b7), 'el genetico ya cruza antes de 700 s'
     _a6, _b6 = _pt6[('ga', 800.0)], _pt6[('regla_bon', 800.0)]
     assert sum(_a6) < sum(_b6), 'el genetico no cruza antes de 800 s'
+    _crg = None
+    for _s in __import__('numpy').logspace(0, __import__('numpy').log10(_t6.TIEMPOS[-1]), 120):
+        _a = _t6.por_instancia_tiempo(_d6, 'ga', float(_s), _in6)
+        _b = _t6.por_instancia_tiempo(_d6, 'regla_bon', float(_s), _in6)
+        if _a and _b and sum(_a) < sum(_b):
+            _crg = float(_s)
+            break
+    check('donde el genetico alcanza al mejor-de-N',
+          f"cross only at about ${round(_crg, -2):.0f}$~s", 'e6 curvas')
     check('genetico y mejor-de-N a 800 s',
           f"${sum(_a6) / len(_a6):.2f}\\%$ against ${sum(_b6) / len(_b6):.2f}\\%$,"
           f" $z={_c6['z']:.2f}$, n.s.", 'e6 curvas')

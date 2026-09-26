@@ -84,6 +84,24 @@ def por_instancia_presupuesto(d, m, b, insts):
     return out
 
 
+def incumbente(puntos, t):
+    """El RE de la solucion que el metodo tiene en el segundo t: la del
+    ultimo punto anotado hasta t. NaN antes del primero y despues del
+    ultimo (la curva no se prolonga mas alla de lo medido).
+
+    No es el minimo de los RE anotados hasta t, que es lo que hace
+    e6_analiza.escalon: los metodos guardan la mejor solucion en el
+    orden lexicografico del articulo (extremo superior, luego inferior),
+    y una solucion lexicograficamente mejor puede tener un punto medio,
+    y por tanto un RE, mayor. El minimo tomaria una solucion que el
+    propio metodo ya descarto. El eje de schedules ya usaba la del
+    presupuesto exacto; el de segundos, ahora tambien."""
+    if not puntos or t > max(seg for _, _, seg in puntos):
+        return float("nan")
+    vistos = [(seg, p, re) for p, re, seg in puntos if seg <= t]
+    return max(vistos)[2] if vistos else float("nan")
+
+
 def por_instancia_tiempo(d, m, t, insts):
     """RE por instancia en el segundo t. La regla de una pasada no mejora
     despues de terminar: su valor vale para todo t posterior a su tiempo."""
@@ -95,7 +113,7 @@ def por_instancia_tiempo(d, m, t, insts):
                 return None
             out.append(re)
             continue
-        v = [escalon(d[m][i][s], t) for s in d[m][i]]
+        v = [incumbente(d[m][i][s], t) for s in d[m][i]]
         v = [x for x in v if not np.isnan(x)]
         if not v:
             return None
@@ -166,6 +184,16 @@ def main():
             cruce = float(s)
             break
     res["cruce_sembrado_bon_s"] = cruce
+    # y donde el genetico sin sembrar alcanza al mejor-de-N
+    cruce_ga = None
+    for s in np.logspace(0, np.log10(TIEMPOS[-1]), 120):
+        a = por_instancia_tiempo(d, "ga", float(s), insts)
+        b = por_instancia_tiempo(d, "regla_bon", float(s), insts)
+        if a and b and np.mean(a) < np.mean(b):
+            cruce_ga = float(s)
+            break
+    res["cruce_ga_bon_s"] = cruce_ga
+    print(f"  el genetico alcanza al mejor-de-N a los {cruce_ga} s")
     print(f"\n  el sembrado alcanza al mejor-de-N a los {cruce} s")
     print(f"\n  una pasada: {res['segundos_una_pasada']}")
     print(f"  corridas por instancia: {res['corridas']}")

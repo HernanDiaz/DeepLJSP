@@ -1119,10 +1119,10 @@ Method & $1$ & $2^{10}$ & $2^{13}$ & $2^{17}$ & $2^{20}$ & $5$ & $20$ & $50$ & $
 \midrule
 Evolved rule, one pass & 17.71 & --- & --- & --- & --- & 17.71 & 17.71 & 17.71 & 17.71 & 17.71 \\
 G\&T-MWKR, one pass & 29.52 & --- & --- & --- & --- & 29.52 & 29.52 & 29.52 & 29.52 & 29.52 \\
-Evolved rule, best-of-$N$ & 17.71 & 13.71 & 12.71 & --- & --- & 14.61 & 13.84 & 13.35 & 12.85 & 12.28 \\
+Evolved rule, best-of-$N$ & 17.71 & 13.71 & 12.71 & --- & --- & 14.70 & 13.88 & 13.40 & 12.96 & 12.34 \\
 Genetic algorithm & 112.09 & 66.60 & 45.19 & 15.84 & 12.53 & 43.12 & 25.31 & 17.28 & 14.68 & 12.21 \\
-Genetic algorithm, seeded & 17.71 & 17.71 & 16.52 & 13.35 & 11.68 & 16.07 & 14.62 & 13.57 & 12.75 & 11.57 \\
-Random permutations & 114.69 & 70.67 & 66.08 & 60.84 & 57.23 & 66.00 & 63.47 & 61.72 & 60.02 & --- \\
+Genetic algorithm, seeded & 17.71 & 17.71 & 16.52 & 13.35 & 11.68 & 16.08 & 14.63 & 13.59 & 12.76 & 11.58 \\
+Random permutations & 114.69 & 70.67 & 66.08 & 60.84 & 57.23 & 66.02 & 63.57 & 61.88 & 60.11 & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1145,24 +1145,25 @@ $7.6\times10^{4}$ schedules to match a single pass of the rule; in time
 it is still above the pass after $20$~s per instance (on $49$
 of the 70 instances, $z=-4.37$, $p<0.001$, $|r|=0.60$)
 and draws level at about $50$~s, some fifteen hundred times what the pass
-takes ($z=0.80$, n.s.). Reaching the sampled rule takes it far longer:
-at $150$~s the sampled rule is still $1.83$ points ahead
-($z=-3.81$, $|r|=0.52$), and the two curves cross only between $700$ and $800$~s and are
-indistinguishable at $800$~s ($12.21\%$ against
-$12.28\%$, $z=0.65$, n.s.); counted in
-schedules, the genetic algorithm never catches up with it. The advantage
-of the rule is therefore not that it optimizes better, but that it is
-effective at budgets too small for search to be so. The second is that
-the rule is a good starting point for search. Seeded with the rule's
-permutation, the genetic algorithm is $10.69$ points below its
-unseeded version at $20$~s ($z=-7.13$, $|r|=0.98$), and it
-is the only search method that overtakes the sampled rule: it draws level
-at about $95$~s and at $800$~s is
-$0.70$ points below it ($z=-3.52$, $p<0.001$,
-$|r|=0.48$). An evolved dispatching rule
-is thus the cheapest way to give a per-instance metaheuristic a good first
-incumbent, the role constructive heuristics commonly play in the
-initialization of population methods~\citep{Kazimipour2014}.
+takes ($z=0.80$, n.s.). Reaching the sampled rule takes it far
+longer: at $150$~s the sampled rule is still $1.73$ points
+ahead ($z=-3.61$, $|r|=0.50$), and the two curves
+cross only at about $700$~s and are indistinguishable at
+$800$~s ($12.21\%$ against $12.34\%$,
+$z=0.79$, n.s.); counted in schedules, the genetic algorithm
+never catches up with it. The advantage of the rule is therefore not
+that it optimizes better, but that it is effective at budgets too small
+for search to be so. The second is that the rule is a good starting
+point for search. Seeded with the rule's permutation, the genetic
+algorithm is $10.69$ points below its unseeded version at
+$20$~s ($z=-7.13$, $|r|=0.98$), and it is the only search
+method that overtakes the sampled rule: it draws level at about
+$89$~s and at $800$~s is $0.75$
+points below it ($z=-3.81$, $p<0.001$, $|r|=0.52$).
+An evolved dispatching rule is thus the cheapest way to give a
+per-instance metaheuristic a good first incumbent, the role
+constructive heuristics commonly play in the initialization of
+population methods~\citep{Kazimipour2014}.
 
 \section{Analysis}
 \label{sec:analysis}
@@ -1914,8 +1915,8 @@ question of budget, and it has a measurable answer. Our Python
 implementation of the genetic algorithm published for this problem,
 which shares decoder, evaluator and language with the rule, needs
 about $7.6\times10^{4}$ schedule constructions, or about $50$~s per
-instance, to match a single pass of the evolved rule, and between
-$700$ and $800$~s to draw level with the rule's sampled variant. The
+instance, to match a single pass of the evolved rule, and about
+$700$~s to draw level with the rule's sampled variant. The
 remaining distance to the best published ABC
 variants is not a matter of budget at all --- a plain population method levels off well short of it --- but of the neighborhood structures and local search those methods incorporate. What this paper contributes is therefore a
 high-quality, interpretable, fast-decision baseline for the IJSP, not a
