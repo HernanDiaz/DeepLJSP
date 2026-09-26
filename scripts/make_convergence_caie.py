@@ -38,7 +38,8 @@ TOPE = 30
 AZUL, AMBAR, GRIS = "#1f5fa8", "#d68910", "#5d6d7e"
 plt.rcParams.update({
     "font.family": "sans-serif", "font.sans-serif": ["Arial"],
-    "font.size": 8.0, "legend.fontsize": 7.0, "pdf.fonttype": 42,
+    "font.size": 9.0, "axes.labelsize": 9.5, "legend.fontsize": 8.5,
+    "pdf.fonttype": 42,
     "figure.facecolor": "white",
 })
 
@@ -59,7 +60,7 @@ def main():
     def matriz(clave):
         return np.array([[M[s][str(g)][clave] for g in gens] for s in semillas])
 
-    fig, axes = plt.subplots(1, 3, figsize=(5.0, 1.95))
+    fig, axes = plt.subplots(1, 3, figsize=(5.0, 2.35))
 
     # (a) calidad: entrenamiento desde la generacion 0, y fuera de el
     ax = axes[0]
@@ -71,32 +72,33 @@ def main():
         banda(ax, gens, matriz("val"), AMBAR, "--", "validation")
         banda(ax, gens, matriz("pru"), AZUL, ":", "test")
     ax.set_xlim(0, 50)
-    ax.set_ylabel("RE of the best rule (%)")
+    ax.set_ylim(13, 31)
+    ax.set_ylabel("RE (%)")
     ax.legend(frameon=False, loc="upper right", handlelength=1.8)
-    ax.set_title("(a) Quality", loc="left", fontsize=8, pad=3)
+    ax.set_title("(a) Quality", loc="left", fontsize=9.5, pad=3)
 
     # (b) tamano del arbol
     ax = axes[1]
     banda(ax, gens, matriz("size"), GRIS, "-", "median")
     ax.axhline(TOPE, color="black", lw=0.7, ls=(0, (4, 3)))
-    ax.text(1, TOPE + 0.6, "size cap", ha="left", va="bottom", fontsize=7)
+    ax.text(1, TOPE + 0.6, "size cap", ha="left", va="bottom", fontsize=8.5)
     ax.set_xlim(0, 50)
     ax.set_ylim(0, TOPE + 5)
     ax.set_ylabel("Nodes")
-    ax.set_title("(b) Rule size", loc="left", fontsize=8, pad=3)
+    ax.set_title("(b) Rule size", loc="left", fontsize=9.5, pad=3)
 
     # (c) terminales de anchura
     ax = axes[2]
     banda(ax, gens, 100 * matriz("ancho"), AMBAR, "-", "mean", centro="media")
     ax.set_xlim(0, 50)
     ax.set_ylim(0, None)
-    ax.set_ylabel("Width terminals (% of leaves)")
-    ax.set_title("(c) Interval widths", loc="left", fontsize=8, pad=3)
+    ax.set_ylabel("Width terminals (%)")
+    ax.set_title("(c) Interval widths", loc="left", fontsize=9.5, pad=3)
 
     for ax in axes:
         ax.set_xlabel("Generation")
         ax.spines[["top", "right"]].set_visible(False)
-    fig.tight_layout(pad=0.3, w_pad=0.8)
+    fig.tight_layout(pad=0.6, w_pad=1.0)
     fig.savefig(SALIDA)
     plt.close(fig)
     print(f"escrito {SALIDA} ({'con' if evaluado else 'sin'} validacion y prueba)")
