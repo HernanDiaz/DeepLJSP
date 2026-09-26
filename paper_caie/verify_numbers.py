@@ -430,6 +430,36 @@ check("cuota de terminales de anchura",
 check("reglas con algun terminal de anchura",
       f"appear in ${sum(v[3] > 0 for v in _an.values())}$ of the $30$", "reglas")
 
+# ---- la mejor regla de cada generacion (6.1, figura 2) -----------------
+_evm = os.path.join(REPO, "benchmarks/evolucion_mejores.json")
+if os.path.exists(_evm):
+    import numpy as _np
+    _EM = _json.load(open(_evm, encoding="utf-8"))["semillas"]
+    print("\n== la mejor regla de cada generacion ==")
+    assert len(_EM) == 30
+
+    def _med(g, k):
+        return float(_np.median([_EM[s][str(g)][k] for s in _EM]))
+    # el RE de entrenamiento recalculado es el del log
+    assert max(abs(f["ent"] - f["re_log"]) for s in _EM.values()
+               for f in s.values()) < 0.01
+    check("entrenamiento, generaciones 10 y 50",
+          f"falls from ${_med(10, 'ent'):.2f}$ to ${_med(50, 'ent'):.2f}$",
+          "evolucion_mejores")
+    check("prueba, generaciones 10 y 50",
+          f"falls only from ${_med(10, 'pru'):.2f}$ to ${_med(50, 'pru'):.2f}$",
+          "evolucion_mejores")
+    check("validacion, generaciones 10 y 50",
+          f"from ${_med(10, 'val'):.2f}$ to ${_med(50, 'val'):.2f}$:",
+          "evolucion_mejores")
+    check("tamano mediano al final",
+          f"median of ${_med(50, 'size'):.0f}$ nodes", "evolucion_mejores")
+    _an50 = 100 * _np.mean([_EM[s]["50"]["ancho"] for s in _EM])
+    assert 15 < _an50 < 25, "los terminales de anchura ya no son un quinto"
+    # el hueco que el texto afirma: entrenamiento baja mucho mas que fuera
+    assert (_med(10, "ent") - _med(50, "ent")) > 3 * (
+        _med(10, "pru") - _med(50, "pru"))
+
 # ---- apendice ----------------------------------------------------------
 print("\n== apendice ==")
 blk = TEX[TEX.index("\\label{tab:perinstance}"):]
@@ -950,40 +980,39 @@ else:
     _c6 = _t6.contraste(_pt6[('regla_bon', 150.0)], _pt6[('ga', 150.0)])
     assert _c6['p'] < 0.001
     check('mejor-de-N contra genetico a 150 s',
-          f"still ${abs(_c6['d']):.2f}$ points below it ($z={_c6['z']:.2f}$",
+          f"still ${abs(_c6['d']):.2f}$ points ahead ($z={_c6['z']:.2f}$",
           'e6 curvas')
     check_zr('mejor-de-N contra genetico a 150 s', f"{_c6['z']:.2f}",
              f"{_c6['rb']:.2f}", 'e6 curvas')
-    # el sembrado alcanza al mejor-de-N: cruce y empate a 150 s
-    _c6 = _t6.contraste(_pt6[('ga_sembrado', 150.0)], _pt6[('regla_bon', 150.0)])
-    assert _c6['p'] > 0.05
-    _a6 = _pt6[('ga_sembrado', 150.0)]
-    _b6 = _pt6[('regla_bon', 150.0)]
-    check('sembrado y mejor-de-N a 150 s',
+    # el genetico empata con el mejor-de-N a 700 s
+    _c6 = _t6.contraste(_pt6[('regla_bon', 700.0)], _pt6[('ga', 700.0)])
+    assert _c6['p'] > 0.05, 'a 700 s el genetico ya no empata con el mejor-de-N'
+    _a6, _b6 = _pt6[('ga', 700.0)], _pt6[('regla_bon', 700.0)]
+    check('genetico y mejor-de-N a 700 s',
           f"${sum(_a6) / len(_a6):.2f}\\%$ against ${sum(_b6) / len(_b6):.2f}\\%$,"
           f" $z={_c6['z']:.2f}$, n.s.", 'e6 curvas')
+    # el sembrado pasa al mejor-de-N: donde, y cuanto a 700 s
+    _c6 = _t6.contraste(_pt6[('ga_sembrado', 700.0)], _pt6[('regla_bon', 700.0)])
+    assert _c6['p'] < 0.01 and _c6['d'] < 0
+    check('sembrado contra mejor-de-N a 700 s',
+          f"${abs(_c6['d']):.2f}$ points below it ($z={_c6['z']:.2f}$,"
+          f" $p={_c6['p']:.3f}$, $|r|={_c6['rb']:.2f}$)", 'e6 curvas')
     import numpy as _np6
     _cr6 = None
-    for _s in _np6.logspace(0, _np6.log10(150.0), 120):
+    for _s in _np6.logspace(0, _np6.log10(_t6.TIEMPOS[-1]), 120):
         _a = _t6.por_instancia_tiempo(_d6, 'ga_sembrado', float(_s), _in6)
         _b = _t6.por_instancia_tiempo(_d6, 'regla_bon', float(_s), _in6)
         if _a and _b and sum(_a) < sum(_b):
             _cr6 = float(_s)
             break
     check('donde el sembrado alcanza al mejor-de-N',
-          f"draw level at about ${_cr6:.0f}$~s", 'e6 curvas')
-    # el genetico no alcanza al mejor-de-N en ningun presupuesto comun:
-    # en schedules, hasta 2^13; en segundos, en una rejilla fina hasta
-    # donde el mejor-de-N fue medido en las 70
+          f"draws level at about ${_cr6:.0f}$~s", 'e6 curvas')
+    # en schedules el genetico no alcanza al mejor-de-N en ningun
+    # presupuesto comun (hasta 2^13), que es lo que el texto afirma
     for _k in range(14):
         _x = _t6.por_instancia_presupuesto(_d6, 'regla_bon', 2 ** _k, _in6)
         _y = _t6.por_instancia_presupuesto(_d6, 'ga', 2 ** _k, _in6)
         assert sum(_x) < sum(_y), f'el genetico alcanza al mejor-de-N en 2^{_k}'
-    for _s in [float(_v) for _v in __import__('numpy').logspace(-1, 3, 80)]:
-        _x = _t6.por_instancia_tiempo(_d6, 'regla_bon', _s, _in6)
-        _y = _t6.por_instancia_tiempo(_d6, 'ga', _s, _in6)
-        if _x and _y:
-            assert sum(_x) < sum(_y), f'el genetico alcanza al mejor-de-N a {_s:.1f} s'
     # la siembra: el final del sembrado, y lo que tarda el de inicio al azar
     _gac = {2 ** _k: sum(_v) / len(_v) for _k in range(21)
             for _v in [_t6.por_instancia_presupuesto(_d6, 'ga', 2 ** _k, _in6)]}

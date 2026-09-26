@@ -176,7 +176,8 @@ def main():
     # (e6_extension2.py) el sembrado y el azar a 2^20 y el mejor-de-N a
     # 160 s donde la 1 no llego
     for patron, destino in (("curva_ext_carril*.csv", "curves_extension.csv"),
-                            ("curva_ext2_carril*.csv", "curves_extension2.csv")):
+                            ("curva_ext2_carril*.csv", "curves_extension2.csv"),
+                            ("curva_ext3_carril*.csv", "curves_extension3.csv")):
         ext, cab_ext = [], None
         for f in sorted(glob.glob(f"benchmarks/e6_presupuesto/{patron}")):
             with open(f, encoding="utf-8") as h:
@@ -192,6 +193,11 @@ def main():
             w.writerow(cab_ext)
             w.writerows(ext)
         assert len({r[2] for r in ext}) == 70, f"{destino} no cubre las 70"
+
+    # la mejor regla de cada generacion, con su RE en las tres particiones
+    # (scripts/evolucion_mejores.py): la figura de la evolucion
+    copia("benchmarks/evolucion_mejores.json",
+          os.path.join(R, "evolution_best_rules.json"))
 
     # los tiempos del articulo, todos del simulador rapido
     copia("benchmarks/tiempos_fast.json", os.path.join(R, "timing.json"))

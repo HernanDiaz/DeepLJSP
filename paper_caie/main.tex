@@ -813,7 +813,21 @@ times obtained on other hardware or in other languages.
 \subsection{Evolution behavior and seed stability}
 Over 30 independent evolutions, training $\RE$ converges to
 $14.9 \pm 1.5$ (range $12.4$--$19.7$), with most of the improvement
-realized by generation $25$--$30$ (Figure~\ref{fig:convergence}).
+realized by generation $25$--$30$ (Figure~\ref{fig:convergence}a).
+The same panel evaluates the best rule of each generation on the
+instances the fitness never sees, and there the improvement is
+concentrated in the first ten generations. From generation $10$ to $50$
+the median training $\RE$ falls from $17.09$ to $14.57$,
+while that on the $60$ test instances falls only from $19.32$ to
+$18.71$ and that on the validation set hardly moves, from
+$19.85$ to $19.69$: the later generations specialize the
+rule to the four training instances more than they improve it
+elsewhere. Whether a larger training set narrows that gap is examined in
+Section~\ref{sec:trainset}. Over the same generations the best rules
+grow to a median of $27$ nodes, just below the cap of $30$
+(Figure~\ref{fig:convergence}b), and interval-width terminals make up
+about a fifth of their leaves throughout
+(Figure~\ref{fig:convergence}c).
 Figure~\ref{fig:besttree}
 shows the featured rule, obtained with seed~1: $26$ nodes
 over $12$ leaves. Every terminal of the tree is non-negative by
@@ -832,8 +846,11 @@ the rule takes on the benchmark ($1.29$ million candidate evaluations).
 \begin{figure}[t]
 \centering
 \includegraphics[width=.8\linewidth]{figures/fig_convergence.pdf}
-\caption{Best training RE per generation over the 30 independent
-evolutions: median, interquartile range and range.}
+\caption{The best rule of each generation over the 30 independent
+evolutions: (a) its RE on the training, validation and test instances,
+(b) its size in nodes, and (c) the share of interval-width terminals
+among its leaves. Lines are medians, means in (c); shaded bands are
+interquartile ranges.}
 \label{fig:convergence}
 \end{figure}
 
@@ -1078,8 +1095,10 @@ measured in schedules constructed, which does not depend on the
 implementation, and in seconds per instance, which also charges each
 method for what a construction costs it: one pass of the rule costs as
 much as $36$ to $134$ decodings of the genetic algorithm. The search
-methods run to $2^{20}$ schedules per instance, and the sampled rule to
-$2^{13}$ samples or $160$~s, whichever is reached later.
+methods run to at least $2^{20}$ schedules per instance and the sampled
+rule to at least $2^{13}$ samples; for the genetic algorithm, its seeded
+version and the sampled rule, one of the two runs per instance continues
+to $800$~s, so beyond about $180$~s their curves rest on that run.
 Table~\ref{tab:budget} gives the error at fixed budgets and
 Figure~\ref{fig:budget} the complete curves.
 
@@ -1090,20 +1109,20 @@ measured in schedules constructed and in seconds per instance. A dash
 marks a budget the method does not reach; a single pass is complete
 after $0.03$~s and keeps its value at any later time.}
 \label{tab:budget}
-\setlength{\tabcolsep}{2.5pt}
-\begin{tabular}{lccccc|cccc}
+\setlength{\tabcolsep}{1.8pt}
+\begin{tabular}{lccccc|ccccc}
 \toprule
 & \multicolumn{5}{c|}{Schedules constructed} &
-\multicolumn{4}{c}{Seconds per instance} \\
-\cmidrule(lr){2-6}\cmidrule(l){7-10}
-Method & $1$ & $2^{10}$ & $2^{13}$ & $2^{17}$ & $2^{20}$ & $5$ & $20$ & $50$ & $150$ \\
+\multicolumn{5}{c}{Seconds per instance} \\
+\cmidrule(lr){2-6}\cmidrule(l){7-11}
+Method & $1$ & $2^{10}$ & $2^{13}$ & $2^{17}$ & $2^{20}$ & $5$ & $20$ & $50$ & $150$ & $700$ \\
 \midrule
-Evolved rule, one pass & 17.71 & --- & --- & --- & --- & 17.71 & 17.71 & 17.71 & 17.71 \\
-G\&T-MWKR, one pass & 29.52 & --- & --- & --- & --- & 29.52 & 29.52 & 29.52 & 29.52 \\
-Evolved rule, best-of-$N$ & 17.71 & 13.71 & 12.71 & --- & --- & 14.62 & 13.83 & 13.35 & 12.85 \\
-Genetic algorithm & 112.09 & 66.60 & 45.19 & 15.84 & 12.53 & 42.50 & 24.79 & 17.70 & 14.68 \\
-Genetic algorithm, seeded & 17.71 & 17.71 & 16.52 & 13.35 & 11.68 & 16.07 & 14.63 & 13.53 & 12.70 \\
-Random permutations & 114.69 & 70.67 & 66.08 & 60.84 & 57.23 & 66.00 & 63.47 & 61.72 & 60.02 \\
+Evolved rule, one pass & 17.71 & --- & --- & --- & --- & 17.71 & 17.71 & 17.71 & 17.71 & 17.71 \\
+G\&T-MWKR, one pass & 29.52 & --- & --- & --- & --- & 29.52 & 29.52 & 29.52 & 29.52 & 29.52 \\
+Evolved rule, best-of-$N$ & 17.71 & 13.71 & 12.71 & --- & --- & 14.61 & 13.84 & 13.35 & 12.85 & 12.28 \\
+Genetic algorithm & 112.09 & 66.60 & 45.19 & 15.84 & 12.53 & 43.12 & 25.31 & 17.28 & 14.68 & 12.32 \\
+Genetic algorithm, seeded & 17.71 & 17.71 & 16.52 & 13.35 & 11.68 & 16.07 & 14.62 & 13.57 & 12.75 & 11.70 \\
+Random permutations & 114.69 & 70.67 & 66.08 & 60.84 & 57.23 & 66.00 & 63.47 & 61.72 & 60.02 & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1123,23 +1142,25 @@ was measured.}
 Two results stand out. The first is how much budget per-instance search
 needs to reach the rule. The genetic algorithm needs about
 $7.6\times10^{4}$ schedules to match a single pass of the rule; in time
-it is still above the pass after $20$~s per instance (on $44$
-of the 70 instances, $z=-3.95$, $p<0.001$, $|r|=0.54$)
+it is still above the pass after $20$~s per instance (on $49$
+of the 70 instances, $z=-4.37$, $p<0.001$, $|r|=0.60$)
 and draws level at about $50$~s, some fifteen hundred times what the pass
-takes ($z=0.56$, n.s.). It does not match the sampled rule at
-any budget where both were measured: at $150$~s the sampled rule is
-still $1.83$ points below it ($z=-3.84$,
-$|r|=0.53$). The advantage of the rule is therefore not that
-it optimizes better, but that it is effective at budgets too small for
-search to be so. The second is that the rule is a good starting point
-for search. Seeded with the rule's permutation, the genetic algorithm is
-$10.17$ points below its unseeded version at $20$~s
-($z=-6.99$, $|r|=0.96$), and it is the only search
-method that catches up with the sampled rule: the two draw level at about
-$91$~s and are indistinguishable at $150$~s
-($12.70\%$ against $12.85\%$,
-$z=-1.00$, n.s.). An evolved dispatching rule is thus the
-cheapest way to give a per-instance metaheuristic a good first
+takes ($z=0.80$, n.s.). Reaching the sampled rule takes it far longer:
+at $150$~s the sampled rule is still $1.83$ points ahead
+($z=-3.81$, $|r|=0.52$), and the two draw level only
+at about $700$~s ($12.32\%$ against
+$12.28\%$, $z=-0.27$, n.s.); counted in
+schedules, the genetic algorithm never catches up with it. The advantage
+of the rule is therefore not that it optimizes better, but that it is
+effective at budgets too small for search to be so. The second is that
+the rule is a good starting point for search. Seeded with the rule's
+permutation, the genetic algorithm is $10.69$ points below its
+unseeded version at $20$~s ($z=-7.13$, $|r|=0.98$), and it
+is the only search method that overtakes the sampled rule: it draws level
+at about $96$~s and at $700$~s is
+$0.59$ points below it ($z=-2.98$,
+$p=0.003$, $|r|=0.41$). An evolved dispatching rule
+is thus the cheapest way to give a per-instance metaheuristic a good first
 incumbent, the role constructive heuristics commonly play in the
 initialization of population methods~\citep{Kazimipour2014}.
 
@@ -1893,8 +1914,8 @@ question of budget, and it has a measurable answer. Our Python
 implementation of the genetic algorithm published for this problem,
 which shares decoder, evaluator and language with the rule, needs
 about $7.6\times10^{4}$ schedule constructions, or about $50$~s per
-instance, to match a single pass of the evolved rule, and it does not
-match the sampled rule at any budget where both were measured. The
+instance, to match a single pass of the evolved rule, and about
+$700$~s to draw level with the rule's sampled variant. The
 remaining distance to the best published ABC
 variants is not a matter of budget at all --- a plain population method levels off well short of it --- but of the neighborhood structures and local search those methods incorporate. What this paper contributes is therefore a
 high-quality, interpretable, fast-decision baseline for the IJSP, not a

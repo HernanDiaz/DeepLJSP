@@ -133,13 +133,14 @@ python -m ijsp_gp.asymmetric --source ../instances/interval_taillard \
 | Article element                                   | File in results/ |
 |---------------------------------------------------|------------------|
 | Main-arm per-instance RE                          | summary.csv |
+| Evolution of the best rule (training, validation, test RE; size; widths) | evolution_best_rules.json |
 | Selection of the featured rule on the development set | featured_rule_selection.json |
 | Constructive baselines (RE column)                | all_baselines.csv |
 | Timing (all times in the article)                 | timing.json |
 | Generalization to the classical instances         | classic12_tuned.csv |
 | Genetic algorithm against published results       | budget/ga_calibration_classical.json |
 | Configuration of the genetic algorithm            | budget/ga_calibration_training.json |
-| Quality against budget (70 instances)             | budget/curves.csv, budget/curves_extension.csv, budget/curves_extension2.csv, budget/summary.json, budget/table.json |
+| Quality against budget (70 instances)             | budget/curves.csv, budget/curves_extension.csv, budget/curves_extension2.csv, budget/curves_extension3.csv, budget/summary.json, budget/table.json |
 | Terminal usage and rule sizes                     | rule_anatomy.csv |
 | Coefficient sensitivity sweep                     | coefficient_sweep.csv |
 | Worked example and census                         | worked_example.json |
@@ -169,7 +170,9 @@ variant), `gt_mwkr`, `azar` (random permutations), `ga` and `ga_sembrado`
 values of `curves.csv` at every common budget;
 `budget/curves_extension2.csv` does the same for `ga_sembrado` and
 `azar` to 2^20 and for `regla_bon` to 160 s where the first extension
-stopped earlier. The article uses the longest curve of each method.
+stopped earlier; `budget/curves_extension3.csv` runs `ga`, `ga_sembrado`
+and `regla_bon` with seed 1 to 800 s per instance, whatever the number
+of schedules. The article uses the longest curve of each method.
 `timing.json` holds the times of every method on the fast simulator,
 measured in six simultaneous copies; `timing_tuned.csv` and
 `timing_gp_arm.csv` are the version 1.0 times, measured on the slower

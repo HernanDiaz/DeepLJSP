@@ -47,6 +47,8 @@ PUNTOS = [("regla", AZUL, "D", "evolved rule, one pass"),
           ("gt_mwkr", "0.35", "s", "G&T-MWKR, one pass")]
 plt.rcParams.update({"font.size": 8.0, "figure.facecolor": "white",
                      "font.family": "sans-serif", "font.sans-serif": ["Arial"],
+                     "mathtext.fontset": "custom", "mathtext.rm": "Arial",
+                     "mathtext.it": "Arial:italic", "mathtext.bf": "Arial:bold",
                      "pdf.fonttype": 42})
 
 
