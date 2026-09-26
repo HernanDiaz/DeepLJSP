@@ -60,7 +60,7 @@ def main():
     def matriz(clave):
         return np.array([[M[s][str(g)][clave] for g in gens] for s in semillas])
 
-    fig, axes = plt.subplots(1, 3, figsize=(5.0, 2.35))
+    fig, axes = plt.subplots(1, 3, figsize=(5.0, 1.95))
 
     # (a) calidad: entrenamiento desde la generacion 0, y fuera de el
     ax = axes[0]
@@ -72,9 +72,10 @@ def main():
         banda(ax, gens, matriz("val"), AMBAR, "--", "validation")
         banda(ax, gens, matriz("pru"), AZUL, ":", "test")
     ax.set_xlim(0, 50)
-    ax.set_ylim(13, 31)
+    ax.set_ylim(13, 33)
     ax.set_ylabel("RE (%)")
-    ax.legend(frameon=False, loc="upper right", handlelength=1.8)
+    ax.legend(frameon=False, loc="upper right", handlelength=1.8,
+              borderaxespad=0.2, labelspacing=0.3)
     ax.set_title("(a) Quality", loc="left", fontsize=9.5, pad=3)
 
     # (b) tamano del arbol
