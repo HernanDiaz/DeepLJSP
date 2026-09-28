@@ -170,14 +170,14 @@ def despachador(arbol):
 
 
 def mejor_de_n(inst, desp, semilla, limite_s, eps=0.1, estado=None,
-               con_estado=False):
+               con_estado=False, puntos=None):
     """El mejor-de-N de una regla compilada, parado por tiempo.
 
     La misma logica que scripts/e6_extension2.bon_por_tiempo: la muestra
     0 es la pasada determinista, las demas despachan con probabilidad
     eps un elegible al azar, y la curva anota el mejor makespan
-    (criterio lexicografico) en cada potencia de dos y en la ultima
-    muestra, con los segundos transcurridos.
+    (criterio lexicografico) en cada potencia de dos, o en los `puntos`
+    que se pidan, y en la ultima muestra, con los segundos transcurridos.
 
     Con con_estado=True devuelve tambien el estado al pararse; pasandolo
     como `estado` con un limite_s mayor (contado desde el principio de
@@ -186,6 +186,7 @@ def mejor_de_n(inst, desp, semilla, limite_s, eps=0.1, estado=None,
     import time
     from jobshop_rl.heuristics.fast_sim import mejor
     rng = random.Random(semilla)
+    anota = set(puntos) if puntos is not None else None
     if estado is None:
         t0 = time.time()
         mejor_cm = desp(inst)                      # muestra 0: determinista
@@ -200,7 +201,7 @@ def mejor_de_n(inst, desp, semilla, limite_s, eps=0.1, estado=None,
         k += 1
         if mejor(cm, mejor_cm):
             mejor_cm = cm
-        if k & (k - 1) == 0:
+        if (k & (k - 1) == 0) if anota is None else (k in anota):
             curva[k] = (mejor_cm, time.time() - t0)
     fin = time.time() - t0
     est = None

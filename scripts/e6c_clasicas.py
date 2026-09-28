@@ -47,7 +47,9 @@ SALIDA = os.path.join(DIR, "curvas.csv")
 INSTANCIAS = "zenodo_caie/instances/interval_classical"
 LIMITE = 900.0
 CORRIDAS = 30
-PUNTOS = [2 ** k for k in range(0, 31)]
+# la mejor solucion se anota en cada 2^(k/4) schedules, cuatro puntos
+# por duplicacion, para que el eje de segundos no vaya a escalones largos
+PUNTOS = sorted({round(2 ** (k / 4)) for k in range(0, 121)})
 PROCESOS = 6
 
 
@@ -76,7 +78,7 @@ def corre(trabajo):
         cm = desp(inst) if metodo == "regla" else despacha(inst, gt("mwkr"))
         c = {1: (cm, time.time() - t0)}
     elif metodo == "regla_bon":
-        c = mejor_de_n(inst, desp, semilla, LIMITE, eps=EPS)
+        c = mejor_de_n(inst, desp, semilla, LIMITE, eps=EPS, puntos=PUNTOS)
     elif metodo == "azar":
         c, _ = azar(inst, PUNTOS[-1], random.Random(semilla), list(PUNTOS),
                     limite_s=LIMITE)

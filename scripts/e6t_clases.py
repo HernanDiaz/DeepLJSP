@@ -57,7 +57,9 @@ SALIDA = os.path.join(DIR, "curvas.csv")
 ESTADOS = os.path.join(DIR, "estados")
 HORIZONTE = {"15_15": 900.0, "30_15": 1800.0, "50_15": 3600.0}
 SEMILLAS = (1, 2, 3)
-PUNTOS = [2 ** k for k in range(0, 31)]
+# la mejor solucion se anota en cada 2^(k/4) schedules, cuatro puntos
+# por duplicacion, para que el eje de segundos no vaya a escalones largos
+PUNTOS = sorted({round(2 ** (k / 4)) for k in range(0, 121)})
 PROCESOS = 6
 UNA_PASADA = ("regla", "gt_mwkr")
 
@@ -101,7 +103,7 @@ def corre(trabajo):
     else:
         previo = lee_estado(pid, metodo, semilla)
         if metodo == "regla_bon":
-            c, est = mejor_de_n(inst, desp, semilla, limite, eps=EPS,
+            c, est = mejor_de_n(inst, desp, semilla, limite, eps=EPS, puntos=PUNTOS,
                                 estado=previo, con_estado=True)
         elif metodo == "azar":
             c, _, est = azar(inst, PUNTOS[-1], random.Random(semilla),
