@@ -47,7 +47,7 @@ def muta(perm, rng):
 
 def evoluciona(inst, presupuesto, rng, pop=250, torneo=3, p_cruce=0.9,
                p_muta=0.2, elite=2, siembra=None, puntos=None,
-               limite_s=None):
+               limite_s=None, estado=None, con_estado=False):
     # pop=250 es la poblacion del genetico publicado para el IJSP, y es
     # ademas la mejor de las cuatro configuraciones que se probaron a
     # presupuesto alto (scripts/e6_calibra_ga.py): a 200.000
@@ -61,17 +61,31 @@ def evoluciona(inst, presupuesto, rng, pop=250, torneo=3, p_cruce=0.9,
     Con limite_s se para tambien al agotar ese tiempo, y entonces no se
     rellenan los puntos no alcanzados: la curva acaba en el ultimo que
     se midio, mas un punto final en las evaluaciones hechas.
-    """
-    puntos = sorted(puntos or [presupuesto])
-    t0 = time.time()
-    curva, usadas = {}, 0
-    poblacion = []
-    if siembra is not None:
-        poblacion.append(list(siembra))
-    while len(poblacion) < pop:
-        poblacion.append(aleatoria(inst, rng))
 
-    mejor_cm = None
+    Con con_estado=True devuelve ademas el estado de la corrida al
+    pararse (poblacion, generacion a medias, generador, mejor, reloj).
+    Pasandolo como `estado`, con un rng cualquiera (se le restaura el
+    estado guardado), la corrida sigue exactamente donde se paro: con un
+    presupuesto o un limite_s mayores, que cuentan desde el principio de
+    la corrida, da la misma curva que una corrida sin interrumpir.
+    """
+    if estado is None:
+        puntos = sorted(puntos or [presupuesto])
+        curva, usadas, mejor_cm, previo = {}, 0, None, 0.0
+        poblacion = []
+        if siembra is not None:
+            poblacion.append(list(siembra))
+        while len(poblacion) < pop:
+            poblacion.append(aleatoria(inst, rng))
+        pendientes, puntuada, nueva = poblacion, [], None
+    else:
+        rng.setstate(estado["rng"])
+        puntos, curva = list(estado["puntos"]), dict(estado["curva"])
+        usadas, mejor_cm = estado["usadas"], estado["mejor_cm"]
+        previo = estado["segundos"]
+        pendientes, puntuada = estado["pendientes"], estado["puntuada"]
+        nueva = estado["nueva"]
+    t0 = time.time() - previo
 
     def agotado():
         return usadas >= presupuesto or (
@@ -85,17 +99,23 @@ def evoluciona(inst, presupuesto, rng, pop=250, torneo=3, p_cruce=0.9,
         while puntos and usadas >= puntos[0]:
             curva[puntos.pop(0)] = (mejor_cm, time.time() - t0)
 
-    puntuada = []
-    for ind in poblacion:
+    # la poblacion inicial, entera generada antes de evaluar nada
+    parado = False
+    while pendientes:
+        ind = pendientes.pop(0)
         cm = decodifica(inst, ind)
         anota(cm)
         puntuada.append((cm, ind))
         if agotado():
+            parado = True
             break
 
-    while not agotado():
-        puntuada.sort(key=lambda x: (x[0][1], x[0][0]))
-        nueva = [p for p in puntuada[:elite]]
+    while not parado:
+        if nueva is None:               # empieza una generacion
+            if agotado():
+                break
+            puntuada.sort(key=lambda x: (x[0][1], x[0][0]))
+            nueva = puntuada[:elite]
         while len(nueva) < pop and not agotado():
             a = min((puntuada[rng.randrange(len(puntuada))]
                      for _ in range(torneo)), key=lambda x: (x[0][1], x[0][0]))
@@ -108,34 +128,61 @@ def evoluciona(inst, presupuesto, rng, pop=250, torneo=3, p_cruce=0.9,
             cm = decodifica(inst, hijo)
             anota(cm)
             nueva.append((cm, hijo))
-        puntuada = nueva
+        if len(nueva) < pop:            # parado a mitad de generacion
+            break
+        puntuada, nueva = nueva, None
 
+    fin = time.time() - t0
+    est = None
+    if con_estado:
+        est = {"rng": rng.getstate(), "puntos": list(puntos),
+               "curva": dict(curva), "usadas": usadas, "mejor_cm": mejor_cm,
+               "segundos": fin, "pendientes": pendientes,
+               "puntuada": puntuada, "nueva": nueva}
     if limite_s is not None:    # parado por tiempo: el ultimo punto real
-        curva[usadas] = (mejor_cm, time.time() - t0)
-        return curva, mejor_cm
-    for p in puntos:            # por si el presupuesto acabo antes
-        curva[p] = (mejor_cm, time.time() - t0)
-    return curva, mejor_cm
+        curva[usadas] = (mejor_cm, fin)
+    else:
+        for p in puntos:        # por si el presupuesto acabo antes
+            curva[p] = (mejor_cm, fin)
+    return (curva, mejor_cm, est) if con_estado else (curva, mejor_cm)
 
 
-def azar(inst, presupuesto, rng, puntos=None, limite_s=None):
+def azar(inst, presupuesto, rng, puntos=None, limite_s=None, estado=None,
+         con_estado=False):
     """Muestreo uniforme de permutaciones: el suelo contra el que se mide
     cualquier busqueda, con el mismo decodificador.
 
     Con `limite_s` se para tambien al agotar ese tiempo, sin rellenar los
-    puntos no alcanzados, como en evoluciona."""
-    puntos = sorted(puntos or [presupuesto])
-    t0 = time.time()
-    curva, mejor_cm = {}, None
-    for k in range(1, presupuesto + 1):
+    puntos no alcanzados, como en evoluciona; `estado` y `con_estado`
+    permiten continuar una corrida parada, tambien como en evoluciona."""
+    if estado is None:
+        puntos = sorted(puntos or [presupuesto])
+        curva, mejor_cm, k0, previo = {}, None, 0, 0.0
+    else:
+        rng.setstate(estado["rng"])
+        puntos, curva = list(estado["puntos"]), dict(estado["curva"])
+        mejor_cm, k0, previo = estado["mejor_cm"], estado["k"], estado["segundos"]
+    t0 = time.time() - previo
+    k = k0
+    parado = False
+    for k in range(k0 + 1, presupuesto + 1):
         cm = decodifica(inst, aleatoria(inst, rng))
         if mejor_cm is None or mejor(cm, mejor_cm):
             mejor_cm = cm
         while puntos and k >= puntos[0]:
             curva[puntos.pop(0)] = (mejor_cm, time.time() - t0)
         if limite_s is not None and time.time() - t0 >= limite_s:
-            curva[k] = (mejor_cm, time.time() - t0)
-            return curva, mejor_cm
-    for p in puntos:
-        curva[p] = (mejor_cm, time.time() - t0)
-    return curva, mejor_cm
+            parado = True
+            break
+    fin = time.time() - t0
+    est = None
+    if con_estado:
+        est = {"rng": rng.getstate(), "puntos": list(puntos),
+               "curva": dict(curva), "k": k, "mejor_cm": mejor_cm,
+               "segundos": fin}
+    if parado:
+        curva[k] = (mejor_cm, fin)
+    else:
+        for p in puntos:
+            curva[p] = (mejor_cm, fin)
+    return (curva, mejor_cm, est) if con_estado else (curva, mejor_cm)
