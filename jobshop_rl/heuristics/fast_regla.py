@@ -167,3 +167,29 @@ def despachador(arbol):
     espacio = {}
     exec(compile(fuente(arbol), "<regla compilada>", "exec"), espacio)
     return espacio["despacha"]
+
+
+def mejor_de_n(inst, desp, semilla, limite_s, eps=0.1):
+    """El mejor-de-N de una regla compilada, parado por tiempo.
+
+    La misma logica que scripts/e6_extension2.bon_por_tiempo: la muestra
+    0 es la pasada determinista, las demas despachan con probabilidad
+    eps un elegible al azar, y la curva anota el mejor makespan
+    (criterio lexicografico) en cada potencia de dos y en la ultima
+    muestra, con los segundos transcurridos."""
+    import random
+    import time
+    from jobshop_rl.heuristics.fast_sim import mejor
+    rng = random.Random(semilla)
+    t0 = time.time()
+    mejor_cm = desp(inst)                          # muestra 0: determinista
+    curva, k = {1: (mejor_cm, time.time() - t0)}, 1
+    while time.time() - t0 < limite_s:
+        cm = desp(inst, eps=eps, rng=rng)
+        k += 1
+        if mejor(cm, mejor_cm):
+            mejor_cm = cm
+        if k & (k - 1) == 0:
+            curva[k] = (mejor_cm, time.time() - t0)
+    curva[k] = (mejor_cm, time.time() - t0)
+    return curva

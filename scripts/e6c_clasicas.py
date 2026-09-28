@@ -23,6 +23,11 @@ reanudar.
 
     python scripts/e6c_clasicas.py
 
+Version 2: la regla compilada (fast_regla) y el genetico con el
+decodificador y el cruce optimizados, que dan los mismos schedules
+mas deprisa (tests/test_fast_regla.py, tests/test_ga_optimizado.py).
+Las curvas de la version 1 quedan en curvas_v1.csv.
+
 Salida NUEVA: benchmarks/e6_clasicas/curvas.csv
 """
 import csv
@@ -56,27 +61,27 @@ def modulo_clasicas():
 
 def corre(trabajo):
     nombre, metodo, semilla = trabajo
-    from e6_extension2 import bon_por_tiempo
-    from e6_presupuesto import ARBOL
+    from e6_presupuesto import ARBOL, EPS
     from tiempos_fast import gt
-    from jobshop_rl.heuristics.fast_sim import Instancia, despacha, prioridad_de
+    from jobshop_rl.heuristics.fast_regla import despachador, mejor_de_n
+    from jobshop_rl.heuristics.fast_sim import Instancia, despacha
     from jobshop_rl.heuristics.ga_interval import azar, evoluciona
     ec = modulo_clasicas()
     inst = Instancia(ec.load_instance(os.path.join(INSTANCIAS, ec.FILES[nombre]),
                                       nombre))
     lb = ec.LB[nombre]
-    pol = prioridad_de(ARBOL)
+    desp = despachador(ARBOL)
     if metodo in ("regla", "gt_mwkr"):
         t0 = time.time()
-        cm = despacha(inst, pol if metodo == "regla" else gt("mwkr"))
+        cm = desp(inst) if metodo == "regla" else despacha(inst, gt("mwkr"))
         c = {1: (cm, time.time() - t0)}
     elif metodo == "regla_bon":
-        c = bon_por_tiempo(inst, pol, semilla, LIMITE)
+        c = mejor_de_n(inst, desp, semilla, LIMITE, eps=EPS)
     elif metodo == "azar":
         c, _ = azar(inst, PUNTOS[-1], random.Random(semilla), list(PUNTOS),
                     limite_s=LIMITE)
     else:
-        siembra = (despacha(inst, pol, orden=True)[1]
+        siembra = (desp(inst, orden=True)[1]
                    if metodo == "ga_sembrado" else None)
         c, _ = evoluciona(inst, PUNTOS[-1], random.Random(semilla),
                           siembra=siembra, puntos=list(PUNTOS),

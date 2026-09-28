@@ -1,53 +1,51 @@
 # -*- coding: utf-8 -*-
-"""E6 por tamano de instancia: tres clases de Taillard, mas alla del cruce.
+"""E6 en las 70 Taillard, de una vez: todos los metodos parados por tiempo.
 
-En la media de las 70 Taillard los cruces entre el genetico, el genetico
-sembrado y el mejor-de-N de la regla ocurren a tiempos muy distintos
-segun el tamano, y en las instancias grandes la figura acaba antes de
-ver que pasa despues. Aqui una clase por panel, las tres con 15
-maquinas para que solo cambie el numero de trabajos:
+Sustituye a E6 y a sus tres extensiones (e6_extension*.py), que
+alargaron las curvas por capas con presupuestos distintos. Aqui cada
+corrida se para a LIMITE segundos por instancia y anota el mejor
+makespan en cada potencia de dos de schedules y al final, asi que de
+las mismas corridas salen los dos ejes de la tabla y la figura del
+presupuesto:
 
-  15x15, 30x15 y 50x15, las 10 instancias de cada una,
-  3 corridas (semillas 1-3) del genetico, el sembrado y el mejor-de-N,
-  1 corrida de permutaciones al azar, y las dos pasadas unicas,
+  - el genetico, el genetico sembrado con la regla y el mejor-de-N de la
+    regla, semillas 1 y 2, las de E6;
+  - las permutaciones al azar, semilla 1;
+  - la regla en una pasada, y G&T-MWKR, como referencia.
 
-parados por tiempo con un horizonte por clase, mas de un orden de
-magnitud despues del ultimo cruce observado en los datos de E6 (a 800 s,
-el genetico cruza al mejor-de-N hacia los 50, 86 y 324 s).
+La regla va compilada (fast_regla) y el genetico con el decodificador y
+el cruce optimizados: dan los mismos schedules que la implementacion
+anterior con las mismas semillas (tests/test_fast_regla.py,
+tests/test_ga_optimizado.py), asi que en el eje de schedules las curvas
+coinciden con las de E6 y solo cambia el de segundos.
 
-Las semillas son las de E6: sus curvas coinciden con las de E6 en los
-presupuestos comunes. Seis procesos a la vez; cada corrida se anota al
-terminar y al arrancar se saltan las hechas.
+Seis procesos a la vez; cada corrida se anota al terminar y al arrancar
+se saltan las hechas.
 
-    python scripts/e6t_clases.py
+    python scripts/e6_tiempo.py
 
-Version 2: la regla compilada (fast_regla) y el genetico con el
-decodificador y el cruce optimizados, que dan los mismos schedules
-mas deprisa (tests/test_fast_regla.py, tests/test_ga_optimizado.py).
-Las curvas de la version 1 quedan en curvas_v1.csv.
-
-Salida NUEVA: benchmarks/e6_tamanos/curvas.csv
+Salida NUEVA: benchmarks/e6_tiempo/curvas.csv
 """
 import csv
 import os
 import random
 import sys
-import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 sys.path.insert(0, ".")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 os.environ.setdefault("OMP_NUM_THREADS", "1")
 
-DIR = "benchmarks/e6_tamanos"
+DIR = "benchmarks/e6_tiempo"
 SALIDA = os.path.join(DIR, "curvas.csv")
-HORIZONTE = {"15_15": 900.0, "30_15": 1800.0, "50_15": 3600.0}
-SEMILLAS = (1, 2, 3)
+LIMITE = 800.0
+SEMILLAS = (1, 2)
 PUNTOS = [2 ** k for k in range(0, 31)]
 PROCESOS = 6
 
 
 def corre(trabajo):
+    import time
     pid, metodo, semilla = trabajo
     from e6_presupuesto import ARBOL, EPS
     from tiempos_fast import gt
@@ -58,28 +56,30 @@ def corre(trabajo):
     from jobshop_rl.heuristics.ga_interval import azar, evoluciona
     inst = Instancia(PROBLEM_REGISTRY[pid]())
     lb = lb_for_problem_name(pid)
-    limite = HORIZONTE[pid.split("tai")[1][:5]]
     desp = despachador(ARBOL)
     if metodo in ("regla", "gt_mwkr"):
         t0 = time.time()
         cm = desp(inst) if metodo == "regla" else despacha(inst, gt("mwkr"))
         c = {1: (cm, time.time() - t0)}
     elif metodo == "regla_bon":
-        c = mejor_de_n(inst, desp, semilla, limite, eps=EPS)
+        c = mejor_de_n(inst, desp, semilla, LIMITE, eps=EPS)
     elif metodo == "azar":
         c, _ = azar(inst, PUNTOS[-1], random.Random(semilla), list(PUNTOS),
-                    limite_s=limite)
+                    limite_s=LIMITE)
     else:
         siembra = (desp(inst, orden=True)[1]
                    if metodo == "ga_sembrado" else None)
         c, _ = evoluciona(inst, PUNTOS[-1], random.Random(semilla),
                           siembra=siembra, puntos=list(PUNTOS),
-                          limite_s=limite)
+                          limite_s=LIMITE)
     return [(metodo, semilla, pid, p, ((cm[0] + cm[1]) / 2 - lb) / lb * 100, seg)
             for p, (cm, seg) in sorted(c.items())]
 
 
 def main():
+    from e6_presupuesto import setenta
+    insts = setenta()
+    assert len(insts) == 70, len(insts)
     os.makedirs(DIR, exist_ok=True)
     hechos = set()
     if os.path.exists(SALIDA):
@@ -93,15 +93,12 @@ def main():
                     "segundos"])
         f.flush()
     trabajos = []
-    # las corridas largas primero, para que no quede una cola de una sola
-    for clase in ("50_15", "30_15", "15_15"):
-        insts = [f"int__tai{clase}_{k:02d}" for k in range(1, 11)]
-        for s in SEMILLAS:
-            for pid in insts:
-                for m in ("ga", "ga_sembrado", "regla_bon"):
-                    trabajos.append((pid, m, s))
-        for pid in insts:
-            trabajos += [(pid, "azar", 1), (pid, "regla", 0), (pid, "gt_mwkr", 0)]
+    for s in SEMILLAS:                  # semilla a semilla: la primera
+        for pid in insts:               # corrida de todas llega antes
+            for m in ("ga", "ga_sembrado", "regla_bon"):
+                trabajos.append((pid, m, s))
+    for pid in insts:
+        trabajos += [(pid, "azar", 1), (pid, "regla", 0), (pid, "gt_mwkr", 0)]
     trabajos = [t for t in trabajos if t not in hechos]
     print(f"{len(trabajos)} corridas pendientes", flush=True)
     with ProcessPoolExecutor(max_workers=PROCESOS) as ex:

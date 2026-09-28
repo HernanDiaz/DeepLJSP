@@ -1,26 +1,37 @@
 # -*- coding: utf-8 -*-
-"""Algoritmo genetico intervalar sobre permutacion con repeticion.
-
-Es la metaheuristica de referencia de E6, escrita en el mismo lenguaje,
-con el mismo decodificador y el mismo evaluador que la regla
-evolucionada, que es lo unico que permite responder a la objecion de que
-el articulo compara con metaheuristicas publicadas en C++ y con otro
-presupuesto. No pretende reproducir cifra por cifra el genetico
-publicado para el IJSP~[Diaz et al., IPMU 2020]: reproduce su diseno
---- permutacion con repeticion, cruce por orden de trabajos, seleccion
-por torneo, elitismo y comparacion lexicografica del makespan
-intervalar --- para poder medir el intercambio entre calidad y
-presupuesto dentro de una misma implementacion.
-
-El coste se contabiliza en EVALUACIONES DE SCHEDULE, que es la moneda
-independiente de la implementacion, y quien llama mide aparte el reloj.
-
-Modulo NUEVO: no modifica nada del codigo existente.
+"""Copia congelada de la implementacion de E6 ANTERIOR a la optimizacion
+(commit f6035d4): el decodificador de fast_sim y el genetico de
+ga_interval tal como produjeron las primeras curvas. Solo la usan los
+tests, para comprobar que la version optimizada da lo mismo.
 """
 import random
 import time
 
-from jobshop_rl.heuristics.fast_sim import decodifica, mejor
+from jobshop_rl.heuristics.fast_sim import _makespan, mejor
+
+
+def decodifica(inst, perm):
+    """Decodifica una permutacion con repeticion de trabajos.
+
+    La k-esima aparicion del trabajo j es su k-esima operacion, asi que
+    recorrer la lista de izquierda a derecha respeta el orden del trabajo
+    sin comprobaciones.
+    """
+    n, m, seq, lo, up = inst.n, inst.m, inst.seq, inst.lo, inst.up
+    jc_lo, jc_up = [0.0] * n, [0.0] * n
+    mc_lo, mc_up = [0.0] * m, [0.0] * m
+    op = [0] * n
+    for j in perm:
+        k = op[j]
+        q = seq[j][k]
+        s_lo = jc_lo[j] if jc_lo[j] > mc_lo[q] else mc_lo[q]
+        s_up = jc_up[j] if jc_up[j] > mc_up[q] else mc_up[q]
+        e_lo = s_lo + lo[j][k]
+        e_up = s_up + up[j][k]
+        jc_lo[j] = mc_lo[q] = e_lo
+        jc_up[j] = mc_up[q] = e_up
+        op[j] = k + 1
+    return _makespan(jc_lo, jc_up)
 
 
 def aleatoria(inst, rng):
@@ -33,9 +44,15 @@ def jox(p1, p2, n, rng):
     """Job Order Crossover: un subconjunto de trabajos conserva sus
     posiciones del primer padre, el resto se rellena con el orden en que
     aparecen en el segundo."""
-    conserva = [rng.random() < 0.5 for _ in range(n)]
-    resto = iter([j for j in p2 if not conserva[j]])
-    return [j if conserva[j] else next(resto) for j in p1]
+    conserva = {j for j in range(n) if rng.random() < 0.5}
+    hijo = [j if j in conserva else None for j in p1]
+    resto = [j for j in p2 if j not in conserva]
+    k = 0
+    for i, v in enumerate(hijo):
+        if v is None:
+            hijo[i] = resto[k]
+            k += 1
+    return hijo
 
 
 def muta(perm, rng):

@@ -92,7 +92,7 @@ def prioridad_de(arbol):
 class Instancia:
     """Una instancia desplegada en listas planas, lista para iterar."""
 
-    __slots__ = ("n", "m", "seq", "lo", "up", "suf_up", "suf_w")
+    __slots__ = ("n", "m", "seq", "lo", "up", "suf_up", "suf_w", "ops")
 
     def __init__(self, datos):
         self.n = int(datos["num_jobs"])
@@ -119,6 +119,10 @@ class Instancia:
                 w[k] = w[k + 1] + (self.up[j][k] - self.lo[j][k])
             self.suf_up.append(s)
             self.suf_w.append(w)
+        # por trabajo, sus operaciones como (maquina, inferior, superior),
+        # que es lo unico que lee el decodificador de permutaciones
+        self.ops = [[(self.seq[j][k], self.lo[j][k], self.up[j][k])
+                     for k in range(self.m)] for j in range(self.n)]
 
 
 def _makespan(jc_lo, jc_up):
@@ -130,22 +134,20 @@ def decodifica(inst, perm):
 
     La k-esima aparicion del trabajo j es su k-esima operacion, asi que
     recorrer la lista de izquierda a derecha respeta el orden del trabajo
-    sin comprobaciones.
+    sin comprobaciones: basta un iterador por trabajo sobre sus
+    operaciones. Las mismas sumas y comparaciones, en el mismo orden,
+    que el despacho con una regla.
     """
-    n, m, seq, lo, up = inst.n, inst.m, inst.seq, inst.lo, inst.up
+    n, m = inst.n, inst.m
     jc_lo, jc_up = [0.0] * n, [0.0] * n
     mc_lo, mc_up = [0.0] * m, [0.0] * m
-    op = [0] * n
+    sig = [iter(o) for o in inst.ops]
     for j in perm:
-        k = op[j]
-        q = seq[j][k]
-        s_lo = jc_lo[j] if jc_lo[j] > mc_lo[q] else mc_lo[q]
-        s_up = jc_up[j] if jc_up[j] > mc_up[q] else mc_up[q]
-        e_lo = s_lo + lo[j][k]
-        e_up = s_up + up[j][k]
-        jc_lo[j] = mc_lo[q] = e_lo
-        jc_up[j] = mc_up[q] = e_up
-        op[j] = k + 1
+        q, d_lo, d_up = next(sig[j])
+        a, x = jc_lo[j], mc_lo[q]
+        jc_lo[j] = mc_lo[q] = (a if a > x else x) + d_lo
+        a, x = jc_up[j], mc_up[q]
+        jc_up[j] = mc_up[q] = (a if a > x else x) + d_up
     return _makespan(jc_lo, jc_up)
 
 

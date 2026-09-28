@@ -70,3 +70,28 @@ def test_mejor_de_n_igual(arbol, instancias):
             b = rapido(inst, orden=True, eps=0.1, rng=r2)
             assert a == b, pid
         assert r1.getstate() == r2.getstate(), pid
+
+
+def test_mejor_de_n_misma_curva(instancias):
+    """Parado por numero de muestras en lugar de por tiempo, el mejor-de-N
+    compilado recorre las mismas muestras que el de e6_extension2."""
+    import time as _time
+    from jobshop_rl.heuristics import fast_regla
+    sys.path.insert(0, os.path.join(RAIZ, "scripts"))
+    from e6_extension2 import bon_por_tiempo
+    inst = instancias["int__tai15_15_01"]
+    # congelamos el reloj: time.time avanza 1 por llamada, asi los dos
+    # paran tras el mismo numero de muestras
+    for semilla in (1, 2):
+        curvas = []
+        for f, pol in ((fast_regla.mejor_de_n, despachador(ARBOL)),
+                       (bon_por_tiempo, prioridad_de(ARBOL))):
+            reloj = iter(range(10 ** 6))
+            real = _time.time
+            _time.time = lambda: float(next(reloj))
+            try:
+                c = f(inst, pol, semilla, 300.0)
+            finally:
+                _time.time = real
+            curvas.append({p: cm for p, (cm, _) in c.items()})
+        assert curvas[0] == curvas[1], semilla
