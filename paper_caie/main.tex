@@ -1539,70 +1539,53 @@ re-evaluating the same processing orders.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\linewidth]{figures/fig_robustness_box.pdf}
-\caption{Per-instance $\bar\varepsilon$ by method, with the duration
-intervals at their nominal widths and widened by $+20\%$ and $+40\%$.
-The robust $\lambda{=}1$ entries are the narrowest
-rule of that arm and its counterpart evolved without the width
-terminals, as in Table~\ref{tab:robustness}.}
-\label{fig:robustness}
+\includegraphics[width=\linewidth]{figures/fig_robustness_plane.pdf}
+\caption{Quality of the prediction against reliability of the execution
+over the 70 instances, uniform law: (a) mean absolute deviation of the
+executed makespan from the predicted one, and (b) mean overrun beyond
+the prediction in the worst $5\%$ of executions, both in time units.
+Each marker is a method of Table~\ref{tab:robustness}; the grey line
+joins the rules evolved with the width terminals as $\lambda$ grows.}
+\label{fig:robplane}
 \end{figure}
 
-Under the makespan objective the width terminals make no difference to
-robustness either (Table~\ref{tab:robustness}): the featured rule and its
-ablated counterpart are statistically indistinguishable in
-$\bar\varepsilon$ ($5.70$ against $5.75$ at the nominal width; paired
-Wilcoxon over the 70 instances, $z=-0.17$). The rule is more robust than
-G\&T-MWKR ($6.29$, $z=-4.42$, $p<0.001$, $|r|=0.61$) but not than EST
-($5.66$, $z=0.42$), although it improves on EST by $24.6$ points of
-$\RE$; in absolute terms, which removes EST's larger expected makespan
-from the denominator, the rule deviates by $12.30$ time units against
-EST's $14.64$ ($z=-5.89$, $p<0.001$, $|r|=0.81$). A low deviation does
-not require a low makespan, so robustness must be optimized for
-directly.
+Figure~\ref{fig:robplane} places each method by the quality of its
+prediction and the reliability of its execution, the latter in time
+units so that a larger expected makespan cannot make a method look more
+robust. Under the makespan objective the width terminals make no
+difference: the featured rule and its ablated counterpart coincide in
+both panels. Both deviate less than G\&T-MWKR and EST, $12.30$ time
+units against $14.94$ and $14.64$, while predicting much shorter
+makespans. A low deviation does not require a low makespan, so
+robustness must be optimized for directly.
 
-The robust fitness achieves this. The narrowest rule of the
-$\lambda{=}1$ arm reduces $\bar\varepsilon$ from $5.70$ to $4.52$
-($z=-6.40$, $|r|=0.88$ against the makespan rule), and the reduction
-requires the width terminals: under the same fitness, its ablated
-counterpart reaches $5.54$ ($z=-6.25$, $|r|=0.86$). At $\lambda{=}4$ the
-deviation falls to $4.21$. In absolute terms the reduction is $16.2\%$,
-from $12.30$ to $10.31$ time units ($z=-5.55$, $p<0.001$, $|r|=0.76$),
-so it does not come from the larger expected makespan in the
-denominator. The narrower predicted intervals of
-Section~\ref{sec:frontier} thus correspond to smaller realized
-deviations, at the cost in expected makespan reported in the RE column:
-$24.95$ and $28.27$ against $17.71$.
+The robust fitness achieves this, moving the rule down and to the right
+along the grey line. The narrowest rule of the $\lambda{=}1$ arm deviates
+by $10.31$ time units, $16.2\%$ less than the makespan rule ($z=-5.55$,
+$p<0.001$, $|r|=0.76$), and the rule at $\lambda{=}4$ by $9.78$, at the
+cost in expected makespan read on the horizontal axis. The reduction
+requires the width terminals: evolved under the same fitness without
+them, the rule stays with the makespan rules. At matched a-priori
+quality the gain is clearest: the $\lambda{=}4$ rule and G\&T-MWKR
+predict almost the same makespan, $28.27$ against $29.50$ points of
+$\RE$, and the rule deviates $34.5\%$ less, on 69 of the 70 instances
+($z=-7.26$, $p<0.001$, $|r|=1.00$). Over the worst $5\%$ of executions
+(Figure~\ref{fig:robplane}b) the ordering is the same, and the robust
+objective reduces the overrun beyond the prediction in about the same
+proportion as the mean deviation, from $33.46$ to $27.46$ time units at
+$\lambda{=}1$; those executions are nonetheless longer in absolute terms,
+since their length follows the expected makespan given up for the
+reliability.
 
-Methods can also be compared at similar levels of $\RE$, which
-separates the robustness gain from the expected makespan given up for
-it. The robust $\lambda{=}4$ rule and G\&T-MWKR predict almost the same
-makespan, $2454$ against $2482$ time units, which is $28.27$ against
-$29.50$ points of $\RE$. Their realized deviations differ markedly:
-$9.78$ against $14.94$ time units, a reduction of $34.5\%$, smaller on
-69 of the 70 instances ($z=-7.26$, $p<0.001$, $|r|=1.00$). At matched
-a-priori quality the robustness gain is therefore neither a denominator
-effect nor a makespan concession.
-
-Supplementary Section~\ref{S-sec:robdetail} extends these comparisons in
-three directions. Over all 30 rules of each arm the ordering is the
-same, and the width terminals also reduce $\bar\varepsilon$ slightly
-under the makespan objective, an effect too small to be detected in the
-featured pair; the arm-level reductions are three percent or less. Under
-a symmetric triangular law, a law skewed towards the upper endpoint and
-the worst-case realization, the ordering and every significant contrast
-above hold. Over the worst $5\%$ of executions, the robust objective
-reduces the overrun beyond the prediction in about the same proportion
-as the mean deviation, to $27.46$ time units at $\lambda{=}1$ against
-$33.46$ for the makespan rule, although those executions remain longer
-in absolute terms, since their length follows the expected makespan
-given up for the reliability.
-
-Figure~\ref{fig:robustness} shows the per-instance $\bar\varepsilon$
-distributions. The ordering is stable as uncertainty grows, and the
-advantage of the robust rule widens with it: at $+40\%$ its deviation is
-$6.08$ against $7.57$ for the makespan rule and $8.58$ for G\&T-MWKR.
-
+The normalized $\bar\varepsilon$ of Table~\ref{tab:robustness} gives the
+same ordering with one exception: EST appears as robust as the rule,
+$5.66$ against $5.70$, because its larger expected makespan inflates the
+denominator. Supplementary Section~\ref{S-sec:robdetail} reports the
+paired tests, the per-instance distributions and their growth as the
+intervals are widened, the comparison over all 30 rules of each arm,
+where the effects are consistent but of three percent or less, and three
+other realization laws, under which the ordering and every significant
+contrast above hold.
 
 \subsection{Sensitivity to the training set}
 \label{sec:trainset}

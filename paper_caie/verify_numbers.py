@@ -842,6 +842,10 @@ else:
     # y que el ejemplo siga siendo el que la figura dibuja
     check('la figura del caso', 'figures/fig_case.pdf', 'e3_caso')
 
+# la figura de 7.6 sale de e7_cvar/por_instancia.csv, que es tambien la
+# fuente de las cifras de |Delta| y del exceso en la cola que cita el texto
+check('la figura de 7.6', 'figures/fig_robustness_plane.pdf', 'e7_cvar')
+
 # Dificultad por clase (6.3): las cotas del JSP crisp de Taillard de la
 # tabla 14 de Coupvent des Graviers et al. (2025), frente a las cotas con
 # que se calcula el RE (jobshop_rl/data/literature_bounds.py)
