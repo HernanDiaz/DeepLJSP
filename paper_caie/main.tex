@@ -1248,13 +1248,9 @@ $0.5$ points of $\RE$ ($18.23$ against $17.71$).
 \label{sec:case}
 
 A $3{\times}3$ instance makes the tilt introduced by
-$-\mathit{WKRW}$ visible. Instances were generated with the scheme of
-Section~\ref{sec:instances} and screened for one in which the rule and
-its variant without the width term, $\beta = 0$ in the notation of
-Section~\ref{sec:anatomy}, make the same choices up to one decision,
-choose differently there, and the variant ends with the worse makespan;
-the behavior of the baselines played no part in the selection. The first such
-instance has three jobs of three operations: $J_1$ visits
+$-\mathit{WKRW}$ visible by comparing the rule with its variant without
+the width term, $\beta = 0$ in the notation of
+Section~\ref{sec:anatomy}. The instance has three jobs of three operations: $J_1$ visits
 $M_3, M_2, M_1$ with durations $[28,30]$, $[20,26]$, $[24,32]$; $J_2$
 visits $M_1, M_3, M_2$ with $[26,30]$, $[10,12]$, $[16,18]$; and $J_3$
 visits $M_3, M_1, M_2$ with $[22,26]$, $[14,14]$, $[27,31]$.
@@ -1301,7 +1297,8 @@ the two traces.}
 Figure~\ref{fig:case} shows what follows. Dispatching $J_3$ early schedules its remaining operations while the machines are still available, and the makespan is $\mathbf{C}_{\max} = [103,117]$; delaying it by that single decision postpones the same operations to the end of the schedule, and the makespan becomes $[113,133]$, worse at both endpoints. Run on their own from the empty schedule, Figure~\ref{fig:case}c and~d, SPT and MWKR yield $[147,170]$ and $[143,161]$, against a lower bound of $[72,88]$ set by the total work of $J_1$. Neither looks at when a candidate can start, and the decoder appends each operation after the last one on its machine. MWKR, which already departs from the evolved rule at the second decision, dispatches $o_{32}$ before $o_{21}$ and leaves $M_1$ idle until $[50,56]$, so that $o_{21}$, which could have started at time $0$, starts at $[64,70]$; SPT leaves $M_3$ idle from $[22,26]$ to $[62,70]$ in the same way. The $\mathit{SLACK}^2$ term of the evolved rule penalizes a candidate by how much later it would start than the earliest one.
 
 The example illustrates the mechanism, not its magnitude. Over the first
-$800$ instances generated this way, removing the width term leaves the
+$800$ instances generated with the scheme of
+Section~\ref{sec:instances}, removing the width term leaves the
 trace unchanged in $668$; of the $132$ traces that do change, $93$ end
 at the same makespan, $21$ end better with the term and $18$ worse. At this scale the width terminals rarely affect a decision, and when they do their effect is barely distinguishable from chance, which is why their value is established over the 70-instance
 benchmark in Sections~\ref{sec:ablation}
