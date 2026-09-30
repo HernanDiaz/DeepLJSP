@@ -1287,13 +1287,14 @@ $o_{31}$ & $[22,26]$ & 45 & 4 & 0 & \underline{2} & 6 \\
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_case.pdf}
-\caption{The worked example scheduled by the evolved rule and by
-the same rule without the width term. The outlined operation is the one
-that separates the two traces.}
+\caption{The worked example scheduled by (a) the evolved rule, (b) the
+same rule without the width term, and (c) SPT and (d) MWKR, each run on
+its own. In (a) and (b) the outlined operation is the one that separates
+the two traces.}
 \label{fig:case}
 \end{figure}
 
-Figure~\ref{fig:case} shows what follows. Dispatching $J_3$ early schedules its remaining operations while the machines are still available, and the makespan is $\mathbf{C}_{\max} = [103,117]$; delaying it by that single decision postpones the same operations to the end of the schedule, and the makespan becomes $[113,133]$, worse at both endpoints. Run on their own from the empty schedule, SPT and MWKR yield $[147,170]$ and $[143,161]$, against a lower bound of $[72,88]$ set by the total work of $J_1$. Neither looks at when a candidate can start, and the decoder appends each operation after the last one on its machine. MWKR, which already departs from the evolved rule at the second decision, dispatches $o_{32}$ before $o_{21}$ and leaves $M_1$ idle until $[50,56]$, so that $o_{21}$, which could have started at time $0$, starts at $[64,70]$; SPT leaves $M_3$ idle from $[22,26]$ to $[62,70]$ in the same way. The $\mathit{SLACK}^2$ term of the evolved rule penalizes a candidate by how much later it would start than the earliest one.
+Figure~\ref{fig:case} shows what follows. Dispatching $J_3$ early schedules its remaining operations while the machines are still available, and the makespan is $\mathbf{C}_{\max} = [103,117]$; delaying it by that single decision postpones the same operations to the end of the schedule, and the makespan becomes $[113,133]$, worse at both endpoints. Run on their own from the empty schedule, Figure~\ref{fig:case}c and~d, SPT and MWKR yield $[147,170]$ and $[143,161]$, against a lower bound of $[72,88]$ set by the total work of $J_1$. Neither looks at when a candidate can start, and the decoder appends each operation after the last one on its machine. MWKR, which already departs from the evolved rule at the second decision, dispatches $o_{32}$ before $o_{21}$ and leaves $M_1$ idle until $[50,56]$, so that $o_{21}$, which could have started at time $0$, starts at $[64,70]$; SPT leaves $M_3$ idle from $[22,26]$ to $[62,70]$ in the same way. The $\mathit{SLACK}^2$ term of the evolved rule penalizes a candidate by how much later it would start than the earliest one.
 
 The example illustrates the mechanism, not its magnitude. Over the first
 $800$ instances generated this way, removing the width term leaves the

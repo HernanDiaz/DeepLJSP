@@ -42,7 +42,8 @@ SCRIPTS = [
     ("paper_gp/make_lambda_fig.py", [], "fig_lambda.pdf"),
     ("paper_gp/make_sensitivity_fig.py", [], "fig_sensitivity.pdf"),
     ("paper_gp/make_robustness_fig.py", [], "fig_robustness_box.pdf"),
-    ("scripts/make_e3_figure.py", [], "fig_case.pdf"),
+    # fig_case.pdf: scripts/make_e3_figure_caie.py, con SPT y MWKR, que
+    # ya fija Arial y escribe en paper_caie/figures
     ("scripts/rule_anatomy.py",
      ["benchmarks/reevo_fixedfit/gp_tuned_seed*.json"], "fig_terminals.pdf"),
     ("scripts/make_convergence_caie.py", [], "fig_convergence.pdf"),
