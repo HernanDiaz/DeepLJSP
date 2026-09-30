@@ -20,6 +20,12 @@ if hasattr(sys.stdout, "reconfigure"):
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 TEX = open(os.path.join(HERE, "main.tex"), encoding="utf-8").read()
+# el material suplementario tambien afirma cifras: se verifican igual. Cada
+# fichero se une con una linea en blanco, que no crea coincidencias entre
+# el final de uno y el principio del otro
+_SUPL = os.path.join(HERE, "supplementary.tex")
+if os.path.exists(_SUPL):
+    TEX += "\n\n" + open(_SUPL, encoding="utf-8").read()
 # las celdas destacadas van en \textbf{}: se desenvuelven para poder buscar la
 # cifra tal cual, sin que el resaltado haga fallar la comprobacion
 TEX = re.sub(r"\\textbf\{([^{}]*)\}", r"\1", TEX)
@@ -216,10 +222,25 @@ if os.path.exists(nwl):
     for r in csv.DictReader(open(nwl, encoding="utf-8")):
         porlam[r["lam"]].append(float(r["ancho"]))
     print("\n== barrido sin anchuras (lambda_nowidth_por_regla_completo) ==")
-    for lam in sorted(porlam):
-        mu, sd = stats(porlam[lam])
-        check(f"lambda={lam} sin anchuras: ancho",
-              f"{mu:.2f} \\pm {sd:.2f}", "lambda_nowidth_por_regla_completo")
+    # 7.5 ya no da las cinco medias: da su recorrido, de la menor a la
+    # mayor, y lo compara con el del brazo completo
+    medias = {lam: stats(v)[0] for lam, v in porlam.items()}
+    # lambda = 1 no esta en este CSV: es el brazo robusto sin anchuras de
+    # la ablacion, con sus treinta evoluciones
+    _abl1 = [float(r["ancho"]) for r in csv.DictReader(open(os.path.join(
+        REPO, "benchmarks/ablation_por_regla.csv"), encoding="utf-8"))
+        if r["objetivo"] == "robust" and r["terminales"] != "full"]
+    assert len(_abl1) == 30, len(_abl1)
+    medias["1.0"] = stats(_abl1)[0]
+    assert len(medias) == 5, sorted(medias)
+    check("sin anchuras: recorrido del ancho",
+          f"between ${min(medias.values()):.2f}$ and "
+          f"${max(medias.values()):.2f}$", "lambda_nowidth_por_regla_completo")
+    # la amplitud, de los valores sin redondear (el pie de fig:lambda);
+    # restar los extremos ya redondeados da una centesima de mas
+    check("sin anchuras: amplitud del recorrido",
+          f"fall within ${max(medias.values()) - min(medias.values()):.2f}$ "
+          f"points", "lambda_nowidth_por_regla_completo")
 
 # ---- los cuatro tests de tab:ablation, desde los datos por regla -------
 # RESULTADOS.md solo recoge los dos del objetivo de makespan, asi que el test
@@ -1181,16 +1202,11 @@ if os.path.exists(_sw):
     _sd = {k: float(v['re_sd']) for k, v in _L.items()}
     _t1 = (_re[2.0] - _re[0.5]) / (_w[0.5] - _w[2.0])
     _t2 = (_re[4.0] - _re[2.0]) / (_w[2.0] - _w[4.0])
-    check('coste por punto de anchura, 0.5 a 2', f'costs\n${_t1:.1f}$ points',
-          'lambda_sweep')
-    check('RE perdido de 0.5 a 2', f'range costs ${_re[2.0] - _re[0.5]:.2f}$ points',
-          'lambda_sweep')
-    check('coste por punto de anchura, 2 a 4', f'rate rises to ${_t2:.1f}$',
-          'lambda_sweep')
-    check('anchura de 2 a 4', f'${_w[2.0] - _w[4.0]:.2f}$ points of width',
-          'lambda_sweep')
-    check('RE de 2 a 4', f'costing ${_re[4.0] - _re[2.0]:.2f}$ points',
-          'lambda_sweep')
+    # 7.5 ya no da las pendientes de cada tramo: dice que el precio de la
+    # estrechez sube a lo largo del barrido, y el assert de abajo (_t2 > _t1)
+    # es lo que sostiene esa frase
+    check('el precio sube a lo largo del barrido',
+          'the price of narrowness rises along the sweep', 'lambda_sweep')
     check('dispersion de 2 a 4', f'from ${_sd[2.0]:.2f}$ to ${_sd[4.0]:.2f}$',
           'lambda_sweep')
     assert _t2 > _t1, 'el tramo alto ya no es mas caro: la guia no se sostiene'

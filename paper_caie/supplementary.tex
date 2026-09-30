@@ -1,0 +1,307 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage[expansion=false]{microtype}
+% las referencias al articulo (M-...) se resuelven con su main.aux
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+\externaldocument[M-]{main}
+
+\newcommand{\RE}{\mathrm{RE}}
+\setlength{\emergencystretch}{3em}
+\renewcommand{\thesection}{S\arabic{section}}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
+\renewcommand{\theequation}{S\arabic{equation}}
+
+\begin{document}
+
+\begin{center}
+{\large\bfseries Supplementary material}\\[4pt]
+Genetic Programming Hyper-Heuristics for the Job Shop Scheduling Problem
+with Interval Durations: Robustness-Aware Interpretable Rules that
+Generalize Across Instance Sizes
+\end{center}
+
+\noindent Sections, tables, figures and equations without the prefix S
+refer to the article.
+
+\section{Interval handling and the decoder}
+\label{sec:decoder}
+
+Two aspects of the comparison with the constructive baselines are
+examined here: how each baseline reduces an interval to a comparable
+quantity, and how much of the margin of the evolved rules belongs to
+the priority rule rather than to the schedule generation scheme.
+
+The baselines rank candidates by the lexicographic order of
+Eq.~\eqref{M-eq:rank} (Section~\ref{M-sec:reference}). To check that this
+choice does not handicap them, each interval-valued rule was re-run
+ranking by a single number drawn from the same interval: its lower
+endpoint, its midpoint or its upper endpoint. Over the 70 instances
+SPT spans $633.1$ to $642.5$ across those three conventions, LPT
+$703.1$ to $704.4$, MWKR $62.9$ to $64.6$ and EST $42.7$ to $45.1$. The
+lexicographic values of Table~\ref{M-tab:baselines} are better than all
+three for SPT and EST, and within $1.9$ points of the best for LPT and
+MWKR. For EST and MWKR, the rules that account for the state of the
+shop, no convention moves the result by more than $2.4$ points, and for
+SPT and LPT, whose levels exceed 600, by at most $9.4$; the best plain
+rule and the evolved one are $23.3$ points apart. How the intervals are
+collapsed is therefore not what the comparison measures.
+
+The decoder is a more substantial question, since the strongest
+baseline, G\&T-MWKR, does not use the same one: it restricts each
+decision to Giffler and Thompson's conflict set and so produces active
+schedules, whereas the evolved rules choose from the whole eligible set
+and produce semi-active ones. Running the evolved rules as the
+tie-break \emph{inside} the conflict set separates the two effects.
+Table~\ref{tab:decoder} gives the four combinations. Holding the
+decoder fixed, the evolved rules outperform MWKR under either one: $18.99$
+against $64.7$ in the semi-active decoder and $23.18$ against $29.5$
+in G\&T's. Holding the rule fixed, each prefers a different decoder:
+the evolved rules lose $4.2$ points when moved into the conflict set,
+while MWKR gains $35.2$ by entering it. Each method in
+Table~\ref{M-tab:baselines} is thus reported with the decoder that suits
+it, and the margin survives the other choice.
+
+\begin{table}[!htb]
+\centering\small
+\caption{RE (\%) over the 70 instances for the two decoders and the
+two priority rules, one deterministic pass. The GP entries are the mean
+over the 30 evolved rules.}
+\label{tab:decoder}
+\begin{tabular}{lcc}
+\toprule
+Priority rule & Semi-active & Giffler--Thompson \\
+\midrule
+MWKR & 64.7 & 29.5 \\
+Evolved, mean of 30 & $\mathbf{18.99} \pm 1.33$ & $23.18 \pm 7.47$ \\
+Evolved, featured & 17.71 & 18.15 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two details of the table deserve mention. The featured rule is
+the one case where the decoder barely matters, $17.71$ against $18.15$,
+a difference of $0.44$ points that a paired test over the 70 instances
+does not separate from zero ($p = 0.32$); the loss is concentrated in
+the rest of the arm, whose standard deviation grows from $1.33$ to
+$7.47$ because a few rules deteriorate markedly once their candidate set is restricted. This is what should be expected of rules evolved against a
+particular generation scheme: the conflict set removes candidates their
+fitness was never measured on. And SPT, which is the worst entry of
+Table~\ref{M-tab:baselines} at $627.2$, reaches $70.6$ inside the
+conflict set, as G\&T-SPT, which is the same phenomenon seen from the
+other side.
+
+\section{Robustness under executional uncertainty: further analyses}
+\label{sec:robdetail}
+
+This section extends the robustness comparison of Section~\ref{M-sec:robustness} of the article, whose Table~\ref{M-tab:robustness} the paragraphs below refer to. It removes the normalization of $\bar\varepsilon$, repeats the comparison at the level of the 30 rules of each arm, changes the law of the realizations, and describes the worst $5\%$ of executions.
+
+The comparison with EST reverses once the normalization is
+removed. $\bar\varepsilon$ divides by $E[\mathbf{C}_{\max}]$, and EST's predicted
+makespan is $21\%$ larger than the rule's ($2732$ against $2259$ time
+units on average), so the same absolute error reads as a smaller
+relative one. In absolute terms the rule deviates by $12.30$ time units
+against EST's $14.64$, and the difference is significant ($z=-5.89$,
+$p<0.001$, $|r|=0.81$). The ordering against G\&T-MWKR is unchanged and
+widens ($12.30$ against $14.94$, $z=-6.83$, $|r|=0.94$), and the
+makespan arm and its ablation remain indistinguishable ($12.30$ against
+$12.25$, $z=0.61$, $p=0.55$). The normalization therefore conceals an advantage of the rule rather than creating one.
+
+The reduction of $\bar\varepsilon$ that the robust fitness achieves in the article, from $5.70$ to $4.52$ for the narrowest rule of the $\lambda{=}1$ arm, is partly due to the denominator, and the absolute deviation quantifies it. The robust $\lambda{=}1$ arm carries an
+$E[\mathbf{C}_{\max}]$ that is $6.1\%$ larger than the makespan arm's, so where
+$\bar\varepsilon$ falls by $20.7\%$ the absolute deviation falls by
+$16.2\%$, from $12.30$ to $10.31$ time units; at $\lambda{=}4$ it
+reaches $9.78$. Roughly a fifth of the apparent gain is therefore
+arithmetic and the rest is not: the paired contrasts are also significant on the absolute measure, by $-1.99$ time units against the makespan
+arm ($z=-5.55$, $p<0.001$, $|r|=0.76$) and by $-1.78$ against its own
+ablation ($z=-5.17$, $|r|=0.71$).
+
+The comparisons above select one representative rule per arm; at the
+level of the method the ordering is the same. Recomputing
+$\bar\varepsilon$ at the nominal width for all 30 rules of each arm
+and pairing by seed, the makespan arm averages $5.67 \pm 0.16$ against
+$5.77 \pm 0.14$ for its ablation ($z=-2.58$, $p<0.05$ after Holm's
+correction over the three arm-level tests, $|r|=0.54$), the robust
+$\lambda{=}1$ arm $5.50 \pm 0.30$ against $5.68 \pm 0.11$ for its own
+($z=-3.26$, $p<0.01$, $|r|=0.68$), and the robust arm improves on the
+makespan arm with the same terminals ($z=-2.46$, $p<0.05$, $|r|=0.51$).
+
+Two things follow. The width terminals do reduce
+$\bar\varepsilon$ slightly even under the makespan objective, a method-level effect too small to be detected in the single featured pair; and
+the arm-level reductions are modest, three percent or less, against the
+fifth separating the featured rules, so selecting the narrowest rule of
+the robust arm amplifies an effect that at the method level is
+consistent but small.
+
+The estimate of the article draws each realization uniformly on its
+interval, which is one choice among several. Repeating the measurement
+with a symmetric triangular law, with a law skewed towards the upper
+endpoint, and with the single worst-case realization in which every
+duration takes its upper bound, leaves the ordering and every
+significant contrast intact. Averaged over the 70 instances, the robust
+$\lambda{=}1$ arm improves on the makespan arm by $1.22$ time units
+under the triangular law, $12.16$ under the skewed one and $29.01$ in
+the worst case, all with $p<0.001$; the makespan arm and its ablation
+remain indistinguishable under all three. The deviations themselves
+grow with the mass the law places near the upper endpoint, from $8.95$
+time units for the rule under the triangular law to $57.15$ under the
+skewed one and $138.35$ in the worst case, but the comparison between
+methods does not depend on which law is used.
+
+The measures above are averages over realizations, whereas a planner
+exposed to late completions is concerned with the worst ones. The
+conditional value-at-risk of Section~\ref{M-sec:stats}, computed on the
+same $K{=}1000$ realizations, describes the $5\%$ worst executions of
+each schedule and separates two questions. The first is how far those
+executions exceed the prediction. Under the uniform law the featured
+rule overruns its expected makespan by $33.46$ time units on average
+over its worst $5\%$ of executions, against $38.87$ for G\&T-MWKR and
+$40.81$ for EST ($z=-5.04$ and $z=-5.61$, $p<0.001$), and its ablated
+counterpart is indistinguishable ($33.55$, $z=-0.05$). The robust
+objective reduces the tail overrun in about the same proportion as the
+mean deviation: to $27.46$ at $\lambda{=}1$, $17.9\%$ less than the
+makespan rule ($z=-5.14$, $p<0.001$, $|r|=0.71$) and $5.68$ less than
+its own ablation ($z=-5.32$, $|r|=0.73$), and to $26.43$ at
+$\lambda{=}4$. At matched a-priori quality, the robust $\lambda{=}4$
+rule overruns by $26.43$ against $38.87$ for G\&T-MWKR, $32.0\%$ less
+($z=-7.00$, $|r|=0.96$). The second question is how long the worst
+executions are in absolute terms, and there the ordering follows
+expected makespan rather than robustness. Expressed as $\RE$, the tail
+of the featured rule lies at $19.53\%$ and those of the robust rules at
+$26.46\%$ and $29.73\%$, higher on 68 and on 70 of the 70 instances,
+respectively. The robust objective therefore makes the prediction more
+reliable in the tail as well as on average, but it does not shorten the
+worst executions, whose length follows the expected makespan given up
+for that reliability. Against G\&T-MWKR, whose expected makespan is
+close to its own, the $\lambda{=}4$ rule has a slightly shorter tail
+($29.73$ against $31.59$, $z=-2.41$, $p=0.016$, $|r|=0.33$). All of
+these contrasts keep their sign under the triangular and the skewed
+laws, under which the tail overrun at $\lambda{=}1$ falls by $3.23$ and
+$14.89$ time units against the makespan rule, and all keep their
+significance except the shorter tail of the $\lambda{=}4$ rule against
+G\&T-MWKR, which is marginal under the triangular law ($p=0.044$).
+
+\section{Sensitivity to the training set}
+\label{sec:trainset}
+
+The rules of this paper are evolved on four instances, TA11--TA14,
+fixed before any result was inspected. Whether the generalization
+figures rest on that particular quadruple is a question the design
+cannot answer by itself, so five further campaigns repeat the protocol
+unchanged --- thirty independent evolutions each, same terminal set,
+same irace configuration of Section~\ref{M-sec:irace} --- over different
+training sets: three alternative quadruples of the $20{\times}15$ class
+(TA15--TA18, TA17--TA20, and the even-numbered TA12, TA14, TA16, TA18),
+a pair (TA11--TA12) and an octuple (TA11--TA18). All six are evaluated on the 60 instances of the other size classes, which no campaign trains on,
+so the comparison surface is identical for every one of them, and the
+mean over the thirty rules is reported without any selection step, so
+the validation set plays no part in the comparison.
+
+Table~\ref{tab:trainset} gives the outcome. The six means span
+$0.66$ points, from $18.95\%$ to $19.61\%$, against a seed-to-seed
+standard deviation of $0.93$--$1.35$ within each campaign: which
+instances are trained on matters less than which seed the evolution
+starts from. Paired by seed against the reference, no campaign separates
+from TA11--TA14 once Holm correction is applied over the five contrasts,
+the smallest adjusted $p$ being $0.12$. The size of the training set has an effect of the expected sign and small magnitude: halving the training set to
+two instances costs $0.46$ points and doubling it to eight gains $0.20$,
+both within the variation between seeds. The best rule of each campaign leads to the same conclusion, ranging from $17.38\%$ to $17.89\%$, with
+the reference quadruple at the unfavorable extreme of that range.
+
+\begin{table}[!htb]
+\centering\small
+\caption{RE (\%) over the 60 instances no campaign trains on, by
+training set: mean $\pm$ sd across 30 independently evolved rules, best
+rule, and the seed-paired Wilcoxon contrast against the reference.}
+\label{tab:trainset}
+\begin{tabular}{lccccc}
+\toprule
+Training set & $|T|$ & Mean $\pm$ sd & Best & $\Delta$ & $p$ \\
+\midrule
+TA11--TA14 (reference) & 4 & $19.15 \pm 1.35$ & 17.89 & --- & --- \\
+TA15--TA18 & 4 & $19.46 \pm 1.24$ & 17.57 & $+0.31$ & 0.229 \\
+TA17--TA20 & 4 & $19.53 \pm 1.07$ & 17.76 & $+0.37$ & 0.025 \\
+TA12, 14, 16, 18 & 4 & $19.07 \pm 0.93$ & 17.49 & $-0.08$ & 0.952 \\
+TA11--TA12 & 2 & $19.61 \pm 1.23$ & 17.53 & $+0.46$ & 0.031 \\
+TA11--TA18 & 8 & $18.95 \pm 1.03$ & 17.38 & $-0.20$ &
+0.730 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+What the training set does change is the shape of the rules. SLACK
+leads the terminal count everywhere, between $21\%$ and $27\%$, but WKRW, the second most used terminal under the reference set, loses ground: it falls from $12.0\%$ under
+TA11--TA14 to $5.8$--$11.8\%$, while EST rises from $9.7\%$ to
+$10.8$--$14.4\%$ under every other training set. Different instances
+select different tie-breakers around the same core, and reach the same
+performance with them.
+
+\section{Asymmetric intervals}
+\label{sec:asym}
+
+Every instance used so far carries an interval symmetric about its
+crisp value, so what the width terminals contribute could belong to the
+generator rather than to the problem. The four arms of
+Sections~\ref{M-sec:ablation} and~\ref{M-sec:frontier} were therefore
+re-evolved on the asymmetric counterparts of TA11--TA14 described in
+Section~\ref{M-sec:instances}, with the same configuration and fifteen
+seeds per arm rather than thirty, a reduction imposed by the computational cost. Table~\ref{tab:asym} reports them over all 70 asymmetric
+instances, with the executed deviation estimated from $400$ realizations
+of the fixed processing order. Levels of $\RE$ do not compare across the
+two benchmarks, since the right skew raises the expected makespan while
+the crisp lower bound does not move and every arm sits some six points
+higher; only the contrast between arms within a benchmark is meaningful.
+
+\begin{table}[!htb]
+\centering\small
+\caption{The four arms re-evolved on asymmetric intervals and
+evaluated over the 70 asymmetric instances: mean $\pm$ sd across 15
+seeds of $\RE$, of the relative width of the predicted makespan
+interval, and of the absolute deviation of the executed makespan.}
+\label{tab:asym}
+\begin{tabular}{lccc}
+\toprule
+Arm & RE (\%) & Width (\%) & $|\Delta|$ \\
+\midrule
+Makespan, full & $25.08 \pm 1.42$ & $13.23 \pm 0.72$ & $13.36 \pm 0.64$ \\
+Makespan, no width & $23.90 \pm 1.18$ & $13.08 \pm 0.20$ &
+$13.06 \pm 0.26$ \\
+Robust $\lambda{=}1$, full & $25.93 \pm 1.18$ & $12.67 \pm 0.20$ &
+$12.75 \pm 0.27$ \\
+Robust $\lambda{=}1$, no width & $23.89 \pm 1.06$ & $12.97 \pm 0.18$ &
+$13.03 \pm 0.16$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The main result is reproduced. Under the robust objective the
+width terminals narrow the predicted interval from $12.97$ to $12.67$
+($z=-3.24$, $|r|=0.95$) and the executed deviation from $13.03$ to
+$12.75$ ($z=-2.90$, $|r|=0.85$), and the robust arm improves on the
+makespan arm carrying the same terminals by $0.55$ points of width and
+$0.61$ time units of deviation, the latter for every one of the fifteen
+seeds ($z=-3.41$, $|r|=1.00$). These five contrasts survive Holm's
+correction over the nine tests of the table, the largest adjusted $p$
+among them being $0.0101$. The robustness that the width terminals make
+attainable, and the objective under which they attain it, therefore do
+not depend on the symmetric generation scheme.
+
+Under the makespan objective the results are weaker than on the symmetric benchmark. There, the width terminals made the predicted
+interval slightly but significantly narrower even though that objective
+does not reward it (Section~\ref{M-sec:ablation}); here they do not
+($13.23$ against $13.08$, $p=0.89$), nor do they reduce the executed
+deviation ($13.36$ against $13.06$, $p=0.11$), and they cost $1.18$
+points of $\RE$, a difference that does not survive the correction
+($p=0.10$ adjusted). The negative result for expected makespan holds on
+both benchmarks, and the remaining results are consistent with the boundary of
+Section~\ref{M-sec:frontier}: where the objective does not price width,
+the smaller terminal set is the better choice.
+
+\end{document}
