@@ -515,9 +515,12 @@ feasible start on its machine, Eq.~\eqref{eq:sgs}.
 
 Because the lowest value is dispatched, a criterion that seeks to \emph{maximize}
 an attribute must be expressed through the unary $\mathrm{neg}$
-operator. Classic rules are thus points of this search space: shortest
-processing time is the single-node tree $\mathit{PT}$, whereas most work
-remaining is $\mathrm{neg}(\mathit{WKR})$. We inject both as seeded rules in the initial population.
+operator. Classic rules thus have counterparts in this search space: the
+single-node tree $\mathit{PT}$ is shortest processing time on the upper
+endpoints, and $\mathrm{neg}(\mathit{WKR})$ is most work remaining. They
+differ from the SPT and MWKR baselines of Section~\ref{sec:reference}
+only on ties, which the trees break by job index and the baselines by
+the lower endpoint, Eq.~\eqref{eq:rank}. We inject both trees as seeded rules in the initial population.
 
 
 Priority ties at dispatch time are broken by eligible
@@ -1242,10 +1245,11 @@ $0.5$ points of $\RE$ ($18.23$ against $17.71$).
 
 A $3{\times}3$ instance makes the tilt introduced by
 $-\mathit{WKRW}$ visible. Instances were generated with the scheme of
-Section~\ref{sec:instances} and screened for one in which removing the
-width term, $\beta = 0$ in the notation of Section~\ref{sec:anatomy},
-changes exactly one dispatching decision and leaves the makespan worse
-for it; the behavior of the baselines played no part in the selection. The first such
+Section~\ref{sec:instances} and screened for one in which the rule and
+its variant without the width term, $\beta = 0$ in the notation of
+Section~\ref{sec:anatomy}, make the same choices up to one decision,
+choose differently there, and the variant ends with the worse makespan;
+the behavior of the baselines played no part in the selection. The first such
 instance has three jobs of three operations: $J_1$ visits
 $M_3, M_2, M_1$ with durations $[28,30]$, $[20,26]$, $[24,32]$; $J_2$
 visits $M_1, M_3, M_2$ with $[26,30]$, $[10,12]$, $[16,18]$; and $J_3$
@@ -1259,9 +1263,9 @@ remaining terms. Without the width term the ranking puts $o_{22}$
 ($5$) ahead of $o_{31}$ ($6$): the short operation of the job with little work remaining ranks first because of the $2\,\mathit{PT}$ term. The width term contributes
 $-\mathit{WKRW}$, which is $-4$ for $o_{31}$ against $-2$ for $o_{22}$,
 and that reverses a one-point gap. The rule therefore dispatches
-$o_{31}$, the first operation of the job whose remaining work is the
-most uncertain, $[41,45]$ against $[16,18]$. Of the two classical
-baselines, SPT dispatches $o_{22}$ and MWKR dispatches $o_{31}$.
+$o_{31}$, whose job has more uncertain remaining work than that of
+$o_{22}$, $[41,45]$ against $[16,18]$. In this same state, SPT would
+dispatch $o_{22}$ and MWKR $o_{31}$.
 
 \begin{table}[t]
 \centering\small
@@ -1289,7 +1293,7 @@ that separates the two traces.}
 \label{fig:case}
 \end{figure}
 
-Figure~\ref{fig:case} shows what follows. Dispatching $J_3$ early schedules its remaining operations while the machines are still available, and the makespan is $\mathbf{C}_{\max} = [103,117]$; delaying it by that single decision postpones the same operations to the end of the schedule, and the makespan becomes $[113,133]$, worse at both endpoints. SPT and MWKR yield $[147,170]$ and $[143,161]$: MWKR agrees with the evolved rule at this decision and diverges from it at a later one.
+Figure~\ref{fig:case} shows what follows. Dispatching $J_3$ early schedules its remaining operations while the machines are still available, and the makespan is $\mathbf{C}_{\max} = [103,117]$; delaying it by that single decision postpones the same operations to the end of the schedule, and the makespan becomes $[113,133]$, worse at both endpoints. Run on their own from the empty schedule, SPT and MWKR yield $[147,170]$ and $[143,161]$, against a lower bound of $[72,88]$ set by the total work of $J_1$. Neither looks at when a candidate can start, and the decoder appends each operation after the last one on its machine. MWKR, which already departs from the evolved rule at the second decision, dispatches $o_{32}$ before $o_{21}$ and leaves $M_1$ idle until $[50,56]$, so that $o_{21}$, which could have started at time $0$, starts at $[64,70]$; SPT leaves $M_3$ idle from $[22,26]$ to $[62,70]$ in the same way. The $\mathit{SLACK}^2$ term of the evolved rule penalizes a candidate by how much later it would start than the earliest one.
 
 The example illustrates the mechanism, not its magnitude. Over the first
 $800$ instances generated this way, removing the width term leaves the

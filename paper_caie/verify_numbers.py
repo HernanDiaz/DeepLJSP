@@ -763,6 +763,49 @@ else:
         # \mathbf{C}_{\max} = ... y los otros tres sueltos
         check(f'makespan de {_et}', f'[{_lo:.0f},{_up:.0f}]',
               'e3_caso/makespan')
+    # la cota inferior con que se leen SPT y MWKR: la carga mayor de un
+    # trabajo o de una maquina, componente a componente
+    _carga = {}
+    for _j, _fila in enumerate(_C['durations']):
+        for _k, (_a, _b) in enumerate(_fila):
+            for _clave in (('J', _j), ('M', _C['sequences'][_j][_k])):
+                _x = _carga.setdefault(_clave, [0, 0])
+                _x[0] += _a
+                _x[1] += _b
+    _cota = (max(v[0] for v in _carga.values()),
+             max(v[1] for v in _carga.values()))
+    check('cota inferior del ejemplo', f'$[{_cota[0]:.0f},{_cota[1]:.0f}]$',
+          'e3_caso/durations')
+    _dueno = [k for k, v in _carga.items() if tuple(v) == _cota]
+    assert _dueno == [('J', 0)], f'la cota no es la carga de J1: {_dueno}'
+    check('la cota es el trabajo de J1', 'total work of $J_1$', 'e3_caso')
+    # MWKR se separa de la regla en la segunda decision de su traza
+    _sg, _sm, _ss = (_C['schedules'][m] for m in ('gp', 'mwkr', 'spt'))
+    _k = next(k for k, (a, b) in enumerate(zip(_sg, _sm))
+              if (a['job'], a['op']) != (b['job'], b['op']))
+    assert _k == 1, f'MWKR diverge en la decision {_k + 1}'
+    check('MWKR diverge en la segunda', 'at the second decision', 'e3_caso')
+
+    def _op(sch, j, o):
+        return next(x for x in sch if x['job'] == j and x['op'] == o)
+
+    # MWKR: o32 antes que o21 en M1, que queda libre hasta el inicio de
+    # o32, y o21 (primera de su trabajo) empieza despues de o32
+    _o32, _o21 = _op(_sm, 2, 1), _op(_sm, 1, 0)
+    assert _sm.index(_o32) < _sm.index(_o21)
+    assert not [x for x in _sm if x['machine'] == 0
+                and _sm.index(x) < _sm.index(_o32)], 'M1 no esta libre'
+    check('MWKR deja M1 libre hasta', f"idle until $[{_o32['s_lo']:.0f},{_o32['s_up']:.0f}]$",
+          'e3_caso/schedules')
+    check('MWKR: inicio de o21', f"starts at $[{_o21['s_lo']:.0f},{_o21['s_up']:.0f}]$",
+          'e3_caso/schedules')
+    # SPT: el hueco de M3 entre dos operaciones consecutivas de la maquina
+    _m3 = [x for x in _ss if x['machine'] == 2]
+    _hueco = max(zip(_m3, _m3[1:]), key=lambda p: p[1]['s_up'] - p[0]['c_up'])
+    check('SPT: hueco de M3',
+          f"$M_3$ idle from $[{_hueco[0]['c_lo']:.0f},{_hueco[0]['c_up']:.0f}]$"
+          f" to $[{_hueco[1]['s_lo']:.0f},{_hueco[1]['s_up']:.0f}]$",
+          'e3_caso/schedules')
     # el censo, que es lo que acota la lectura del ejemplo
     _z = _C['censo']
     for _k, _et in (('n', 'instancias del censo'),
