@@ -842,6 +842,39 @@ else:
     # y que el ejemplo siga siendo el que la figura dibuja
     check('la figura del caso', 'figures/fig_case.pdf', 'e3_caso')
 
+# Dificultad por clase (6.3): las cotas del JSP crisp de Taillard de la
+# tabla 14 de Coupvent des Graviers et al. (2025), frente a las cotas con
+# que se calcula el RE (jobshop_rl/data/literature_bounds.py)
+_cot = os.path.join(REPO, 'benchmarks/taillard_cotas_2025.csv')
+if not os.path.exists(_cot):
+    print('\n== dificultad por clase: sin benchmarks/taillard_cotas_2025.csv ==')
+else:
+    print('\n== dificultad por clase (taillard_cotas_2025.csv) ==')
+    sys.path.insert(0, REPO)
+    from jobshop_rl.data.literature_bounds import TAILLARD_LB as _TLB
+    _cb = {r['instancia']: (int(r['lb']), int(r['ub'])) for r in csv.DictReader(
+        l for l in open(_cot, encoding='utf-8') if not l.startswith('#'))}
+    assert len(_cb) == 70
+    _clases = ['15x15', '20x15', '20x20', '30x15', '30x20', '50x15', '50x20']
+    _ab, _hu = {}, {}
+    for _c, _cl in enumerate(_clases):
+        _ks = [f'TA{10 * _c + k}' for k in range(1, 11)]
+        _ab[_cl] = sum(_cb[k][0] < _cb[k][1] for k in _ks)
+        _hu[_cl] = sum((_cb[k][1] - _TLB[k]) / _TLB[k] * 100 for k in _ks) / 10
+    # las dos de 50 trabajos: todas cerradas y nuestra cota es el optimo
+    for _cl in ('50x15', '50x20'):
+        assert _ab[_cl] == 0, f'{_cl} tiene instancias abiertas'
+        assert all(_cb[f'TA{k}'][1] == _TLB[f'TA{k}'] for k in
+                   range(10 * _clases.index(_cl) + 1,
+                         10 * _clases.index(_cl) + 11)), f'{_cl}: cota != optimo'
+    check('las de 50 trabajos, resueltas',
+          'every crisp counterpart has been solved to optimality', _cot)
+    # 30x20: la clase con mas abiertas, y el hueco de su cota
+    assert max(_ab, key=_ab.get) == '30x20' and _ab['30x20'] == 9, _ab
+    check('30x20: abiertas', 'the most open instances, nine of ten', _cot)
+    check('30x20: mejor conocida sobre la cota',
+          f'by ${_hu["30x20"]:.1f}\\%$ on average', _cot)
+
 # E5 (revision r3.3): convenios de intervalo y decodificador.
 # Las cifras salen de scripts/e5_decodificador_baselines.py sobre
 # benchmarks/e5_decodificador/resumen.json.

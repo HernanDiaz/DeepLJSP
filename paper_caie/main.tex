@@ -967,6 +967,18 @@ average ($13.7 \pm 1.5$). Because all terminals are per-operation
 attributes with no size-bound quantities, transfer requires no
 retraining or rescaling.
 
+The ranking of the classes reflects the difficulty of their instances
+more than their distance from the training size. In the two 50-job
+classes, where the rule does best, every crisp counterpart has been
+solved to optimality~\citep{CoupventdesGraviers2025} and the bounds used
+here equal the optimal makespans, so on them $\RE$ is measured against
+the optimum. The error is largest on
+$30{\times}20$, the class with the most open instances, nine of ten.
+The reference bound of an open instance lies below its unknown optimum,
+so part of the error measured there belongs to the bound: the best known
+solutions of that class exceed the bounds used here by $2.7\%$ on
+average.
+
 \begin{table}[t]
 \centering\small
 \caption{RE (\%) per size class, single deterministic rollout, over all
