@@ -47,8 +47,10 @@ SCRIPTS = [
     ("scripts/rule_anatomy.py",
      ["benchmarks/reevo_fixedfit/gp_tuned_seed*.json"], "fig_terminals.pdf"),
     ("scripts/make_convergence_caie.py", [], "fig_convergence.pdf"),
-    # fig_budget.pdf: scripts/make_e6_figure_caie.py, que ya fija Arial y
-    # se lanza aparte cuando las curvas de E6 estan completas
+    # fig_budget.pdf: scripts/make_e6_presupuesto_caie.py (E6 version 2,
+    # cuatro paneles en segundos), que ya fija Arial y escribe en
+    # paper_caie/figures; fig_robustness_plane.pdf, igual, con
+    # scripts/make_robustness_plane_caie.py
 ]
 
 ARIAL = {"font.family": "sans-serif",

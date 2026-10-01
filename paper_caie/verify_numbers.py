@@ -949,192 +949,122 @@ else:
     assert abs(_dec['gt_mwkr']['media'] - 29.5) < 0.1, (
         'G&T-MWKR ya no reproduce la tabla de baselines')
 
-# r1.3: de que esta hecha la distancia con las metaheuristicas. Las
-# cifras salen de scripts/e6_calibra_clasicas.py, que corre el
-# genetico de jobshop_rl/heuristics/ga_interval.py sobre las doce
-# clasicas con el decodificador y el evaluador del articulo.
-_cc = os.path.join(REPO,
-                   'benchmarks/e6_presupuesto/calibracion_clasicas.json')
-if not os.path.exists(_cc):
-    print('\n== r1.3: sin calibracion_clasicas.json ==')
+# E6 version 2 (6.5): calidad frente a presupuesto en segundos, en las
+# 12 clasicas y en las clases 15x15, 30x15 y 50x15 de Taillard. Las
+# cifras salen de scripts/e6_v2_resumen.py y la figura de
+# scripts/make_e6_presupuesto_caie.py, sobre las mismas curvas
+# (benchmarks/e6_clasicas/curvas.csv y benchmarks/e6_tamanos/curvas.csv).
+_e6v = os.path.join(REPO, 'benchmarks/e6_v2/resumen.json')
+if not os.path.exists(_e6v):
+    print('\n== E6: sin benchmarks/e6_v2/resumen.json ==')
 else:
     import json as _json
-    import math as _math
-    _K = _json.load(open(_cc, encoding='utf-8'))
-    print('\n== r1.3: la brecha, medida en construcciones ==')
-    _m = _K['medias']
-    _ga = {int(_k): _v for _k, _v in _m['ga'].items()}
-    # la calibracion que abre 6.5: dos puntos de la curva y las dos
-    # referencias publicadas
-    check('el genetico a 5x10^5 construcciones',
-          f'${_ga[500000]:.1f}\\%$ at $5\\times10^{{5}}$',
-          'e6/calibracion_clasicas')
-    check('el genetico publicado', f"${_m['ga_publicado']:.1f}\\%$",
-          'eval_classic12.PUB_AVG')
-    check('ESABC publicado', f"${_m['esabc_publicado']:.1f}\\%$",
-          'eval_classic12.PUB_AVG')
-    # nuestra version supera a la publicada, y se estanca antes de ESABC:
-    # lo que baja de 10^5 a 5x10^5 es menos de lo que le falta
-    assert _ga[500000] < _m['ga_publicado'], 'la reimplementacion no es fiel'
-    assert (_ga[100000] - _ga[500000]
-            < _ga[500000] - _m['esabc_publicado']), (
+    _V = _json.load(open(_e6v, encoding='utf-8'))
+    print('\n== E6 v2: presupuesto en segundos (e6_v2/resumen.json) ==')
+    _K6 = ('clasicas', '15_15', '30_15', '50_15')
+    _C6 = _V['clasicas']
+    # el diseno: corridas por instancia y horizontes
+    assert all(_C6['corridas'][m] == 360 for m in ('regla_bon', 'ga', 'ga_sembrado'))
+    for _k in _K6[1:]:
+        assert all(_V[_k]['corridas'][m] == 30
+                   for m in ('regla_bon', 'ga', 'ga_sembrado')), _k
+    check('horizontes', '$900$, $1800$ and $3600$~s', 'e6_v2')
+    # la calibracion que abre 6.5
+    check('el genetico a 2^19 en las clasicas',
+          f"${_C6['ga_2_19']:.1f}\\%$ at $2^{{19}}$", 'e6_v2')
+    check('el genetico publicado',
+          f"the ${_C6['publicado']['GA']:.1f}\\%$ published", 'e6_v2')
+    check('donde nuestro genetico alcanza al publicado',
+          f"about ${_C6['cruce']['ga_publicado']:.0f}$~s per instance, and it levels",
+          'e6_v2')
+    check('ESABC publicado', f"${_C6['publicado']['ESABC']:.1f}\\%$ of ESABC",
+          'e6_v2')
+    _gaf = _C6['re']['final']['ga']
+    assert _C6['ga_2_19'] < _C6['publicado']['GA'], 'la reimplementacion no es fiel'
+    assert (_C6['ga_2_19'] - _gaf < _gaf - _C6['publicado']['ESABC']), (
         'el genetico no se estanca antes de ESABC: reescribir 6.5')
+    # lo que cuesta una muestra de la regla en decodificaciones del genetico
+    _rat = {k: _V[k]['ms_schedule']['regla_bon'] / _V[k]['ms_schedule']['ga']
+            for k in _K6}
+    check('coste de una muestra de la regla',
+          f"${min(_rat.values()):.0f}$ to ${max(_rat.values()):.0f}$ decodings",
+          'e6_v2')
+    assert _rat['15_15'] < _rat['30_15'] < _rat['50_15'], 'el coste no crece con el tamano'
+    # un segundo en las clasicas
+    _r1 = _C6['re']['1']
+    check('un segundo en las clasicas',
+          f"${_r1['regla_bon']:.1f}\\%$, against ${_r1['ga_sembrado']:.1f}\\%$ "
+          f"for the seeded genetic algorithm and ${_r1['ga']:.1f}\\%$", 'e6_v2')
+    assert _r1['regla_bon'] < _r1['ga_sembrado'] < _r1['ga']
+    # el genetico iguala la pasada unica
+    _gp = [_V[k]['cruce']['ga_pasada'] for k in _K6]
+    check('el genetico iguala la pasada',
+          f"after ${min(_gp):.0f}$ to ${max(_gp):.0f}$~s per instance", 'e6_v2')
 
-# E6 (revision r2 y r3.5): calidad frente a presupuesto. Las cifras
-# salen de scripts/e6_analiza.py sobre las curvas que deja
-# scripts/e6_presupuesto.py, y la figura se dibuja del mismo json,
-# asi que texto y dibujo no pueden separarse.
-_e6 = os.path.join(REPO, 'benchmarks/e6_presupuesto/resumen.json')
-if not os.path.exists(_e6):
-    print('\n== E6: sin benchmarks/e6_presupuesto/resumen.json ==')
-else:
-    import json as _json
-    import math as _math
-    _B = _json.load(open(_e6, encoding='utf-8'))
-    print('\n== E6: calidad frente a presupuesto ==')
-    assert _B['n_instancias'] == 70, 'E6 no cubre las setenta'
-    _E = _B['por_evaluaciones']
-    check('la regla en una pasada', f"${_E['regla']['1']:.2f}\\%$",
-          'e6/por_evaluaciones')
-    # los dos cruces, interpolados en log sobre la rejilla
+    def _redondea(x):
+        return f"{round(x):.0f}" if x < 100 else f"{round(x, -1):.0f}"
 
-    def _cruza(_tab, _obj):
-        _ks = sorted(int(_k) for _k in _tab)
-        for _a, _b in zip(_ks, _ks[1:]):
-            _va, _vb = _tab[str(_a)], _tab[str(_b)]
-            if _va >= _obj > _vb:
-                _f = (_va - _obj) / (_va - _vb)
-                return 10 ** (_math.log10(_a) + _f *
-                              (_math.log10(_b) - _math.log10(_a)))
-        return None
-
-    def _sci(_x):
-        _e = int(_math.floor(_math.log10(_x)))
-        return f'${_x / 10 ** _e:.1f}\\times10^{{{_e}}}$'
-
-    check('donde el genetico iguala la pasada unica',
-          _sci(_cruza(_E['ga'], _E['regla']['1'])), 'e6, derivado')
-    # y que el genetico NO alcanza al mejor-de-1024 en el rango, que
-    # es la afirmacion que sostiene la seccion entera
-    assert _cruza(_E['ga'], _E['regla_bon']['1024']) is None, (
-        'el genetico ya alcanza al mejor-de-1024: reescribir 6.5')
-    # el coste de una pasada en evaluaciones del genetico
-    _c = _B['coste_pasada_en_decodificaciones']
-    check('lo que cuesta una pasada de la regla',
-          f"${_c['min']:.0f}$ to ${_c['max']:.0f}$", 'e6/coste')
-
-    # la tabla de 6.5, recomputada desde las curvas con las funciones de
-    # scripts/e6_tabla.py, celda a celda
-    sys.path.insert(0, os.path.join(REPO, 'scripts'))
-    _cwd = os.getcwd()
-    os.chdir(REPO)
-    try:
-        import e6_tabla as _t6
-        _d6 = _t6.carga_completa()
-    finally:
-        os.chdir(_cwd)
-    _in6 = sorted(_d6['ga'])
-    _et6 = {'regla': 'Evolved rule, one pass',
-            'gt_mwkr': 'G\\&T-MWKR, one pass',
-            'regla_bon': 'Evolved rule, best-of-$N$',
-            'ga': 'Genetic algorithm',
-            'ga_sembrado': 'Genetic algorithm, seeded',
-            'azar': 'Random permutations'}
-    _pt6 = {}
-    for _m6, _nom in _et6.items():
+    # el genetico cruza al mejor-de-N, cada vez mas tarde
+    _cg = [_V[k]['cruce']['ga_bon'] for k in _K6]
+    assert all(c is not None for c in _cg) and _cg == sorted(_cg), _cg
+    check('cruces del genetico con el mejor-de-N',
+          f"from about ${_redondea(_cg[0])}$~s on the classical instances, "
+          f"${_redondea(_cg[1])}$~s on $15{{\\times}}15$, ${_redondea(_cg[2])}$~s "
+          f"on $30{{\\times}}15$ and ${_redondea(_cg[3])}$~s on", 'e6_v2')
+    # al final, los dos geneticos por debajo del mejor-de-N en media
+    for _k in _K6:
+        _f = _V[_k]['re']['final']
+        assert _f['ga'] < _f['regla_bon'] and _f['ga_sembrado'] < _f['regla_bon'], _k
+    _fs = {k: _V[k]['final']['sembrado_bon'] for k in _K6}
+    check('sembrado contra mejor-de-N, clasicas',
+          f"better on {_fs['clasicas']['a_mejor']} of {_fs['clasicas']['n']}, "
+          f"$p={_fs['clasicas']['p']:.3f}$", 'e6_v2')
+    check('sembrado contra mejor-de-N, 50x15',
+          f"{_fs['50_15']['a_mejor']} of\n10, $p={_fs['50_15']['p']:.3f}$", 'e6_v2')
+    assert _fs['15_15']['p'] > 0.05 and _fs['30_15']['p'] > 0.05
+    assert _fs['clasicas']['p'] < 0.05 and _fs['50_15']['p'] < 0.05
+    _g50 = _V['50_15']['final']['ga_bon']
+    assert _g50['p'] < 0.05 and _g50['media_a'] < _g50['media_b']
+    check('genetico contra mejor-de-N, 50x15',
+          f"significantly better\n($p={_g50['p']:.3f}$)", 'e6_v2')
+    # la semilla en el tiempo
+    for _k in _K6:
+        assert _V[_k]['semilla']['1']['p'] < 0.05, _k
+        for _t, _c in _V[_k]['semilla'].items():
+            if _t == 'final' or float(_t) >= 100:
+                assert _c['p'] > 0.05, (_k, _t)
+    assert _V['50_15']['semilla']['30']['p'] < 0.05
+    check('la ventaja de la semilla dura hasta', 'for up to $30$~s on', 'e6_v2')
+    check('la semilla deja de notarse', 'from $100$~s per instance on', 'e6_v2')
+    _cs = {k: _V[k]['cruce']['sembrado_bon'] for k in _K6}
+    for _k in ('clasicas', '15_15', '50_15'):
+        assert _cs[_k] < _V[_k]['cruce']['ga_bon'], _k
+    assert _cs['30_15'] > _V['30_15']['cruce']['ga_bon']
+    check('cruces del sembrado',
+          f"at about ${_redondea(_cs['clasicas'])}$~s on the classical\ninstances, "
+          f"${_redondea(_cs['15_15'])}$~s on $15{{\\times}}15$ and "
+          f"${_redondea(_cs['50_15'])}$~s on $50{{\\times}}15$", 'e6_v2')
+    check('el sembrado sigue al mejor-de-N en 30x15',
+          f"until about ${_redondea(_cs['30_15'])}$~s", 'e6_v2')
+    _s42 = _V['semilla_42']
+    assert _s42['n'] == 42 and _s42['p'] > 0.05
+    check('las 42 al final', f"better on {_s42['a_mejor']} ($p={_s42['p']:.2f}$",
+          'e6_v2')
+    # la tabla S de la semilla, celda a celda
+    for _t in ('1', '3', '10', '30', '100', '300', '1000', 'final'):
         _cel = []
-        for _b in _t6.PRESUPUESTOS:
-            _v = _t6.por_instancia_presupuesto(_d6, _m6, _b, _in6)
-            _cel.append(f'{sum(_v) / len(_v):.2f}' if _v else '---')
-        for _s in _t6.TIEMPOS:
-            _v = _t6.por_instancia_tiempo(_d6, _m6, _s, _in6)
-            _pt6[(_m6, _s)] = _v
-            _cel.append(f'{sum(_v) / len(_v):.2f}' if _v else '---')
-        check(f'fila de la tabla 6.5, {_m6}',
-              _nom + ' & ' + ' & '.join(_cel) + ' \\\\', 'e6 curvas')
-    # el tiempo de una pasada que el texto y la leyenda citan
-    _seg = [_d6['regla'][_i][0][0][2] for _i in _in6]
-    check('segundos de una pasada',
-          f'complete after ${sum(_seg) / len(_seg):.2f}$~s', 'e6 curvas')
-
-    def _m6(_m, _s):
-        _v = _pt6[(_m, _s)]
-        return f'{sum(_v) / len(_v):.2f}'
-
-    for _a, _b, _s, _et in (('regla', 'ga', 20.0, 'pasada contra genetico'),
-                            ('ga_sembrado', 'ga', 20.0, 'sembrado contra genetico')):
-        _c6 = _t6.contraste(_pt6[(_a, _s)], _pt6[(_b, _s)])
-        check_zr(f'{_et} a {_s:g} s', f"{_c6['z']:.2f}", f"{_c6['rb']:.2f}",
-                 'e6 curvas')
-        if _a == 'regla':
-            check('instancias en que el genetico sigue por encima',
-                  f"on ${_c6['menor']}$ of the 70", 'e6 curvas')
-            assert _c6['p'] < 0.001 and _c6['d'] < 0
-        if _a == 'ga_sembrado':
-            check('ventaja del sembrado a 20 s',
-                  f"${abs(_c6['d']):.2f}$ points below", 'e6 curvas')
-    # la extension: el genetico se iguala con la pasada hacia los 50 s
-    _c6 = _t6.contraste(_pt6[('regla', 50.0)], _pt6[('ga', 50.0)])
-    assert _c6['p'] > 0.05, 'a 50 s el genetico ya no empata con la pasada'
-    check('empate con la pasada a 50 s', f"($z={_c6['z']:.2f}$, n.s.)",
-          'e6 curvas')
-    _c6 = _t6.contraste(_pt6[('regla_bon', 150.0)], _pt6[('ga', 150.0)])
-    assert _c6['p'] < 0.001
-    check('mejor-de-N contra genetico a 150 s',
-          f"still ${abs(_c6['d']):.2f}$ points ahead ($z={_c6['z']:.2f}$",
-          'e6 curvas')
-    check_zr('mejor-de-N contra genetico a 150 s', f"{_c6['z']:.2f}",
-             f"{_c6['rb']:.2f}", 'e6 curvas')
-    # el genetico cruza al mejor-de-N entre 700 y 800 s, y empata a 800
-    _c6 = _t6.contraste(_pt6[('regla_bon', 800.0)], _pt6[('ga', 800.0)])
-    assert _c6['p'] > 0.05, 'a 800 s el genetico ya no empata con el mejor-de-N'
-    _a6, _b6 = _pt6[('ga', 800.0)], _pt6[('regla_bon', 800.0)]
-    assert sum(_a6) < sum(_b6), 'el genetico no cruza antes de 800 s'
-    _crg = None
-    for _s in __import__('numpy').logspace(0, __import__('numpy').log10(_t6.TIEMPOS[-1]), 120):
-        _a = _t6.por_instancia_tiempo(_d6, 'ga', float(_s), _in6)
-        _b = _t6.por_instancia_tiempo(_d6, 'regla_bon', float(_s), _in6)
-        if _a and _b and sum(_a) < sum(_b):
-            _crg = float(_s)
-            break
-    check('donde el genetico alcanza al mejor-de-N',
-          f"cross only at about ${round(_crg, -2):.0f}$~s", 'e6 curvas')
-    check('genetico y mejor-de-N a 800 s',
-          f"${sum(_a6) / len(_a6):.2f}\\%$ against ${sum(_b6) / len(_b6):.2f}\\%$,"
-          f" $z={_c6['z']:.2f}$, n.s.", 'e6 curvas')
-    # el sembrado pasa al mejor-de-N: donde, y cuanto a 800 s
-    _c6 = _t6.contraste(_pt6[('ga_sembrado', 800.0)], _pt6[('regla_bon', 800.0)])
-    assert _c6['p'] < 0.001 and _c6['d'] < 0
-    check('sembrado contra mejor-de-N a 800 s',
-          f"${abs(_c6['d']):.2f}$ points below it ($z={_c6['z']:.2f}$,"
-          f" $p<0.001$, $|r|={_c6['rb']:.2f}$)", 'e6 curvas')
-    import numpy as _np6
-    _cr6 = None
-    for _s in _np6.logspace(0, _np6.log10(_t6.TIEMPOS[-1]), 120):
-        _a = _t6.por_instancia_tiempo(_d6, 'ga_sembrado', float(_s), _in6)
-        _b = _t6.por_instancia_tiempo(_d6, 'regla_bon', float(_s), _in6)
-        if _a and _b and sum(_a) < sum(_b):
-            _cr6 = float(_s)
-            break
-    check('donde el sembrado alcanza al mejor-de-N',
-          f"draws level at about ${_cr6:.0f}$~s", 'e6 curvas')
-    # en schedules el genetico no alcanza al mejor-de-N en ningun
-    # presupuesto comun (hasta 2^13), que es lo que el texto afirma
-    for _k in range(14):
-        _x = _t6.por_instancia_presupuesto(_d6, 'regla_bon', 2 ** _k, _in6)
-        _y = _t6.por_instancia_presupuesto(_d6, 'ga', 2 ** _k, _in6)
-        assert sum(_x) < sum(_y), f'el genetico alcanza al mejor-de-N en 2^{_k}'
-    # la siembra: el final del sembrado, y lo que tarda el de inicio al azar
-    _gac = {2 ** _k: sum(_v) / len(_v) for _k in range(21)
-            for _v in [_t6.por_instancia_presupuesto(_d6, 'ga', 2 ** _k, _in6)]}
-    _sv = _t6.por_instancia_presupuesto(_d6, 'ga_sembrado', 131072, _in6)
-    _sf = sum(_sv) / len(_sv)
-    _ks = sorted(_gac)
-    for _a, _b in zip(_ks, _ks[1:]):
-        if _gac[_a] >= _sf > _gac[_b]:
-            _f = (_gac[_a] - _sf) / (_gac[_a] - _gac[_b])
-            _xs = 10 ** (_math.log10(_a) + _f * (_math.log10(_b) - _math.log10(_a)))
-    assert 131072 / _xs < 1 / 3, 'la siembra ya no ahorra dos tercios'
+        for _k in _K6:
+            _c = _V[_k]['semilla'].get(_t)
+            _cel.append('---' if _c is None else f"{_c['a_mejor']} ({_c['p']:.3f})")
+        _et = 'End of horizon' if _t == 'final' else _t
+        check(f'tabla S de la semilla, {_et}',
+              f"{_et} & " + ' & '.join(_cel) + ' \\\\', 'e6_v2')
+    # conclusiones (iv)
+    check('conclusiones: el cruce en las clasicas y en 50x15',
+          f"from about ${_redondea(_cg[0])}$~s per instance on\nthe classical "
+          f"instances to about ${_redondea(_cg[3])}$~s on $50{{\\times}}15$",
+          'e6_v2')
+    check('la figura de 6.5', 'figures/fig_budget.pdf', 'e6_v2')
 
 # E4 (revision r3.4): los cuatro brazos sobre intervalos asimetricos.
 # Las cifras salen de scripts/e4_analiza.py sobre el banco que genera

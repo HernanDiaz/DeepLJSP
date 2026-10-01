@@ -418,4 +418,39 @@ TA35 & 2007 & 30.3 & 24.1 & 8.4 & TA70 & 2995 & 42.9 & 23.4 & 16.7 \\
 \end{tabular}
 \end{table}
 
+\section{The seeded genetic algorithm over time}
+\label{sec:semilla}
+
+Table~\ref{tab:semilla} compares the genetic algorithm seeded with the
+rule's permutation against the unseeded one at several budgets on the
+four instance sets of Section~\ref{M-sec:budget} of the article. The
+seed gives a significant advantage on every set after one second per
+instance, for longer the larger the instance, and none from $100$~s per
+instance on. The tests at different budgets are not corrected for
+multiplicity; with 10 instances the smallest attainable two-sided $p$ is
+$0.002$, the value repeated in the first rows.
+
+\begin{table}[!htb]
+\centering\small
+\caption{The seeded genetic algorithm against the unseeded one: number
+of instances on which the seeded version is better and, in parentheses,
+the two-sided paired Wilcoxon $p$, with the instance as unit (the mean
+over its runs). A dash marks a budget beyond the horizon of the set.}
+\label{tab:semilla}
+\begin{tabular}{lcccc}
+\toprule
+Seconds & Classical (12) & $15{\times}15$ (10) & $30{\times}15$ (10) & $50{\times}15$ (10) \\
+\midrule
+1 & 11 (0.001) & 10 (0.002) & 10 (0.002) & 10 (0.002) \\
+3 & 8 (0.064) & 10 (0.002) & 10 (0.002) & 10 (0.002) \\
+10 & 5 (0.970) & 6 (0.625) & 9 (0.004) & 10 (0.002) \\
+30 & 5 (0.970) & 6 (0.625) & 5 (0.846) & 9 (0.006) \\
+100 & 6 (0.791) & 5 (1.000) & 4 (0.432) & 8 (0.064) \\
+300 & 6 (0.791) & 5 (0.846) & 5 (0.846) & 6 (0.432) \\
+1000 & --- & --- & 4 (0.846) & 6 (0.625) \\
+End of horizon & 6 (0.791) & 3 (0.625) & 4 (0.375) & 7 (0.432) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \end{document}
