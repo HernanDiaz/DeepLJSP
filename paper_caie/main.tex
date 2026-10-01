@@ -1328,83 +1328,47 @@ choice.
 \subsection{The value of interval awareness: ablations}
 \label{sec:ablation}
 The interval-width terminals are the distinctive ingredient of this
-setting, so we isolate their contribution by ablation: we repeat the
-30 evolutions with and
-without the width terminals ($\mathit{PTW}$, $\mathit{ESTW}$,
-$\mathit{WKRW}$) in the terminal set, everything else held fixed, and
-compare the resulting rules seed by seed (Section~\ref{sec:stats});
-Holm's correction over the tests of Table~\ref{tab:ablation} changes
-none of their verdicts. The irace configuration of
-Section~\ref{sec:irace} was selected on the full terminal set and is used
-for both arms: holding it fixed is what makes the comparison controlled,
-at the cost that the ablated arm runs with hyperparameters tuned for a
-larger primitive set than its own. Table~\ref{tab:ablation} collects the outcome.
+setting, so we isolate their contribution by ablation: the 30
+evolutions are repeated without the width terminals ($\mathit{PTW}$,
+$\mathit{ESTW}$, $\mathit{WKRW}$), everything else held fixed,
+including the irace configuration of Section~\ref{sec:irace}, which was
+selected on the full terminal set, so the ablated arm runs with
+hyperparameters tuned for a larger primitive set than its own. Interval
+information also enters the evolution through the fitness, which scores
+every schedule by interval arithmetic. To remove it as well, 30 further
+rules are evolved on the crisp midpoint counterparts of the training
+instances (Section~\ref{sec:instances}), with the same seeds,
+configuration and reduced terminal set, so that they never handle
+interval data. Figure~\ref{fig:ablation} compares the arms seed by seed
+(Section~\ref{sec:stats}); Supplementary Table~\ref{S-tab:ablation}
+gives their means, and Holm's correction over its tests changes none of
+the verdicts.
 
-\begin{table}[t]
-\centering\small
-\caption{Ablations of the interval machinery (30 independent evolutions
-per arm; paired rank tests between arms): the terminal ablation under
-two fitness objectives, and the crisp-midpoint control, evolved with
-scalar fitness and no interval information, tested against the
-interval-trained arm above it. \emph{Width} is the relative width of
-the predicted makespan interval.}
-\label{tab:ablation}
-% la celda del test de RE bajo el objetivo robusto ensancha la tabla 12.9pt
-% sobre los 360pt de caja; a 4pt mide 356.9pt
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{llcc}
-\toprule
-Fitness objective & Terminal set & RE (\%) & Width (\%) \\
-\midrule
-\multirow{3}{*}{Makespan $E[\mathbf{C}_{\max}]$}
- & full & $18.99 \pm 1.33$ & $12.41 \pm 0.30$ \\
- & without widths & $18.66 \pm 1.08$ & $12.62 \pm 0.23$ \\
- & \textit{test} & \textit{n.s.} ($z=-0.83$) & $z=3.40$, $p<0.001$ \\
-\midrule
-\multirow{2}{*}{Midpoint control}
- & without widths & $18.63 \pm 0.99$ & $12.55 \pm 0.17$ \\
- & \textit{test} & \textit{n.s.} ($z=-0.13$) & \textit{n.s.} ($z=-1.29$) \\
-\midrule
-\multirow{3}{*}{Robust, Eq.~\eqref{eq:robustfit}}
- & full & $19.62 \pm 1.52$ & $12.04 \pm 0.75$ \\
- & without widths & $18.42 \pm 0.87$ & $12.47 \pm 0.20$ \\
- & \textit{test} & $z=-3.75$, $p<0.001$ & $z=3.22$, $p<0.001$ \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_ablation.pdf}
+\caption{Ablations of the interval machinery, seed by seed over the 30
+evolutions of each arm: paired differences in RE (a) and in the relative
+width of the predicted makespan interval (b) over the 70 instances.
+Negative values favor the first arm named in each row; diamonds mark the
+median, and the labels give the paired Wilcoxon test.}
+\label{fig:ablation}
+\end{figure}
 
-Under the makespan objective, the width terminals do not improve the
-quantity being optimized. Removing the three of them leaves the
-expected makespan unchanged: $18.66 \pm 1.08$ mean $\RE$ over the 70
-instances without them versus $18.99 \pm 1.33$ with them, a difference
-that is not significant ($z=-0.83$) and whose sign favors the smaller terminal set. They do, however, affect the schedules: the relative
-width of the predicted makespan interval is significantly narrower when
-the rule can read widths ($12.41 \pm 0.30$ versus $12.62 \pm 0.23$;
-paired Wilcoxon $z=3.40$, $p<0.001$, $|r|=0.71$), even though nothing in this
-objective rewards narrowness. Their effect under this objective is
-thus a slightly tighter interval at no cost in expected makespan.
-
-Interval information enters the evolution at two points: through the
-terminal set, which fixes what a rule can read, and through the
-fitness, which scores every candidate schedule by interval arithmetic.
-The ablation above removes the first but keeps the second: rules
-evolved without width terminals are still selected by the
-interval-evaluated expected makespan.
-
-To remove the second as well, we evolve 30 further rules on the crisp
-counterparts of the training instances, exactly their midpoint
-scenarios (Section~\ref{sec:instances}), with the same seeds,
-configuration and reduced terminal set: these evolutions never handle interval data, and their fitness is the plain scalar makespan. Deployed
-unchanged on the interval benchmark, they are indistinguishable from
-the arm evolved with interval fitness, $18.63 \pm 0.99$ against
-$18.66 \pm 1.08$ $\RE$ ($z=-0.13$, n.s.), with predicted widths
-equally close ($12.55 \pm 0.17$ against $12.62 \pm 0.23$, $z=-1.29$,
-n.s.), although the two fitness functions are not identical, since
-$\max$ does not commute with taking midpoints. For expected makespan,
-then, neither component is needed: rules evolved with no interval
-information at all match the interval-trained arm. The objective of the
-next section penalizes the width of the makespan interval and cannot be
-replicated on a crisp instance, where that width is identically zero.
+Under the makespan objective the width terminals do not improve the
+quantity being optimized: the differences in RE are centered on zero
+($z=-0.83$, n.s.), with a sign that favors the smaller terminal set.
+They do affect the schedules, whose predicted interval is slightly but
+consistently narrower ($z=3.40$, $p<0.001$, $|r|=0.71$), even though
+nothing in this objective rewards narrowness. The crisp control is
+indistinguishable from the interval-trained arm on both measures
+($z=-0.13$ and $z=-1.29$, n.s.), although the two fitness functions
+differ, since $\max$ does not commute with taking midpoints. For
+expected makespan, then, neither the terminals nor the interval fitness
+is needed. The robust objective of the next section changes this: with
+the width terminals the predicted interval becomes narrower at a cost in
+$\RE$, a trade-off that cannot be replicated on a crisp instance, where
+the width is identically zero.
 
 \subsection{The robust objective: trading expected makespan for
 predictability}

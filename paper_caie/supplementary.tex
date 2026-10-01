@@ -5,6 +5,7 @@
 \usepackage[a4paper,margin=2.5cm]{geometry}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
+\usepackage{multirow}
 \usepackage{graphicx}
 \usepackage[expansion=false]{microtype}
 % las referencias al articulo (M-...) se resuelven con su main.aux
@@ -449,6 +450,45 @@ Seconds & Classical (12) & $15{\times}15$ (10) & $30{\times}15$ (10) & $50{\time
 300 & 6 (0.791) & 5 (0.846) & 5 (0.846) & 6 (0.432) \\
 1000 & --- & --- & 4 (0.846) & 6 (0.625) \\
 End of horizon & 6 (0.791) & 3 (0.625) & 4 (0.375) & 7 (0.432) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Ablation results}
+\label{sec:ablationtab}
+
+Table~\ref{tab:ablation} gives the means of the arms compared seed by
+seed in Figure~\ref{M-fig:ablation} of the article.
+
+\begin{table}[!htb]
+\centering\small
+\caption{Ablations of the interval machinery (30 independent evolutions
+per arm; paired rank tests between arms): the terminal ablation under
+two fitness objectives, and the crisp-midpoint control, evolved with
+scalar fitness and no interval information, tested against the
+interval-trained arm above it. \emph{Width} is the relative width of
+the predicted makespan interval.}
+\label{tab:ablation}
+% la celda del test de RE bajo el objetivo robusto ensancha la tabla 12.9pt
+% sobre los 360pt de caja; a 4pt mide 356.9pt
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llcc}
+\toprule
+Fitness objective & Terminal set & RE (\%) & Width (\%) \\
+\midrule
+\multirow{3}{*}{Makespan $E[\mathbf{C}_{\max}]$}
+ & full & $18.99 \pm 1.33$ & $12.41 \pm 0.30$ \\
+ & without widths & $18.66 \pm 1.08$ & $12.62 \pm 0.23$ \\
+ & \textit{test} & \textit{n.s.} ($z=-0.83$) & $z=3.40$, $p<0.001$ \\
+\midrule
+\multirow{2}{*}{Midpoint control}
+ & without widths & $18.63 \pm 0.99$ & $12.55 \pm 0.17$ \\
+ & \textit{test} & \textit{n.s.} ($z=-0.13$) & \textit{n.s.} ($z=-1.29$) \\
+\midrule
+\multirow{3}{*}{Robust, Eq.~\eqref{M-eq:robustfit}}
+ & full & $19.62 \pm 1.52$ & $12.04 \pm 0.75$ \\
+ & without widths & $18.42 \pm 0.87$ & $12.47 \pm 0.20$ \\
+ & \textit{test} & $z=-3.75$, $p<0.001$ & $z=3.22$, $p<0.001$ \\
 \bottomrule
 \end{tabular}
 \end{table}
