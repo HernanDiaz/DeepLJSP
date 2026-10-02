@@ -1154,10 +1154,12 @@ if os.path.exists(_cg):
     print('\n== el genetico de referencia (calibracion.json) ==')
     assert _G['mejor'] == 'pop250 tor3 pm0.2', (
         'la configuracion del genetico ya no es la que describe 5.3')
+    # 5.2 ya no cuenta la calibracion (cuatro configuraciones a 2x10^5
+    # construcciones): solo la configuracion, que el assert de arriba
+    # sigue atando a la ganadora de calibracion.json
     for _f in ('A population of $250$ individuals',
                'tournaments of size $3$', 'with probability $0.9$',
-               'probability $0.2$ by swapping', 'of four configurations tried',
-               f"${_G['presupuesto'] // 100000}\\times10^{{5}}$ constructions"):
+               'probability $0.2$ by swapping'):
         check('configuracion del genetico', _f, 'calibracion.json')
 
 # ---- el deposito de Zenodo: lo que el articulo dice que contiene ---------

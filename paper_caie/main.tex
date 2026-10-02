@@ -720,13 +720,7 @@ by a job-based order crossover, in which a random subset of jobs keeps
 its positions from the first parent and the remaining positions are
 filled in the order they take in the second; offspring are mutated with
 probability $0.2$ by swapping two positions, and the two best
-individuals pass unchanged to the next generation. The population size
-is that of the published algorithm, and of four configurations tried at
-$2\times10^{5}$ constructions on the training instances it was the best.
-The algorithm is stopped after a given time per instance, the budget
-measure of Section~\ref{sec:budget}, and records its incumbent solution
-each time the number of schedule constructions grows by a factor of
-$2^{1/4}$.
+individuals pass unchanged to the next generation.
 
 \subsection{Hyperparameter configuration with irace}
 \label{sec:irace}
