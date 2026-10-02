@@ -1093,11 +1093,7 @@ For a comparison at matched budget we implement the genetic algorithm of
 \citet{DiazGA2020} (Section~\ref{sec:reference}) in Python. On the 12
 classical instances it achieves $7.3\%$ in $900$~s per instance, against
 the $9.8\%$ $\RE$ published for the original. The rule and the genetic algorithm share decoder,
-evaluator and language, and both are implemented without avoidable
-overhead: the rule is compiled into a single function that computes only
-the terminals it reads, and the decoder and crossover of the genetic
-algorithm are streamlined in the same way, both producing exactly the
-schedules of a direct implementation. Budget is measured in seconds per
+evaluator and language. Budget is measured in seconds per
 instance, which charges each method for what a schedule costs it: a
 sample of the rule evaluates the tree on every eligible operation at
 every step, and costs as much as $15$ to $43$ decodings of the genetic
