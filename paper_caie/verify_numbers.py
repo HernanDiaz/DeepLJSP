@@ -910,10 +910,14 @@ else:
     _hueco = _gaf - _C6['publicado']['ESABC']
     assert _C6['horizonte'] == 900.0
     check('el genetico a 900 s en las clasicas',
-          f"it achieves ${_gaf:.1f}\\%$ in ${_C6['horizonte']:.0f}$~s per instance",
+          f"it achieves ${_gaf:.1f}\\%$ $\\RE$ in ${_C6['horizonte']:.0f}$~s per instance",
           'e6_v2')
     check('el genetico publicado',
-          f"against\nthe ${_C6['publicado']['GA']:.1f}\\%$ $\\RE$ published", 'e6_v2')
+          f"against the ${_C6['publicado']['GA']:.1f}\\%$ published", 'e6_v2')
+    # 3 corridas en cada una de las 10 instancias de cada clase
+    for _k in _K6[1:]:
+        assert _V[_k]['instancias'] == 10, _k
+    check('corridas por clase', 'a total of 30 runs per class', 'e6_v2')
     assert _gaf < _C6['publicado']['GA'], 'la reimplementacion no es fiel'
     # las conclusiones dicen que un metodo de poblacion se estanca lejos de
     # ESABC: lo que gana de 100 a 900 s es menos de lo que le falta
