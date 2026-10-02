@@ -923,66 +923,34 @@ else:
     # ESABC: lo que gana de 100 a 900 s es menos de lo que le falta
     assert _ga100 - _gaf < _hueco, (
         'el genetico no se estanca antes de ESABC: revisar las conclusiones')
-    # un segundo en las clasicas
-    _r1 = _C6['re']['1']
-    check('un segundo en las clasicas',
-          f"${_r1['regla_bon']:.1f}\\%$, against ${_r1['ga_sembrado']:.1f}\\%$ "
-          f"for the seeded genetic algorithm and ${_r1['ga']:.1f}\\%$", 'e6_v2')
-    assert _r1['regla_bon'] < _r1['ga_sembrado'] < _r1['ga']
-    # el genetico iguala la pasada unica
-    _gp = [_V[k]['cruce']['ga_pasada'] for k in _K6]
-    check('el genetico iguala la pasada',
-          f"after ${min(_gp):.0f}$ to ${max(_gp):.0f}$~s per instance", 'e6_v2')
-
     def _redondea(x):
         return f"{round(x):.0f}" if x < 100 else f"{round(x, -1):.0f}"
 
-    # el genetico cruza al mejor-de-N, cada vez mas tarde
+    # el genetico (sin sembrar) supera al mejor-de-N cada vez mas tarde, y
+    # desde entonces queda por debajo (cruce['ga_bon'] es permanente)
     _cg = [_V[k]['cruce']['ga_bon'] for k in _K6]
     assert all(c is not None for c in _cg) and _cg == sorted(_cg), _cg
     check('cruces del genetico con el mejor-de-N',
-          f"from about ${_redondea(_cg[0])}$~s on the classical instances, "
-          f"${_redondea(_cg[1])}$~s on $15{{\\times}}15$, ${_redondea(_cg[2])}$~s "
-          f"on $30{{\\times}}15$ and ${_redondea(_cg[3])}$~s on", 'e6_v2')
-    # al final, los dos geneticos por debajo del mejor-de-N en media
+          f"from about ${_redondea(_cg[0])}$~s per instance on the classical "
+          f"instances and\n${_redondea(_cg[1])}$~s on $15{{\\times}}15$ to about "
+          f"${_redondea(_cg[3])}$~s on $50{{\\times}}15$, with "
+          f"${_redondea(_cg[2])}$~s\non the intermediate $30{{\\times}}15$",
+          'e6_v2')
+    # al principio el mejor-de-N va por delante de los dos geneticos
     for _k in _K6:
-        _f = _V[_k]['re']['final']
-        assert _f['ga'] < _f['regla_bon'] and _f['ga_sembrado'] < _f['regla_bon'], _k
-    _fs = {k: _V[k]['final']['sembrado_bon'] for k in _K6}
-    check('sembrado contra mejor-de-N, clasicas',
-          f"better on {_fs['clasicas']['a_mejor']} of {_fs['clasicas']['n']}, "
-          f"$p={_fs['clasicas']['p']:.3f}$", 'e6_v2')
-    check('sembrado contra mejor-de-N, 50x15',
-          f"{_fs['50_15']['a_mejor']} of\n10, $p={_fs['50_15']['p']:.3f}$", 'e6_v2')
-    assert _fs['15_15']['p'] > 0.05 and _fs['30_15']['p'] > 0.05
-    assert _fs['clasicas']['p'] < 0.05 and _fs['50_15']['p'] < 0.05
-    _g50 = _V['50_15']['final']['ga_bon']
-    assert _g50['p'] < 0.05 and _g50['media_a'] < _g50['media_b']
-    check('genetico contra mejor-de-N, 50x15',
-          f"significantly better\n($p={_g50['p']:.3f}$)", 'e6_v2')
-    # la semilla en el tiempo
+        _r1 = _V[_k]['re']['1']
+        assert _r1['regla_bon'] < _r1['ga_sembrado'] < _r1['ga'], _k
+    # la semilla: por delante al principio en todos los conjuntos; desde
+    # 100 s ningun test detecta diferencia en ningun conjunto
     for _k in _K6:
         assert _V[_k]['semilla']['1']['p'] < 0.05, _k
+        assert _V[_k]['semilla']['1']['media_a'] < _V[_k]['semilla']['1']['media_b']
         for _t, _c in _V[_k]['semilla'].items():
             if _t == 'final' or float(_t) >= 100:
                 assert _c['p'] > 0.05, (_k, _t)
-    assert _V['50_15']['semilla']['30']['p'] < 0.05
-    check('la ventaja de la semilla dura hasta', 'for up to $30$~s on', 'e6_v2')
-    check('la semilla deja de notarse', 'from $100$~s per instance on', 'e6_v2')
-    _cs = {k: _V[k]['cruce']['sembrado_bon'] for k in _K6}
-    for _k in ('clasicas', '15_15', '50_15'):
-        assert _cs[_k] < _V[_k]['cruce']['ga_bon'], _k
-    assert _cs['30_15'] > _V['30_15']['cruce']['ga_bon']
-    check('cruces del sembrado',
-          f"at about ${_redondea(_cs['clasicas'])}$~s on the classical\ninstances, "
-          f"${_redondea(_cs['15_15'])}$~s on $15{{\\times}}15$ and "
-          f"${_redondea(_cs['50_15'])}$~s on $50{{\\times}}15$", 'e6_v2')
-    check('el sembrado sigue al mejor-de-N en 30x15',
-          f"until about ${_redondea(_cs['30_15'])}$~s", 'e6_v2')
-    _s42 = _V['semilla_42']
-    assert _s42['n'] == 42 and _s42['p'] > 0.05
-    check('las 42 al final', f"better on {_s42['a_mejor']} ($p={_s42['p']:.2f}$",
-          'e6_v2')
+    check('la semilla deja de notarse',
+          'from $100$~s per instance on, the statistical tests detect no '
+          'difference\nbetween them on any set', 'e6_v2')
     # la tabla S de la semilla, celda a celda
     for _t in ('1', '3', '10', '30', '100', '300', '1000', 'final'):
         _cel = []

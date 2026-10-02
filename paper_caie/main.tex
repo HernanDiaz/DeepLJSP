@@ -1115,41 +1115,14 @@ and ESABC.}
 \label{fig:budget}
 \end{figure}
 
-The four instance sets order the methods in the same way. With little
-time the sampled rule is the best use of it: after one second per
-instance on the classical instances it stands at $11.6\%$, against
-$14.3\%$ for the seeded genetic algorithm and $27.1\%$ for the unseeded
-one. The unseeded genetic algorithm matches a single pass of the rule
-after $2$ to $46$~s per instance, and overtakes the sampled rule later,
-the later the larger the instance: from about $10$~s on the classical
-instances, $25$~s on $15{\times}15$, $83$~s on $30{\times}15$ and $300$~s
-on $50{\times}15$, staying below it from then on. At the end of the
-horizon both genetic algorithms are ahead of the sampled rule in mean,
-significantly for the seeded version on the classical instances (better on 11 of 12, $p=0.012$) and on $50{\times}15$ (9 of
-10, $p=0.006$), where the unseeded version is also significantly better
-($p=0.020$), and not on the two smaller Taillard classes. The advantage
-of the rule is therefore not that it optimizes better, but that it is
-effective at budgets too small for search to be so, and how small
-depends on the size of the instance.
-
-Seeded with the rule's permutation, the genetic algorithm starts from
-the rule's solution instead of from random permutations, and for a
-while it is far ahead of its unseeded version: significantly, on every
-instance set, after one second per instance, and for up to $30$~s on
-$50{\times}15$. It also overtakes the sampled rule before the unseeded
-version on three of the four sets, at about $7$~s on the classical
-instances, $14$~s on $15{\times}15$ and $170$~s on $50{\times}15$; on
-$30{\times}15$ it follows the sampled rule closely until about $280$~s.
-Given enough time, however, the search reaches the same quality without
-the seed: from $100$~s per instance on, the two versions are not
-distinguishable on any set, and over the 42 instances at the end of
-their horizons the seeded version is better on 20 ($p=0.74$;
-Supplementary Table~\ref{S-tab:semilla} gives the tests over time). An
-evolved dispatching rule is thus the cheapest way to give a per-instance
-metaheuristic a good first incumbent, the role constructive heuristics
-commonly play in the initialization of population
-methods~\citep{Kazimipour2014}, and its value as a seed lies in short
-budgets.
+The sampled rule gives the best results at first, until the genetic
+algorithm overtakes it, and that moment comes later the larger the
+instance: from about $10$~s per instance on the classical instances and
+$25$~s on $15{\times}15$ to about $300$~s on $50{\times}15$, with $83$~s
+on the intermediate $30{\times}15$. The genetic algorithm seeded with the
+rule is also ahead of the unseeded one at first, but the two converge:
+from $100$~s per instance on, the statistical tests detect no difference
+between them on any set (Supplementary Table~\ref{S-tab:semilla}).
 
 \section{Analysis}
 \label{sec:analysis}
