@@ -906,25 +906,19 @@ else:
                    for m in ('regla_bon', 'ga', 'ga_sembrado')), _k
     check('horizontes', '$900$, $1800$ and $3600$~s', 'e6_v2')
     # la calibracion que abre 6.5
-    check('el genetico publicado',
-          f"against the ${_C6['publicado']['GA']:.1f}\\%$ $\\RE$\npublished",
-          'e6_v2')
-    check('ESABC publicado', f"${_C6['publicado']['ESABC']:.1f}\\%$ of ESABC",
-          'e6_v2')
     _gaf, _ga100 = _C6['re']['final']['ga'], _C6['re']['100']['ga']
     _hueco = _gaf - _C6['publicado']['ESABC']
     assert _C6['horizonte'] == 900.0
     check('el genetico a 900 s en las clasicas',
-          f"it reaches ${_gaf:.1f}\\%$ in ${_C6['horizonte']:.0f}$~s per instance",
+          f"it achieves ${_gaf:.1f}\\%$ in ${_C6['horizonte']:.0f}$~s per instance",
           'e6_v2')
-    check('distancia a ESABC', f"still ${_hueco:.1f}$ points above", 'e6_v2')
-    check('lo que mejora de 100 a 900 s',
-          f"from ${_ga100:.1f}\\%$ to ${_gaf:.1f}\\%$", 'e6_v2')
+    check('el genetico publicado',
+          f"against\nthe ${_C6['publicado']['GA']:.1f}\\%$ $\\RE$ published", 'e6_v2')
     assert _gaf < _C6['publicado']['GA'], 'la reimplementacion no es fiel'
-    # "levels off": lo que gana en los ultimos 800 s es menos de lo que le
-    # falta para ESABC
+    # las conclusiones dicen que un metodo de poblacion se estanca lejos de
+    # ESABC: lo que gana de 100 a 900 s es menos de lo que le falta
     assert _ga100 - _gaf < _hueco, (
-        'el genetico no se estanca antes de ESABC: reescribir 6.5')
+        'el genetico no se estanca antes de ESABC: revisar las conclusiones')
     # lo que cuesta una muestra de la regla en decodificaciones del genetico
     _rat = {k: _V[k]['ms_schedule']['regla_bon'] / _V[k]['ms_schedule']['ga']
             for k in _K6}
