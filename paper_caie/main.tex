@@ -1093,11 +1093,7 @@ For a comparison at matched budget we implement the genetic algorithm of
 \citet{DiazGA2020} (Section~\ref{sec:reference}) in Python. On the 12
 classical instances it achieves $7.3\%$ in $900$~s per instance, against
 the $9.8\%$ $\RE$ published for the original. The rule and the genetic algorithm share decoder,
-evaluator and language. Budget is measured in seconds per
-instance, which charges each method for what a schedule costs it: a
-sample of the rule evaluates the tree on every eligible operation at
-every step, and costs as much as $15$ to $43$ decodings of the genetic
-algorithm, more the larger the instance. The comparison is run on the 12
+evaluator and language. The comparison is run on the 12
 classical instances, with 30 runs of $900$~s per instance and method,
 and on three Taillard classes that differ only in the number of jobs,
 $15{\times}15$, $30{\times}15$ and $50{\times}15$, with 3 runs per

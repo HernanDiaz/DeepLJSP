@@ -919,13 +919,6 @@ else:
     # ESABC: lo que gana de 100 a 900 s es menos de lo que le falta
     assert _ga100 - _gaf < _hueco, (
         'el genetico no se estanca antes de ESABC: revisar las conclusiones')
-    # lo que cuesta una muestra de la regla en decodificaciones del genetico
-    _rat = {k: _V[k]['ms_schedule']['regla_bon'] / _V[k]['ms_schedule']['ga']
-            for k in _K6}
-    check('coste de una muestra de la regla',
-          f"${min(_rat.values()):.0f}$ to ${max(_rat.values()):.0f}$ decodings",
-          'e6_v2')
-    assert _rat['15_15'] < _rat['30_15'] < _rat['50_15'], 'el coste no crece con el tamano'
     # un segundo en las clasicas
     _r1 = _C6['re']['1']
     check('un segundo en las clasicas',
