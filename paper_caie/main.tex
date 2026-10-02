@@ -1094,11 +1094,11 @@ implementation against published C\texttt{++} results, each obtained
 under its authors' own stopping rule. For a comparison at matched budget
 we use our implementation of the genetic algorithm of
 \citet{DiazGA2020} (Section~\ref{sec:reference}). It is a faithful
-reference: on the 12 classical instances it reaches $8.3\%$ at $2^{19}$
-schedule constructions, and the $9.8\%$ published for the original after
-about $13$~s per instance, and it levels off short of the $5.5\%$ of
-ESABC, a distance due to the local search of the ABC variants rather
-than to budget. The rule and the genetic algorithm share decoder,
+reference: on the 12 classical instances it falls below the $9.8\%$
+published for the original, and after $900$~s per instance it stands at
+$7.3\%$, still $1.7$ points above the $5.5\%$ of ESABC. Since between
+$100$ and $900$~s it improves only from $8.1\%$ to $7.3\%$, that distance
+is due to the local search of the ABC variants rather than to budget. The rule and the genetic algorithm share decoder,
 evaluator and language, and both are implemented without avoidable
 overhead: the rule is compiled into a single function that computes only
 the terminals it reads, and the decoder and crossover of the genetic
@@ -1133,14 +1133,13 @@ The four instance sets order the methods in the same way. With little
 time the sampled rule is the best use of it: after one second per
 instance on the classical instances it stands at $11.6\%$, against
 $14.3\%$ for the seeded genetic algorithm and $27.1\%$ for the unseeded
-one. The genetic algorithm matches a single pass of the rule after $2$
-to $46$~s per instance, and overtakes the sampled rule later, the later
-the larger the instance: from about $10$~s on the classical instances,
-$25$~s on $15{\times}15$, $83$~s on $30{\times}15$ and $300$~s on
-$50{\times}15$. From there on it stays below, and at the end of the
-horizon both genetic algorithms are ahead of the sampled rule in mean.
-The difference is significant for the seeded version on the classical
-instances (better on 11 of 12, $p=0.012$) and on $50{\times}15$ (9 of
+one. The unseeded genetic algorithm matches a single pass of the rule
+after $2$ to $46$~s per instance, and overtakes the sampled rule later,
+the later the larger the instance: from about $10$~s on the classical
+instances, $25$~s on $15{\times}15$, $83$~s on $30{\times}15$ and $300$~s
+on $50{\times}15$, staying below it from then on. At the end of the
+horizon both genetic algorithms are ahead of the sampled rule in mean,
+significantly for the seeded version on the classical instances (better on 11 of 12, $p=0.012$) and on $50{\times}15$ (9 of
 10, $p=0.006$), where the unseeded version is also significantly better
 ($p=0.020$), and not on the two smaller Taillard classes. The advantage
 of the rule is therefore not that it optimizes better, but that it is
