@@ -931,10 +931,10 @@ else:
     _cg = [_V[k]['cruce']['ga_bon'] for k in _K6]
     assert all(c is not None for c in _cg) and _cg == sorted(_cg), _cg
     check('cruces del genetico con el mejor-de-N',
-          f"from about ${_redondea(_cg[0])}$~s per instance on the classical "
-          f"instances and\n${_redondea(_cg[1])}$~s on $15{{\\times}}15$ to about "
-          f"${_redondea(_cg[3])}$~s on $50{{\\times}}15$, with "
-          f"${_redondea(_cg[2])}$~s\non the intermediate $30{{\\times}}15$",
+          f"from approximately ${_redondea(_cg[0])}$~s per instance on the "
+          f"classical instances and ${_redondea(_cg[1])}$~s on $15{{\\times}}15$ "
+          f"to approximately ${_redondea(_cg[3])}$~s on $50{{\\times}}15$, with "
+          f"${_redondea(_cg[2])}$~s on the intermediate $30{{\\times}}15$ class",
           'e6_v2')
     # al principio el mejor-de-N va por delante de los dos geneticos
     for _k in _K6:
@@ -949,8 +949,8 @@ else:
             if _t == 'final' or float(_t) >= 100:
                 assert _c['p'] > 0.05, (_k, _t)
     check('la semilla deja de notarse',
-          'from $100$~s per instance on, the statistical tests detect no '
-          'difference\nbetween them on any set', 'e6_v2')
+          'from $100$~s per instance onwards, the statistical tests detect '
+          'no difference between them on any instance set', 'e6_v2')
     # la tabla S de la semilla, celda a celda
     for _t in ('1', '3', '10', '30', '100', '300', '1000', 'final'):
         _cel = []

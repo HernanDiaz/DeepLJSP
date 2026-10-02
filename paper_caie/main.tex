@@ -1110,21 +1110,24 @@ $30{\times}15$ (c) and $50{\times}15$ (d).}
 \label{fig:budget}
 \end{figure}
 
-The sampled rule gives the best results at first, until the genetic
-algorithm overtakes it, and that moment comes later the larger the
-instance: from about $10$~s per instance on the classical instances and
-$25$~s on $15{\times}15$ to about $300$~s on $50{\times}15$, with $83$~s
-on the intermediate $30{\times}15$. The advantage of the rule is
-therefore not that it optimizes better, but that it is effective at
-budgets too small for search to be so, and how small depends on the size
-of the instance. The genetic algorithm seeded with the best rule is also ahead of the unseeded one at first, but the two
-converge: from $100$~s per instance on, the statistical tests detect no
-difference between them on any set (Supplementary
-Table~\ref{S-tab:semilla}). An evolved dispatching rule is thus the
-cheapest way to give a per-instance metaheuristic a good first
-incumbent, the role constructive heuristics commonly play in the
-initialization of population methods~\citep{Kazimipour2014}, and its
-value as a seed lies in short budgets.
+At low budgets the sampled rule attains the lowest $\RE$ of all methods,
+until the genetic algorithm surpasses it. The budget at which this
+occurs increases with instance size, from approximately $10$~s per
+instance on the classical instances and $25$~s on $15{\times}15$ to
+approximately $300$~s on $50{\times}15$, with $83$~s on the
+intermediate $30{\times}15$ class. The advantage of the rule therefore
+lies not in superior optimization but in its effectiveness at budgets
+too small for search to be competitive, a threshold that grows with the
+size of the instance. Seeding the genetic algorithm with the best rule
+likewise yields an initial advantage over the unseeded version, but the
+two converge: from $100$~s per instance onwards, the statistical tests
+detect no difference between them on any instance set (Supplementary
+Table~\ref{S-tab:semilla}). An evolved dispatching rule thus provides an
+inexpensive means of supplying a per-instance metaheuristic with a
+high-quality initial solution, the role constructive heuristics commonly
+play in the initialization of population-based
+methods~\citep{Kazimipour2014}, and its value as a seed is confined to
+short budgets.
 
 \section{Analysis}
 \label{sec:analysis}
