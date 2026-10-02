@@ -757,34 +757,44 @@ Elitism & $\{1, 2, 4\}$ & $2$ \\
 
 \subsection{Evaluation measures and statistical analysis}
 \label{sec:stats}
-Quality is reported as the relative error $\RE$ of
-Section~\ref{sec:problem}. The spread of a prediction is the relative
-width of the interval makespan,
-$W = (\overline{C}_{\max}-\underline{C}_{\max})/E[\mathbf{C}_{\max}]
-\times 100$, and executional robustness is measured by
-$\bar\varepsilon$ of Eq.~\eqref{eq:eps} and by the absolute deviation
-$|\Delta|$, the same average taken before dividing by
-$E[\mathbf{C}_{\max}]$ and expressed in time units. Both are averages
-over realizations; the tail of the same realizations is described by the
-conditional value-at-risk at level $\alpha=0.95$, $\mathrm{CVaR}_{0.95}$,
-the mean of the $5\%$ largest values of a quantity, which is applied to
-the overrun $C^{\mathrm{ex}}_{\max}-E[\mathbf{C}_{\max}]$ of the executed
-makespan beyond its prediction, in time units, and to the executed
-makespan itself, expressed as $\RE$ over the same bound $\LB$. All of
-these are estimated by Monte Carlo over realizations of the durations,
-as described in Section~\ref{sec:robustness}. Lower is better on every
-measure.
+Every measure below is to be minimized. Those that concern the
+execution of a schedule are estimated by Monte Carlo over realizations
+of the durations, as described in Section~\ref{sec:robustness}.
+\begin{itemize}
+\item \emph{Quality}: the relative error $\RE$ of
+  Section~\ref{sec:problem}, in percent.
+\item \emph{Width of the prediction}: the relative width of the interval
+  makespan,
+  $W = (\overline{C}_{\max}-\underline{C}_{\max})/E[\mathbf{C}_{\max}]
+  \times 100$.
+\item \emph{Executional robustness}: the mean deviation of the executed
+  makespan from its prediction, both normalized, $\bar\varepsilon$ of
+  Eq.~\eqref{eq:eps}, and in time units, $|\Delta|$, the same average
+  taken before dividing by $E[\mathbf{C}_{\max}]$.
+\item \emph{Tail of the execution}: the conditional value-at-risk at
+  level $\alpha=0.95$, $\mathrm{CVaR}_{0.95}$, the mean of the $5\%$
+  largest values of a quantity over the same realizations. It is applied
+  to the overrun $C^{\mathrm{ex}}_{\max}-E[\mathbf{C}_{\max}]$ of the
+  executed makespan beyond its prediction, in time units, and to the
+  executed makespan itself, expressed as $\RE$ over the same bound
+  $\LB$.
+\end{itemize}
 
-Two kinds of comparison appear, with different experimental units.
+Comparisons are of two kinds, with different experimental units.
 Methods are compared instance by instance, pairing their values on the
-same instances. Arms of evolutions, which differ in terminal set,
-fitness or benchmark, are compared seed by seed, pairing
-the rules evolved with the same seed after averaging each rule over the
-instances. In both cases the test is the two-sided Wilcoxon signed-rank
-test with exact $p$-values, reported with the normal-approximation
-statistic $z$ and, as effect size, the matched-pairs rank-biserial
-correlation $|r|$. Holm's correction is applied within each family of
-related comparisons, and where it changes a verdict the text says so.
+same instances; when a method is run several times on each instance,
+its value on an instance is the mean over the runs. Arms of evolutions,
+which differ in terminal set, fitness or benchmark, are compared seed by
+seed, pairing the rules evolved with the same seed after averaging each
+rule over the instances. In both cases the test is the two-sided
+Wilcoxon signed-rank test with exact $p$-values, reported with the
+normal-approximation statistic $z$ and, as effect size, the
+matched-pairs rank-biserial correlation $|r|$; in
+Section~\ref{sec:budget}, whose many contrasts are each over 10 to 12
+instances, it is reported instead with the number of instances favoring
+each method. Holm's correction is applied within each family
+of related comparisons, and where it changes a verdict the text says
+so.
 
 \subsection{Computing environment}
 \label{sec:env}
