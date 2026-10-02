@@ -150,12 +150,10 @@ This paper makes the following contributions:
   and~\ref{sec:anatomy}).
 \item An empirical study of the evolved rules on the 70 interval
   Taillard instances comprising (i) a comparison with deterministic
-  constructive methods at equal computational cost, (ii) an
+  constructive methods at equal computational cost and (ii) an
   evaluation of zero-shot generalization across instance sizes and to
-  a second benchmark of classical instances, and (iii) an analysis of
-  sensitivity to the choice and size of the training set, measured
-  against the variation between independent evolution runs
-  (Sections~\ref{sec:results} and~\ref{sec:trainset}).
+  a second benchmark of classical instances
+  (Section~\ref{sec:results}).
 \item A comparison with per-instance search, both against the
   published results of the IJSP metaheuristics and at matched budget
   against our Python implementation of the genetic algorithm published
@@ -191,8 +189,8 @@ published metaheuristics, and a comparison at matched budget with our
 implementation of a genetic algorithm. Section~\ref{sec:analysis} analyzes them: the
 anatomy of the rules and a worked example, the role of the decoder, the
 ablations of interval awareness, the robust objective and executional
-robustness, and the sensitivity of the results to the training set and
-to asymmetric intervals, before stating the limitations.
+robustness, and the sensitivity of the results to asymmetric
+intervals, before stating the limitations.
 Section~\ref{sec:conclusions} concludes.
 
 \section{Related Work}
@@ -699,8 +697,6 @@ classical ones play no part in this or in any other choice of the
 paper. Results are reported as the mean over the 30 rules, which no
 selection touches, beside the featured rule's value, except where a
 section states that a single rule is examined.
-Section~\ref{sec:trainset} repeats the whole protocol over five
-other training sets, of two, four and eight instances, and reports its effect.
 
 
 \subsection{Reference methods}
@@ -793,7 +789,7 @@ measure.
 Two kinds of comparison appear, with different experimental units.
 Methods are compared instance by instance, pairing their values on the
 same instances. Arms of evolutions, which differ in terminal set,
-fitness, training set or benchmark, are compared seed by seed, pairing
+fitness or benchmark, are compared seed by seed, pairing
 the rules evolved with the same seed after averaging each rule over the
 instances. In both cases the test is the two-sided Wilcoxon signed-rank
 test with exact $p$-values, reported with the normal-approximation
@@ -831,8 +827,7 @@ while that on the $60$ test instances falls only from $19.32$ to
 $18.71$ and that on the validation set hardly moves, from
 $19.85$ to $19.69$: the later generations specialize the
 rule to the four training instances more than they improve it
-elsewhere. Whether a larger training set narrows that gap is examined in
-Section~\ref{sec:trainset}. Over the same generations the best rules
+elsewhere. Over the same generations the best rules
 grow to a median of $27$ nodes, just below the cap of $30$
 (Figure~\ref{fig:convergence}b), and interval-width terminals make up
 about a fifth of their leaves throughout
@@ -1543,23 +1538,6 @@ where the effects are consistent but of three percent or less, and three
 other realization laws, under which the ordering and every significant
 contrast above hold.
 
-\subsection{Sensitivity to the training set}
-\label{sec:trainset}
-
-The rules of this paper are evolved on four instances, TA11--TA14,
-fixed before any result was inspected. Five further campaigns repeat the
-protocol unchanged over three alternative quadruples of the
-$20{\times}15$ class, a pair and an octuple (Supplementary
-Section~\ref{S-sec:trainset}). Evaluated on the 60 instances of the
-other size classes, which no campaign trains on, the six means span
-$0.66$ points, from $18.95\%$ to $19.61\%$, against a seed-to-seed
-standard deviation of $0.93$--$1.35$ within each campaign, and no
-campaign separates from TA11--TA14 once Holm correction is applied:
-which instances are trained on matters less than which seed the
-evolution starts from. What the training set does change is the shape
-of the rules, which select different tie-breakers around the same
-SLACK-led core.
-
 \subsection{Asymmetric intervals}
 \label{sec:asym}
 
@@ -1627,10 +1605,7 @@ either one, the evolved rules still outperform MWKR. (ii)~They
 generalize zero-shot across all size classes, evolved on
 $20{\times}15$ and best on the unseen $50{\times}15$; since every
 terminal is a per-operation attribute with no size-bound quantities,
-that transfer requires no retraining or rescaling. Nor does the
-result rest on the particular four instances trained on: across six
-training sets of two, four and eight instances the means span $0.66$
-points of $\RE$, less than the spread between evolution seeds.
+that transfer requires no retraining or rescaling.
 (iii)~Under the default expected-makespan objective, interval
 awareness at evolution time is
 unnecessary: removing the width terminals leaves it unchanged, and
