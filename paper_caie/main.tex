@@ -1115,9 +1115,14 @@ algorithm overtakes it, and that moment comes later the larger the
 instance: from about $10$~s per instance on the classical instances and
 $25$~s on $15{\times}15$ to about $300$~s on $50{\times}15$, with $83$~s
 on the intermediate $30{\times}15$. The genetic algorithm seeded with the
-rule is also ahead of the unseeded one at first, but the two converge:
-from $100$~s per instance on, the statistical tests detect no difference
-between them on any set (Supplementary Table~\ref{S-tab:semilla}).
+best rule is also ahead of the unseeded one at first, but the two
+converge: from $100$~s per instance on, the statistical tests detect no
+difference between them on any set (Supplementary
+Table~\ref{S-tab:semilla}). An evolved dispatching rule is thus the
+cheapest way to give a per-instance metaheuristic a good first
+incumbent, the role constructive heuristics commonly play in the
+initialization of population methods~\citep{Kazimipour2014}, and its
+value as a seed lies in short budgets.
 
 \section{Analysis}
 \label{sec:analysis}
