@@ -907,12 +907,15 @@ else:
     check('horizontes', '$900$, $1800$ and $3600$~s', 'e6_v2')
     # la calibracion que abre 6.5
     check('el genetico publicado',
-          f"the ${_C6['publicado']['GA']:.1f}\\%$ published", 'e6_v2')
+          f"against the ${_C6['publicado']['GA']:.1f}\\%$ $\\RE$\npublished",
+          'e6_v2')
     check('ESABC publicado', f"${_C6['publicado']['ESABC']:.1f}\\%$ of ESABC",
           'e6_v2')
     _gaf, _ga100 = _C6['re']['final']['ga'], _C6['re']['100']['ga']
     _hueco = _gaf - _C6['publicado']['ESABC']
-    check('el genetico a 900 s en las clasicas', f"stands at\n${_gaf:.1f}\\%$",
+    assert _C6['horizonte'] == 900.0
+    check('el genetico a 900 s en las clasicas',
+          f"it reaches ${_gaf:.1f}\\%$ in ${_C6['horizonte']:.0f}$~s per instance",
           'e6_v2')
     check('distancia a ESABC', f"still ${_hueco:.1f}$ points above", 'e6_v2')
     check('lo que mejora de 100 a 900 s',

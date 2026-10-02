@@ -1094,11 +1094,11 @@ implementation against published C\texttt{++} results, each obtained
 under its authors' own stopping rule. For a comparison at matched budget
 we use our implementation of the genetic algorithm of
 \citet{DiazGA2020} (Section~\ref{sec:reference}). It is a faithful
-reference: on the 12 classical instances it falls below the $9.8\%$
-published for the original, and after $900$~s per instance it stands at
-$7.3\%$, still $1.7$ points above the $5.5\%$ of ESABC. Since between
-$100$ and $900$~s it improves only from $8.1\%$ to $7.3\%$, that distance
-is due to the local search of the ABC variants rather than to budget. The rule and the genetic algorithm share decoder,
+reference: on the 12 classical instances, against the $9.8\%$ $\RE$
+published for the original, it reaches $7.3\%$ in $900$~s per instance,
+still $1.7$ points above the $5.5\%$ of ESABC. Since between $100$ and
+$900$~s it improves only from $8.1\%$ to $7.3\%$, that distance is due to
+the local search of the ABC variants rather than to budget. The rule and the genetic algorithm share decoder,
 evaluator and language, and both are implemented without avoidable
 overhead: the rule is compiled into a single function that computes only
 the terminals it reads, and the decoder and crossover of the genetic
