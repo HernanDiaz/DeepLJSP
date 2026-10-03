@@ -1264,18 +1264,22 @@ and~\ref{sec:robustness} rather than here.
 \subsection{Interval handling and the decoder}
 \label{sec:decoder}
 
-Two checks on the comparison with the constructive baselines are
-reported in Supplementary Section~\ref{S-sec:decoder}. Ranking candidates
-by the lower endpoint, the midpoint or the upper endpoint of each
-interval, instead of by the lexicographic order of Eq.~\eqref{eq:rank},
-moves EST and MWKR by at most $2.4$ points, against the $23.3$ that
-separate the best plain rule from the evolved one. And holding the
-decoder fixed, the evolved rules outperform MWKR under either one:
-$18.99$ against $64.7$ in the semi-active decoder and $23.18$ against
-$29.5$ inside Giffler and Thompson's conflict set, where the rules,
-evolved against the whole eligible set, lose $4.2$ points while MWKR
-gains $35.2$. Each method in Table~\ref{tab:baselines} is thus reported
-with the decoder that suits it, and the margin survives the other
+The comparison with the constructive baselines could depend on two
+choices that are not part of the rules themselves, and Supplementary
+Section~\ref{S-sec:decoder} examines both. The first is how a baseline
+compares intervals: Table~\ref{tab:baselines} ranks candidates
+lexicographically, Eq.~\eqref{eq:rank}, and ranking them instead by the
+lower endpoint, the midpoint or the upper endpoint changes the $\RE$ of
+EST and MWKR by at most $2.4$ points, far less than the $23.3$ points
+that separate the best of them, EST, from the evolved rules. The second
+is the decoder. The evolved rules choose among all eligible operations
+and build semi-active schedules, whereas G\&T-MWKR, the strongest
+baseline, chooses only within Giffler and Thompson's conflict set and
+builds active ones. Exchanging the decoders shows that the evolved rules
+outperform MWKR under both: $18.99$ against $64.7$ with the semi-active
+decoder and $23.18$ against $29.5$ with the conflict set. Each method in
+Table~\ref{tab:baselines} is therefore reported with the decoder that
+suits it, and the margin of the evolved rules does not depend on that
 choice.
 
 \subsection{The value of interval awareness: ablations}
