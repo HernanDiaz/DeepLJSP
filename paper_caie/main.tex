@@ -690,7 +690,7 @@ were also regenerated with intervals skewed to the right. The crisp
 duration is recovered from the midpoint of the symmetric version, which
 the scheme above preserves exactly, and the bounds are drawn as
 $p - \mathrm{round}(p\,U[0,0.05])$ and
-$p + \mathrm{round}(p\,U[0,0.25])$, so that a duration may fall up to $5%$ below its nominal value and up to $25%$ above it. Machine routes are unchanged and
+$p + \mathrm{round}(p\,U[0,0.25])$, so that a duration may fall up to $5\%$ below its nominal value and up to $25\%$ above it. Machine routes are unchanged and
 the crisp Taillard bounds still apply. Over the $37{,}250$ operations
 the mean total width is $14.3\%$ of $p$ against $12.9\%$ for the
 symmetric scheme: the two benchmarks differ above all in the shape of
@@ -1478,8 +1478,9 @@ intervals are widened, and the advantage of the robust rule grows with
 the widening: at $+40\%$ its $\bar\varepsilon$ is $6.08$, against $7.57$
 for the makespan rule and $8.58$ for G\&T-MWKR.
 
-Because $\bar\varepsilon$ divides by the expected makespan, a method with
-a longer predicted makespan reads as more robust than it is.
+Because $\bar\varepsilon$ is relative to the expected makespan
+(Eq.~\eqref{eq:eps}), the same absolute deviation yields a lower
+$\bar\varepsilon$ for a method with a longer predicted makespan.
 Figure~\ref{fig:robplane} therefore repeats the comparison in time
 units, against the quality of the prediction. In absolute terms the rule
 deviates by $12.30$ time units, against $14.64$ for EST and $14.94$ for
