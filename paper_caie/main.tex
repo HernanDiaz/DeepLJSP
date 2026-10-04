@@ -54,14 +54,12 @@ that Generalize Across Instance Sizes}
             country={Spain}}
 
 \begin{abstract}
-In the job shop scheduling problem with interval durations (IJSP),
-processing times are known only to lie within intervals and schedules
-are built by interval arithmetic. We bring automated dispatching-rule
-design to this problem with a genetic programming hyper-heuristic that
-evolves compact, human-readable priority rules over an
-\emph{interval-aware} terminal set,
-exposing both the worst-case values and the widths of the uncertain
-quantities, and deploys them in a single constructive pass. On the 70
+We present a genetic programming hyper-heuristic that evolves
+dispatching rules for the job shop scheduling problem with interval
+durations (IJSP), in which processing times are known only to lie within
+intervals. The rules read both the worst-case value and the width of
+each uncertain quantity, build a schedule in a single constructive pass,
+and are compact enough to be read by hand. On the 70
 interval Taillard instances, 30 evolutions average $18.99\%$
 ($\pm1.33$) relative error over reference bounds and the rule selected on the validation set attains $17.71\%$,
 improving on the strongest constructive baseline, Giffler--Thompson/MWKR
