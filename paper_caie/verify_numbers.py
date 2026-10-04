@@ -101,11 +101,8 @@ if os.path.exists(res):
         if m:
             check(f"{label}: RE", f"{m.group(1)} \\pm {m.group(2)}", "RESULTADOS.md")
             check(f"{label}: ancho", f"{m.group(3)} \\pm {m.group(4)}", "RESULTADOS.md")
-    for pat, label in ((r"RE z=(-?[\d.]+)", "Wilcoxon RE makespan"),
-                       (r"ancho z=(-?[\d.]+)", "Wilcoxon ancho makespan")):
-        m = re.search(pat, txt)
-        if m:
-            check(label, f"z={float(m.group(1)):.2f}", "RESULTADOS.md")
+    # los z de RESULTADOS.md eran del Wilcoxon pareado por semilla; el
+    # articulo usa Mann-Whitney y lo recomputa el bloque de la ablacion
 
 # ---- barrido de lambda, citado en prosa en 7.2 -------------------------
 sw = os.path.join(REPO, "benchmarks/lambda_sweep/lambda_sweep_tuned.csv")
@@ -269,32 +266,44 @@ if os.path.exists(abl):
             wn = sum(ranks[i] for i in range(len(d)) if d[i] < 0)
             return abs(wp - wn) / (wp + wn)
 
-        por = defaultdict(dict)
+        # brazos independientes: Mann-Whitney, recomputado desde los CSV por
+        # regla con las funciones de scripts/brazos_mw.py
+        sys.path.insert(0, os.path.join(REPO, "scripts"))
+        from brazos_mw import mw as _mw, holm as _holm
+        por = defaultdict(list)
         for r in csv.DictReader(open(abl, encoding="utf-8")):
-            por[(r["objetivo"], r["terminales"])][r["seed"]] = (
-                float(r["re"]), float(r["ancho"]))
-        print("\n== tests de tab:ablation (ablation_por_regla.csv) ==")
-        for obj in ("makespan", "robust"):
-            for i, que in ((0, "RE"), (1, "ancho")):
-                a, b = por[(obj, "full")], por[(obj, "nowidth")]
-                com = sorted(set(a) & set(b), key=int)
-                x = [a[s][i] for s in com]
-                y = [b[s][i] for s in com]
-                st, p = wilcoxon(x, y, method="exact")
-                n = len(com)
-                z = (st - n * (n + 1) / 4) / (n * (n + 1) * (2 * n + 1) / 24) ** 0.5
-                # la tabla lleva el signo del sentido del efecto: negativo si el
-                # brazo con anchuras sale peor en esa medida
-                z = z if sum(x) / n > sum(y) / n else -z
-                if p >= 0.05:
-                    check(f"{obj}/{que}: no significativo", f"z={z:.2f}", abl)
-                else:
-                    tramo = ("p<0.001" if p < 0.001 else
-                             "p<0.01" if p < 0.01 else "p<0.05")
-                    check(f"{obj}/{que}: test", f"z={z:.2f}$, ${tramo}", abl)
-                    if que == "ancho":     # los |r| que la prosa de 7.2 cita
-                        check(f"{obj}/{que}: efecto",
-                              f"|r|={rank_biserial(x, y):.2f}", abl)
+            por[(r["objetivo"], r["terminales"])].append(
+                (float(r["re"]), float(r["ancho"])))
+        por[("crisp", "nowidth")] = [
+            (float(r["re"]), float(r["ancho"])) for r in csv.DictReader(open(
+                os.path.join(REPO, "benchmarks/midpoint_control_por_regla.csv"),
+                encoding="utf-8"))]
+        _fam = {}
+        for _et, _a, _b in (("makespan", ("makespan", "full"), ("makespan", "nowidth")),
+                            ("robust", ("robust", "full"), ("robust", "nowidth")),
+                            ("crisp", ("crisp", "nowidth"), ("makespan", "nowidth"))):
+            for i, que in ((0, "re"), (1, "ancho")):
+                _fam[f"{_et}/{que}"] = _mw([x[i] for x in por[_a]],
+                                           [x[i] for x in por[_b]])
+        _holm(_fam)
+        print("\n== tests de la ablacion, Mann-Whitney (ablation_por_regla.csv) ==")
+
+        def _tramo(p):
+            return "p<0.001" if p < 0.001 else "p<0.01" if p < 0.01 else "p<0.05"
+
+        for _k, _c in _fam.items():
+            # Holm no cambia ningun veredicto, como dice 7.4
+            assert (_c["p"] < 0.05) == (_c["p_holm"] < 0.05), _k
+            if _c["p"] >= 0.05:
+                check(f"{_k}: no significativo", f"z={_c['z']:.2f}", abl)
+            else:
+                check(f"{_k}: test", f"z={_c['z']:.2f}$, ${_tramo(_c['p'])}", abl)
+        for _k in ("makespan/ancho", "robust/ancho"):
+            check(f"{_k}: z y |r|", f"z={_fam[_k]['z']:.2f}$, ${_tramo(_fam[_k]['p'])}$, "
+                  f"$|r|={_fam[_k]['r']:.2f}", abl)
+        # el sentido de cada efecto que 7.4 afirma
+        assert _fam["makespan/ancho"]["z"] < 0 and _fam["robust/ancho"]["z"] < 0
+        assert _fam["robust/re"]["z"] > 0
 
         # los |r| de eps-barra que cita 7.3, desde robustness_seis.csv
         rob = os.path.join(REPO, "benchmarks/robustness_seis.csv")
@@ -357,6 +366,16 @@ if os.path.exists(epr):
     for a in ("full", "nowidth", "rob-full", "rob-nowidth"):
         mu, sd = stats(braz[a])
         check(f"brazo {a}: eps", f"{mu:.2f} \\pm {sd:.2f}", epr)
+    # los tres contrastes entre brazos, Mann-Whitney con Holm
+    sys.path.insert(0, os.path.join(REPO, "scripts"))
+    from brazos_mw import mw as _mw2, holm as _holm2
+    _fe = _holm2({"full vs nowidth": _mw2(braz["full"], braz["nowidth"]),
+                  "rob-full vs rob-nowidth": _mw2(braz["rob-full"], braz["rob-nowidth"]),
+                  "rob-full vs full": _mw2(braz["rob-full"], braz["full"])})
+    for _k, _c in _fe.items():
+        assert _c["p_holm"] < 0.05 and _c["z"] < 0, _k
+        check(f"eps por brazo, {_k}", f"$z={_c['z']:.2f}$", epr)
+        check(f"eps por brazo, {_k}: |r|", f"$|r|={_c['r']:.2f}$", epr)
 
 # ---- lo que tarda una evolucion (6.1), de los logs ---------------------
 _tev = os.path.join(REPO, "benchmarks/tiempos_evolucion.json")
@@ -1005,45 +1024,35 @@ else:
             check(f'{_ek} de {_et}',
                   f"${_v[_k]['media']:.2f} \\pm {_v[_k]['sd']:.2f}$",
                   f'e4/{_r}')
-    # los contrastes que el texto cita, y su correccion
-    _C = _A['contrastes']
-    for _par, _k, _et in (
-            ('rob1 vs rob1_nowidth', 'anchura', 'anchura, robusto'),
-            ('rob1 vs rob1_nowidth', 'abs', 'desviacion, robusto'),
-            ('rob1 vs full', 'abs', 'desviacion, robusto vs makespan')):
-        _c = _C[_par][_k]
-        _a, _b = _par.split(' vs ')
-        _ps = _A['ramas']
-        _x = [_ps[_a]['por_semilla'][s][_k]
-              for s in sorted(_ps[_a]['por_semilla'], key=int)]
-        _y = [_ps[_b]['por_semilla'][s][_k]
-              for s in sorted(_ps[_b]['por_semilla'], key=int)]
-        check_zr(f'z y |r| de {_et}', f"-{abs(_c['z']):.2f}",
-                 f"{_biserial(_x, _y):.2f}", f'e4/{_par}')
-    # "en cada una de las quince semillas" solo si la biserial vale 1
+    # los contrastes que el texto cita, Mann-Whitney con Holm sobre los nueve
+    sys.path.insert(0, os.path.join(REPO, 'scripts'))
+    from brazos_mw import mw as _mw4, holm as _holm4
     _ps = _A['ramas']
-    _x = [_ps['rob1']['por_semilla'][s]['abs']
-          for s in sorted(_ps['rob1']['por_semilla'], key=int)]
-    _y = [_ps['full']['por_semilla'][s]['abs']
-          for s in sorted(_ps['full']['por_semilla'], key=int)]
-    assert (abs(_biserial(_x, _y) - 1.0) < 1e-12) == (
-        'for every one of the fifteen seeds' in TEX_1L), (
-        'el texto dice "cada una de las quince" y la biserial no es 1')
-    check('Holm del RE bajo makespan, que no sobrevive',
-          f"$p={_C['full vs nowidth']['re']['p_holm']:.2f}$ adjusted",
-          'e4/full vs nowidth')
-    # el mayor p ajustado entre los que el texto declara supervivientes
-    _vivos = [_v['p_holm'] for _par, _d in _C.items() for _k, _v in
-              _d.items() if _v['p_holm'] < 0.05]
-    check('el mayor p ajustado de los que sobreviven',
-          f'${max(_vivos):.4f}$', 'e4, derivado')
+    _F4 = {}
+    for _par in ('full vs nowidth', 'rob1 vs rob1_nowidth', 'rob1 vs full'):
+        _a, _b = _par.split(' vs ')
+        for _k in ('re', 'anchura', 'abs'):
+            _F4[f'{_par}/{_k}'] = _mw4([v[_k] for v in _ps[_a]['por_semilla'].values()],
+                                       [v[_k] for v in _ps[_b]['por_semilla'].values()])
+    _holm4(_F4)
+    for _k, _et in (('rob1 vs rob1_nowidth/anchura', 'anchura, robusto'),
+                    ('rob1 vs rob1_nowidth/abs', 'desviacion, robusto'),
+                    ('rob1 vs full/abs', 'desviacion, robusto vs makespan')):
+        check_zr(f'z y |r| de {_et}', f"{_F4[_k]['z']:.2f}",
+                 f"{_F4[_k]['r']:.2f}", 'e4, Mann-Whitney')
+    _vivos = [_c['p_holm'] for _c in _F4.values() if _c['p_holm'] < 0.05]
     assert len(_vivos) == 5, f'{len(_vivos)} contrastes sobreviven, no 5'
-    # y los dos que NO sobreviven, que el texto tambien declara
+    check('el mayor p ajustado de los que sobreviven', f'${max(_vivos):.4f}$',
+          'e4, Mann-Whitney')
+    check('Holm del RE bajo makespan, que no sobrevive',
+          f"$p={_F4['full vs nowidth/re']['p_holm']:.2f}$ adjusted", 'e4')
+    check('la anchura bajo makespan no separa',
+          f"$p={_F4['full vs nowidth/anchura']['p']:.2f}$", 'e4')
+    check('la desviacion bajo makespan no separa',
+          f"$p={_F4['full vs nowidth/abs']['p']:.2f}$", 'e4')
+    _C = _A['contrastes']
     check('lo que cuesta la anchura bajo makespan',
           f"${_C['full vs nowidth']['re']['d']:.2f}$ points",
-          'e4/full vs nowidth')
-    check('la anchura bajo makespan no separa',
-          f"$p={_C['full vs nowidth']['anchura']['p']:.2f}$",
           'e4/full vs nowidth')
 if os.path.exists(_e4g):
     import json as _json2

@@ -152,6 +152,7 @@ python -m ijsp_gp.asymmetric --source ../instances/interval_taillard \
 | Worked example and census                         | worked_example.json |
 | Interval conventions and decoders                 | decoder_and_conventions.json |
 | Terminal ablation and midpoint control            | ablation_por_regla.csv, midpoint_control_por_regla.csv |
+| Contrasts between arms (Mann-Whitney, Holm)       | arm_contrasts.json |
 | Lambda sweep, full arm                            | lambda_sweep_tuned.csv, lambda_por_regla.csv |
 | Lambda sweep, no-width arm                        | lambda_nowidth_por_regla_completo.csv |
 | Robustness table (per instance)                   | robustness_seis.csv |

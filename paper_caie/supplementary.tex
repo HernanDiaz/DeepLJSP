@@ -165,12 +165,14 @@ ablation ($z=-5.17$, $|r|=0.71$).
 The comparisons above select one representative rule per arm; at the
 level of the method the ordering is the same. Recomputing
 $\bar\varepsilon$ at the nominal width for all 30 rules of each arm
-and pairing by seed, the makespan arm averages $5.67 \pm 0.16$ against
-$5.77 \pm 0.14$ for its ablation ($z=-2.58$, $p<0.05$ after Holm's
-correction over the three arm-level tests, $|r|=0.54$), the robust
-$\lambda{=}1$ arm $5.50 \pm 0.30$ against $5.68 \pm 0.11$ for its own
-($z=-3.26$, $p<0.01$, $|r|=0.68$), and the robust arm improves on the
-makespan arm with the same terminals ($z=-2.46$, $p<0.05$, $|r|=0.51$).
+and comparing the arms as independent samples, the makespan arm averages
+$5.67 \pm 0.16$ against $5.77 \pm 0.14$ for its ablation
+($z=-2.40$, $p<0.05$ after Holm's correction over the three
+arm-level tests, $|r|=0.36$), the robust $\lambda{=}1$ arm
+$5.50 \pm 0.30$ against $5.68 \pm 0.11$ for its own ($z=-2.91$,
+$p<0.05$, $|r|=0.44$), and the robust arm improves on the
+makespan arm with the same terminals ($z=-2.68$, $p<0.05$,
+$|r|=0.40$).
 
 Two things follow. The width terminals do reduce
 $\bar\varepsilon$ slightly even under the makespan objective, a method-level effect too small to be detected in the single featured pair; and
@@ -283,23 +285,23 @@ $13.03 \pm 0.16$ \\
 
 The main result is reproduced. Under the robust objective the
 width terminals narrow the predicted interval from $12.97$ to $12.67$
-($z=-3.24$, $|r|=0.95$) and the executed deviation from $13.03$ to
-$12.75$ ($z=-2.90$, $|r|=0.85$), and the robust arm improves on the
+($z=-3.59$, $|r|=0.77$) and the executed deviation from $13.03$ to
+$12.75$ ($z=-2.80$, $|r|=0.60$), and the robust arm improves on the
 makespan arm carrying the same terminals by $0.55$ points of width and
-$0.61$ time units of deviation, the latter for every one of the fifteen
-seeds ($z=-3.41$, $|r|=1.00$). These five contrasts survive Holm's
-correction over the nine tests of the table, the largest adjusted $p$
-among them being $0.0101$. The robustness that the width terminals make
+$0.61$ time units of deviation ($z=-3.59$, $|r|=0.77$ for the
+latter). These five contrasts survive Holm's correction over the nine
+Mann--Whitney tests of the table, the largest adjusted $p$ among them
+being $0.0273$. The robustness that the width terminals make
 attainable, and the objective under which they attain it, therefore do
 not depend on the symmetric generation scheme.
 
 Under the makespan objective the results are weaker than on the symmetric benchmark. There, the width terminals made the predicted
 interval slightly but significantly narrower even though that objective
 does not reward it (Section~\ref{M-sec:ablation}); here they do not
-($13.23$ against $13.08$, $p=0.89$), nor do they reduce the executed
-deviation ($13.36$ against $13.06$, $p=0.11$), and they cost $1.18$
+($13.23$ against $13.08$, $p=0.59$), nor do they reduce the executed
+deviation ($13.36$ against $13.06$, $p=0.17$), and they cost $1.18$
 points of $\RE$, a difference that does not survive the correction
-($p=0.10$ adjusted). The negative result for expected makespan holds on
+($p=0.14$ adjusted). The negative result for expected makespan holds on
 both benchmarks, and the remaining results are consistent with the boundary of
 Section~\ref{M-sec:frontier}: where the objective does not price width,
 the smaller terminal set is the better choice.
@@ -408,7 +410,7 @@ seed in Figure~\ref{M-fig:ablation} of the article.
 \begin{table}[!htb]
 \centering\small
 \caption{Ablations of the interval machinery (30 independent evolutions
-per arm; paired rank tests between arms): the terminal ablation under
+per arm; Mann--Whitney tests between arms): the terminal ablation under
 two fitness objectives, and the crisp-midpoint control, evolved with
 scalar fitness and no interval information, tested against the
 interval-trained arm above it. \emph{Width} is the relative width of
@@ -424,16 +426,16 @@ Fitness objective & Terminal set & RE (\%) & Width (\%) \\
 \multirow{3}{*}{Makespan $E[\mathbf{C}_{\max}]$}
  & full & $18.99 \pm 1.33$ & $12.41 \pm 0.30$ \\
  & without widths & $18.66 \pm 1.08$ & $12.62 \pm 0.23$ \\
- & \textit{test} & \textit{n.s.} ($z=-0.83$) & $z=3.40$, $p<0.001$ \\
+ & \textit{test} & \textit{n.s.} ($z=0.67$) & $z=-2.96$, $p<0.01$ \\
 \midrule
 \multirow{2}{*}{Midpoint control}
  & without widths & $18.63 \pm 0.99$ & $12.55 \pm 0.17$ \\
- & \textit{test} & \textit{n.s.} ($z=-0.13$) & \textit{n.s.} ($z=-1.29$) \\
+ & \textit{test} & \textit{n.s.} ($z=-0.12$) & \textit{n.s.} ($z=-1.26$) \\
 \midrule
 \multirow{3}{*}{Robust, Eq.~\eqref{M-eq:robustfit}}
  & full & $19.62 \pm 1.52$ & $12.04 \pm 0.75$ \\
  & without widths & $18.42 \pm 0.87$ & $12.47 \pm 0.20$ \\
- & \textit{test} & $z=-3.75$, $p<0.001$ & $z=3.22$, $p<0.001$ \\
+ & \textit{test} & $z=3.59$, $p<0.001$ & $z=-2.99$, $p<0.01$ \\
 \bottomrule
 \end{tabular}
 \end{table}

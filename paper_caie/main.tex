@@ -784,16 +784,19 @@ of the durations, as described in Section~\ref{sec:robustness}.
 Comparisons are of two kinds, with different experimental units.
 Methods are compared instance by instance, pairing their values on the
 same instances; when a method is run several times on each instance,
-its value on an instance is the mean over the runs. Arms of evolutions,
-which differ in terminal set, fitness or benchmark, are compared seed by
-seed, pairing the rules evolved with the same seed after averaging each
-rule over the instances. In both cases the test is the two-sided
-Wilcoxon signed-rank test with exact $p$-values, reported with the
-normal-approximation statistic $z$ and, as effect size, the
-matched-pairs rank-biserial correlation $|r|$; in
+its value on an instance is the mean over the runs. The test is the
+two-sided Wilcoxon signed-rank test with exact $p$-values, reported with
+the normal-approximation statistic $z$ and, as effect size, the
+matched-pairs rank-biserial correlation $|r|$. Arms of evolutions, which
+differ in terminal set, fitness or benchmark, share nothing but the seed
+number, so they are compared as independent samples of rules, each
+averaged over the instances, with the two-sided Mann--Whitney rank-sum
+test, reported with its normal-approximation $z$, negative when the
+first arm named has the lower values, and the rank-biserial correlation
+$|r|$, which is $1$ when the two arms do not overlap. In
 Section~\ref{sec:budget}, whose many contrasts are each over 10 to 12
-instances, it is reported instead with the number of instances favoring
-each method. Holm's correction is applied within each family
+instances, the Wilcoxon test is reported instead with the number of
+instances favoring each method. Holm's correction is applied within each family
 of related comparisons, and where it changes a verdict the text says
 so.
 
@@ -1286,44 +1289,45 @@ The interval-width terminals are the distinctive ingredient of this
 setting, so we isolate their contribution by ablation: the 30
 evolutions are repeated without the width terminals ($\mathit{PTW}$,
 $\mathit{ESTW}$, $\mathit{WKRW}$), everything else held fixed,
-including the irace configuration of Section~\ref{sec:irace}, which was
-selected on the full terminal set, so the ablated arm runs with
-hyperparameters tuned for a larger primitive set than its own. Interval
-information also enters the evolution through the fitness, which scores
-every schedule by interval arithmetic. To remove it as well, 30 further
-rules are evolved on the crisp midpoint counterparts of the training
-instances (Section~\ref{sec:instances}), with the same seeds,
-configuration and reduced terminal set, so that they never handle
-interval data. Figure~\ref{fig:ablation} compares the arms seed by seed
-(Section~\ref{sec:stats}); Supplementary Table~\ref{S-tab:ablation}
-gives their means, and Holm's correction over its tests changes none of
-the verdicts.
+including the irace configuration of Section~\ref{sec:irace}. That
+configuration was selected on the full terminal set, so if anything it
+handicaps the ablated arm, which runs with hyperparameters tuned for a
+larger primitive set than its own. Interval information also enters the
+evolution through the fitness, which scores every schedule by interval
+arithmetic. To remove it as well, 30 further rules are evolved on the
+crisp midpoint counterparts of the training instances
+(Section~\ref{sec:instances}), with the same configuration and reduced
+terminal set, so that they never handle interval data.
+Figure~\ref{fig:ablation} shows the 30 rules of each arm, compared as
+independent samples (Section~\ref{sec:stats});
+Supplementary Table~\ref{S-tab:ablation} gives their means, and Holm's
+correction over its tests changes none of the verdicts.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_ablation.pdf}
-\caption{Ablations of the interval machinery, seed by seed over the 30
-evolutions of each arm: paired differences in RE (a) and in the relative
-width of the predicted makespan interval (b) over the 70 instances.
-Negative values favor the first arm named in each row; diamonds mark the
-median, and the labels give the paired Wilcoxon test.}
+\caption{Ablations of the interval machinery: the 30 evolved rules of
+each arm, each averaged over the 70 instances, in RE (a) and in the
+relative width of the predicted makespan interval (b). Diamonds mark the
+median of each arm, and the label between two arms gives their
+Mann--Whitney test.}
 \label{fig:ablation}
 \end{figure}
 
-Under the makespan objective the width terminals do not improve the
-quantity being optimized: the differences in RE are centered on zero
-($z=-0.83$, n.s.), with a sign that favors the smaller terminal set.
-They do affect the schedules, whose predicted interval is slightly but
-consistently narrower ($z=3.40$, $p<0.001$, $|r|=0.71$), even though
-nothing in this objective rewards narrowness. The crisp control is
-indistinguishable from the interval-trained arm on both measures
-($z=-0.13$ and $z=-1.29$, n.s.), although the two fitness functions
-differ, since $\max$ does not commute with taking midpoints. For
-expected makespan, then, neither the terminals nor the interval fitness
-is needed. The robust objective of the next section changes this: with
-the width terminals the predicted interval becomes narrower at a cost in
-$\RE$, a trade-off that cannot be replicated on a crisp instance, where
-the width is identically zero.
+The width terminals change the schedules even when nothing rewards it:
+under the makespan objective, the rules that read them predict narrower
+makespan intervals ($z=-2.96$, $p<0.01$,
+$|r|=0.44$). In expected makespan, the quantity this objective
+optimizes, the evolution reaches the same quality with or without them
+($z=0.67$, n.s.), and the crisp control matches the
+interval-trained arm on both measures ($z=-0.12$ and
+$z=-1.26$, n.s.), although the two fitness functions
+differ, since $\max$ does not commute with taking midpoints. What
+interval awareness adds is therefore not a lower expected makespan but
+control over the width of the prediction, which the robust objective of
+the next section exploits: with the width terminals the predicted
+interval becomes narrower at a cost in $\RE$, a trade-off that cannot be
+replicated on a crisp instance, where the width is identically zero.
 
 \subsection{The robust objective: trading expected makespan for
 predictability}
@@ -1342,8 +1346,8 @@ $\lambda$ setting the balance between the two; we take $\lambda = 1$
 here. Under this objective the separation widens. Rules evolved with the
 width terminals produce schedules whose makespan interval is
 significantly narrower than those evolved without them
-($12.04 \pm 0.75$ versus $12.47 \pm 0.20$ relative width; paired
-Wilcoxon $z=3.22$, $p<0.001$, $|r|=0.67$), at the cost of a higher
+($12.04 \pm 0.75$ versus $12.47 \pm 0.20$ relative width;
+Mann--Whitney $z=-2.99$, $p<0.01$, $|r|=0.45$), at the cost of a higher
 expected makespan ($19.62$ versus $18.42$ $\RE$), which is the
 trade-off the robust objective is designed to make.
 

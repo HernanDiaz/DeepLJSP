@@ -144,6 +144,8 @@ def main():
           os.path.join(R, "budget", "size_classes_curves.csv"))
     copia("benchmarks/bench_fast_regla.json",
           os.path.join(R, "budget", "compiled_rule_speed.json"))
+    # contrastes entre brazos (7.4, 7.5, S2, S4), Mann-Whitney con Holm
+    copia("benchmarks/brazos_mw.json", os.path.join(R, "arm_contrasts.json"))
     copia("benchmarks/e6_presupuesto/calibracion.json",
           os.path.join(R, "budget", "ga_calibration_training.json"))
     with open("benchmarks/e6_tamanos/curvas.csv", encoding="utf-8") as h:
