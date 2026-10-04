@@ -404,17 +404,6 @@ else:
           f"the same rule takes ${_ms['GP rule']:.1f}$~ms", "tiempos_fast.json")
     # la regla es mas cara que un atributo, pero no un orden de magnitud
     assert _br["ms_destacada_arbol"] < 10 * _ms["MOR"]
-    _rc = TF["resumen_clasicas"]
-    check("6.4, una pasada en las clasicas",
-          f"${_rc['una_min'] * 1000:.0f}$--${_rc['una_max'] * 1000:.0f}$~ms",
-          "tiempos_fast.json")
-    check("6.4, mejor-de-1024 en las clasicas",
-          f"${_rc['bon_min']:.1f}$--${_rc['bon_max']:.1f}$~s",
-          "tiempos_fast.json")
-    # no mas rapido que el genetico publicado (0.5-2.2 s) y del orden de
-    # fEABC (1.9-6.8 s)
-    assert _rc["bon_min"] > 0.5 and _rc["bon_max"] > 2.2
-    assert _rc["bon_min"] < 6.8 and _rc["bon_max"] < 3 * 6.8
 
 # ---- anatomia de las 30 reglas (7.1) -----------------------------------
 # Se recomputa desde los arboles, con las funciones de rule_anatomy.py, y

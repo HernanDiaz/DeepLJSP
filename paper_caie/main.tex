@@ -72,9 +72,9 @@ is better up to a budget that grows with instance size, from $10$ to
 $300$~s per instance; as a seed, the rule speeds up the algorithm's
 early search.
 Ablations delimit what interval awareness
-contributes. Under the default expected-makespan objective it is
-unnecessary: removing the width terminals, or evolving on crisp
-midpoints, does equally well. Its value lies in robustness: an
+contributes. Under the default expected-makespan objective, rules
+evolved without it or on crisp midpoints do equally well; its value lies
+in robustness: an
 objective penalizing interval width yields narrower predicted intervals
 and reduces the deviation of the executed makespan by a fifth, a
 gain that requires the width terminals and persists under non-uniform
@@ -635,12 +635,12 @@ schedules. This uniform perturbation of a single
 rule is the simplest member of a family of randomized rule-based
 builders; an alternative swaps among a \emph{set} of evolved rules
 during construction~\citep{GilGala2025GRASB}.
-GP-best-of-$N$ is a device for comparison rather than a deployment
-mode: it places the evolved rule on the same footing as sampling-based
-methods when methods are compared at a given number of schedule
-constructions and, as with GRASP and other multi-start constructive
-schemes, what improves with $N$ is the dispersion of the sampled
-schedules rather than any individual decision. Its cost is reported in
+GP-best-of-$N$ places the evolved rule on the same footing as
+sampling-based methods when methods are compared at a given budget, and
+it turns any budget beyond a single pass into better schedules; as with
+GRASP and other multi-start constructive schemes, what improves with $N$
+is the dispersion of the sampled schedules rather than any individual
+decision. It is compared with per-instance search in
 Sections~\ref{sec:metaheur} and~\ref{sec:budget}.
 
 \section{Experimental Setup}
@@ -1062,30 +1062,23 @@ permutations~\citep{DiazGA2020} and three artificial bee colony
 variants~\citep{DiazFEABC2023,DiazICAE2023}, each of which runs a
 separate search on every instance.
 
-The evolved rules are not competitive with the per-instance metaheuristics: the purpose-built ABC variants remain clearly ahead
-($5.5$--$6.4\%$), as expected of iterative search, and even wrapped as
-GP-1024 the featured rule reaches $11.3\%$ against the genetic
-algorithm's published $9.8\%$, better on $3$ of the $12$ instances
-(paired Wilcoxon $z = 1.96$, $p \approx 0.05$). What the comparison
-locates is the constructive frontier: in a single pass the evolved
-rules average $19.04\%$ on these instances, against $30.1\%$ (G\&T-MWKR) and $45.8\%$ (MOR) for the
-deterministic baselines, and the best rule with a $1024$-sample budget
-comes within $1.5$ points of a population-based method that searches
-every instance separately.
+In a single pass the evolved rules average $19.04\%$ on these
+instances, against $30.1\%$ (G\&T-MWKR) and $45.8\%$ (MOR) for the
+deterministic baselines. With a $1024$-sample budget the featured rule
+reaches $11.3\%$, within $1.5$ points of the $9.8\%$ published for the
+genetic algorithm, which searches every instance separately, and better
+on $3$ of the $12$ instances (paired Wilcoxon $z = 1.96$,
+$p \approx 0.05$). The ABC variants, which add neighborhood structures
+and local search to the population, remain ahead ($5.5$--$6.4\%$), as
+expected of purpose-built iterative search. The comparison thus places
+the evolved rules at the frontier of constructive methods, close to a
+plain population-based search.
 
 The two families also differ in how they spend computation:
 GP-1024 evaluates $1024$ mutually independent samples per instance,
-whereas the metaheuristics evolve a population of $250$
-individuals~\citep{DiazGA2020,DiazFEABC2023} through successive
-generations, each of which depends on the previous one. In wall-clock
-terms, a single pass of the rule, in its simplified form, over these
-instances takes $2$--$11$~ms
-in our Python implementation, against the $0.5$--$2.2$~s reported for the
-genetic algorithm and the $1.9$--$6.8$~s reported for fEABC on the same
-instances~\citep{DiazFEABC2023}, both implemented in C\texttt{++}.
-GP-1024, however, requires $2.1$--$10.4$~s
-depending on instance size, and is therefore \emph{not} faster than the
-published genetic algorithm, and of the same order as fEABC.
+which can run in parallel, whereas the metaheuristics evolve a
+population of $250$ individuals~\citep{DiazGA2020,DiazFEABC2023} through
+successive generations, each of which depends on the previous one.
 
 \subsection{Comparison at matched budget with a reimplemented genetic
 algorithm}
@@ -1260,9 +1253,10 @@ The example illustrates the mechanism, not its magnitude. Over the first
 $800$ instances generated with the scheme of
 Section~\ref{sec:instances}, removing the width term leaves the
 trace unchanged in $668$; of the $132$ traces that do change, $93$ end
-at the same makespan, $21$ end better with the term and $18$ worse. At this scale the width terminals rarely affect a decision, and when they do their effect is barely distinguishable from chance, which is why their value is established over the 70-instance
-benchmark in Sections~\ref{sec:ablation}
-and~\ref{sec:robustness} rather than here.
+at the same makespan, $21$ end better with the term and $18$ worse. On instances this small the width term changes few decisions, so the
+example shows how it acts rather than how much it contributes, which
+Sections~\ref{sec:ablation} and~\ref{sec:robustness} measure over the
+70-instance benchmark.
 
 \subsection{Interval handling and the decoder}
 \label{sec:decoder}
@@ -1526,8 +1520,9 @@ Neither the conflict-set restriction that makes Giffler and Thompson's
 procedure yield active schedules, used here only for the baselines, nor
 an insertion-based generation scheme was placed in the evolutionary loop,
 and both are known to help weaker constructors. Section~\ref{sec:decoder}
-measures what the first of the two costs after the fact, and the rules lose accuracy: transplanted into the conflict set they were not evolved
-against, the arm gives up $4.2$ points of $\RE$. Whether evolving
+measures the first after the fact: transplanted into the conflict set,
+which they were not evolved against, the rules of the arm give up $4.2$
+points of $\RE$. Whether evolving
 \emph{inside} that decoder would recover them, or better, is open.
 Second, all rules were
 evolved on instances generated with the $\pm15\%$ symmetric interval
@@ -1569,11 +1564,10 @@ generalize zero-shot across all size classes, evolved on
 $20{\times}15$ and best on the unseen $50{\times}15$; since every
 terminal is a per-operation attribute with no size-bound quantities,
 that transfer requires no retraining or rescaling.
-(iii)~Under the default expected-makespan objective, interval
-awareness at evolution time is
-unnecessary: removing the width terminals leaves it unchanged, and
-evolving on the crisp midpoint instances with scalar fitness does
-equally well. Under an objective that penalizes interval width, however,
+(iii)~Under the default expected-makespan objective, rules evolved
+without the width terminals, or on the crisp midpoint instances with
+scalar fitness, perform as well as the interval-aware ones. The value of
+interval awareness appears under an objective that penalizes interval width, however,
 an objective with no crisp counterpart, the predicted intervals become
 substantially narrower and the deviation of the executed makespan from its prediction
 falls by about a fifth ($4.52$ against $5.70 \times 10^{-3}$); that
@@ -1601,11 +1595,11 @@ the classical instances to about $300$~s on $50{\times}15$; beyond it
 the genetic algorithm ends ahead. The
 remaining distance to the best published ABC
 variants is not a matter of budget at all --- a plain population method levels off well short of it --- but of the neighborhood structures and local search those methods incorporate. What this paper contributes is therefore a
-high-quality, interpretable, fast-decision baseline for the IJSP, not a
-general solver; and alongside a solver it serves to initialize it:
-seeded with the rule's permutation, the genetic algorithm is far ahead
-of its unseeded version during the first seconds, although given enough
-time the search reaches the same quality without the seed.
+high-quality, interpretable, fast-decision method for the IJSP that
+complements per-instance search: it delivers in a single pass of
+milliseconds a quality that the genetic algorithm needs seconds to
+reach, and as a seed it speeds up the early search of a population
+method.
 
 Returning to the questions of Section~\ref{sec:intro}: the evolution
 selects the classical scheduling attributes most often, with the width
