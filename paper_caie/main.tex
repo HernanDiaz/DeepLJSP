@@ -690,7 +690,7 @@ were also regenerated with intervals skewed to the right. The crisp
 duration is recovered from the midpoint of the symmetric version, which
 the scheme above preserves exactly, and the bounds are drawn as
 $p - \mathrm{round}(p\,U[0,0.05])$ and
-$p + \mathrm{round}(p\,U[0,0.25])$, so that a duration may fall slightly below its nominal value and considerably above it. Machine routes are unchanged and
+$p + \mathrm{round}(p\,U[0,0.25])$, so that a duration may fall up to $5%$ below its nominal value and up to $25%$ above it. Machine routes are unchanged and
 the crisp Taillard bounds still apply. Over the $37{,}250$ operations
 the mean total width is $14.3\%$ of $p$ against $12.9\%$ for the
 symmetric scheme: the two benchmarks differ above all in the shape of
@@ -1462,7 +1462,8 @@ Under the makespan objective the featured rule and its ablated
 counterpart are statistically indistinguishable ($5.70$ against $5.75$
 at the nominal width; paired Wilcoxon over the 70 instances,
 $z=-0.17$), although over all 30 rules of each arm the width terminals
-reduce $\bar\varepsilon$ slightly (Supplementary
+reduce the mean $\bar\varepsilon$ from $5.77$ to $5.67$ (Mann--Whitney
+$z=-2.40$, $p<0.05$ after Holm's correction; Supplementary
 Section~\ref{S-sec:robdetail}). The rule is more robust than G\&T-MWKR
 ($6.29$, $z=-4.42$, $p<0.001$, $|r|=0.61$) and as robust as EST ($5.66$,
 $z=0.42$), whose predicted makespan is far longer: a low deviation does
