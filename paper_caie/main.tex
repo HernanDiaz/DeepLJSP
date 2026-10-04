@@ -1548,91 +1548,64 @@ different selection of classical instances.
 \label{sec:conclusions}
 
 We presented a GP hyper-heuristic for job shop scheduling with interval
-durations:
-priority rules evolved over a terminal set that exposes both the
-worst-case values and the widths of the uncertain quantities, compact
-enough to be read and simplified by hand. The empirical conclusions are
-four. (i)~Evolved rules outperform every
-deterministic constructive baseline on the 70-instance benchmark by a
-wide, statistically significant margin ($18.99 \pm 1.33$ over 30
-evolutions, $17.71\%$ for the best rule, versus $29.5\%$ for the
-strongest baseline, which the best rule outperforms on all 70 instances) at
-the cost of a single constructive pass, and the margin is not an
-artifact of the schedule generation scheme: holding the decoder fixed,
-either one, the evolved rules still outperform MWKR. (ii)~They
-generalize zero-shot across all size classes, evolved on
-$20{\times}15$ and best on the unseen $50{\times}15$; since every
-terminal is a per-operation attribute with no size-bound quantities,
-that transfer requires no retraining or rescaling.
-(iii)~Under the default expected-makespan objective, rules evolved
-without the width terminals, or on the crisp midpoint instances with
-scalar fitness, perform as well as the interval-aware ones. The value of
-interval awareness appears under an objective that penalizes interval width, however,
-an objective with no crisp counterpart, the predicted intervals become
-substantially narrower and the deviation of the executed makespan from its prediction
-falls by about a fifth ($4.52$ against $5.70 \times 10^{-3}$); that
-reduction requires the width terminals, since under the same objective
-the ablated arm reaches only $5.54$ and no value of $\lambda$ narrows its
-intervals. The gain comes at the cost of a higher expected makespan,
-and the weight $\lambda$ governs the trade-off. It extends to the tail
-of the distribution: over the worst $5\%$ of executions the overrun
-beyond the prediction falls in about the same proportion, although those
-executions remain longer in absolute terms, as the expected makespan
-given up for the reliability determines.
-The robustness result survives a change of generator: re-evolved on a
-right-skewed benchmark, the width terminals again narrow both the
-predicted interval and the executed deviation under the robust
-objective, and again leave expected makespan unimproved under the
-default one.
+durations, which evolves priority rules over a terminal set exposing
+both the worst-case values and the widths of the uncertain quantities.
+The evolved rules are compact enough to be read and simplified by hand.
+In a single constructive pass they average $18.99\%$ over 30 evolutions,
+and the best rule attains $17.71\%$, against $29.5\%$ for the strongest
+baseline, G\&T-MWKR; the best rule outperforms every deterministic
+constructive baseline on all 70 interval Taillard instances, and the
+margin holds whichever decoder is used. Evolved on four $20{\times}15$
+instances, the rules transfer without retraining to every size class and
+to the classical instances, and perform best on the unseen
+$50{\times}15$ class.
 
-(iv)~Where an evolved rule stands against per-instance search is a
-question of budget, and it has a measurable answer. Against our Python
-implementation of the genetic algorithm published for this problem,
-which shares decoder, evaluator and language with the rule, the rule's
-sampled variant is the better use of computation up to a time that
-grows with the size of the instance, from about $10$~s per instance on
-the classical instances to about $300$~s on $50{\times}15$; beyond it
-the genetic algorithm ends ahead. The
-remaining distance to the best published ABC
-variants is not a matter of budget at all --- a plain population method levels off well short of it --- but of the neighborhood structures and local search those methods incorporate. What this paper contributes is therefore a
-high-quality, interpretable, fast-decision method for the IJSP that
-complements per-instance search: it delivers in a single pass of
-milliseconds a quality that the genetic algorithm needs seconds to
-reach, and as a seed it speeds up the early search of a population
-method.
+The questions of Section~\ref{sec:intro} receive the following answers.
+First, the evolution selects the classical scheduling attributes most
+often, slack, work remaining, earliest start and processing time, and
+keeps the width terminals in most rules. Second, under the default
+expected-makespan objective the magnitude of the uncertainty is not
+needed to dispatch well: rules evolved without the width terminals, or
+on the crisp midpoint instances, perform as well as the interval-aware
+ones. Third, an objective that rewards a narrow makespan interval does
+lead to more predictable executions. The predicted intervals become
+narrower and the deviation of the executed makespan from its prediction
+falls by about a fifth, a reduction that extends to the worst executions
+and that the width terminals also achieve on asymmetric intervals, at
+the cost of a higher expected makespan governed by the weight $\lambda$.
+The reduction requires the width terminals, so it is under this
+objective that the magnitude of the uncertainty becomes useful
+information.
 
-Returning to the questions of Section~\ref{sec:intro}: the evolution
-selects the classical scheduling attributes most often, with the width
-terminals present in most rules; whether the magnitude of the
-uncertainty is useful, and whether a robust objective yields more
-predictable executions, are answered by (iii); and where such rules stand
-against per-instance search, by (iv).
+Fourth, the place of evolved rules among per-instance methods depends on
+the budget. Against our implementation of the genetic algorithm
+published for the IJSP, which shares decoder, evaluator and language
+with the rule, the sampled rule is the most effective method up to a
+budget that grows with instance size, from about $10$~s per instance on
+the classical instances to about $300$~s on $50{\times}15$, and a single
+pass delivers in milliseconds a quality that the genetic algorithm needs
+seconds to reach. Seeded with the rule, the genetic algorithm also
+progresses faster in its early search. Beyond those budgets per-instance
+search takes the lead, and the ABC variants, whose local search a plain
+population method does not replace, remain ahead of both. Evolved rules
+are therefore a high-quality, interpretable, fast-decision method for
+the IJSP that complements per-instance search, suited to settings in
+which schedules must be built or rebuilt quickly.
 
-Future work follows four lines. First, optimizing the numeric weights of
-an evolved rule, which the sensitivity analysis of
+Future work follows four lines. First, tuning the numeric weights of an
+evolved rule, which the sensitivity analysis of
 Section~\ref{sec:anatomy} suggests the evolution leaves unfinished.
-Two properties of this setting shape how such a search should be
-posed. Because operations are
-dispatched by \emph{argmin}, the priority is invariant to adding a
-constant and to multiplying by a positive one, so the standard technique
-of linear scaling~\citep{Keijzer2003} cannot help and only the
-\emph{relative} weights of the additive terms are free, $k-1$ of them
-for a rule with $k$ terms. And because the terminal set contains no
-ephemeral random constants, the evolution must build coefficients
-structurally, spending nodes of a bounded budget on arithmetic that a
-constant would express in one. Both an enriched terminal set and a local
-search over the relative weights, whether applied after evolution or to
-the elites of each generation, follow from these observations.
-Second, richer symbolic models:
-ensembles of complementary rules~\citep{GilGala2021Ensembles} and
-co-evolution of construction and tie-breaking. Third, carrying the seeding result of
-Section~\ref{sec:budget} to the published metaheuristics themselves:
-here it is a genetic algorithm of our own that the rule improves, and
-whether the ABC variants, whose local search starts from a different
-kind of incumbent, gain as much is open. The pools of diverse sequences produced by
-GP-best-of-$N$ are directly usable as seeded initial populations. Fourth, a controlled comparison with learned
-neural constructive policies under matched training and inference
-budgets, the head-to-head evaluation that the recent
+Because operations are dispatched by \emph{argmin}, the priority is
+invariant to adding a constant and to multiplying by a positive one, so
+linear scaling~\citep{Keijzer2003} cannot help and only the relative
+weights of the additive terms are free; an enriched terminal set or a
+local search over those weights follows. Second, richer symbolic models,
+such as ensembles of complementary rules~\citep{GilGala2021Ensembles}
+and the co-evolution of construction and tie-breaking. Third, seeding
+the published ABC variants with the rule, and with the diverse pools of
+sequences that GP-best-of-$N$ produces. Fourth, a controlled comparison
+with learned neural constructive policies under matched training and
+inference budgets, the evaluation that the recent
 literature~\citep{Xu2025} identifies as missing.
 
 \section*{CRediT authorship contribution statement}
