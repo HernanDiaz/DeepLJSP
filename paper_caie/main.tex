@@ -787,9 +787,12 @@ same instances; when a method is run several times on each instance,
 its value on an instance is the mean over the runs. The test is the
 two-sided Wilcoxon signed-rank test with exact $p$-values, reported with
 the normal-approximation statistic $z$ and, as effect size, the
-matched-pairs rank-biserial correlation $|r|$. Arms of evolutions, which
-differ in terminal set, fitness or benchmark, share nothing but the seed
-number, so they are compared as independent samples of rules, each
+matched-pairs rank-biserial correlation $|r|$. An \emph{arm} is a set of
+evolutions, 30 unless stated otherwise, run with the same configuration
+(terminal set, fitness and training instances) and differing only in the
+random seed; the \emph{full} arm uses the complete terminal set and the
+\emph{ablated} one omits the width terminals. Two arms share nothing but
+the seed numbers, so they are compared as independent samples of rules, each
 averaged over the instances, with the two-sided Mann--Whitney rank-sum
 test, reported with its normal-approximation $z$, negative when the
 first arm named has the lower values, and the rank-biserial correlation
