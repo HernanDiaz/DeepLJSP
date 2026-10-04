@@ -1338,13 +1338,17 @@ f_{\lambda} = \overline{C}_{\max} + \lambda\,
 \end{equation}
 that is, a low worst case \emph{and} a narrow interval, with the weight
 $\lambda$ setting the balance between the two; we take $\lambda = 1$
-here. Under this objective the separation widens. Rules evolved with the
+here; the two bottom rows of Figure~\ref{fig:ablation} show the
+outcome. Under this objective the difference in width between the arms
+with and without the width terminals doubles, from $0.20$ points
+under the makespan objective to $0.42$: rules evolved with the
 width terminals produce schedules whose makespan interval is
 significantly narrower than those evolved without them
 ($12.04 \pm 0.75$ versus $12.47 \pm 0.20$ relative width;
-Mann--Whitney $z=-2.99$, $p<0.01$, $|r|=0.45$), at the cost of a higher
-expected makespan ($19.62$ versus $18.42$ $\RE$), which is the
-trade-off the robust objective is designed to make.
+Mann--Whitney $z=-2.99$, $p<0.01$, $|r|=0.45$),
+at the cost of a higher expected makespan ($19.62$ versus $18.42$
+$\RE$; $z=3.59$, $p<0.001$, $|r|=0.54$), which is
+the trade-off the robust objective is designed to make.
 
 \begin{figure}[t]
 \centering
@@ -1371,6 +1375,15 @@ $19.20 \pm 1.52$ to $23.27 \pm 3.80$ $\RE$. At the far end of the sweep
 the schedules are therefore narrower than any the ablated rules produced,
 at a cost of about four points of $\RE$.
 
+Sweeping $\lambda$ for the ablated arm (ten evolutions per value)
+shows that it has no such curve: its width stays between $12.43$ and
+$12.56$ for every $\lambda$ from $0$ to $4$, whereas the full arm goes
+from $12.18$ to $10.54$ over the sweep, and no individual rule departs
+from this band. Penalizing width in the fitness therefore yields
+narrower intervals only when the rule has terminals through which to act
+on it: the objective and the representation are not two independent
+routes to the same end, the first works through the second.
+
 Read at the level of the arm, which is what a single evolution should
 be expected to deliver, the price of narrowness rises along the sweep,
 and between $\lambda = 2$ and $\lambda = 4$ the spread between
@@ -1380,18 +1393,9 @@ is therefore the default we would recommend. Selecting a rule within an
 arm amplifies both sides of the trade-off: the narrowest rule of the
 $\lambda = 1$ arm, used in Section~\ref{sec:robustness}, reduces the
 executed deviation by $16.2\%$ at a cost of $7.2$ points of $\RE$ with
-respect to the featured rule. A practitioner concerned only with
-expected makespan can, by Section~\ref{sec:ablation}, use the smaller
-terminal set without loss.
-
-Sweeping $\lambda$ for the ablated arm (ten evolutions per value)
-shows that it has no such curve: its width stays between $12.43$ and
-$12.56$ for every $\lambda$ from $0$ to $4$, whereas the full arm goes
-from $12.18$ to $10.54$ over the sweep, and no individual rule departs
-from this band. Penalizing width in the fitness therefore yields
-narrower intervals only when the rule has terminals through which to act
-on it: the objective and the representation are not two independent
-routes to the same end, the first works through the second.
+respect to the featured rule. For expected makespan alone the smaller
+terminal set suffices (Section~\ref{sec:ablation}); the width terminals
+become necessary when predictability matters.
 
 
 \begin{table}[t]
@@ -1403,9 +1407,10 @@ of the predicted makespan interval, and $\bar\varepsilon$
 ($\times10^3$) at nominal interval widths and widened by $+20\%$ and
 $+40\%$ (Monte Carlo, $K{=}1000$ realizations, common random numbers
 across methods). The last column is $|\Delta|$ at nominal widths. Each GP arm is
-represented by one rule: the makespan arms by their best $\RE$, the
-robust arms by their narrowest predicted interval, which is what their
-fitness optimizes.}
+represented by one rule chosen on the 70 instances to illustrate it: the
+makespan arms by their best $\RE$, the robust arms by their narrowest
+predicted interval; Supplementary Section~\ref{S-sec:robdetail} repeats
+the comparison over all 30 rules of each arm.}
 \label{tab:robustness}
 \begin{tabular}{lcccccc}
 \toprule

@@ -298,9 +298,17 @@ if os.path.exists(abl):
                 check(f"{_k}: no significativo", f"z={_c['z']:.2f}", abl)
             else:
                 check(f"{_k}: test", f"z={_c['z']:.2f}$, ${_tramo(_c['p'])}", abl)
-        for _k in ("makespan/ancho", "robust/ancho"):
+        for _k in ("makespan/ancho", "robust/ancho", "robust/re"):
             check(f"{_k}: z y |r|", f"z={_fam[_k]['z']:.2f}$, ${_tramo(_fam[_k]['p'])}$, "
                   f"$|r|={_fam[_k]['r']:.2f}", abl)
+        # 7.5: la diferencia de anchura entre brazos se duplica con el
+        # objetivo robusto
+        _d1 = _fam["makespan/ancho"]["media_b"] - _fam["makespan/ancho"]["media_a"]
+        _d2 = _fam["robust/ancho"]["media_b"] - _fam["robust/ancho"]["media_a"]
+        assert 1.8 < _d2 / _d1 < 2.3, (_d1, _d2)
+        check("7.5, la diferencia de anchura se duplica",
+              f"doubles, from ${_d1:.2f}$ points under the makespan objective "
+              f"to ${_d2:.2f}$", abl)
         # las medianas de RE con y sin anchuras que da 7.4
         import statistics as _st74
         check("7.4, medianas de RE con y sin anchuras",
