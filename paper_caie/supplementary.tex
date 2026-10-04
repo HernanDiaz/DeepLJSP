@@ -253,7 +253,7 @@ Sections~\ref{M-sec:ablation} and~\ref{M-sec:frontier} were therefore
 re-evolved on the asymmetric counterparts of TA11--TA14 described in
 Section~\ref{M-sec:instances}, with the same configuration and fifteen
 seeds per arm rather than thirty, a reduction imposed by the computational cost. Table~\ref{tab:asym} reports them over all 70 asymmetric
-instances, with the executed deviation estimated from $400$ realizations
+instances, with the deviation of the executed makespan estimated from $400$ realizations
 of the fixed processing order. Levels of $\RE$ do not compare across the
 two benchmarks, since the right skew raises the expected makespan while
 the crisp lower bound does not move and every arm sits some six points
@@ -283,7 +283,7 @@ $13.03 \pm 0.16$ \\
 
 The main result is reproduced. Under the robust objective the
 width terminals narrow the predicted interval from $12.97$ to $12.67$
-($z=-3.59$, $|r|=0.77$) and the executed deviation from $13.03$ to
+($z=-3.59$, $|r|=0.77$) and the deviation of the executed makespan from $13.03$ to
 $12.75$ ($z=-2.80$, $|r|=0.60$), and the robust arm improves on the
 makespan arm carrying the same terminals by $0.55$ points of width and
 $0.61$ time units of deviation ($z=-3.59$, $|r|=0.77$ for the
@@ -409,7 +409,7 @@ seed in Figure~\ref{M-fig:ablation} of the article.
 \centering\small
 \caption{Means of the ablation arms (30 evolutions each) and Mann--Whitney tests
 between them: the terminal ablation under two objectives, and the
-crisp-midpoint control against the interval-trained arm above it.
+crisp midpoint control against the interval-trained arm above it.
 \emph{Width} is the relative width of the predicted makespan
 interval.}
 \label{tab:ablation}
@@ -425,7 +425,7 @@ Fitness objective & Terminal set & RE (\%) & Width (\%) \\
  & without widths & $18.66 \pm 1.08$ & $12.62 \pm 0.23$ \\
  & \textit{test} & \textit{n.s.} ($z=0.67$) & $z=-2.96$, $p<0.01$ \\
 \midrule
-\multirow{2}{*}{Midpoint control}
+\multirow{2}{*}{Crisp midpoint control}
  & without widths & $18.63 \pm 0.99$ & $12.55 \pm 0.17$ \\
  & \textit{test} & \textit{n.s.} ($z=-0.12$) & \textit{n.s.} ($z=-1.26$) \\
 \midrule

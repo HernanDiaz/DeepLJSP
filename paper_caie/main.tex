@@ -158,7 +158,7 @@ This paper makes the following contributions:
 \item A comparison with per-instance search, both against the
   published results of the IJSP metaheuristics and at matched budget
   against our Python implementation of the genetic algorithm published
-  for the IJSP, in which the evolved rule, its sampled variant and the
+  for the IJSP, in which the evolved rule, its sampled variant GP-best-of-$N$ and the
   genetic algorithm, with and without the rule as a seed, share decoder
   and evaluator and are evaluated across budgets measured in seconds
   per instance, on instance sets of different sizes
@@ -225,7 +225,7 @@ population-based neighborhood search~\citep{Lei2011}, which ranks
 interval makespans by a possibility degree, was an early reference
 point; it was subsequently outperformed by a genetic algorithm with a
 systematic study of interval rankings~\citep{DiazGA2020} and by
-artificial bee colony variants~\citep{DiazFEABC2023,DiazICAE2023}, which
+artificial bee colony variants~\citep{DiazABC2022,DiazFEABC2023,DiazICAE2023}, which
 report the best published results for this problem. Related objectives
 have also been addressed under interval uncertainty, notably tardiness
 minimization~\citep{DiazTardiness2022}. All of these are iterative search
@@ -257,7 +257,8 @@ such variants~\citep{Panwalkar1977,Haupt1989}, and more recent ones
 compare those in current use across machine
 environments~\citep{Durasevic2018}. Beyond single-attribute rules, the algorithm of \citet{Giffler1960}, G\&T in what
 follows, restricts each choice to a machine's
-conflict set, guaranteeing \emph{active} schedules and markedly
+conflict set, the operations on the machine of the earliest-finishing
+candidate that can start before that candidate finishes, guaranteeing \emph{active} schedules and markedly
 improving plain rules when a priority criterion is used to break ties
 inside that set; we write G\&T-SPT and G\&T-MWKR for the resulting
 combinations. Stronger constructive procedures exist
@@ -340,20 +341,20 @@ the two operations required by makespan minimization are
 \max(\mathbf{a},\mathbf{b}) &= [\max(\underline{a},\underline{b}),\,
 \max(\overline{a},\overline{b})],
 \end{align}
-both component-wise, the standard operations of interval arithmetic~\citep{Moore2009} as used in the IJSP literature~\citep{DiazGA2020}. A solution determines a task
+both component-wise, the standard operations of interval arithmetic~\citep{Moore2009} as used in the IJSP literature~\citep{DiazGA2020}. A solution determines an operation
 processing order $\pi$ (a permutation with repetition of jobs, decoded
 left to right). Following the notation of \citet{DiazGA2020} and
 \citet{DiazICAE2023},
-let $\mathrm{PM}_o(\pi)$ and $\mathrm{PJ}_o$ denote the predecessors of task $o$ in its
+let $\mathrm{PM}_o(\pi)$ and $\mathrm{PJ}_o$ denote the predecessors of operation $o$ in its
 machine (according to $\pi$) and in its job. The \emph{semi-active}
-schedule~\citep{Sprecher1995} starts each task at
+schedule~\citep{Sprecher1995} starts each operation at
 \begin{equation}
 \mathbf{s}_o(\pi) = \max\big(\mathbf{c}_{\mathrm{PJ}_o}(\pi),\,
 \mathbf{c}_{\mathrm{PM}_o(\pi)}(\pi)\big), \qquad
 \mathbf{c}_o(\pi) = \mathbf{s}_o(\pi) + \mathbf{p}_o,
 \label{eq:sgs}
 \end{equation}
-so starting and completion times of all tasks are themselves intervals.
+so starting and completion times of all operations are themselves intervals.
 The problem can be stated as
 \begin{align}
 \min_R\; & \mathbf{C}_{\max} \label{eq:obj}\\
@@ -502,7 +503,9 @@ illustrative rule $\mathit{SLACK}/\mathit{PT} + \mathit{EST} -
 \label{sec:hhview}
 An individual is a priority expression tree (Figure~\ref{fig:tree}).
 Leaves are drawn from the interval-aware terminal set of
-Table~\ref{tab:terminals}, and internal nodes from the function set
+Table~\ref{tab:terminals}, whose three \emph{width terminals},
+$\mathit{PTW}$, $\mathit{ESTW}$ and $\mathit{WKRW}$, expose the widths of
+the intervals, and internal nodes from the function set
 \begin{equation}
 \mathcal{F} = \{\, +,\; -,\; \times,\; \div_p,\; \min,\; \max,\;
 \mathrm{neg} \,\},
@@ -552,7 +555,7 @@ deterministic constructive pass over the four training instances.
 \caption{GP hyper-heuristic for the IJSP}
 \label{alg:gp}
 \begin{algorithmic}[1]
-\State $P \gets$ ramped half-and-half($\mathit{pop}-2$) $\cup$ \{SPT, MWKR\}
+\State $P \gets$ ramped half-and-half($\mathit{pop}-2$) $\cup$ \{$\mathit{PT}$, $\mathrm{neg}(\mathit{WKR})$\}
 \State evaluate($P$) \Comment{mean RE of one constructive pass on the
 training instances}
 \For{$g = 1$ \textbf{to} $\mathit{gens}$}
@@ -588,8 +591,8 @@ Selection & tournament, size $k = 7$ \\
 Crossover / mutation prob. & $p_c = 0.77$ / $0.23$ (subtree, depth $\le 3$) \\
 Elitism & $e = 2$ \\
 Tree-size cap & $c = 30$ nodes (violations: fitness $\infty$) \\
-Fitness & mean RE, deterministic rollout, TA11--TA14 \\
-Seeds & $1$--$30$ (RNG of evolution and environment) \\
+Fitness & mean RE of one constructive pass, TA11--TA14 \\
+Seeds & $1$--$30$ (random generator of the evolution) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -773,7 +776,7 @@ of the durations, as described in Section~\ref{sec:robustness}.
   Eq.~\eqref{eq:eps}, and in time units, $|\Delta|$, the same average
   taken before dividing by $E[\mathbf{C}_{\max}]$.
 \item \emph{Tail of the execution}: the conditional value-at-risk at
-  level $\alpha=0.95$, $\mathrm{CVaR}_{0.95}$, the mean of the $5\%$
+  level $0.95$, $\mathrm{CVaR}_{0.95}$, the mean of the $5\%$
   largest values of a quantity over the same realizations. It is applied
   to the overrun $C^{\mathrm{ex}}_{\max}-E[\mathbf{C}_{\max}]$ of the
   executed makespan beyond its prediction, in time units, and to the
@@ -953,7 +956,7 @@ $2.7$~ms for MOR, which reads a single attribute.
 \subsection{Generalization across sizes and instance families}
 \label{sec:generalization}
 \label{sec:classics}
-Table~\ref{tab:gp70} reports single-rollout $\RE$ per size class over all
+Table~\ref{tab:gp70} reports single-pass $\RE$ per size class over all
 70 instances, as mean $\pm$ standard deviation across the 30 evolved
 rules and for the featured rule. Evolved only on $20{\times}15$,
 the featured rule attains its lowest $\RE$ on the
@@ -1003,7 +1006,8 @@ The rules also transfer to the second benchmark, whose 12 classical
 instances differ from the Taillard ones in origin, size and
 structure.
 Table~\ref{tab:classics} gives the featured rule's single-pass $\RE$ on
-each, together with GP-best-of-$N$ at $N = 64$ and $N = 1024$ and the
+each, together with GP-best-of-$N$ at $N = 64$ and $N = 1024$ (GP-64 and
+GP-1024) and the
 published results of the IJSP metaheuristics, which
 Section~\ref{sec:metaheur} discusses.
 
@@ -1011,8 +1015,10 @@ Section~\ref{sec:metaheur} discusses.
 \centering\small
 \caption{RE (\%) on the 12 classical interval instances: our methods and the
 published averages over 30 runs per instance of GA~\citep{DiazGA2020},
-ABC$_{E3}$, fEABC~\citep{DiazFEABC2023} and ESABC~\citep{DiazICAE2023}.
-LB is the best-known lower bound of the expected makespan.}
+ABC$_{E3}$~\citep{DiazABC2022}, fEABC~\citep{DiazFEABC2023} and
+ESABC~\citep{DiazICAE2023}. LB is the reference bound of
+Section~\ref{sec:problem}; GP-64 and GP-1024 are GP-best-of-$N$ with
+$N = 64$ and $1024$.}
 \label{tab:classics}
 \setlength{\tabcolsep}{4.5pt}
 \begin{tabular}{lrrrrrrrrr}
@@ -1059,7 +1065,7 @@ metric (Table~\ref{tab:classics}). Those methods belong to different
 algorithmic families, evolutionary computation and swarm intelligence:
 a genetic algorithm evolving a population of
 permutations~\citep{DiazGA2020} and three artificial bee colony
-variants~\citep{DiazFEABC2023,DiazICAE2023}, each of which runs a
+variants~\citep{DiazABC2022,DiazFEABC2023,DiazICAE2023}, each of which runs a
 separate search on every instance.
 
 In a single pass the evolved rules average $19.04\%$ on these
@@ -1089,7 +1095,9 @@ implementation is included in the data repository (see Data
 availability). On the 12
 classical instances it achieves $7.3\%$ $\RE$ in $900$~s per instance,
 against the $9.8\%$ published for the original. The rule and the genetic
-algorithm share decoder, evaluator and language. The comparison is run
+algorithm share decoder, evaluator and language. The seeded genetic
+algorithm places the permutation built by one pass of the featured rule
+in its initial population, alongside $249$ random ones. The comparison is run
 on the 12 classical instances, with 30 runs of $900$~s per instance and
 method, and on three Taillard classes representative of the different
 instance sizes, $15{\times}15$, $30{\times}15$ and $50{\times}15$. Each method is run 3 times on each of
@@ -1106,7 +1114,7 @@ $30{\times}15$ (c) and $50{\times}15$ (d).}
 \label{fig:budget}
 \end{figure}
 
-At low budgets the sampled rule attains the lowest $\RE$ of all methods,
+At low budgets GP-best-of-$N$ attains the lowest $\RE$ of all methods,
 until the genetic algorithm surpasses it. The budget at which this
 occurs increases with instance size, from approximately $10$~s per
 instance on the classical instances and $25$~s on $15{\times}15$ to
@@ -1205,7 +1213,8 @@ $M_3, M_2, M_1$ with durations $[28,30]$, $[20,26]$, $[24,32]$; $J_2$
 visits $M_1, M_3, M_2$ with $[26,30]$, $[10,12]$, $[16,18]$; and $J_3$
 visits $M_3, M_1, M_2$ with $[22,26]$, $[14,14]$, $[27,31]$.
 
-The two traces coincide in the first two decisions and diverge at the third, where $M_3$ has just been released by $o_{11}$ and the eligible
+The two traces, that is, the sequences of dispatching decisions, coincide
+in the first two decisions and diverge at the third, where $M_3$ has just been released by $o_{11}$ and the eligible
 set is $\{o_{12}, o_{22}, o_{31}\}$. Table~\ref{tab:case} gives the
 terminals and the resulting scores. All three candidates can start at
 the same time, so SLACK vanishes and the decision rests on the
@@ -1307,7 +1316,7 @@ under the makespan objective, the rules that read them predict narrower
 makespan intervals ($z=-2.96$, $p<0.01$,
 $|r|=0.44$). In expected makespan, the quantity this objective
 optimizes, the evolution reaches the same quality with or without them
-(medians $18.52$ and $18.61$; $z=0.67$, n.s.), and the crisp control
+(medians $18.52$ and $18.61$; $z=0.67$, n.s.), and the crisp midpoint control
 matches the interval-trained arm on both measures ($z=-0.12$ and
 $z=-1.26$, n.s.), although the two fitness functions
 differ, since $\max$ does not commute with taking midpoints. What
@@ -1380,7 +1389,7 @@ single run becomes much less predictable. A weight between $1$ and $2$
 is therefore the default we would recommend. Selecting a rule within an
 arm amplifies both sides of the trade-off: the narrowest rule of the
 $\lambda = 1$ arm, used in Section~\ref{sec:robustness}, reduces the
-executed deviation by $16.2\%$ at a cost of $7.2$ points of $\RE$ with
+deviation of the executed makespan, $|\Delta|$, by $16.2\%$ at a cost of $7.2$ points of $\RE$ with
 respect to the featured rule. For expected makespan alone the smaller
 terminal set suffices (Section~\ref{sec:ablation}); the width terminals
 become necessary when predictability matters.
@@ -1494,10 +1503,11 @@ Every instance used so far carries an interval symmetric about its
 crisp value, so what the width terminals contribute could belong to the
 generator rather than to the problem. Re-evolved on the right-skewed
 counterparts of TA11--TA14 described in Section~\ref{sec:instances},
-with fifteen seeds per arm, the four arms reproduce the main result
+with fifteen seeds per arm, the four arms of Sections~\ref{sec:ablation}
+and~\ref{sec:frontier} reproduce the main result
 (Supplementary Section~\ref{S-sec:asym}): under the robust objective the
 width terminals narrow the predicted interval from $12.97$ to $12.67$ and
-the executed deviation from $13.03$ to $12.75$, both significant after
+the deviation of the executed makespan from $13.03$ to $12.75$, both significant after
 Holm correction, whereas under the makespan objective they improve
 neither. The robustness that the width terminals make attainable
 therefore does not depend on the symmetric generation scheme.
@@ -1511,7 +1521,7 @@ procedure yield active schedules, used here only for the baselines, nor
 an insertion-based generation scheme was placed in the evolutionary loop,
 and both are known to help weaker constructors. Section~\ref{sec:decoder}
 measures the first after the fact: transplanted into the conflict set,
-which they were not evolved against, the rules of the arm give up $4.2$
+which they were not evolved against, the rules of the full makespan arm give up $4.2$
 points of $\RE$. Whether evolving
 \emph{inside} that decoder would recover them, or better, is open.
 Second, all rules were
@@ -1519,7 +1529,8 @@ evolved on instances generated with the $\pm15\%$ symmetric interval
 scheme standard in the IJSP literature; the robustness analysis of
 Section~\ref{sec:robustness} does re-evaluate the resulting schedules
 under intervals widened by $+20\%$ and $+40\%$, and
-Section~\ref{sec:asym} re-evolves the four arms on a right-skewed benchmark,
+Section~\ref{sec:asym} re-evolves the four arms of Sections~\ref{sec:ablation}
+and~\ref{sec:frontier} on a right-skewed benchmark,
 where the robustness contribution of the width terminals is unchanged,
 but no rule was evolved
 under a different \emph{width}, so how far these results carry to
@@ -1570,7 +1581,7 @@ information.
 Fourth, the place of evolved rules among per-instance methods depends on
 the budget. Against our implementation of the genetic algorithm
 published for the IJSP, which shares decoder, evaluator and language
-with the rule, the sampled rule is the most effective method up to a
+with the rule, GP-best-of-$N$ is the most effective method up to a
 budget that grows with instance size, from about $10$~s per instance on
 the classical instances to about $300$~s on $50{\times}15$, and a single
 pass delivers in milliseconds a quality that the genetic algorithm needs
