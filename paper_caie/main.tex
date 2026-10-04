@@ -1289,10 +1289,7 @@ The interval-width terminals are the distinctive ingredient of this
 setting, so we isolate their contribution by ablation: the 30
 evolutions are repeated without the width terminals ($\mathit{PTW}$,
 $\mathit{ESTW}$, $\mathit{WKRW}$), everything else held fixed,
-including the irace configuration of Section~\ref{sec:irace}. That
-configuration was selected on the full terminal set, so if anything it
-handicaps the ablated arm, which runs with hyperparameters tuned for a
-larger primitive set than its own. Interval information also enters the
+including the irace configuration of Section~\ref{sec:irace}. Interval information also enters the
 evolution through the fitness, which scores every schedule by interval
 arithmetic. To remove it as well, 30 further rules are evolved on the
 crisp midpoint counterparts of the training instances
