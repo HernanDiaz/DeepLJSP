@@ -1316,15 +1316,13 @@ under the makespan objective, the rules that read them predict narrower
 makespan intervals ($z=-2.96$, $p<0.01$,
 $|r|=0.44$). In expected makespan, the quantity this objective
 optimizes, the evolution reaches the same quality with or without them
-($z=0.67$, n.s.), and the crisp control matches the
-interval-trained arm on both measures ($z=-0.12$ and
+(medians $18.52$ and $18.61$; $z=0.67$, n.s.), and the crisp control
+matches the interval-trained arm on both measures ($z=-0.12$ and
 $z=-1.26$, n.s.), although the two fitness functions
 differ, since $\max$ does not commute with taking midpoints. What
 interval awareness adds is therefore not a lower expected makespan but
-control over the width of the prediction, which the robust objective of
-the next section exploits: with the width terminals the predicted
-interval becomes narrower at a cost in $\RE$, a trade-off that cannot be
-replicated on a crisp instance, where the width is identically zero.
+control over the width of the prediction, which
+Section~\ref{sec:frontier} examines under an objective that rewards it.
 
 \subsection{The robust objective: trading expected makespan for
 predictability}

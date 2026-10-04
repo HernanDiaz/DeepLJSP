@@ -301,6 +301,12 @@ if os.path.exists(abl):
         for _k in ("makespan/ancho", "robust/ancho"):
             check(f"{_k}: z y |r|", f"z={_fam[_k]['z']:.2f}$, ${_tramo(_fam[_k]['p'])}$, "
                   f"$|r|={_fam[_k]['r']:.2f}", abl)
+        # las medianas de RE con y sin anchuras que da 7.4
+        import statistics as _st74
+        check("7.4, medianas de RE con y sin anchuras",
+              f"medians ${_st74.median(x[0] for x in por[('makespan', 'full')]):.2f}$ "
+              f"and ${_st74.median(x[0] for x in por[('makespan', 'nowidth')]):.2f}$",
+              abl)
         # el sentido de cada efecto que 7.4 afirma
         assert _fam["makespan/ancho"]["z"] < 0 and _fam["robust/ancho"]["z"] < 0
         assert _fam["robust/re"]["z"] > 0
