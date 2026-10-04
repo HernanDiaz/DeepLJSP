@@ -61,17 +61,17 @@ hyper-heuristic to evolve dispatching rules for this problem, which build
 a complete schedule in a single pass. Each rule is a
 short, readable formula that ranks the candidate operations using both
 the upper bounds and the widths of the intervals. On the 70
-interval Taillard instances, the 30 rules obtained from independent
-evolutions average $18.99\%$ ($\pm1.33$) relative error over reference
+interval Taillard instances, the 30 rules from independent evolutions
+average $18.99\%$ ($\pm1.33$) relative error over reference
 bounds. The rule selected on the validation set attains $17.71\%$ and
 improves on the strongest constructive baseline, Giffler--Thompson/MWKR
 ($29.5\%$), on every instance. Evolved on four $20{\times}15$ instances,
 the rules transfer zero-shot to all size classes and to 12 classical
-instances. Against a reimplementation of a published genetic algorithm
-sharing the rule's decoder, the rule sampled repeatedly attains lower
-error up to a budget that grows with instance size, from $10$ to
-$300$~s per instance; as a seed, the rule speeds up the algorithm's
-early search.
+instances. Against a published genetic algorithm reimplemented on the same
+decoder, the rule sampled repeatedly attains lower error up to a budget
+that grows with instance size, from $10$ to $300$~s per instance.
+Seeding the genetic algorithm with the rule also speeds up its early
+search.
 Ablations delimit what interval awareness
 contributes. Under the default expected-makespan objective, rules
 evolved without the width terminals or on crisp midpoints do equally
