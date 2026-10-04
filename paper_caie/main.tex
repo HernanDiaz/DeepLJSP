@@ -1522,12 +1522,10 @@ terminals provide is therefore not a product of symmetric intervals.
 \subsection{Limitations}
 \label{sec:limitations}
 Four limitations bound the scope of these conclusions. First, the rules
-are evolved with a semi-active decoder that offers them the whole
-eligible set. Giffler and Thompson's conflict set, which yields active
-schedules, is used here only by the baselines; applied to rules that
-were not evolved for it, it costs the rules of the full makespan arm
-$4.2$ points of $\RE$ (Section~\ref{sec:decoder}). Whether evolving the
-rules inside that decoder would turn it into a gain remains open.
+are evolved and applied with the semi-active decoder. Run inside Giffler
+and Thompson's active decoder after evolution, the same rules reach
+$23.18\%$ $\RE$ instead of $18.99\%$ (Section~\ref{sec:decoder}); rules
+evolved directly inside the active decoder have not been tested.
 
 Second, the rules are evolved under the symmetric $\pm15\%$ interval
 scheme standard in the IJSP literature. Their robustness ordering holds
