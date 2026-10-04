@@ -597,14 +597,12 @@ else:
             _dv[_r['method']][_r['instance']] = float(_r['abs_dev'])
     _nm = sum(_dv['GP-rob4'][i] < _dv['GT-MWKR'][i] for i in _dv['GP-rob4'])
     check('instancias en que lambda=4 se desvia menos que G&T-MWKR',
-          f'smaller on {_nm} of the {len(_dv["GP-rob4"])} instances',
+          f'less, on {_nm} of the {len(_dv["GP-rob4"])} instances',
           'e1_robustez/uniform.csv')
-    # la comparacion a RE parecido: los dos E[Cmax] y la reduccion
+    # la comparacion a RE parecido: el texto da los RE; los dos E[Cmax]
+    # tienen que ser de verdad "almost the same" (menos de un 2 % aparte)
     _mu = _u['metodos']
-    check('E[Cmax] lambda=4', f"${_mu['GP-rob4']['e_mid']:.0f}$",
-          'e1_robustez/uniform')
-    check('E[Cmax] G&T-MWKR', f"${_mu['GT-MWKR']['e_mid']:.0f}$",
-          'e1_robustez/uniform')
+    assert abs(_mu['GP-rob4']['e_mid'] / _mu['GT-MWKR']['e_mid'] - 1) < 0.02
     _red = 100 * (1 - _mu['GP-rob4']['abs'] / _mu['GT-MWKR']['abs'])
     check('reduccion de la desviacion a RE parecido', f"${_red:.1f}\\%$",
           'e1_robustez/uniform')
