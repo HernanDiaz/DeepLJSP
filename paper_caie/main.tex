@@ -1103,7 +1103,7 @@ method, and on three Taillard classes representative of the different
 instance sizes, $15{\times}15$, $30{\times}15$ and $50{\times}15$. Each method is run 3 times on each of
 the 10 instances of a class, for a total of 30 runs per class, with
 horizons of $900$, $1800$ and $3600$~s, chosen to extend well beyond the
-point where the curves cross (Figure~\ref{fig:budget}).
+point where the curves converge (Figure~\ref{fig:budget}).
 
 \begin{figure}[t]
 \centering
@@ -1521,36 +1521,34 @@ terminals provide is therefore not a product of symmetric intervals.
 
 \subsection{Limitations}
 \label{sec:limitations}
-Four limitations bound the scope of our conclusions. First, the evolved
-rules choose from the whole eligible set inside a semi-active decoder.
-Neither the conflict-set restriction that makes Giffler and Thompson's
-procedure yield active schedules, used here only for the baselines, nor
-an insertion-based generation scheme was placed in the evolutionary loop,
-and both are known to help weaker constructors. Section~\ref{sec:decoder}
-measures the first after the fact: transplanted into the conflict set,
-which they were not evolved against, the rules of the full makespan arm give up $4.2$
-points of $\RE$. Whether evolving
-\emph{inside} that decoder would recover them, or better, is open.
-Second, all rules were
-evolved on instances generated with the $\pm15\%$ symmetric interval
-scheme standard in the IJSP literature; the robustness analysis of
-Section~\ref{sec:robustness} does re-evaluate the resulting schedules
-under intervals widened by $+20\%$ and $+40\%$, and
-Section~\ref{sec:asym} re-evolves the four arms of Sections~\ref{sec:ablation}
-and~\ref{sec:frontier} on a right-skewed benchmark,
-where the robustness contribution of the width terminals is unchanged,
-but no rule was evolved
-under a different \emph{width}, so how far these results carry to
-uncertainty of a different magnitude remains open.
-Third, absolute times are specific to our research-grade Python
-implementation: the times at which the curves of
-Section~\ref{sec:budget} cross would move with another implementation or
-language; the rankings of the other sections do not depend on it. Finally, no
-learned policy is among the baselines. The one reinforcement-learning
-method published for the IJSP~\citep{Han2026RAPO} leaves part of the
-sequencing to be resolved during execution, so it does not belong to
-the single-pass class compared here, and it reports results on a
-different selection of classical instances.
+Four limitations bound the scope of these conclusions. First, the rules
+are evolved with a semi-active decoder that offers them the whole
+eligible set. Giffler and Thompson's conflict set, which yields active
+schedules, is used here only by the baselines; applied to rules that
+were not evolved for it, it costs the rules of the full makespan arm
+$4.2$ points of $\RE$ (Section~\ref{sec:decoder}). Whether evolving the
+rules inside that decoder would turn it into a gain remains open.
+
+Second, the rules are evolved under the symmetric $\pm15\%$ interval
+scheme standard in the IJSP literature. Their robustness ordering holds
+under intervals widened by $20\%$ and $40\%$
+(Section~\ref{sec:robustness}), and re-evolution on right-skewed
+intervals preserves the contribution of the width terminals
+(Section~\ref{sec:asym}), but evolution under intervals of a different
+magnitude has not been tested.
+
+Third, absolute times correspond to a research-grade Python
+implementation. The budgets at which the curves of
+Section~\ref{sec:budget} converge would shift with another
+implementation or language, whereas the rankings of the other sections
+do not depend on it.
+
+Finally, no learned policy is among the baselines. The only
+reinforcement-learning method published for the
+IJSP~\citep{Han2026RAPO} leaves part of the sequencing to be resolved
+during execution, so it does not belong to the single-pass class
+compared here, and it reports results on a different selection of
+classical instances.
 
 \section{Conclusions and Future Work}
 \label{sec:conclusions}
