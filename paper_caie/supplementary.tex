@@ -102,25 +102,19 @@ other side.
 \section{Robustness under executional uncertainty: further analyses}
 \label{sec:robdetail}
 
-This section extends the robustness comparison of Section~\ref{M-sec:robustness} of the article, whose Table~\ref{M-tab:robustness} the paragraphs below refer to. It gives the per-instance distributions under widened intervals, removes the normalization of $\bar\varepsilon$, repeats the comparison at the level of the 30 rules of each arm, changes the law of the realizations, and describes the worst $5\%$ of executions.
+This section extends the robustness comparison of Section~\ref{M-sec:robustness} of the article, whose Table~\ref{M-tab:robustness} the paragraphs below refer to. It gives the per-instance distributions under widened intervals, reports the deviation in time units, $|\Delta|$, repeats the comparison at the level of the 30 rules of each arm, changes the law of the realizations, and describes the worst $5\%$ of executions.
 
-The comparison with EST reverses once the normalization is
-removed. $\bar\varepsilon$ divides by $E[\mathbf{C}_{\max}]$, and EST's predicted
-makespan is $21\%$ larger than the rule's ($2732$ against $2259$ time
-units on average), so the same absolute error reads as a smaller
-relative one. In absolute terms the rule deviates by $12.30$ time units
-against EST's $14.64$, and the difference is significant ($z=-5.89$,
+In time units the rule deviates by $12.30$ against EST's $14.64$, and
+the difference is significant ($z=-5.89$,
 $p<0.001$, $|r|=0.81$). The ordering against G\&T-MWKR is unchanged and
 widens ($12.30$ against $14.94$, $z=-6.83$, $|r|=0.94$), and the
 makespan arm and its ablation remain indistinguishable ($12.30$ against
-$12.25$, $z=0.61$, $p=0.55$). The normalization therefore conceals an advantage of the rule rather than creating one.
+$12.25$, $z=0.61$, $p=0.55$).
 
-The reduction of $\bar\varepsilon$ that the robust fitness achieves in the article, from $5.70$ to $4.52$ for the narrowest rule of the $\lambda{=}1$ arm, is partly due to the denominator, and the absolute deviation quantifies it. The robust $\lambda{=}1$ arm carries an
-$E[\mathbf{C}_{\max}]$ that is $6.1\%$ larger than the makespan arm's, so where
-$\bar\varepsilon$ falls by $20.7\%$ the absolute deviation falls by
-$16.2\%$, from $12.30$ to $10.31$ time units; at $\lambda{=}4$ it
-reaches $9.78$. Roughly a fifth of the apparent gain is therefore
-arithmetic and the rest is not: the paired contrasts are also significant on the absolute measure, by $-1.99$ time units against the makespan
+The robust fitness also reduces the deviation in time units: for the
+narrowest rule of the $\lambda{=}1$ arm it falls by $16.2\%$, from
+$12.30$ to $10.31$, and at $\lambda{=}4$ it reaches $9.78$. The paired
+contrasts are significant, by $-1.99$ time units against the makespan
 arm ($z=-5.55$, $p<0.001$, $|r|=0.76$) and by $-1.78$ against its own
 ablation ($z=-5.17$, $|r|=0.71$).
 

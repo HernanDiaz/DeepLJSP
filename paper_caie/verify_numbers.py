@@ -573,11 +573,6 @@ else:
                     ('GT-MWKR', 'G&T-MWKR'), ('EST', 'EST')):
         check(f'|Delta| de {_et}',
               f"{_u['metodos'][_m]['abs']:.2f}", 'e1_robustez/uniform')
-    # el E[Cmax] de EST y de la regla, que el texto compara
-    check('E[Cmax] de la regla',
-          f"{_u['metodos']['GP']['e_mid']:.0f}", 'e1_robustez/uniform')
-    check('E[Cmax] de EST',
-          f"{_u['metodos']['EST']['e_mid']:.0f}", 'e1_robustez/uniform')
     # los contrastes sobre la medida absoluta: |r| es la biserial por
     # rangos (rb_abs), y va atado a su z
     for _par, _et in (('GP vs EST', 'GP contra EST'),
