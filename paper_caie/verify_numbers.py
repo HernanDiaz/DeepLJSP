@@ -358,6 +358,18 @@ if os.path.exists(epr):
         mu, sd = stats(braz[a])
         check(f"brazo {a}: eps", f"{mu:.2f} \\pm {sd:.2f}", epr)
 
+# ---- lo que tarda una evolucion (6.1), de los logs ---------------------
+_tev = os.path.join(REPO, "benchmarks/tiempos_evolucion.json")
+if os.path.exists(_tev):
+    import json as _json
+    _TE = _json.load(open(_tev, encoding="utf-8"))
+    print("\n== tiempo de una evolucion (tiempos_evolucion.json) ==")
+    assert len(_TE["segundos_por_semilla"]) == 30
+    import math as _m6
+    check("una evolucion", f"about ${round(_TE['mediana_min']):.0f}$~min "
+          f"(${_m6.floor(_TE['min_min'])}$--${_m6.ceil(_TE['max_min'])}$ over the 30 seeds)",
+          "tiempos_evolucion.json")
+
 # ---- tiempos: tabla de baselines y 6.2 -------------------------------
 # Todos los tiempos salen de scripts/tiempos_v2.py: la regla compilada
 # (fast_regla) y cada baseline con su despachador optimizado
@@ -393,11 +405,8 @@ else:
     _br = TF["brazo"]
     assert abs(_br["re_media"] - 18.99) < 0.005
     assert abs(_br["re_destacada"] - 17.7142) < 0.001
-    check("fila GP media de 30",
-          f"GP rule (mean of 30) & 18.99 & 4.96 & {_br['ms_media']:.1f} \\\\",
-          "tiempos_v2.json")
     check("fila GP mejor de 30",
-          f"GP rule (best of 30) & 17.71 & 5.23 & "
+          f"GP rule (featured) & 17.71 & 5.23 & "
           f"{_br['ms_destacada_arbol']:.1f} \\\\", "tiempos_v2.json")
     check("fila GP simplificada",
           f"& 17.71 & 5.23 & {_ms['GP simplificada']:.1f} \\\\", "tiempos_v2.json")
@@ -1050,7 +1059,7 @@ _bl = os.path.join(REPO, 'benchmarks/all_baselines.csv')
 if os.path.exists(_bl):
     print('\n== tab:baselines, columna de RE (all_baselines.csv) ==')
     _nombre = {'G&T-SPT': 'G\\&T-SPT', 'G&T-MWKR': 'G\\&T-MWKR',
-               'GP (best)': 'GP rule (best of 30)'}
+               'GP (best)': 'GP rule (featured)'}
     for _r in csv.DictReader(open(_bl, encoding='utf-8')):
         # la fila 'GP (best)' de este fichero es de una campana anterior; las
         # filas GP de la tabla salen de summary.csv y se comprueban arriba

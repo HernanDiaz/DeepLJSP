@@ -62,7 +62,7 @@ that evolves priority rules over an \emph{interval-aware} terminal set,
 exposing both the worst-case values and the widths of the uncertain
 quantities, and deploys them in a single constructive pass. On the 70
 interval Taillard instances, 30 evolutions average $18.99\%$
-($\pm1.33$) relative error and the best rule attains $17.71\%$,
+($\pm1.33$) relative error and the rule selected on the validation set attains $17.71\%$,
 improving on the strongest constructive baseline, Giffler--Thompson/MWKR
 ($29.5\%$), on every instance. Evolved on four $20{\times}15$ instances,
 the rules transfer zero-shot to all size classes and to a second
@@ -819,6 +819,8 @@ times obtained on other hardware or in other languages.
 Over 30 independent evolutions, training $\RE$ converges to
 $14.9 \pm 1.5$ (range $12.4$--$19.7$), with most of the improvement
 realized by generation $25$--$30$ (Figure~\ref{fig:convergence}a).
+Each evolution takes about $26$~min ($24$--$28$ over the 30 seeds) on the
+machine of Section~\ref{sec:env}, an offline cost paid once per rule.
 The same panel evaluates the best rule of each generation on the
 instances the fitness never sees, and there the improvement is
 concentrated in the first ten generations. From generation $10$ to $50$
@@ -879,10 +881,9 @@ deterministic, the standard deviation is taken across instances and
 measures how uniform a method is over the benchmark rather than any
 run-to-run variability; the random dispatcher, the one stochastic entry,
 is averaged over 10 dispatches per instance. Times are averages over
-the 70 instances with 5 repetitions each. The GP entries are the mean
-over the 30 evolved rules, the mean being what a single evolution should
-be expected to yield, and the best of them, both timed as evolved, and
-the best rule in its simplified form, which takes the same decisions.
+the 70 instances with 5 repetitions each. The GP entries are the
+featured rule, timed as evolved, and the same rule in its simplified
+form, which takes the same decisions.
 
 Two observations are needed to read the table correctly. First, the
 plain rules that ignore machine availability (SPT, LPT and the critical
@@ -900,8 +901,9 @@ better than random, and the strongest baseline overall is
 G\&T-MWKR at $29.5\%$, which is the reference we use throughout.
 
 Against that strongest baseline, the evolved rules average
-$18.99 \pm 1.33$ $\RE$ over the 30 evolutions, and the best rule
-attains $17.71\%$.
+$18.99 \pm 1.33$ $\RE$ over the 30 evolutions, and the featured rule
+attains $17.71\%$, the lowest of the 30 on these instances although it
+was selected on the validation set.
 
 \begin{table}[t]
 \centering\small
@@ -926,13 +928,12 @@ MOR & 45.5 & 10.1 & 2.7 \\
 EST & 42.3 & 10.6 & 9.8 \\
 G\&T-MWKR & \textbf{29.5} & 6.4 & 17.4 \\
 \midrule
-GP rule (mean of 30) & 18.99 & 4.96 & 21.9 \\
-GP rule (best of 30) & \textbf{17.71} & 5.23 & 20.6 \\
+GP rule (featured) & \textbf{17.71} & 5.23 & 20.6 \\
 \quad simplified, Eq.~\eqref{eq:besttree} & 17.71 & 5.23 & 11.1 \\
 \bottomrule
 \end{tabular}
 \end{table}
-The gap holds at the level of individual instances: the best evolved
+The gap holds at the level of individual instances: the featured
 rule outperforms each of the eight deterministic baselines on every one of
 the $70$ instances, and a paired Wilcoxon signed-rank test rejects
 equality against each of them at $p<10^{-6}$ ($z=-7.3$); the
@@ -942,7 +943,7 @@ margin over the whole comparison is $3.9$ points, against G\&T-MWKR on a
 single $20{\times}15$ instance; against the best plain rule (EST) the
 smallest margin is $6.3$ points. Per-instance figures are given in
 Supplementary Table~\ref{S-tab:perinstance}. This quality comes at
-a small evaluation cost. A pass of the best rule takes
+a small evaluation cost. A pass of the featured rule takes
 $20.6$~ms as evolved and $11.1$~ms in its simplified form,
 against $17.4$~ms for G\&T-MWKR, the strongest baseline, and
 $2.7$~ms for MOR, which reads a single attribute.
@@ -952,8 +953,8 @@ $2.7$~ms for MOR, which reads a single attribute.
 \label{sec:classics}
 Table~\ref{tab:gp70} reports single-rollout $\RE$ per size class over all
 70 instances, as mean $\pm$ standard deviation across the 30 evolved
-rules and for the single best rule. Evolved only on $20{\times}15$,
-the best rule attains its lowest $\RE$ on the
+rules and for the featured rule. Evolved only on $20{\times}15$,
+the featured rule attains its lowest $\RE$ on the
 unseen $50{\times}15$ ($13.8\%$), and the same pattern holds on
 average ($13.7 \pm 1.5$). Because all terminals are per-operation
 attributes with no size-bound quantities, transfer requires no
@@ -975,11 +976,12 @@ average.
 \centering\small
 \caption{RE (\%) per size class, single deterministic rollout, over all
 70 Taillard interval instances: mean $\pm$ sd across the 30 independently
-evolved rules, and the best evolved rule.}
+evolved rules, and the featured rule.}
 \label{tab:gp70}
 % 9 columnas = 18 huecos, asi que cada punto de tabcolsep vale 18pt de ancho:
-% a 3.5pt la tabla medía 373.7pt contra los 360pt de \linewidth
-\setlength{\tabcolsep}{2.5pt}
+% a 3.5pt la tabla medía 373.7pt contra los 360pt de \linewidth; con la
+% etiqueta "Featured rule", a 2.5pt sobraban 3.9pt
+\setlength{\tabcolsep}{2.2pt}
 \scriptsize
 \begin{tabular}{lccccccc|c}
 \toprule
@@ -989,7 +991,7 @@ $30{\times}15$ & $30{\times}20$ & $50{\times}15$ & $50{\times}20$ & All \\
 Mean of 30 & $18.1{\pm}1.3$ & $18.0{\pm}1.5$ & $20.9{\pm}1.7$ &
 $21.4{\pm}1.7$ & $25.7{\pm}1.9$ & $13.7{\pm}1.5$ & $15.1{\pm}1.5$ &
 $18.99{\pm}1.33$ \\
-Best rule & 15.7 & 16.6 & 18.1 & 21.1 & 24.1 & \textbf{13.8} & 14.6 &
+Featured rule & 15.7 & 16.6 & 18.1 & 21.1 & 24.1 & \textbf{13.8} & 14.6 &
 \textbf{17.71} \\
 \bottomrule
 \end{tabular}
@@ -1112,7 +1114,7 @@ instance on the classical instances and $25$~s on $15{\times}15$ to
 approximately $300$~s on $50{\times}15$, with $83$~s on the
 intermediate $30{\times}15$ class. The rule is therefore the most
 effective method at low budgets, a regime that extends further the
-larger the instance. Seeding the genetic algorithm with the best rule
+larger the instance. Seeding the genetic algorithm with the featured rule
 likewise yields an initial advantage over the unseeded version, but the
 two converge: from $100$~s per instance onwards, the statistical tests
 detect no difference between them on any instance set (Supplementary
@@ -1551,8 +1553,8 @@ durations, which evolves priority rules over a terminal set exposing
 both the worst-case values and the widths of the uncertain quantities.
 The evolved rules are compact enough to be read and simplified by hand.
 In a single constructive pass they average $18.99\%$ over 30 evolutions,
-and the best rule attains $17.71\%$, against $29.5\%$ for the strongest
-baseline, G\&T-MWKR; the best rule outperforms every deterministic
+and the featured rule attains $17.71\%$, against $29.5\%$ for the strongest
+baseline, G\&T-MWKR; the featured rule outperforms every deterministic
 constructive baseline on all 70 interval Taillard instances, and the
 margin holds whichever decoder is used. Evolved on four $20{\times}15$
 instances, the rules transfer without retraining to every size class and
