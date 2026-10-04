@@ -1535,11 +1535,12 @@ intervals preserves the contribution of the width terminals
 (Section~\ref{sec:asym}), but evolution under intervals of a different
 magnitude has not been tested.
 
-Third, absolute times correspond to a research-grade Python
-implementation. The budgets at which the curves of
-Section~\ref{sec:budget} converge would shift with another
-implementation or language, whereas the rankings of the other sections
-do not depend on it.
+Third, budgets are measured in seconds of a Python implementation
+shared by all methods. A faster implementation would lower the budgets
+at which the curves of Section~\ref{sec:budget} converge; the comparison
+itself changes only if the implementation alters the cost of a schedule
+built by the rule relative to one decoded by the genetic algorithm. The
+rankings of the other sections do not depend on time.
 
 Finally, no learned policy is among the baselines. The only
 reinforcement-learning method published for the
