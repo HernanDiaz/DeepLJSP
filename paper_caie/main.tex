@@ -1504,18 +1504,20 @@ contrast above hold.
 \subsection{Asymmetric intervals}
 \label{sec:asym}
 
-Every instance used so far carries an interval symmetric about its
-crisp value, so what the width terminals contribute could belong to the
-generator rather than to the problem. Re-evolved on the right-skewed
-counterparts of TA11--TA14 described in Section~\ref{sec:instances},
-with fifteen seeds per arm, the four arms of Sections~\ref{sec:ablation}
-and~\ref{sec:frontier} reproduce the main result
-(Supplementary Section~\ref{S-sec:asym}): under the robust objective the
-width terminals narrow the predicted interval from $12.97$ to $12.67$ and
-the deviation of the executed makespan from $13.03$ to $12.75$, both significant after
-Holm correction, whereas under the makespan objective they improve
-neither. The robustness that the width terminals make attainable
-therefore does not depend on the symmetric generation scheme.
+All the intervals used so far are symmetric about the crisp duration.
+To test whether the contribution of the width terminals depends on that
+construction, the four arms of Sections~\ref{sec:ablation}
+and~\ref{sec:frontier}, both objectives with and without width
+terminals, are re-evolved with fifteen seeds on the right-skewed
+versions of TA11--TA14 (Section~\ref{sec:instances}) and evaluated on
+the 70 right-skewed instances (Supplementary Section~\ref{S-sec:asym}).
+The outcome matches the symmetric case. Under the robust objective the
+width terminals narrow the predicted interval from $12.97\%$ to
+$12.67\%$ of the expected makespan and reduce the deviation of the
+executed makespan, $|\Delta|$, from $13.03$ to $12.75$ time units, both
+significant after Holm's correction; under the makespan objective
+neither difference is significant. The robustness that the width
+terminals provide is therefore not a product of symmetric intervals.
 
 \subsection{Limitations}
 \label{sec:limitations}
