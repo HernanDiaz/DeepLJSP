@@ -441,13 +441,13 @@ initialized, varied and selected (Section~\ref{sec:evoview}).
 
 \begin{table}[!t]
 \centering\small
-\caption{Interval-aware terminal set, with exact definitions. For an
-eligible operation $o$ of job $j$ on machine $\mu(o)$: $\mathbf{p}_o =
-[\underline{p}_o, \overline{p}_o]$ is its duration interval; $\mathbf{C}_j$ and
-$\mathbf{C}_{\mu(o)}$ are the interval completion times of the last
-scheduled operation of job $j$ and of machine $\mu(o)$; $\mathcal{R}_o$ is the set of operations of
-$j$ after $o$; $\mathcal{E}$ is the current eligible set. Terminals are
-evaluated on \emph{raw} (unnormalized) values.}
+\caption{Interval-aware terminal set. For an eligible operation $o$ of job $j$
+on machine $\mu(o)$, $\mathbf{p}_o = [\underline{p}_o, \overline{p}_o]$ is
+its duration interval, $\mathbf{C}_j$ and $\mathbf{C}_{\mu(o)}$ are the
+interval completion times of the last scheduled operation of $j$ and of
+$\mu(o)$, $\mathcal{R}_o$ is the set of operations of $j$ after $o$, and
+$\mathcal{E}$ is the eligible set. Terminals take raw, unnormalized
+values.}
 \label{tab:terminals}
 \begin{tabular}{lll}
 \toprule
@@ -855,21 +855,18 @@ the rule takes on the benchmark ($1.29$ million candidate evaluations).
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_convergence.pdf}
-\caption{The best rule of each generation over the 30 independent
-evolutions: (a) its RE on the training, validation and test instances,
-(b) its size in nodes, and (c) the share of interval-width terminals
-among its leaves. Lines are medians, means in (c); shaded bands are
-interquartile ranges.}
+\caption{The best rule of each generation over the 30 evolutions: (a) $\RE$ on
+the training, validation and test instances, (b) size in nodes, (c)
+share of interval-width terminals among its leaves. Lines are medians
+(means in c); bands are interquartile ranges.}
 \label{fig:convergence}
 \end{figure}
 
 \begin{figure}[t]
 \centering
 \input{figures/tree_best.tex}
-\caption{The featured rule (seed~1), which attains
-$17.71\%$ $\RE$ over the 70 instances. Circles are functions and shaded
-boxes the interval-aware terminals of Table~\ref{tab:terminals}. The
-tree is shown exactly as evolved; Eq.~\eqref{eq:besttree} gives its
+\caption{The featured rule (seed~1) as evolved; shaded boxes are the terminals
+of Table~\ref{tab:terminals}, and Eq.~\eqref{eq:besttree} gives its
 simplified form.}
 \label{fig:besttree}
 \end{figure}
@@ -910,10 +907,9 @@ was selected on the validation set.
 
 \begin{table}[t]
 \centering\small
-\caption{Constructive baselines on the 70 interval Taillard instances:
-mean RE (\%), standard deviation across instances, and mean time in
-milliseconds of one constructive pass, every method implemented on the
-same simulator.}
+\caption{Constructive baselines on the 70 interval Taillard instances: mean RE
+(\%), standard deviation across instances, and time of one pass (ms), all
+on the same simulator.}
 \label{tab:baselines}
 \begin{tabular}{lccc}
 \toprule
@@ -977,9 +973,8 @@ average.
 
 \begin{table}[t]
 \centering\small
-\caption{RE (\%) per size class, single deterministic rollout, over all
-70 Taillard interval instances: mean $\pm$ sd across the 30 independently
-evolved rules, and the featured rule.}
+\caption{RE (\%) per size class over the 70 interval Taillard instances: mean
+$\pm$ sd of the 30 evolved rules, and the featured rule.}
 \label{tab:gp70}
 % 9 columnas = 18 huecos, asi que cada punto de tabcolsep vale 18pt de ancho:
 % a 3.5pt la tabla medía 373.7pt contra los 360pt de \linewidth; con la
@@ -1011,12 +1006,10 @@ Section~\ref{sec:metaheur} discusses.
 
 \begin{table}[t]
 \centering\small
-\caption{RE (\%) on the 12 classical interval instances: our methods
-(deterministic single pass and GP-best-of-$N$) versus the
-published average results (30 runs per instance) of the IJSP
-metaheuristics GA~\citep{DiazGA2020}, ABC$_{E3}$, fEABC~\citep{DiazFEABC2023}
-and ESABC~\citep{DiazICAE2023}. LB is the best-known lower bound of the
-expected makespan.}
+\caption{RE (\%) on the 12 classical interval instances: our methods and the
+published averages over 30 runs per instance of GA~\citep{DiazGA2020},
+ABC$_{E3}$, fEABC~\citep{DiazFEABC2023} and ESABC~\citep{DiazICAE2023}.
+LB is the best-known lower bound of the expected makespan.}
 \label{tab:classics}
 \setlength{\tabcolsep}{4.5pt}
 \begin{tabular}{lrrrrrrrrr}
@@ -1138,20 +1131,17 @@ methods~\citep{Kazimipour2014}.
 \centering
 \includegraphics[width=.8\linewidth]{figures/fig_terminals.pdf}
 \caption{Terminal usage across the 30 evolved rules, as a share of all
-terminals. Interval-width terminals (amber) expose the magnitude of the
-uncertainty to the rule.}
+terminals; interval-width terminals in amber.}
 \label{fig:terminals}
 \end{figure}
 
 \begin{figure}[!t]
 \centering
 \includegraphics[width=.9\linewidth]{figures/fig_sensitivity.pdf}
-\caption{Sensitivity of the featured rule to the two weights of its
-simplified form, Eq.~\eqref{eq:besttree}: mean $\RE$ over the 70
-instances when each weight is varied and the other is held at its
-evolved value. Dashed lines mark the evolved weights, the dotted line
-the mean over the 30 evolved rules. $\beta = 0$ is the rule with its
-interval-width term switched off.}
+\caption{Mean $\RE$ of the featured rule over the 70 instances as each weight of
+its simplified form, Eq.~\eqref{eq:besttree}, varies with the other
+fixed. Dashed lines: evolved weights; dotted line: mean of the 30
+evolved rules; $\beta = 0$ removes the width term.}
 \label{fig:sensitivity}
 \end{figure}
 
@@ -1244,10 +1234,9 @@ $o_{31}$ & $[22,26]$ & 45 & 4 & 0 & \underline{2} & 6 \\
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_case.pdf}
-\caption{The worked example scheduled by (a) the evolved rule, (b) the
-same rule without the width term, and (c) SPT and (d) MWKR, each run on
-its own. In (a) and (b) the outlined operation is the one that separates
-the two traces.}
+\caption{The worked example scheduled by (a) the evolved rule, (b) the rule
+without the width term, (c) SPT and (d) MWKR. The outlined operation
+separates traces (a) and (b).}
 \label{fig:case}
 \end{figure}
 
@@ -1303,11 +1292,10 @@ correction over its tests changes none of the verdicts.
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_ablation.pdf}
-\caption{Ablations of the interval machinery: the 30 evolved rules of
-each arm, each averaged over the 70 instances, in RE (a) and in the
-relative width of the predicted makespan interval (b). Diamonds mark the
-median of each arm, and the label between two arms gives their
-Mann--Whitney test.}
+\caption{The 30 evolved rules of each ablation arm, each averaged over the 70
+instances: $\RE$ (a) and relative width of the predicted makespan
+interval (b). Diamonds: medians; labels: Mann--Whitney test between
+adjacent arms.}
 \label{fig:ablation}
 \end{figure}
 
@@ -1353,15 +1341,12 @@ the trade-off the robust objective is designed to make.
 \begin{figure}[t]
 \centering
 \includegraphics[width=.8\linewidth]{figures/fig_lambda.pdf}
-\caption{Quality--predictability plane over the 70 instances. Faint
-markers are individual evolved rules: amber with the interval-width
-terminals, grey without them; open markers for the makespan objective,
-filled for the robust one at any $\lambda$. Solid curves join the mean
-of each arm at each $\lambda$ of the robust-fitness sweep,
-Eq.~\eqref{eq:robustfit}. With the width terminals, increasing
-$\lambda$ trades expected makespan for narrower intervals; without
-them the five means, $\lambda = 0$ to $4$, fall within $0.12$ points
-of width and are left unlabeled.}
+\caption{Quality--predictability plane over the 70 instances. Faint markers are
+evolved rules (amber with width terminals, grey without; open for the
+makespan objective, filled for the robust one); curves join the arm
+means along the $\lambda$ sweep of Eq.~\eqref{eq:robustfit}. The five
+means without width terminals fall within $0.12$ points of width and are
+unlabeled.}
 \label{fig:lambda}
 \end{figure}
 
@@ -1401,16 +1386,13 @@ become necessary when predictability matters.
 \begin{table}[t]
 \centering\small
 \setlength{\tabcolsep}{4pt}
-\caption{Predicted quality and executional robustness over the 70
-instances: mean $\RE$, relative width
-of the predicted makespan interval, and $\bar\varepsilon$
-($\times10^3$) at nominal interval widths and widened by $+20\%$ and
-$+40\%$ (Monte Carlo, $K{=}1000$ realizations, common random numbers
-across methods). The last column is $|\Delta|$ at nominal widths. Each GP arm is
-represented by one rule chosen on the 70 instances to illustrate it: the
-makespan arms by their best $\RE$, the robust arms by their narrowest
-predicted interval; Supplementary Section~\ref{S-sec:robdetail} repeats
-the comparison over all 30 rules of each arm.}
+\caption{Predicted quality and executional robustness over the 70 instances:
+$\RE$, relative width of the predicted interval, $\bar\varepsilon$
+($\times10^3$) at nominal widths and widened by $+20\%$ and $+40\%$, and
+$|\Delta|$ at nominal widths. Each GP arm is represented by one rule
+chosen on the 70 instances, the lowest-$\RE$ one for the makespan arms
+and the narrowest for the robust ones; Supplementary
+Section~\ref{S-sec:robdetail} compares all 30 rules of each arm.}
 \label{tab:robustness}
 \begin{tabular}{lcccccc}
 \toprule
@@ -1441,7 +1423,8 @@ EST & 42.30 & 13.37 & 5.66 & 6.79 & 7.83 & 14.64 \\
 We estimate the $\bar\varepsilon$ robustness of Eq.~\eqref{eq:eps}
 by Monte Carlo, drawing $K{=}1000$ realizations of the durations
 uniformly on each operation's interval and executing the fixed
-processing order on each of them. The sampling measures schedules that
+processing order on each of them, with the same realizations for every
+method. The sampling measures schedules that
 are already built, so no distributional assumption enters the problem
 formulation of Section~\ref{sec:problem}, the interval-arithmetic
 fitness of Section~\ref{sec:method}, the evolution or the selection of
@@ -1455,12 +1438,11 @@ re-evaluating the same processing orders.
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_robustness_plane.pdf}
-\caption{Quality of the prediction against reliability of the execution
-over the 70 instances, uniform law: (a) mean absolute deviation of the
-executed makespan from the predicted one, and (b) mean overrun beyond
-the prediction in the worst $5\%$ of executions, both in time units.
-Each marker is a method of Table~\ref{tab:robustness}; the grey line
-joins the rules evolved with the width terminals as $\lambda$ grows.}
+\caption{Prediction quality against execution reliability over the 70
+instances (uniform law): (a) mean absolute deviation of the executed
+makespan from the predicted one, (b) mean overrun in the worst $5\%$ of
+executions, both in time units. The grey line joins the rules with width
+terminals as $\lambda$ grows.}
 \label{fig:robplane}
 \end{figure}
 

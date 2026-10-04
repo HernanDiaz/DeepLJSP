@@ -232,11 +232,9 @@ G\&T-MWKR, which is marginal under the triangular law ($p=0.044$).
 \begin{figure}[!htb]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_robustness_box.pdf}
-\caption{Per-instance $\bar\varepsilon$ by method, with the duration
-intervals at their nominal widths and widened by $+20\%$ and $+40\%$.
-The robust $\lambda{=}1$ entries are the narrowest
-rule of that arm and its counterpart evolved without the width
-terminals, as in Table~\ref{M-tab:robustness}.}
+\caption{Per-instance $\bar\varepsilon$ by method at nominal interval widths and
+widened by $+20\%$ and $+40\%$; the robust $\lambda{=}1$ entries are the
+rules of Table~\ref{M-tab:robustness}.}
 \label{fig:robustness}
 \end{figure}
 
@@ -263,10 +261,10 @@ higher; only the contrast between arms within a benchmark is meaningful.
 
 \begin{table}[!htb]
 \centering\small
-\caption{The four arms re-evolved on asymmetric intervals and
-evaluated over the 70 asymmetric instances: mean $\pm$ sd across 15
-seeds of $\RE$, of the relative width of the predicted makespan
-interval, and of the absolute deviation of the executed makespan.}
+\caption{The four arms re-evolved on asymmetric intervals, over the 70
+asymmetric instances: mean $\pm$ sd across 15 seeds of $\RE$, relative
+width of the predicted interval and absolute deviation of the executed
+makespan.}
 \label{tab:asym}
 \begin{tabular}{lccc}
 \toprule
@@ -380,10 +378,10 @@ $0.002$, the value repeated in the first rows.
 
 \begin{table}[!htb]
 \centering\small
-\caption{The seeded genetic algorithm against the unseeded one: number
-of instances on which the seeded version is better and, in parentheses,
-the two-sided paired Wilcoxon $p$, with the instance as unit (the mean
-over its runs). A dash marks a budget beyond the horizon of the set.}
+\caption{Seeded against unseeded genetic algorithm: instances on which the
+seeded one is better and, in parentheses, the two-sided paired Wilcoxon
+$p$, with the instance as unit. A dash marks a budget beyond the horizon
+of the set.}
 \label{tab:semilla}
 \begin{tabular}{lcccc}
 \toprule
@@ -409,12 +407,11 @@ seed in Figure~\ref{M-fig:ablation} of the article.
 
 \begin{table}[!htb]
 \centering\small
-\caption{Ablations of the interval machinery (30 independent evolutions
-per arm; Mann--Whitney tests between arms): the terminal ablation under
-two fitness objectives, and the crisp-midpoint control, evolved with
-scalar fitness and no interval information, tested against the
-interval-trained arm above it. \emph{Width} is the relative width of
-the predicted makespan interval.}
+\caption{Means of the ablation arms (30 evolutions each) and Mann--Whitney tests
+between them: the terminal ablation under two objectives, and the
+crisp-midpoint control against the interval-trained arm above it.
+\emph{Width} is the relative width of the predicted makespan
+interval.}
 \label{tab:ablation}
 % la celda del test de RE bajo el objetivo robusto ensancha la tabla 12.9pt
 % sobre los 360pt de caja; a 4pt mide 356.9pt
