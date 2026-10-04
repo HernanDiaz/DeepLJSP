@@ -1431,8 +1431,9 @@ EST & 42.30 & 13.37 & 5.66 & 6.79 & 7.83 & 14.64 \\
 
 \subsection{Robustness under executional uncertainty}
 \label{sec:robustness}
-We estimate the $\bar\varepsilon$ robustness of Eq.~\eqref{eq:eps}
-by Monte Carlo, drawing $K{=}1000$ realizations of the durations
+We estimate the robustness measures of Section~\ref{sec:stats},
+$\bar\varepsilon$, $|\Delta|$ and the $\mathrm{CVaR}_{0.95}$ of the
+overrun, by Monte Carlo, drawing $K{=}1000$ realizations of the durations
 uniformly on each operation's interval and executing the fixed
 processing order on each of them, with the same realizations for every
 method. The sampling measures schedules that
@@ -1460,9 +1461,10 @@ terminals as $\lambda$ grows.}
 Figure~\ref{fig:robplane} places each method by the quality of its
 prediction and the reliability of its execution, the latter in time
 units so that a larger expected makespan cannot make a method look more
-robust. Under the makespan objective the width terminals make no
-difference: the featured rule and its ablated counterpart coincide in
-both panels. Both deviate less than G\&T-MWKR and EST, $12.30$ time
+robust. Under the makespan objective the featured rule and its ablated
+counterpart coincide in both panels, and over all 30 rules of each arm
+the width terminals reduce the deviation slightly (Supplementary
+Section~\ref{S-sec:robdetail}). Both deviate less than G\&T-MWKR and EST, $12.30$ time
 units against $14.94$ and $14.64$, while predicting much shorter
 makespans. A low deviation does not require a low makespan, so
 robustness must be optimized for directly.
@@ -1481,14 +1483,16 @@ $\RE$, and the rule deviates $34.5\%$ less, on 69 of the 70 instances
 (Figure~\ref{fig:robplane}b) the ordering is the same, and the robust
 objective reduces the overrun beyond the prediction in about the same
 proportion as the mean deviation, from $33.46$ to $27.46$ time units at
-$\lambda{=}1$; those executions are nonetheless longer in absolute terms,
-since their length follows the expected makespan given up for the
-reliability.
+$\lambda{=}1$. In absolute terms, the length of those executions follows
+the expected makespan that the robust rules trade for reliability.
 
 The normalized $\bar\varepsilon$ of Table~\ref{tab:robustness} gives the
 same ordering with one exception: EST appears as robust as the rule,
 $5.66$ against $5.70$, because its larger expected makespan inflates the
-denominator. Supplementary Section~\ref{S-sec:robdetail} reports the
+denominator. The ordering holds as the intervals are widened, and the
+advantage of the robust rule grows with the widening: at $+40\%$ its
+$\bar\varepsilon$ is $6.08$, against $7.57$ for the makespan rule and
+$8.58$ for G\&T-MWKR. Supplementary Section~\ref{S-sec:robdetail} reports the
 paired tests, the per-instance distributions and their growth as the
 intervals are widened, the comparison over all 30 rules of each arm,
 where the effects are consistent but of three percent or less, and three
