@@ -936,6 +936,15 @@ else:
           f"to approximately ${_redondea(_cg[3])}$~s on $50{{\\times}}15$, with "
           f"${_redondea(_cg[2])}$~s on the intermediate $30{{\\times}}15$ class",
           'e6_v2')
+    # el resumen: el cruce va de las clasicas a 50x15
+    check('resumen: cruces',
+          f"from ${_redondea(_cg[0])}$ to\n${_redondea(_cg[3])}$~s per instance",
+          'e6_v2')
+    # lo que el genetico sin sembrar tarda en igualar la pasada unica
+    _gp = [_V[k]['cruce']['ga_pasada'] for k in _K6]
+    check('el genetico iguala la pasada',
+          f"needs between ${min(_gp):.0f}$ and ${max(_gp):.0f}$~s per instance to reach",
+          'e6_v2')
     # al principio el mejor-de-N va por delante de los dos geneticos
     for _k in _K6:
         _r1 = _V[_k]['re']['1']
@@ -1145,6 +1154,20 @@ else:
 
 # ---- conformidad con la revista (Computers & Industrial Engineering) ----
 print('\n== conformidad con C&IE ==')
+# highlights: de 3 a 5, cada uno de 85 caracteres como mucho, contados como
+# se leen (sin las ordenes de LaTeX)
+_hl = os.path.join(HERE, 'highlights.tex')
+if os.path.exists(_hl):
+    _ht = open(_hl, encoding='utf-8').read()
+    _items = _ht.split('begin{itemize}')[1].split('end{itemize}')[0].split('\\item')[1:]
+    _lon = [len(' '.join(re.sub(r'\$|\\times|\\', lambda m: 'x' if m.group() == '\\times' else '',
+                                i).split())) for i in _items]
+    if 3 <= len(_lon) <= 5 and max(_lon) <= 85:
+        ok += 1
+        print(f'  OK    {len(_lon)} highlights, el mas largo de {max(_lon)} caracteres (tope 85)')
+    else:
+        bad += 1
+        print(f'  FALLA highlights: {len(_lon)} puntos, longitudes {_lon} (tope 85)')
 _ab = re.search(r'\\begin\{abstract\}(.*?)\\end\{abstract\}', TEX, re.S).group(1)
 _npal = len(re.sub(r'\\[a-zA-Z]+\{?|[{}$]', ' ', _ab).split())
 if _npal <= 250:

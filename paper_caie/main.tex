@@ -54,8 +54,8 @@ that Generalize Across Instance Sizes}
             country={Spain}}
 
 \begin{abstract}
-Automated dispatching-rule design has not been explored for the job shop
-scheduling problem with interval durations (IJSP), where processing
+To our knowledge, automated dispatching-rule design has not been explored
+for the job shop scheduling problem with interval durations (IJSP), where processing
 times are known only to lie within intervals and schedules are built by
 interval arithmetic. We present a genetic programming hyper-heuristic
 that evolves priority rules over an \emph{interval-aware} terminal set,
@@ -66,16 +66,17 @@ interval Taillard instances, 30 evolutions average $18.99\%$
 improving on the strongest constructive baseline, Giffler--Thompson/MWKR
 ($29.5\%$), on every instance. Evolved on four $20{\times}15$ instances,
 the rules transfer zero-shot to all size classes and to a second
-benchmark, remain human-readable, and are insensitive to the choice of
-training instances. A reimplementation of a published genetic
-algorithm, sharing the rule's decoder, needs some $7.6\times10^{4}$ schedule constructions to match
-one pass of the evolved rule, and gains markedly from being seeded
-with it. Ablations delimit what interval awareness
+benchmark, and remain human-readable. Against a reimplementation of a
+published genetic algorithm sharing the rule's decoder, the sampled rule
+is better up to a budget that grows with instance size, from $10$ to
+$300$~s per instance; as a seed, the rule speeds up the algorithm's
+early search.
+Ablations delimit what interval awareness
 contributes. Under the default expected-makespan objective it is
 unnecessary: removing the width terminals, or evolving on crisp
 midpoints, does equally well. Its value lies in robustness: an
 objective penalizing interval width yields narrower predicted intervals
-and reduces the deviation of the executed makespan by about one fifth, a
+and reduces the deviation of the executed makespan by a fifth, a
 gain that requires the width terminals and persists under non-uniform
 and worst-case realizations and on asymmetric intervals, at the cost of
 a higher expected makespan.
@@ -1115,19 +1116,19 @@ until the genetic algorithm surpasses it. The budget at which this
 occurs increases with instance size, from approximately $10$~s per
 instance on the classical instances and $25$~s on $15{\times}15$ to
 approximately $300$~s on $50{\times}15$, with $83$~s on the
-intermediate $30{\times}15$ class. The advantage of the rule therefore
-lies not in superior optimization but in its effectiveness at budgets
-too small for search to be competitive, a threshold that grows with the
-size of the instance. Seeding the genetic algorithm with the best rule
+intermediate $30{\times}15$ class. The rule is therefore the most
+effective method at low budgets, a regime that extends further the
+larger the instance. Seeding the genetic algorithm with the best rule
 likewise yields an initial advantage over the unseeded version, but the
 two converge: from $100$~s per instance onwards, the statistical tests
 detect no difference between them on any instance set (Supplementary
-Table~\ref{S-tab:semilla}). An evolved dispatching rule thus provides an
-inexpensive means of supplying a per-instance metaheuristic with a
-high-quality initial solution, the role constructive heuristics commonly
-play in the initialization of population-based
-methods~\citep{Kazimipour2014}, and its value as a seed is confined to
-short budgets.
+Table~\ref{S-tab:semilla}). An evolved dispatching rule thus delivers in
+a single pass of milliseconds a quality that the genetic algorithm
+needs between $2$ and $46$~s per instance to reach, and as a seed it
+gives a population-based method a high-quality initial solution from
+which the search progresses faster, the role constructive heuristics
+commonly play in the initialization of such
+methods~\citep{Kazimipour2014}.
 
 \section{Analysis}
 \label{sec:analysis}
@@ -1549,8 +1550,8 @@ different selection of classical instances.
 \section{Conclusions and Future Work}
 \label{sec:conclusions}
 
-We presented what is, to the best of our knowledge, the first GP
-hyper-heuristic for job shop scheduling with interval durations:
+We presented a GP hyper-heuristic for job shop scheduling with interval
+durations:
 priority rules evolved over a terminal set that exposes both the
 worst-case values and the widths of the uncertain quantities, compact
 enough to be read and simplified by hand. The empirical conclusions are
