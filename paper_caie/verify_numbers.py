@@ -358,19 +358,21 @@ if os.path.exists(epr):
         mu, sd = stats(braz[a])
         check(f"brazo {a}: eps", f"{mu:.2f} \\pm {sd:.2f}", epr)
 
-# ---- tiempos: tabla de baselines, 6.2 y 6.4 ----------------------------
-# Todos los tiempos del articulo salen del simulador rapido, medidos en
-# seis copias simultaneas (scripts/tiempos_fast.py, tiempos_fast_brazo.py
-# y tiempos_fast_promedia.py). Se comprueba la fila entera, no solo la
-# cifra, para que un numero no pase por aparecer en otro sitio.
-tfj = os.path.join(REPO, "benchmarks/tiempos_fast.json")
+# ---- tiempos: tabla de baselines y 6.2 -------------------------------
+# Todos los tiempos salen de scripts/tiempos_v2.py: la regla compilada
+# (fast_regla) y cada baseline con su despachador optimizado
+# (fast_baselines), con los mismos schedules que las versiones de
+# referencia, medidos en seis copias simultaneas. Se comprueba la fila
+# entera, no solo la cifra, para que un numero no pase por aparecer en
+# otro sitio.
+tfj = os.path.join(REPO, "benchmarks/tiempos_v2.json")
 if not os.path.exists(tfj):
-    print("\n== tiempos: sin benchmarks/tiempos_fast.json ==")
+    print("\n== tiempos: sin benchmarks/tiempos_v2.json ==")
 else:
     import json as _json
     TF = _json.load(open(tfj, encoding="utf-8"))
-    print("\n== tiempos (simulador rapido, seis copias) ==")
-    _ms = {m: v["ms_media"] for m, v in TF["taillard"].items()}
+    print("\n== tiempos (tiempos_v2.json, seis copias) ==")
+    _ms = {m: v["ms_media"] for m, v in TF["metodos"].items()}
     _ab = {r["method"]: r for r in csv.DictReader(open(os.path.join(
         REPO, "benchmarks/all_baselines.csv"), encoding="utf-8-sig"))}
     for _m, _et in (("LPT", "LPT"), ("SPT", "SPT"), ("CR", "CR"),
@@ -378,32 +380,34 @@ else:
                     ("MOR", "MOR"), ("EST", "EST"),
                     ("G&T-MWKR", "G\\&T-MWKR")):
         _r = _ab[_m]
-        # cada baseline del simulador reproduce su RE de la tabla
-        assert abs(TF["taillard"][_m]["re"] - float(_r["all"])) < 0.01, _m
+        # cada baseline optimizado reproduce su RE de la tabla
+        assert abs(TF["metodos"][_m]["re"] - float(_r["all"])) < 0.01, _m
+        _rv = float(_r['all'])
+        _rt = f"{_rv:.1f}"     # TEX llega ya sin las negritas
         check(f"fila de baselines, {_m}",
-              f"{_et} & {float(_r['all']):.1f} & {float(_r['sd']):.1f} & "
-              f"{_ms[_m]:.1f} \\\\", "tiempos_fast.json")
+              f"{_et} & {_rt} & {float(_r['sd']):.1f} & "
+              f"{_ms[_m]:.1f} \\\\", "tiempos_v2.json")
     check("fila del despachador aleatorio",
           f"\\textit{{127.2}} & \\textit{{13.9}} & \\textit{{{_ms['Random']:.1f}}}",
-          "tiempos_fast.json")
+          "tiempos_v2.json")
     _br = TF["brazo"]
     assert abs(_br["re_media"] - 18.99) < 0.005
+    assert abs(_br["re_destacada"] - 17.7142) < 0.001
     check("fila GP media de 30",
           f"GP rule (mean of 30) & 18.99 & 4.96 & {_br['ms_media']:.1f} \\\\",
-          "tiempos_fast.json")
+          "tiempos_v2.json")
     check("fila GP mejor de 30",
-          f"GP rule (best of 30) & 17.71 & 5.23 & {_br['ms_destacada_arbol']:.1f} \\\\",
-          "tiempos_fast.json")
+          f"GP rule (best of 30) & 17.71 & 5.23 & "
+          f"{_br['ms_destacada_arbol']:.1f} \\\\", "tiempos_v2.json")
     check("fila GP simplificada",
-          f"& 17.71 & 5.23 & {_ms['GP rule']:.1f} \\\\", "tiempos_fast.json")
+          f"& 17.71 & 5.23 & {_ms['GP simplificada']:.1f} \\\\", "tiempos_v2.json")
     check("6.2, coste de la regla",
-          f"${_br['ms_destacada_arbol']:.1f}$~ms as evolved, against "
-          f"${_ms['MOR']:.1f}$~ms for MOR and ${_ms['G&T-MWKR']:.1f}$~ms",
-          "tiempos_fast.json")
-    check("6.2, forma simplificada",
-          f"the same rule takes ${_ms['GP rule']:.1f}$~ms", "tiempos_fast.json")
-    # la regla es mas cara que un atributo, pero no un orden de magnitud
-    assert _br["ms_destacada_arbol"] < 10 * _ms["MOR"]
+          f"${_br['ms_destacada_arbol']:.1f}$~ms as evolved and "
+          f"${_ms['GP simplificada']:.1f}$~ms in its simplified form",
+          "tiempos_v2.json")
+    check("6.2, frente a G&T-MWKR y MOR",
+          f"against ${_ms['G&T-MWKR']:.1f}$~ms for G\\&T-MWKR, the strongest "
+          f"baseline, and\n${_ms['MOR']:.1f}$~ms for MOR", "tiempos_v2.json")
 
 # ---- anatomia de las 30 reglas (7.1) -----------------------------------
 # Se recomputa desde los arboles, con las funciones de rule_anatomy.py, y

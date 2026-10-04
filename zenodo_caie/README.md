@@ -180,8 +180,12 @@ constructions grows by a factor of 2^(1/4), plus a final point:
 method on the 12 classical instances, and `budget/size_classes_curves.csv`
 3 runs per instance on the Taillard classes 15x15, 30x15 and 50x15, with
 time limits of 900, 1800 and 3600 s (column `horizonte`).
-`timing.json` holds the times of every method on the fast simulator,
-measured in six simultaneous copies; `timing_tuned.csv` and
+`timing.json` holds the times of the baseline table, one constructive
+pass per method on the 70 Taillard instances, with the evolved rules
+compiled as in `compiled_rule.py` and every baseline written in the same
+way (same schedules as the reference dispatchers), measured in six
+simultaneous copies (`metodos`: methods; `brazo`: the 30 rules of the
+main arm, `destacada` the featured one); `timing_tuned.csv` and
 `timing_gp_arm.csv` are the version 1.0 times, measured on the slower
 learning environment and no longer used. In
 `tail_risk/per_instance.csv`, `law` is the realization law, `over` the

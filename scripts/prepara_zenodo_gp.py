@@ -167,7 +167,7 @@ def main():
           os.path.join(R, "evolution_best_rules.json"))
 
     # los tiempos del articulo, todos del simulador rapido
-    copia("benchmarks/tiempos_fast.json", os.path.join(R, "timing.json"))
+    copia("benchmarks/tiempos_v2.json", os.path.join(R, "timing.json"))
 
     # la tabla de baselines, sin la fila 'GP (best)', que es de una
     # campana anterior: las filas GP del articulo salen de summary.csv

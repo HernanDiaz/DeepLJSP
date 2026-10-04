@@ -907,27 +907,28 @@ attains $17.71\%$.
 \centering\small
 \caption{Constructive baselines on the 70 interval Taillard instances:
 mean RE (\%), standard deviation across instances, and mean time in
-milliseconds of one constructive pass.}
+milliseconds of one constructive pass, every method implemented on the
+same simulator.}
 \label{tab:baselines}
 \begin{tabular}{lccc}
 \toprule
 Method & RE (\%) & sd & Time (ms) \\
 \midrule
-LPT & 703.6 & 168.0 & 21.3 \\
-SPT & 627.2 & 152.2 & 20.9 \\
-CR & 625.7 & 140.6 & 22.5 \\
+LPT & 703.6 & 168.0 & 4.2 \\
+SPT & 627.2 & 152.2 & 4.2 \\
+CR & 625.7 & 140.6 & 3.3 \\
 \midrule
-\textit{Random dispatcher} & \textit{127.2} & \textit{13.9} & \textit{2.5} \\
+\textit{Random dispatcher} & \textit{127.2} & \textit{13.9} & \textit{1.1} \\
 \midrule
-G\&T-SPT & 70.6 & 10.0 & 29.5 \\
-MWKR & 64.7 & 10.4 & 28.7 \\
-MOR & 45.5 & 10.1 & 26.7 \\
-EST & 42.3 & 10.6 & 22.3 \\
-G\&T-MWKR & \textbf{29.5} & 6.4 & 37.8 \\
+G\&T-SPT & 70.6 & 10.0 & 14.3 \\
+MWKR & 64.7 & 10.4 & 5.0 \\
+MOR & 45.5 & 10.1 & 2.7 \\
+EST & 42.3 & 10.6 & 9.8 \\
+G\&T-MWKR & \textbf{29.5} & 6.4 & 17.4 \\
 \midrule
-GP rule (mean of 30) & 18.99 & 4.96 & 47.7 \\
-GP rule (best of 30) & \textbf{17.71} & 5.23 & 44.7 \\
-\quad simplified, Eq.~\eqref{eq:besttree} & 17.71 & 5.23 & 32.6 \\
+GP rule (mean of 30) & 18.99 & 4.96 & 21.9 \\
+GP rule (best of 30) & \textbf{17.71} & 5.23 & 20.6 \\
+\quad simplified, Eq.~\eqref{eq:besttree} & 17.71 & 5.23 & 11.1 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -942,11 +943,9 @@ single $20{\times}15$ instance; against the best plain rule (EST) the
 smallest margin is $6.3$ points. Per-instance figures are given in
 Supplementary Table~\ref{S-tab:perinstance}. This quality comes at
 a small evaluation cost. A pass of the best rule takes
-$44.7$~ms as evolved, against $26.7$~ms
-for MOR and $37.8$~ms for G\&T-MWKR: evaluating a tree of up
-to $30$ nodes on every eligible operation costs more than reading one
-attribute, but not by an order of magnitude, and in its simplified form
-the same rule takes $32.6$~ms.
+$20.6$~ms as evolved and $11.1$~ms in its simplified form,
+against $17.4$~ms for G\&T-MWKR, the strongest baseline, and
+$2.7$~ms for MOR, which reads a single attribute.
 
 \subsection{Generalization across sizes and instance families}
 \label{sec:generalization}
