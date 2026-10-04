@@ -8,10 +8,11 @@ and a self-contained Python package that reproduces them.
 
 Version 2.0 adds the material of the revised article: a right-skewed
 version of the 70 Taillard instances; the rules evolved on five other
-training sets and on the asymmetric instances; a genetic algorithm and a
-fast simulator shared by all methods of the budget comparison; and the
-results of the experiments on training-set sensitivity, asymmetric
-intervals, alternative realization laws, interval conventions and
+training sets and on the asymmetric instances; a fast simulator shared
+by all methods of the budget comparison, the genetic algorithm of that
+comparison and the compiled form of the evolved rule it uses; and the
+results of the experiments on training-set sensitivity (kept here,
+although the final article does not report it), asymmetric intervals, alternative realization laws, interval conventions and
 decoders, the worked example, quality against computational budget, and
 the tail risk (value-at-risk and conditional value-at-risk) of the
 executed makespan.
@@ -76,7 +77,10 @@ evaluation in RE and interval width (`evaluate.py`), the GP evolution
 and their tail measures). Version 2.0 adds a fast simulator that dispatches with a
 rule or decodes a permutation on the same semi-active scheme
 (`simulate.py`), the genetic algorithm of the budget comparison (`ga.py`),
-and the generator of the asymmetric instances (`asymmetric.py`).
+the evolved rule compiled into a single function and its sampled variant
+stopped by time (`compiled_rule.py`), which are the implementations used
+in that comparison, and the generator of the asymmetric instances
+(`asymmetric.py`).
 
 Quick start:
 
@@ -93,8 +97,9 @@ G&T-MWKR baseline, a small evolution end to end, the asymmetric instances
 file by file, rules of the training-set and asymmetric campaigns, the
 featured rule inside the Giffler-Thompson conflict set, the budget curves
 of one instance for five methods, the worked example with its census
-of 800 random instances, and the conditional value-at-risk of the
-featured rule instance by instance. Every recomputed figure is compared against the
+of 800 random instances, the conditional value-at-risk of the
+featured rule instance by instance, and the compiled rule against the
+reference dispatcher. Every recomputed figure is compared against the
 deposited files, most of them to four decimals. It takes a few minutes.
 
 Evaluate any rule set:
@@ -114,11 +119,12 @@ python -m ijsp_gp.evolve --pop 100 --gens 50 --seed 1 \
     --out my_rule.json
 ```
 
-Run the genetic algorithm on one instance and print its budget curve:
+Run the genetic algorithm on one instance for 30 seconds and print its
+budget curve:
 
 ```
 python -m ijsp_gp.ga --instance ../instances/interval_taillard/int__tai15_15_01.txt \
-    --budget 131072 --seed 1
+    --seconds 30 --seed 1
 ```
 
 Regenerate the asymmetric instances:
@@ -138,9 +144,9 @@ python -m ijsp_gp.asymmetric --source ../instances/interval_taillard \
 | Constructive baselines (RE column)                | all_baselines.csv |
 | Timing (all times in the article)                 | timing.json |
 | Generalization to the classical instances         | classic12_tuned.csv |
-| Genetic algorithm against published results       | budget/ga_calibration_classical.json |
 | Configuration of the genetic algorithm            | budget/ga_calibration_training.json |
-| Quality against budget (70 instances)             | budget/curves.csv, budget/curves_extension.csv, budget/curves_extension2.csv, budget/curves_extension3.csv, budget/summary.json, budget/table.json |
+| Quality against budget (Section 6.5, Figure 4, Supplementary Table S5) | budget/classical_curves.csv, budget/size_classes_curves.csv, budget/summary.json |
+| Speed of the compiled rule                        | budget/compiled_rule_speed.json |
 | Terminal usage and rule sizes                     | rule_anatomy.csv |
 | Coefficient sensitivity sweep                     | coefficient_sweep.csv |
 | Worked example and census                         | worked_example.json |
@@ -158,21 +164,22 @@ python -m ijsp_gp.asymmetric --source ../instances/interval_taillard \
 Some field names in the result files are in Spanish, as written by the
 experiment scripts: `metodo` (method), `semilla` (seed), `instancia`
 (instance), `presupuesto` (budget, in schedule constructions), `segundos`
-(seconds), `ramas` (arms), `campanas` (campaigns), `por_semilla` (per
-seed), `media` (mean), `anchura` / `ancho` (relative width), `abs`
-(absolute deviation), `contrastes` (paired contrasts), `destacada` (the
-featured rule), `censo` (census). In `budget/curves.csv` the methods are
-`regla` (the evolved rule, one pass), `regla_bon` (its best-of-N sampled
-variant), `gt_mwkr`, `azar` (random permutations), `ga` and `ga_sembrado`
-(the genetic algorithm seeded with the rule's permutation).
-`budget/curves_extension.csv` repeats `ga` to 2^20 constructions and
-`regla_bon` to 2^13 samples with the same seeds, which reproduce the
-values of `curves.csv` at every common budget;
-`budget/curves_extension2.csv` does the same for `ga_sembrado` and
-`azar` to 2^20 and for `regla_bon` to 160 s where the first extension
-stopped earlier; `budget/curves_extension3.csv` runs `ga`, `ga_sembrado`
-and `regla_bon` with seed 1 to 800 s per instance, whatever the number
-of schedules. The article uses the longest curve of each method.
+(seconds), `horizonte` (time limit of the run), `ramas` (arms), `campanas`
+(campaigns), `por_semilla` (per seed), `media` (mean), `anchura` / `ancho`
+(relative width), `abs` (absolute deviation), `contrastes` (paired
+contrasts), `destacada` (the featured rule), `censo` (census), `cruce`
+(the budget from which one method stays below another), `semilla` (seed;
+in `budget/summary.json`, the seeded against the unseeded genetic
+algorithm). In the budget curves the methods are `regla` (the evolved
+rule, one pass), `regla_bon` (its sampled best-of-N variant), `gt_mwkr`,
+`azar` (random permutations), `ga` and `ga_sembrado` (the genetic
+algorithm seeded with the rule's permutation). Every run is stopped by
+time and records its incumbent solution each time the number of schedule
+constructions grows by a factor of 2^(1/4), plus a final point:
+`budget/classical_curves.csv` holds 30 runs of 900 s per instance and
+method on the 12 classical instances, and `budget/size_classes_curves.csv`
+3 runs per instance on the Taillard classes 15x15, 30x15 and 50x15, with
+time limits of 900, 1800 and 3600 s (column `horizonte`).
 `timing.json` holds the times of every method on the fast simulator,
 measured in six simultaneous copies; `timing_tuned.csv` and
 `timing_gp_arm.csv` are the version 1.0 times, measured on the slower

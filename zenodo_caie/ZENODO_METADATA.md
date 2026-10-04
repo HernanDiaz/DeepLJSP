@@ -52,13 +52,13 @@ and figure; and a self-contained Python package (ijsp_gp) implementing the
 interval arithmetic, the semi-active decoder, the hand-crafted baselines,
 the GP evolution, the Monte Carlo executional-robustness measure, a fast
 simulator shared by all methods of the budget comparison, the genetic
-algorithm of that comparison, and the generator of the asymmetric
-instances. An equivalence test re-derives at least one deposited result
+algorithm of that comparison, the compiled form of the evolved rule it
+uses, and the generator of the asymmetric instances. An equivalence test re-derives at least one deposited result
 of every experiment from the code and data alone.
 
 Version 2.0 adds the asymmetric instances, the 210 rules of the
-training-set and asymmetric campaigns, the genetic algorithm and the fast
-simulator, and the results of the experiments on training-set
+training-set and asymmetric campaigns, the genetic algorithm, the
+compiled rule and the fast simulator, and the results of the experiments on training-set
 sensitivity, asymmetric intervals, alternative realization laws, interval
 conventions and decoders, the worked example, quality against
 computational budget, and the tail risk of the executed makespan.

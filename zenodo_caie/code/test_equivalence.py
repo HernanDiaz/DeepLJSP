@@ -21,13 +21,15 @@ One or more results of every experiment of the article are re-derived:
     set, and G&T-MWKR, on the fast simulator
     (``decoder_and_conventions.json``).
 10. The budget curves of one instance: the rule, its sampled variant, the
-    genetic algorithm, the seeded genetic algorithm and random search
-    (``budget/curves.csv``).
+    genetic algorithm, the seeded genetic algorithm and random search, on
+    the schedule-construction axis (``budget/size_classes_curves.csv``).
 11. The worked example and the census of 800 random 3x3 instances
     (``worked_example.json``).
 12. The featured rule's conditional value-at-risk of the overrun beyond
     the predicted makespan, instance by instance
     (``tail_risk/per_instance.csv``).
+13. The compiled rule of the budget comparison gives exactly the schedules
+    of the reference dispatcher, deterministic and sampled.
 
 Run from the ``code/`` directory:  python test_equivalence.py
 """
@@ -50,8 +52,9 @@ sys.path.insert(0, HERE)
 from ijsp_gp import (eps_bar_of_rule, evaluate_rule, lb_for_instance_name,
                      load_dir, load_rule)
 from ijsp_gp.asymmetric import generate
+from ijsp_gp.compiled_rule import compile_rule
 from ijsp_gp.env import make_env
-from ijsp_gp.ga import evolve, random_search
+from ijsp_gp.ga import GRID, evolve, random_search
 from ijsp_gp.heuristics import GTHeuristic, MWKRHeuristic, SPTHeuristic
 from ijsp_gp.interval import Interval
 from ijsp_gp.robustness import overrun_cvar_of_rule
@@ -264,18 +267,19 @@ def main():
           round(got, 4) == round(exp, 4), f"({got:.4f} vs {exp:.4f})")
 
     # ------------------------------------------------------------------
-    # 10. budget curves of one instance
+    # 10. budget curves of one instance, on the construction axis
     # ------------------------------------------------------------------
     print("\n10. budget curves of int__tai15_15_01, up to 4096 constructions")
     target = "int__tai15_15_01"
     curves = {}
-    with open(results("budget", "curves.csv"), encoding="utf-8") as f:
+    with open(results("budget", "size_classes_curves.csv"),
+              encoding="utf-8") as f:
         for row in csv.DictReader(f):
             if row["instancia"] == target:
                 curves[(row["metodo"], int(row["semilla"]),
                         int(row["presupuesto"]))] = float(row["re"])
     inst, lb = insts[target], lbs[target]
-    points = [2 ** k for k in range(0, 13)]
+    points = [p for p in GRID if p <= 4096]
     policy = policy_from_tree(tree)
 
     got = re_of(dispatch(inst, policy), lb)
@@ -306,7 +310,7 @@ def main():
         curve, _ = run()
         bad = [p for p in points
                if round(re_of(curve[p][0], lb), 4) != curves[(key, 1, p)]]
-        check(f"{label}, 13 budget points", not bad,
+        check(f"{label}, {len(points)} budget points", not bad,
               f"(mismatch at {bad})" if bad else "")
 
     # ------------------------------------------------------------------
@@ -406,6 +410,26 @@ def main():
     check("CVaR of the overrun, 70 instances",
           len(exp_cvar) == 70 and worst < 1e-3,
           f"(largest difference {worst:.1e})")
+
+    # ------------------------------------------------------------------
+    # 13. the compiled rule against the reference dispatcher
+    # ------------------------------------------------------------------
+    print("\n13. the compiled rule of the budget comparison")
+    ok = True
+    for rel in ("main_arm/gp_tuned_seed1.json", "main_arm/gp_tuned_seed2.json",
+                "robust_lambda1_full/width_seed13.json"):
+        tr = rule_tree(rel)
+        fast, ref = compile_rule(tr), policy_from_tree(tr)
+        for n in ("int__tai15_15_01", "int__tai30_20_05", "int__tai50_15_01"):
+            ok &= fast(insts[n], return_order=True) == dispatch(
+                insts[n], ref, return_order=True)
+            r1, r2 = random.Random(7), random.Random(7)
+            for _ in range(5):
+                ok &= (fast(insts[n], return_order=True, eps=0.1, rng=r1)
+                       == dispatch(insts[n], ref, return_order=True, eps=0.1,
+                                   rng=r2))
+            ok &= r1.getstate() == r2.getstate()
+    check("same schedules, one pass and sampled, 3 rules x 3 instances", ok)
 
     print(f"\n{PASS} passed, {FAIL} failed")
     sys.exit(1 if FAIL else 0)

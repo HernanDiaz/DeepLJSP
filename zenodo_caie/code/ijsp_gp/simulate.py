@@ -27,7 +27,7 @@ TERMINALS = ["PT", "PTW", "EST", "ESTW", "WKR", "WKRW", "NOR", "SLACK",
 class Instance:
     """An instance unfolded into flat lists, ready to iterate over."""
 
-    __slots__ = ("n", "m", "seq", "lo", "up", "suf_up", "suf_w")
+    __slots__ = ("n", "m", "seq", "lo", "up", "suf_up", "suf_w", "ops")
 
     def __init__(self, problem: Dict):
         self.n = int(problem["num_jobs"])
@@ -54,6 +54,10 @@ class Instance:
                 w[k] = w[k + 1] + (self.up[j][k] - self.lo[j][k])
             self.suf_up.append(s)
             self.suf_w.append(w)
+        # per job, its operations as (machine, lower, upper): all that the
+        # permutation decoder reads
+        self.ops = [[(self.seq[j][k], self.lo[j][k], self.up[j][k])
+                     for k in range(self.m)] for j in range(self.n)]
 
 
 def better(a: Tuple[float, float], b: Tuple[float, float]) -> bool:
@@ -66,21 +70,19 @@ def decode(inst: Instance, perm: List[int]) -> Tuple[float, float]:
     """Decode a permutation with repetition of jobs.
 
     The k-th occurrence of job j is its k-th operation, so reading the list
-    from left to right respects every job order without checks."""
-    n, m, seq, lo, up = inst.n, inst.m, inst.seq, inst.lo, inst.up
+    from left to right respects every job order without checks: one
+    iterator per job over its operations is enough. The same sums and
+    comparisons, in the same order, as dispatching with a rule."""
+    n, m = inst.n, inst.m
     jc_lo, jc_up = [0.0] * n, [0.0] * n
     mc_lo, mc_up = [0.0] * m, [0.0] * m
-    op = [0] * n
+    nxt = [iter(o) for o in inst.ops]
     for j in perm:
-        k = op[j]
-        q = seq[j][k]
-        s_lo = jc_lo[j] if jc_lo[j] > mc_lo[q] else mc_lo[q]
-        s_up = jc_up[j] if jc_up[j] > mc_up[q] else mc_up[q]
-        e_lo = s_lo + lo[j][k]
-        e_up = s_up + up[j][k]
-        jc_lo[j] = mc_lo[q] = e_lo
-        jc_up[j] = mc_up[q] = e_up
-        op[j] = k + 1
+        q, d_lo, d_up = next(nxt[j])
+        a, x = jc_lo[j], mc_lo[q]
+        jc_lo[j] = mc_lo[q] = (a if a > x else x) + d_lo
+        a, x = jc_up[j], mc_up[q]
+        jc_up[j] = mc_up[q] = (a if a > x else x) + d_up
     return max(jc_lo), max(jc_up)
 
 

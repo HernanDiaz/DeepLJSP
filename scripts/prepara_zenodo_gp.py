@@ -7,10 +7,11 @@ ella y anade lo que la revision genero:
 
   - instances/asymmetric_taillard/: el banco asimetrico de E4;
   - rules/training_sets/ (E2, 150) y rules/asymmetric/ (E4, 60);
-  - results/: E0, E1, E2, E3, E4, E5, E6, E7 y la tabla de baselines;
-  - code/ijsp_gp/: simulador comun, genetico y generador asimetrico,
-    y el test de equivalencia ampliado con una comprobacion por
-    experimento nuevo.
+  - results/: E0, E1, E2, E3, E4, E5, E6 (version 2, por tiempo), E7 y
+    la tabla de baselines;
+  - code/ijsp_gp/: simulador comun, genetico, regla compilada y
+    generador asimetrico, y el test de equivalencia ampliado con una
+    comprobacion por experimento nuevo.
 
 El paquete sigue siendo autocontenido: no importa nada de jobshop_rl.
 El zip no lleva __pycache__ (la 1.0 si los llevo) ni la hoja de
@@ -132,14 +133,21 @@ def main():
           os.path.join(R, "asymmetric", "generation.json"))
     copia("benchmarks/e5_decodificador/resumen.json",
           os.path.join(R, "decoder_and_conventions.json"))
-    copia("benchmarks/e6_presupuesto/resumen.json",
+    # E6 version 2 (6.5): las corridas por tiempo de las 12 clasicas y de
+    # las clases 15x15, 30x15 y 50x15, con la regla compilada y el genetico
+    # optimizado, y el resumen del que salen las cifras del articulo
+    copia("benchmarks/e6_v2/resumen.json",
           os.path.join(R, "budget", "summary.json"))
-    copia("benchmarks/e6_presupuesto/tabla.json",
-          os.path.join(R, "budget", "table.json"))
+    copia("benchmarks/e6_clasicas/curvas.csv",
+          os.path.join(R, "budget", "classical_curves.csv"))
+    copia("benchmarks/e6_tamanos/curvas.csv",
+          os.path.join(R, "budget", "size_classes_curves.csv"))
+    copia("benchmarks/bench_fast_regla.json",
+          os.path.join(R, "budget", "compiled_rule_speed.json"))
     copia("benchmarks/e6_presupuesto/calibracion.json",
           os.path.join(R, "budget", "ga_calibration_training.json"))
-    copia("benchmarks/e6_presupuesto/calibracion_clasicas.json",
-          os.path.join(R, "budget", "ga_calibration_classical.json"))
+    with open("benchmarks/e6_tamanos/curvas.csv", encoding="utf-8") as h:
+        assert "int__tai15_15_01" in h.read(), "faltan las curvas del test 10"
     # la anatomia de las reglas: la 1.0 publico la de una campana anterior
     # (3 reglas); la del articulo son las 30 del brazo principal
     with open("benchmarks/rule_anatomy.csv", encoding="utf-8") as h:
@@ -152,47 +160,6 @@ def main():
           os.path.join(R, "tail_risk", "per_instance.csv"))
     copia("benchmarks/e7_cvar/resumen.json",
           os.path.join(R, "tail_risk", "summary.json"))
-
-    # las curvas de los seis carriles, en un solo fichero
-    filas, cab = [], None
-    for f in sorted(glob.glob("benchmarks/e6_presupuesto/curva_carril*.csv")):
-        with open(f, encoding="utf-8") as h:
-            lector = csv.reader(h)
-            c = next(lector)
-            assert cab in (None, c), "cabeceras distintas entre carriles"
-            cab = c
-            filas.extend(lector)
-    filas.sort(key=lambda r: (r[2], r[0], int(r[1]), int(r[3])))
-    with open(os.path.join(R, "budget", "curves.csv"), "w", newline="",
-              encoding="utf-8") as h:
-        w = csv.writer(h)
-        w.writerow(cab)
-        w.writerows(filas)
-    insts = {r[2] for r in filas}
-    assert len(insts) == 70, f"curvas de {len(insts)} instancias"
-
-    # las dos extensiones, con las mismas semillas: la 1 (e6_extension.py)
-    # lleva el genetico a 2^20 y el mejor-de-N a 2^13; la 2
-    # (e6_extension2.py) el sembrado y el azar a 2^20 y el mejor-de-N a
-    # 160 s donde la 1 no llego
-    for patron, destino in (("curva_ext_carril*.csv", "curves_extension.csv"),
-                            ("curva_ext2_carril*.csv", "curves_extension2.csv"),
-                            ("curva_ext3_carril*.csv", "curves_extension3.csv")):
-        ext, cab_ext = [], None
-        for f in sorted(glob.glob(f"benchmarks/e6_presupuesto/{patron}")):
-            with open(f, encoding="utf-8") as h:
-                lector = csv.reader(h)
-                c = next(lector)
-                assert cab_ext in (None, c), "cabeceras distintas"
-                cab_ext = c
-                ext.extend(lector)
-        ext.sort(key=lambda r: (r[2], r[0], int(r[1]), int(r[3])))
-        with open(os.path.join(R, "budget", destino), "w",
-                  newline="", encoding="utf-8") as h:
-            w = csv.writer(h)
-            w.writerow(cab_ext)
-            w.writerows(ext)
-        assert len({r[2] for r in ext}) == 70, f"{destino} no cubre las 70"
 
     # la mejor regla de cada generacion, con su RE en las tres particiones
     # (scripts/evolucion_mejores.py): la figura de la evolucion
