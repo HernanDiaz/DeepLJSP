@@ -1600,10 +1600,9 @@ suited to settings in which schedules must be built or rebuilt quickly.
 Future work follows four lines. First, refining the numeric weights of
 evolved rules, which the sensitivity analysis of
 Section~\ref{sec:anatomy} shows the evolution does not always leave at
-their best values. Because operations are dispatched by \emph{argmin},
-the priority is invariant to positive scaling and to shifts, so linear
-scaling~\citep{Keijzer2003} cannot help, and a local search over the
-relative weights of the additive terms is the natural complement.
+their best values; since only the relative weights of the terms affect
+the dispatching decisions, a local search over them is the natural
+complement.
 Second, evolving rules inside Giffler and Thompson's active decoder and
 under intervals of other magnitudes, the two settings that
 Section~\ref{sec:limitations} leaves open. Third, seeding the published
