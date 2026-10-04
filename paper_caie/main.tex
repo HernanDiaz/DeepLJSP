@@ -1556,7 +1556,7 @@ We presented a GP hyper-heuristic for job shop scheduling with interval
 durations, which evolves priority rules over a terminal set exposing
 both the worst-case values and the widths of the uncertain quantities.
 The evolved rules are compact enough to be read and simplified by hand.
-In a single constructive pass they average $18.99\%$ over 30 evolutions,
+In a single constructive pass they average $18.99\%$ $\RE$ over 30 evolutions,
 and the featured rule attains $17.71\%$, against $29.5\%$ for the strongest
 baseline, G\&T-MWKR; the featured rule outperforms every deterministic
 constructive baseline on all 70 interval Taillard instances, and the
@@ -1572,45 +1572,47 @@ keeps the width terminals in most rules. Second, under the default
 expected-makespan objective the magnitude of the uncertainty is not
 needed to dispatch well: rules evolved without the width terminals, or
 on the crisp midpoint instances, perform as well as the interval-aware
-ones. Third, an objective that rewards a narrow makespan interval does
-lead to more predictable executions. The predicted intervals become
-narrower and the deviation of the executed makespan from its prediction
-falls by about a fifth, a reduction that extends to the worst executions
-and that the width terminals also achieve on asymmetric intervals, at
-the cost of a higher expected makespan governed by the weight $\lambda$.
-The reduction requires the width terminals, so it is under this
-objective that the magnitude of the uncertainty becomes useful
-information.
+ones. Third, an objective that rewards a narrow makespan interval leads to
+more predictable executions. With $\lambda = 1$ the predicted intervals
+become narrower and the mean relative deviation of the executed makespan
+from its prediction, $\bar\varepsilon$, falls by about a fifth, a
+reduction that extends to the worst $5\%$ of executions and grows as the
+intervals are widened. The expected makespan rises in exchange, by an
+amount that the weight $\lambda$ controls. The reduction requires the
+width terminals, on symmetric and on asymmetric intervals alike, so it
+is under this objective that the magnitude of the uncertainty becomes
+useful information.
 
 Fourth, the place of evolved rules among per-instance methods depends on
-the budget. Against our implementation of the genetic algorithm
+the budget. Compared with our implementation of the genetic algorithm
 published for the IJSP, which shares decoder, evaluator and language
-with the rule, GP-best-of-$N$ is the most effective method up to a
-budget that grows with instance size, from about $10$~s per instance on
-the classical instances to about $300$~s on $50{\times}15$, and a single
+with the rule, GP-best-of-$N$ attains the lowest $\RE$ up to a budget
+that grows with instance size, from about $10$~s per instance on the
+classical instances to about $300$~s on $50{\times}15$, and a single
 pass delivers in milliseconds a quality that the genetic algorithm needs
-seconds to reach. Seeded with the rule, the genetic algorithm also
-progresses faster in its early search. Beyond those budgets per-instance
-search takes the lead, and the ABC variants, whose local search a plain
-population method does not replace, remain ahead of both. Evolved rules
-are therefore a high-quality, interpretable, fast-decision method for
-the IJSP that complements per-instance search, suited to settings in
-which schedules must be built or rebuilt quickly.
+between $2$ and $46$~s per instance to reach. As a seed, the rule speeds
+up the early search of the genetic algorithm. At larger budgets the
+genetic algorithm attains a lower $\RE$, and the published ABC variants,
+which combine population search with local search, obtain the best
+results. Evolved rules are therefore a high-quality, interpretable
+method that decides in milliseconds and complements per-instance search,
+suited to settings in which schedules must be built or rebuilt quickly.
 
-Future work follows four lines. First, tuning the numeric weights of an
-evolved rule, which the sensitivity analysis of
-Section~\ref{sec:anatomy} suggests the evolution leaves unfinished.
-Because operations are dispatched by \emph{argmin}, the priority is
-invariant to adding a constant and to multiplying by a positive one, so
-linear scaling~\citep{Keijzer2003} cannot help and only the relative
-weights of the additive terms are free; an enriched terminal set or a
-local search over those weights follows. Second, richer symbolic models,
-such as ensembles of complementary rules~\citep{GilGala2021Ensembles}
-and the co-evolution of construction and tie-breaking. Third, seeding
-the published ABC variants with the rule, and with the diverse pools of
-sequences that GP-best-of-$N$ produces. Fourth, a controlled comparison
-with learned neural constructive policies under matched training and
-inference budgets, the evaluation that the recent
+Future work follows four lines. First, refining the numeric weights of
+evolved rules, which the sensitivity analysis of
+Section~\ref{sec:anatomy} shows the evolution does not always leave at
+their best values. Because operations are dispatched by \emph{argmin},
+the priority is invariant to positive scaling and to shifts, so linear
+scaling~\citep{Keijzer2003} cannot help, and a local search over the
+relative weights of the additive terms is the natural complement.
+Second, evolving rules inside Giffler and Thompson's active decoder and
+under intervals of other magnitudes, the two settings that
+Section~\ref{sec:limitations} leaves open. Third, seeding the published
+ABC variants with the rule and with the diverse pools of sequences that
+GP-best-of-$N$ produces, and richer symbolic models such as ensembles of
+complementary rules~\citep{GilGala2021Ensembles}. Fourth, a controlled
+comparison with learned neural constructive policies under matched
+training and inference budgets, the evaluation that the recent
 literature~\citep{Xu2025} identifies as missing.
 
 \section*{CRediT authorship contribution statement}

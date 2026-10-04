@@ -1,4 +1,4 @@
-\begin{thebibliography}{47}
+\begin{thebibliography}{49}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \providecommand{\url}[1]{\texttt{#1}}
 \providecommand{\href}[2]{#2}
@@ -77,6 +77,16 @@
 \newblock \bibinfo{journal}{European Journal of Operational Research}
   \bibinfo{volume}{11}, \bibinfo{pages}{42--47}.
 \newblock \DOIprefix\doi{10.1016/s0377-2217(82)80007-6}.
+%Type = Misc
+\bibitem[{{Coupvent des Graviers} et~al.(2025){Coupvent des Graviers},
+  Kobrosly, Guettier and Cazenave}]{CoupventdesGraviers2025}
+\bibinfo{author}{{Coupvent des Graviers}, M.E.}, \bibinfo{author}{Kobrosly,
+  L.}, \bibinfo{author}{Guettier, C.}, \bibinfo{author}{Cazenave, T.},
+  \bibinfo{year}{2025}.
+\newblock \bibinfo{title}{Updating lower and upper bounds for the job-shop
+  scheduling problem test instances}.
+\newblock \bibinfo{howpublished}{arXiv preprint arXiv:2504.16106}.
+\newblock \DOIprefix\doi{10.48550/arXiv.2504.16106}.
 %Type = Inproceedings
 \bibitem[{D{\'i}az et~al.(2020)D{\'i}az, Gonz{\'a}lez-Rodr{\'i}guez, Palacios,
   D{\'i}az and Vela}]{DiazGA2020}
@@ -89,16 +99,27 @@
   \bibinfo{publisher}{Springer}. pp. \bibinfo{pages}{663--676}.
 \newblock \DOIprefix\doi{10.1007/978-3-030-50143-3_52}.
 %Type = Article
-\bibitem[{D{\'i}az et~al.(2022)D{\'i}az, Palacios, D{\'i}az, Vela and
+\bibitem[{D{\'i}az et~al.(2022a)D{\'i}az, Palacios, D{\'i}az, Vela and
   Gonz{\'a}lez-Rodr{\'i}guez}]{DiazTardiness2022}
 \bibinfo{author}{D{\'i}az, H.}, \bibinfo{author}{Palacios, J.J.},
   \bibinfo{author}{D{\'i}az, I.}, \bibinfo{author}{Vela, C.R.},
-  \bibinfo{author}{Gonz{\'a}lez-Rodr{\'i}guez, I.}, \bibinfo{year}{2022}.
+  \bibinfo{author}{Gonz{\'a}lez-Rodr{\'i}guez, I.}, \bibinfo{year}{2022}a.
 \newblock \bibinfo{title}{Robust schedules for tardiness optimization in job
   shop with interval uncertainty}.
 \newblock \bibinfo{journal}{Logic Journal of the IGPL} \bibinfo{volume}{31},
   \bibinfo{pages}{240--254}.
 \newblock \DOIprefix\doi{10.1093/jigpal/jzac016}.
+%Type = Inproceedings
+\bibitem[{D{\'i}az et~al.(2022b)D{\'i}az, Palacios, Gonz{\'a}lez-Rodr{\'i}guez
+  and Vela}]{DiazABC2022}
+\bibinfo{author}{D{\'i}az, H.}, \bibinfo{author}{Palacios, J.J.},
+  \bibinfo{author}{Gonz{\'a}lez-Rodr{\'i}guez, I.}, \bibinfo{author}{Vela,
+  C.R.}, \bibinfo{year}{2022}b.
+\newblock \bibinfo{title}{Elite artificial bee colony for makespan optimisation
+  in job shop with interval uncertainty}, in: \bibinfo{booktitle}{Bio-inspired
+  Systems and Applications: from Robotics to Ambient Intelligence ({IWINAC})},
+  \bibinfo{publisher}{Springer}. pp. \bibinfo{pages}{98--108}.
+\newblock \DOIprefix\doi{10.1007/978-3-031-06527-9_10}.
 %Type = Article
 \bibitem[{D{\'i}az et~al.(2023a)D{\'i}az, Palacios, Gonz{\'a}lez-Rodr{\'i}guez
   and Vela}]{DiazICAE2023}
