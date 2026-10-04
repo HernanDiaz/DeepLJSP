@@ -57,9 +57,9 @@ that Generalize Across Instance Sizes}
 In the job shop scheduling problem with interval durations (IJSP), each
 processing time is uncertain and only its lower and upper bounds are
 known. We use a genetic programming hyper-heuristic to evolve dispatching
-rules for this problem. Each rule is a short, readable formula that ranks
-the candidate operations using both the upper bounds and the widths of
-the intervals. Applying a rule once builds a complete schedule. On the 70
+rules, which build a complete schedule in a single pass. Each rule is a
+short, readable formula that ranks the candidate operations using both
+the upper bounds and the widths of the intervals. On the 70
 interval Taillard instances, 30 evolutions average $18.99\%$
 ($\pm1.33$) relative error over reference bounds and the rule selected on the validation set attains $17.71\%$,
 improving on the strongest constructive baseline, Giffler--Thompson/MWKR
