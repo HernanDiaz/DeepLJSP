@@ -390,6 +390,39 @@ if os.path.exists(epr):
         assert _c["p_holm"] < 0.05 and _c["z"] < 0, _k
         check(f"eps por brazo, {_k}", f"$z={_c['z']:.2f}$", epr)
         check(f"eps por brazo, {_k}: |r|", f"$|r|={_c['r']:.2f}$", epr)
+    # 7.6 y conclusiones dan el efecto del objetivo robusto a nivel de brazo
+    _c = _fe["rob-full vs full"]
+    _de = f"from ${_c['media_b']:.2f}$ to ${_c['media_a']:.2f}$"
+    check("7.6: eps medio, makespan -> robusto", f"lowers the mean $\\bar\\varepsilon$ {_de}", epr)
+    check("conclusiones: eps medio por brazo", f"$\\bar\\varepsilon$ falls {_de}", epr)
+    check("7.6: z del objetivo robusto por brazo", f"(Mann--Whitney $z={_c['z']:.2f}$", epr)
+
+# ---- representantes de la tabla 9: los robustos, elegidos en validacion ----
+_rv = os.path.join(REPO, "benchmarks/representantes_validacion.json")
+if os.path.exists(_rv):
+    import json as _json
+    _RV = _json.load(open(_rv, encoding="utf-8"))
+    print("\n== representantes de la tabla 9 (representantes_validacion.json) ==")
+    for _b in ("robust1-full", "lam4"):
+        _x = _RV[_b]
+        if _x["elegida_validacion"] == _x["semilla_usada"]:
+            ok += 1
+            print(f"  OK    {_b}: la mas estrecha en validacion es la semilla {_x['semilla_usada']}")
+        else:
+            bad += 1
+            print(f"  FALLA {_b}: en validacion sale {_x['elegida_validacion']}, se uso {_x['semilla_usada']}")
+    for _b in ("makespan-nowidth", "robust1-nowidth"):
+        _x = _RV[_b]
+        if _x["elegida_70"] == _x["semilla_usada"]:
+            ok += 1
+            print(f"  OK    {_b}: la mejor en las 70 es la semilla {_x['semilla_usada']}")
+        else:
+            bad += 1
+            print(f"  FALLA {_b}: en las 70 sale {_x['elegida_70']}, se uso {_x['semilla_usada']}")
+    check("pie de la tabla 9", "for the robust arms, the narrowest rule on the validation set",
+          "representantes_validacion.json")
+else:
+    print("\n== representantes de la tabla 9: PEND (falta representantes_validacion.json) ==")
 
 # ---- lo que tarda una evolucion (6.1), de los logs ---------------------
 _tev = os.path.join(REPO, "benchmarks/tiempos_evolucion.json")
