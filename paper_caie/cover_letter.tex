@@ -1,0 +1,89 @@
+%% Carta de presentacion para Computers & Industrial Engineering. Lleva
+%% identidad: no es el manuscrito anonimo. La firma el autor.
+\documentclass[11pt]{article}
+\usepackage[margin=1.9cm]{geometry}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{parskip}
+\setlength{\parskip}{0.4em}
+\pagestyle{empty}
+
+\begin{document}
+
+\noindent
+Hern\'an D\'iaz Rodr\'iguez\\
+Department of Computing, University of Oviedo\\
+Gij\'on, Spain\\
+diazhernan@uniovi.es
+
+\vspace{1em}
+\noindent 5 October 2026
+
+\vspace{1em}
+\noindent To the Editors,\\
+\emph{Computers \& Industrial Engineering}
+
+\vspace{1em}
+
+I submit for your consideration the manuscript \emph{Genetic
+Programming Hyper-Heuristics for the Job Shop Scheduling Problem with
+Interval Durations: Robustness-Aware Interpretable Rules that Generalize
+Across Instance Sizes}, as a research paper.
+
+In many manufacturing settings the duration of an operation is not
+known in advance, and a planner can only give a lower and an upper
+bound. The interval job shop scheduling problem models this situation,
+and its best solutions so far come from metaheuristics that search anew
+for every instance. The manuscript brings automated rule design to this
+problem. A genetic programming hyper-heuristic evolves dispatching rules
+that read both the worst-case value and the width of each uncertain
+quantity. The rules build a schedule in milliseconds and are short
+enough to be read and checked by a planner.
+
+The methodological contribution has three parts. First, rules evolved
+on four instances improve on every constructive baseline on all seventy
+instances of the benchmark, and transfer without retraining to all size
+classes and to a second benchmark. Second, ablations show where interval
+information pays off: not in the expected makespan, but in the
+predictability of the schedule. An objective that penalizes the width of
+the predicted makespan yields schedules whose execution departs less
+from the prediction, with a single weight that sets the trade-off.
+Third, a comparison at matched budget with a genetic algorithm,
+reimplemented on the same decoder, shows up to which computational
+budget the evolved rule is the better choice, and how that budget grows
+with instance size.
+
+The work fits the journal because it answers questions that a
+production planner faces: which rule to deploy when schedules must be
+built or rebuilt quickly, how much expected makespan to give up for a
+more reliable schedule, and when a per-instance search is worth its
+cost.
+
+I confirm that the manuscript is original, that it has not been
+published elsewhere, and that it is not under consideration by another
+journal. I disclose two related items. An earlier version of this study
+is available as a preprint (SSRN, doi:10.2139/ssrn.7214286). A companion
+study on deep reinforcement learning for the same problem, by the same
+author and a co-author, is under review at another journal; it uses the
+rules evolved here as a reference method, and its contribution is
+distinct.
+
+The instances, the evolved rules, the result files behind every table
+and figure, and a self-contained implementation that re-derives them
+are openly available in Zenodo (doi:10.5281/zenodo.21716972). A
+statement on the use of generative AI in the preparation of the
+manuscript appears directly before the references, as the journal's
+policy requires. In keeping with the double-anonymous review process,
+the author's identity appears only in the title page and in this letter.
+
+Thank you for considering this work.
+
+\vspace{0.7em}
+\noindent Yours sincerely,
+
+\vspace{1.2em}
+\noindent Hern\'an D\'iaz Rodr\'iguez\\
+Corresponding author
+
+\end{document}
