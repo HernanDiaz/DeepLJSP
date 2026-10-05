@@ -147,7 +147,8 @@
 \bibinfo{author}{D{\'i}az~Rodr{\'i}guez, H.}, \bibinfo{year}{2026}.
 \newblock \bibinfo{title}{Genetic programming dispatching rules for the
   interval job shop: instances, evolved rules, results and code}.
-\newblock \DOIprefix\doi{10.5281/zenodo.21716972}. \bibinfo{note}{[dataset]}.
+\newblock \DOIprefix\doi{10.5281/zenodo.21716972}. \bibinfo{note}{[dataset].
+  Version 2.0: doi:10.5281/zenodo.23156759}.
 %Type = Article
 \bibitem[{Feo and Resende(1995)}]{Feo1995}
 \bibinfo{author}{Feo, T.A.}, \bibinfo{author}{Resende, M.G.C.},
