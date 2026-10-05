@@ -182,46 +182,45 @@ Section~\ref{sec:conclusions} concludes.
 \label{sec:related}
 
 \subsection{Job shop scheduling under interval uncertainty}
-Interval durations offer a distribution-free uncertainty model requiring
-only bounds, in contrast to stochastic and fuzzy
-approaches~\citep{Palacios2015}: they are the natural choice when
+Interval durations offer a distribution-free uncertainty model that
+requires only bounds, in contrast to stochastic and fuzzy
+approaches~\citep{Palacios2015}. They are the natural choice when
 historical data are insufficient to estimate distributions and a
 decision maker can only supply a minimum and a maximum duration.
-Scheduling with interval processing times has been studied across
-machine environments, from the single machine~\citep{Allahverdi2014} to
-the flexible job shop~\citep{Xu2023}, with the flow shop and others
-surveyed by \citet{Allahverdi2022}; recent work extends the model to
-richer variants such as assembly~\citep{Zheng2024} and energy-aware
-flexible~\citep{Afsar2025} shops. It has also been studied analytically, through measures of
-the problem uncertainty induced by the intervals and of the stability of
-optimal sequences~\citep{Sotskov2013}, and through the execution of
-schedules built under uncertain durations~\citep{Sotskov2020}, the
-question Section~\ref{sec:robustness} examines for evolved rules. The
-risk carried by a fixed schedule has also been quantified directly:
-\citet{Calamita2025} estimate the value-at-risk and conditional
-value-at-risk of its makespan when only the range of each duration is
-known, replacing costly exact evaluation with machine-learning
-predictors built on features of the activity network.
+Scheduling with interval processing times has been studied from the
+single machine~\citep{Allahverdi2014} to the flexible job
+shop~\citep{Xu2023}, and \citet{Allahverdi2022} survey the flow shop and
+other environments. Recent work extends the model to
+assembly~\citep{Zheng2024} and energy-aware flexible~\citep{Afsar2025}
+shops. \citet{Sotskov2013} study the problem analytically, through
+measures of the uncertainty induced by the intervals and of the
+stability of optimal sequences. \citet{Sotskov2020} examine the
+execution of schedules built under uncertain durations, the question
+Section~\ref{sec:robustness} examines for evolved rules.
+\citet{Calamita2025} quantify the risk of a fixed schedule directly:
+they estimate the value-at-risk and conditional value-at-risk of its
+makespan when only the range of each duration is known.
+Machine-learning predictors built on features of the activity network
+replace the costly exact evaluation.
 
 For the job shop with interval durations and makespan minimization,
-which concerns us here, the literature is dominated by population-based metaheuristics. Lei's
-population-based neighborhood search~\citep{Lei2011}, which ranks
-interval makespans by a possibility degree, was an early reference
-point; it was subsequently outperformed by a genetic algorithm with a
-systematic study of interval rankings~\citep{DiazGA2020} and by
-artificial bee colony variants~\citep{DiazABC2022,DiazFEABC2023,DiazICAE2023}, which
-report the best published results for this problem. Related objectives
-have also been addressed under interval uncertainty, notably tardiness
-minimization~\citep{DiazTardiness2022}. All of these are iterative search
-methods: they build and evaluate many complete solutions and refine them
-over many iterations for each instance solved. Fast constructive methods
-for the IJSP have received far less attention, and dispatching rules with
-interval-aware lexicographic comparisons are the point of comparison they
-are measured against, the role they play in this paper
-(Section~\ref{sec:baselines}). Constructive heuristics are also a
-standard source of initial solutions for population
-methods~\citep{Kazimipour2014}, a use Section~\ref{sec:budget} examines
-for evolved rules.
+which concerns us here, the literature is dominated by population-based
+metaheuristics. Lei's population-based neighborhood
+search~\citep{Lei2011}, which ranks interval makespans by a possibility
+degree, was an early reference point. It was later outperformed by a
+genetic algorithm with a systematic study of interval
+rankings~\citep{DiazGA2020} and by artificial bee colony
+variants~\citep{DiazABC2022,DiazFEABC2023,DiazICAE2023}, which report
+the best published results for this problem. Related objectives have
+also been addressed under interval uncertainty, notably tardiness
+minimization~\citep{DiazTardiness2022}. All of these methods build,
+evaluate and refine many complete solutions for each instance. Fast
+constructive methods for the IJSP have received far less attention:
+dispatching rules adapted to intervals serve mainly as baselines, which
+is also their role in this paper (Section~\ref{sec:baselines}).
+Constructive heuristics are also a standard source of initial solutions
+for population methods~\citep{Kazimipour2014}, a use
+Section~\ref{sec:budget} examines for evolved rules.
 
 \subsection{Dispatching rules for job shop scheduling}
 Priority dispatching rules are among the oldest and most widely
@@ -239,68 +238,65 @@ respectively in time units and in number of operations. The
 time available until a due date. Surveys catalog more than a hundred
 such variants~\citep{Panwalkar1977,Haupt1989}, and more recent ones
 compare those in current use across machine
-environments~\citep{Durasevic2018}. Beyond single-attribute rules, the algorithm of \citet{Giffler1960}, G\&T in what
-follows, restricts each choice to a machine's
-conflict set, the operations on the machine of the earliest-finishing
-candidate that can start before that candidate finishes, guaranteeing \emph{active} schedules and markedly
-improving plain rules when a priority criterion is used to break ties
-inside that set; we write G\&T-SPT and G\&T-MWKR for the resulting
-combinations. Stronger constructive procedures exist
+environments~\citep{Durasevic2018}. Beyond single-attribute rules, the algorithm of
+\citet{Giffler1960}, G\&T in what follows, restricts each choice to a
+machine's conflict set: the operations on the machine of the
+earliest-finishing candidate that can start before that candidate
+finishes. It guarantees \emph{active} schedules and markedly improves
+plain rules when a priority criterion breaks the ties inside that set.
+We write G\&T-SPT and G\&T-MWKR for the resulting combinations. Stronger constructive procedures exist
 for the \emph{deterministic} job shop, notably the shifting bottleneck
 heuristic~\citep{Adams1988}, which repeatedly solves one-machine
 subproblems with heads and tails by means of Carlier's
 algorithm~\citep{Carlier1982}. These fall outside the scope of the present work: their machinery rests
 on exact one-machine optimization and critical-path arguments that do
 not extend directly to interval arithmetic, where no natural total order
-is available. Hand-crafted rules, however, have reached a performance plateau: no fixed combination of
-attributes performs well across shop configurations and
-objectives~\citep{Haupt1989}, which motivated their \emph{automated}
-design.
+is available. No fixed combination of attributes performs well across shop
+configurations and objectives~\citep{Haupt1989}, which motivated the
+\emph{automated} design of rules.
 
 \subsection{Automated design of dispatching rules}
 Genetic programming~\citep{Koza1992,Poli2008} evolves a population of
 expressions, usually represented as trees, by applying selection and
-variation operators directly on their structure. GP hyper-heuristics apply this
-machinery to \emph{priority expressions} over scheduling attributes, and
-constitute the standard approach to automated rule design
-for production scheduling~\citep{Branke2016,Nguyen2017}. Evolved rules
-have been shown to outperform hand-crafted ones across job shop variants,
-with active research on surrogate fitness~\citep{Hildebrandt2015}, feature
-selection~\citep{Mei2017} and multi-objective
-formulations~\citep{Nguyen2014}. Beyond single rules, a further line
-combines several evolved rules into \emph{ensembles} that jointly
-construct or vote on a solution~\citep{GilGala2021Ensembles}, and recent
-work explores alternatives to evolutionary search for the same design
-task, namely systematic tree search over the space of expression
-trees~\citep{GilGala2025SSHE}, reporting rules of comparable quality but
-smaller size and better readability. All of this work targets
-deterministic (or dynamic-stochastic) settings. Closest to our setting,
+variation operators directly on their structure. GP hyper-heuristics
+apply this machinery to \emph{priority expressions} over scheduling
+attributes, and are the standard approach to automated rule design for
+production scheduling~\citep{Branke2016,Nguyen2017}. Evolved rules have
+been shown to outperform hand-crafted ones across job shop variants.
+Active research lines include surrogate fitness~\citep{Hildebrandt2015},
+feature selection~\citep{Mei2017} and multi-objective
+formulations~\citep{Nguyen2014}. Several evolved rules can also be
+combined into \emph{ensembles} that jointly construct or vote on a
+solution~\citep{GilGala2021Ensembles}. Systematic tree search over the
+space of expressions is an alternative to evolutionary search, and
+yields rules of comparable quality but smaller size and better
+readability~\citep{GilGala2025SSHE}. All of this work targets
+deterministic or dynamic-stochastic settings. Closest to ours,
 \citet{Karunakaran2017} evolve rules for dynamic job shops with
-uncertain processing times, exposing summary statistics of observed
-deviations (an exponential moving average) to the rule; uncertainty there
-is realized stochastically during simulation, and rules are evaluated on
-sampled scenarios. A recent survey of learned optimization for the job
+uncertain processing times, exposing to the rule an exponential moving
+average of the observed deviations. Uncertainty there is realized
+stochastically during simulation, and rules are evaluated on sampled
+scenarios. A recent survey of learned optimization for the job
 shop~\citep{Xu2025}, covering both GP and DRL constructive approaches,
 records no work on interval-valued processing times. To the best of our
-knowledge, evolving rules whose \emph{inputs} are interval
-attributes, and whose fitness is computed by interval arithmetic rather
-than by sampling realizations, has not been explored before.
+knowledge, rules whose \emph{inputs} are interval attributes, with
+fitness computed by interval arithmetic rather than by sampling
+realizations, have not been evolved before.
 
-Finally, deep reinforcement learning provides an alternative family of
-learned constructive methods for the
-JSP~\citep{Zhang2020L2D,Park2021GNN}; GP rules and DRL policies are
-increasingly studied as competing learning paradigms for the same
-construction task, and controlled comparisons between them under common
-protocols have been identified as a gap in the recent
-literature~\citep{Xu2025}. Both families occupy the same computational
-class at deployment: a single constructive pass. Reinforcement learning
-has recently been applied to the IJSP itself: \citet{Han2026RAPO} learn
-which machine-order relations to fix before execution and leave those
-most sensitive to interval uncertainty to be resolved during execution
-by timed automata, reporting lower mean midpoint makespans than
-population-based neighborhood search and a genetic algorithm on 14
-classical instances. The rules evolved here, by contrast, fix every
-sequencing decision before execution.
+Deep reinforcement learning provides an alternative family of learned
+constructive methods for the JSP~\citep{Zhang2020L2D,Park2021GNN}. GP
+rules and DRL policies are increasingly studied as competing paradigms
+for the same construction task, and controlled comparisons between them
+under common protocols have been identified as a gap in the recent
+literature~\citep{Xu2025}. At deployment both build a schedule in a
+single constructive pass. \citet{Han2026RAPO} apply reinforcement
+learning to the IJSP itself. They learn which machine-order relations to
+fix before execution, and leave those most sensitive to the intervals to
+be resolved during execution by timed automata. On 14 classical
+instances they report lower mean midpoint makespans than
+population-based neighborhood search and a genetic algorithm. The rules
+evolved here, by contrast, fix every sequencing decision before
+execution.
 
 \section{The Interval Job Shop Scheduling Problem}
 \label{sec:problem}
