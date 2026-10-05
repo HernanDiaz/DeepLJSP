@@ -1162,10 +1162,10 @@ Eq.~\eqref{eq:besttree}, reads directly: $-\mathit{WKR}$ is most-work-remaining,
 SLACK}^{2}$ penalizes quadratically any operation that cannot start at
 the earliest available time, and the constant is immaterial to the
 ranking. The remaining term, $-\mathit{WKRW}$, is the interval-aware
-one: among jobs with comparable remaining work the rule advances those
-whose remaining work is \emph{more uncertain}, so that this
-uncertainty is resolved early rather than carried to the end of the
-schedule, as the worked example of Section~\ref{sec:case} illustrates.
+one. Among jobs with comparable remaining work, the rule advances those
+whose remaining work is \emph{more uncertain}, so that this uncertainty
+is resolved early rather than carried to the end of the schedule; the
+worked example of Section~\ref{sec:case} illustrates it.
 The evolved rule is thus a weighted blend of MWKR and SPT, regularized
 by a quadratic earliest-start term and tilted by the uncertainty of the
 work ahead.
@@ -1175,12 +1175,11 @@ admits a direct sensitivity analysis: it weighs $\mathit{PT}$ by
 $\alpha = 2$ and $\mathit{WKRW}$ by $\beta = 1$, and we swept each
 weight over the 70 instances holding the other at its evolved value
 (Figure~\ref{fig:sensitivity}). Neither curve is unimodal: over the
-sampled grid $\alpha$ has five local minima and $\beta$ three, and
-since each point is a deterministic evaluation over the 70 instances,
-that ruggedness belongs to the landscape rather than to sampling noise.
-The evolved $\alpha = 2$ is nonetheless the global minimum of its sweep;
-the evolved $\beta$ is not, giving $17.71\%$ against the $17.54\%$ of
-$\beta = 0.5$. A post-evolution weight sweep on the validation set is thus a cheap
+sampled grid, $\alpha$ has five local minima and $\beta$ three. Each
+point is a deterministic evaluation over the 70 instances, so this
+ruggedness belongs to the landscape, not to sampling noise. The evolved
+$\alpha = 2$ is the global minimum of its sweep. The evolved $\beta$ is
+not: it gives $17.71\%$, against $17.54\%$ for $\beta = 0.5$. A post-evolution weight sweep on the validation set is thus a cheap
 refinement for any simplified rule. The multimodality becomes relevant if the sweep is replaced by local descent: started at $\alpha = 4$, a descent converges to a secondary minimum $0.6$ points above the global one. Setting
 $\beta = 0$ removes the width term from the deployed rule and costs
 $0.5$ points of $\RE$ ($18.23$ against $17.71$).
@@ -1189,17 +1188,17 @@ $0.5$ points of $\RE$ ($18.23$ against $17.71$).
 \subsection{A worked example}
 \label{sec:case}
 
-A $3{\times}3$ instance makes the tilt introduced by
-$-\mathit{WKRW}$ visible by comparing the rule with its variant without
-the width term, $\beta = 0$ in the notation of
-Section~\ref{sec:anatomy}. The instance has three jobs of three operations ($3{\times}3$): $J_1$ visits
+The example compares the rule with its variant without the width term
+($\beta = 0$ in Section~\ref{sec:anatomy}) on a small instance with
+three jobs of three operations. $J_1$ visits
 $M_3, M_2, M_1$ with durations $[28,30]$, $[20,26]$, $[24,32]$; $J_2$
 visits $M_1, M_3, M_2$ with $[26,30]$, $[10,12]$, $[16,18]$; and $J_3$
 visits $M_3, M_1, M_2$ with $[22,26]$, $[14,14]$, $[27,31]$.
 
-The two traces, that is, the sequences of dispatching decisions, coincide
-in the first two decisions and diverge at the third, where $M_3$ has just been released by $o_{11}$ and the eligible
-set is $\{o_{12}, o_{22}, o_{31}\}$. Table~\ref{tab:case} gives the
+The two traces, that is, the sequences of dispatching decisions,
+coincide in the first two decisions. They diverge at the third, where
+$M_3$ has just been released by $o_{11}$ and the eligible set is
+$\{o_{12}, o_{22}, o_{31}\}$. Table~\ref{tab:case} gives the
 terminals and the resulting scores. All three candidates can start at
 the same time, so SLACK vanishes and the decision rests on the
 remaining terms. Without the width term the ranking puts $o_{22}$
@@ -1236,16 +1235,28 @@ separates traces (a) and (b).}
 \label{fig:case}
 \end{figure}
 
-Figure~\ref{fig:case} shows what follows. Dispatching $J_3$ early schedules its remaining operations while the machines are still available, and the makespan is $\mathbf{C}_{\max} = [103,117]$; delaying it by that single decision postpones the same operations to the end of the schedule, and the makespan becomes $[113,133]$, worse at both endpoints. Run on their own from the empty schedule, Figure~\ref{fig:case}c and~d, SPT and MWKR yield $[147,170]$ and $[143,161]$, against a lower bound of $[72,88]$ set by the total work of $J_1$. Neither looks at when a candidate can start, and the decoder appends each operation after the last one on its machine. MWKR, which already departs from the evolved rule at the second decision, dispatches $o_{32}$ before $o_{21}$ and leaves $M_1$ idle until $[50,56]$, so that $o_{21}$, which could have started at time $0$, starts at $[64,70]$; SPT leaves $M_3$ idle from $[22,26]$ to $[62,70]$ in the same way. The $\mathit{SLACK}^2$ term of the evolved rule penalizes a candidate by how much later it would start than the earliest one.
+Figure~\ref{fig:case} shows what follows. Dispatching $J_3$ early schedules its remaining operations
+while the machines are still available, and the makespan is
+$\mathbf{C}_{\max} = [103,117]$. Delaying it by that single decision
+postpones the same operations to the end of the schedule, and the
+makespan becomes $[113,133]$, worse at both endpoints. Run on their own
+from the empty schedule (Figure~\ref{fig:case}c and~d), SPT and MWKR
+yield $[147,170]$ and $[143,161]$, against a lower bound of $[72,88]$
+set by the total work of $J_1$. Neither looks at when a candidate can
+start, and the decoder appends each operation after the last one on its
+machine. MWKR, which already departs from the evolved rule at the second
+decision, dispatches $o_{32}$ before $o_{21}$ and leaves $M_1$ idle until
+$[50,56]$. As a result $o_{21}$, which could have started at time $0$,
+starts at $[64,70]$. SPT leaves $M_3$ idle from $[22,26]$ to $[62,70]$
+in the same way. The $\mathit{SLACK}^2$ term of the evolved rule penalizes a candidate by how much later it would start than the earliest one.
 
-The example illustrates the mechanism, not its magnitude. Over $800$ random
-$3{\times}3$ instances generated with the scheme of
-Section~\ref{sec:instances}, removing the width term leaves the
-trace unchanged in $668$; of the $132$ traces that do change, $93$ end
-at the same makespan, $21$ end better with the term and $18$ worse. On instances this small the width term changes few decisions, so the
-example shows how it acts rather than how much it contributes, which
-Sections~\ref{sec:ablation} and~\ref{sec:robustness} measure over the
-70-instance benchmark.
+The example illustrates the mechanism, not its magnitude. Over $800$
+random $3{\times}3$ instances generated with the scheme of
+Section~\ref{sec:instances}, removing the width term leaves the trace
+unchanged in $668$. Of the $132$ traces that do change, $93$ end at the
+same makespan, $21$ end better with the term and $18$ worse. Its
+contribution over the 70-instance benchmark is measured in
+Sections~\ref{sec:ablation} and~\ref{sec:robustness}.
 
 \subsection{Interval handling and the decoder}
 \label{sec:decoder}
@@ -1253,11 +1264,11 @@ Sections~\ref{sec:ablation} and~\ref{sec:robustness} measure over the
 The comparison with the constructive baselines could depend on two
 choices that are not part of the rules themselves, and Supplementary
 Section~\ref{S-sec:decoder} examines both. The first is how a baseline
-compares intervals: Table~\ref{tab:baselines} ranks candidates
-lexicographically, Eq.~\eqref{eq:rank}, and ranking them instead by the
+compares intervals. Table~\ref{tab:baselines} ranks candidates
+lexicographically, Eq.~\eqref{eq:rank}; ranking them instead by the
 lower endpoint, the midpoint or the upper endpoint changes the $\RE$ of
-EST and MWKR by at most $2.4$ points, far less than the $23.3$ points
-that separate the best of them, EST, from the evolved rules. The second
+EST and MWKR by at most $2.4$ points. That is far less than the $23.3$
+points that separate the best of them, EST, from the evolved rules. The second
 is the decoder. The evolved rules choose among all eligible operations
 and build semi-active schedules, whereas G\&T-MWKR, the strongest
 baseline, chooses only within Giffler and Thompson's conflict set and
@@ -1271,9 +1282,9 @@ choice.
 \subsection{The value of interval awareness: ablations}
 \label{sec:ablation}
 The interval-width terminals are the distinctive ingredient of this
-setting, so we isolate their contribution by ablation: the 30
+setting, so we isolate their contribution by ablation. The 30
 evolutions are repeated without the width terminals ($\mathit{PTW}$,
-$\mathit{ESTW}$, $\mathit{WKRW}$), everything else held fixed,
+$\mathit{ESTW}$, $\mathit{WKRW}$), with everything else held fixed,
 including the irace configuration of Section~\ref{sec:irace}. Interval information also enters the
 evolution through the fitness, which scores every schedule by interval
 arithmetic. To remove it as well, 30 further rules are evolved on the
@@ -1281,8 +1292,8 @@ crisp midpoint counterparts of the training instances
 (Section~\ref{sec:instances}), with the same configuration and reduced
 terminal set, so that they never handle interval data.
 Figure~\ref{fig:ablation} shows the 30 rules of each arm, compared as
-independent samples (Section~\ref{sec:stats});
-Supplementary Table~\ref{S-tab:ablation} gives their means, and Holm's
+independent samples (Section~\ref{sec:stats}).
+Supplementary Table~\ref{S-tab:ablation} gives their means; Holm's
 correction over its tests changes none of the verdicts.
 
 \begin{figure}[t]
@@ -1300,10 +1311,10 @@ under the makespan objective, the rules that read them predict narrower
 makespan intervals ($z=-2.96$, $p<0.01$,
 $|r|=0.44$). In expected makespan, the quantity this objective
 optimizes, the evolution reaches the same quality with or without them
-(medians $18.52$ and $18.61$; $z=0.67$, n.s.), and the crisp midpoint control
-matches the interval-trained arm on both measures ($z=-0.12$ and
-$z=-1.26$, n.s.), although the two fitness functions
-differ, since $\max$ does not commute with taking midpoints. What
+(medians $18.52$ and $18.61$; $z=0.67$, n.s.). The crisp midpoint
+control matches the interval-trained arm on both measures ($z=-0.12$ and
+$z=-1.26$, n.s.), although the two fitness functions differ, since
+$\max$ does not commute with taking midpoints. What
 interval awareness adds is therefore not a lower expected makespan but
 control over the width of the prediction, which
 Section~\ref{sec:frontier} examines under an objective that rewards it.
@@ -1317,22 +1328,21 @@ when rewarded for it, we repeat the terminal ablation with a
 \emph{robust} fitness that explicitly rewards predictability, minimizing
 \begin{equation}
 f_{\lambda} = \overline{C}_{\max} + \lambda\,
-\big(\overline{C}_{\max}-\underline{C}_{\max}\big),
+\big(\overline{C}_{\max}-\underline{C}_{\max}\big).
 \label{eq:robustfit}
 \end{equation}
-that is, a low worst case \emph{and} a narrow interval, with the weight
-$\lambda$ setting the balance between the two; we take $\lambda = 1$
-here; the two bottom rows of Figure~\ref{fig:ablation} show the
-outcome. Under this objective the difference in width between the arms
-with and without the width terminals doubles, from $0.20$ points
-under the makespan objective to $0.42$: rules evolved with the
-width terminals produce schedules whose makespan interval is
-significantly narrower than those evolved without them
+The fitness rewards a low worst case \emph{and} a narrow interval, and
+the weight $\lambda$ sets the balance between the two. Here
+$\lambda = 1$, and the two bottom rows of Figure~\ref{fig:ablation} show
+the outcome. Under this objective, the difference in width between the
+arms with and without the width terminals doubles, from $0.20$ points
+under the makespan objective to $0.42$. Rules evolved with the width
+terminals produce significantly narrower makespan intervals
 ($12.04 \pm 0.75$ versus $12.47 \pm 0.20$ relative width;
-Mann--Whitney $z=-2.99$, $p<0.01$, $|r|=0.45$),
-at the cost of a higher expected makespan ($19.62$ versus $18.42$
-$\RE$; $z=3.59$, $p<0.001$, $|r|=0.54$), which is
-the trade-off the robust objective is designed to make.
+Mann--Whitney $z=-2.99$, $p<0.01$, $|r|=0.45$). In exchange, their
+expected makespan is higher ($19.62$ versus $18.42$ $\RE$; $z=3.59$,
+$p<0.001$, $|r|=0.54$), which is the trade-off the robust objective is
+designed to make.
 
 \begin{figure}[t]
 \centering
@@ -1357,16 +1367,15 @@ the schedules are therefore narrower than any the ablated rules produced,
 at a cost of about four points of $\RE$.
 
 Sweeping $\lambda$ for the ablated arm (ten evolutions per value)
-shows that it has no such curve: its width stays between $12.43$ and
-$12.56$ for every $\lambda$ from $0$ to $4$, whereas the full arm goes
-from $12.18$ to $10.54$ over the sweep, and no individual rule departs
-from this band. Penalizing width in the fitness therefore yields
-narrower intervals only when the rule has terminals through which to act
-on it: the objective and the representation are not two independent
-routes to the same end, the first works through the second.
+shows that it has no such curve. Its width stays between $12.43$ and
+$12.56$ for every $\lambda$ from $0$ to $4$, and no individual rule
+departs from this band, whereas the full arm goes from $12.18$ to
+$10.54$. Penalizing width in the fitness therefore yields narrower
+intervals only when the rule has terminals through which to act on it:
+the objective works through the representation.
 
-Read at the level of the arm, the price of narrowness rises along the sweep,
-and between $\lambda = 2$ and $\lambda = 4$ the spread between
+Read at the level of the arm, the price of narrowness rises along the
+sweep. Between $\lambda = 2$ and $\lambda = 4$ the spread between
 evolutions more than doubles, from $1.74$ to $3.80$, so the outcome of a
 single run becomes much less predictable. A weight between $1$ and $2$
 is therefore the default we would recommend. Selecting a rule within an
@@ -1418,10 +1427,10 @@ EST & 42.30 & 13.37 & 5.66 & 6.79 & 7.83 & 14.64 \\
 \label{sec:robustness}
 We estimate the robustness measures of Section~\ref{sec:stats},
 $\bar\varepsilon$, $|\Delta|$ and the $\mathrm{CVaR}_{0.95}$ of the
-overrun, by Monte Carlo, drawing $K{=}1000$ realizations of the durations
-uniformly on each operation's interval and executing the fixed
-processing order on each of them, with the same realizations for every
-method. The sampling only evaluates schedules that are already built;
+overrun, by Monte Carlo. We draw $K{=}1000$ realizations of the
+durations uniformly on each operation's interval, execute the fixed
+processing order on each of them, and use the same realizations for
+every method. The sampling only evaluates schedules that are already built;
 the problem, the fitness and the evolution remain free of any
 distributional assumption. The uniform law is the least committal choice on a bounded
 support, and three other laws are considered in Supplementary
@@ -1443,22 +1452,22 @@ terminals as $\lambda$ grows.}
 
 Table~\ref{tab:robustness} reports $\bar\varepsilon$ for a
 representative rule of each arm and for the two strongest baselines.
-Under the makespan objective the featured rule and its ablated
+Under the makespan objective, the featured rule and its ablated
 counterpart are statistically indistinguishable ($5.70$ against $5.75$
 at the nominal width; paired Wilcoxon over the 70 instances,
-$z=-0.17$), although over all 30 rules of each arm the width terminals
+$z=-0.17$). Over all 30 rules of each arm, however, the width terminals
 reduce the mean $\bar\varepsilon$ from $5.77$ to $5.67$ (Mann--Whitney
 $z=-2.40$, $p<0.05$ after Holm's correction; Supplementary
 Section~\ref{S-sec:robdetail}). The rule is more robust than G\&T-MWKR
 ($6.29$, $z=-4.42$, $p<0.001$, $|r|=0.61$) and as robust as EST ($5.66$,
-$z=0.42$), whose predicted makespan is far longer: a low deviation does
-not require a low makespan, so robustness must be optimized for
-directly. The robust fitness achieves this. Over all 30 rules of each
-arm it lowers the mean $\bar\varepsilon$ from $5.67$ to $5.50$
-(Mann--Whitney $z=-2.68$, $p<0.05$ after Holm's correction), and the
-narrowest rule of the $\lambda{=}1$ arm on the validation set reduces it
-by about a fifth, from $5.70$ to $4.52$ ($z=-6.40$, $|r|=0.88$ against the makespan rule), and the
-reduction requires the width terminals: under the same fitness, its
+$z=0.42$), whose predicted makespan is far longer. A low deviation does
+not require a low makespan, so robustness must be optimized directly,
+and the robust fitness achieves this. Over all 30 rules of each arm it
+lowers the mean $\bar\varepsilon$ from $5.67$ to $5.50$ (Mann--Whitney
+$z=-2.68$, $p<0.05$ after Holm's correction). The narrowest rule of the
+$\lambda{=}1$ arm on the validation set reduces it by about a fifth,
+from $5.70$ to $4.52$ ($z=-6.40$, $|r|=0.88$ against the makespan rule).
+The reduction requires the width terminals: under the same fitness, the
 ablated counterpart reaches $5.54$ ($z=-6.25$, $|r|=0.86$). At
 $\lambda{=}4$, $\bar\varepsilon$ falls to $4.21$. The ordering holds as the
 intervals are widened, and the advantage of the robust rule grows with
