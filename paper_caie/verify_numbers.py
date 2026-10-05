@@ -539,7 +539,7 @@ if os.path.exists(_evm):
           f"falls only from ${_med(10, 'pru'):.2f}$ to ${_med(50, 'pru'):.2f}$",
           "evolucion_mejores")
     check("validacion, generaciones 10 y 50",
-          f"from ${_med(10, 'val'):.2f}$ to ${_med(50, 'val'):.2f}$:",
+          f"from ${_med(10, 'val'):.2f}$ to ${_med(50, 'val'):.2f}$. The later",
           "evolucion_mejores")
     check("tamano mediano al final",
           f"median of ${_med(50, 'size'):.0f}$ nodes", "evolucion_mejores")

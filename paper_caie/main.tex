@@ -818,22 +818,21 @@ machine of Section~\ref{sec:env}, an offline cost paid once per rule.
 The same panel evaluates the best rule of each generation on the
 instances the fitness never sees, and there the improvement is
 concentrated in the first ten generations. From generation $10$ to $50$
-the median training $\RE$ falls from $17.09$ to $14.57$,
-while that on the $60$ test instances falls only from $19.32$ to
-$18.71$ and that on the validation set hardly moves, from
-$19.85$ to $19.69$: the later generations specialize the
-rule to the four training instances more than they improve it
-elsewhere, so the validation set could also serve to stop the evolution
-earlier at a small cost in quality. Over the same generations the best rules
-grow to a median of $27$ nodes, just below the cap of $30$
-(Figure~\ref{fig:convergence}b), and interval-width terminals make up
-about a fifth of their leaves throughout
+the median training $\RE$ falls from $17.09$ to $14.57$. On the $60$
+test instances it falls only from $19.32$ to $18.71$, and on the
+validation set it hardly moves, from $19.85$ to $19.69$. The later
+generations thus specialize the rule to the four training instances more
+than they improve it elsewhere, and the validation set could also serve
+to stop the evolution earlier at a small cost in quality. Over the same
+generations the best rules grow to a median of $27$ nodes, just below
+the cap of $30$ (Figure~\ref{fig:convergence}b). Interval-width
+terminals make up about a fifth of their leaves throughout
 (Figure~\ref{fig:convergence}c).
 Figure~\ref{fig:besttree}
 shows the featured rule, obtained with seed~1: $26$ nodes
 over $12$ leaves. Every terminal of the tree is non-negative by
-construction and processing times are at least one time unit, so both
-guards it contains resolve to the same branch at every decision. On the
+construction and processing times are at least one time unit, so its
+$\min$ and $\max$ nodes always select the same argument. On the
 problem domain the tree is therefore exactly equivalent to the
 expression
 \begin{equation}
@@ -869,18 +868,18 @@ simplified form.}
 Table~\ref{tab:baselines} reports every constructive baseline under the
 protocol of this paper, one deterministic pass per instance, together
 with the random dispatcher of Section~\ref{sec:reference}. Since these rules are
-deterministic, the standard deviation is taken across instances and
-measures how uniform a method is over the benchmark rather than any
-run-to-run variability; the random dispatcher, the one stochastic entry,
-is averaged over 10 dispatches per instance. Times are averages over
+deterministic, the standard deviation is taken across instances: it
+measures how uniform a method is over the benchmark, not any run-to-run
+variability. The random dispatcher, the one stochastic entry, is
+averaged over 10 dispatches per instance. Times are averages over
 the 70 instances with 5 repetitions each. The GP entries are the
 featured rule, timed as evolved, and the same rule in its simplified
 form, which takes the same decisions.
 
 Two observations are needed to read the table correctly. First, the
-plain rules that ignore machine availability (SPT, LPT and the critical
-ratio CR, the latter being a due-date rule applied here without due
-dates) perform \emph{worse than random} in this setting. This is a
+plain rules that ignore machine availability, SPT, LPT and the critical
+ratio CR, perform \emph{worse than random} in this setting; CR is a
+due-date rule, applied here without due dates. This is a
 property of the schedule generation scheme, not a defect of the
 criteria: because a solution is decoded as a permutation whose
 operations are appended to their machines, systematically dispatching
@@ -892,10 +891,10 @@ criteria that do account for the state of the shop (EST, MOR, MWKR) are
 better than random, and the strongest baseline overall is
 G\&T-MWKR at $29.5\%$, which is the reference we use throughout.
 
-Against that strongest baseline, the evolved rules average
-$18.99 \pm 1.33$ $\RE$ over the 30 evolutions, and the featured rule
-attains $17.71\%$, the lowest of the 30 on these instances although it
-was selected on the validation set.
+Against that strongest baseline, the 30 evolved rules average
+$18.99 \pm 1.33$ $\RE$, and the featured rule attains $17.71\%$, the
+lowest of the 30 on these instances although it was selected on the
+validation set.
 
 \begin{table}[t]
 \centering\small
@@ -924,15 +923,13 @@ GP rule (featured) & \textbf{17.71} & 5.23 & 20.6 \\
 \bottomrule
 \end{tabular}
 \end{table}
-The gap holds at the level of individual instances: the featured
-rule outperforms each of the eight deterministic baselines on every one of
-the $70$ instances, and a paired Wilcoxon signed-rank test rejects
-equality against each of them at $p<10^{-6}$ ($z=-7.3$); the
-conclusion is unchanged under Holm's correction for the eight
-comparisons. The narrowest
-margin over the whole comparison is $3.9$ points, against G\&T-MWKR on a
-single $20{\times}15$ instance; against the best plain rule (EST) the
-smallest margin is $6.3$ points. Per-instance figures are given in
+The gap holds on every instance: the featured rule outperforms each of
+the eight deterministic baselines on all $70$, and a paired Wilcoxon
+signed-rank test rejects equality against each of them at $p<10^{-6}$
+($z=-7.3$), also after Holm's correction for the eight comparisons. The
+narrowest margin over the whole comparison is $3.9$ points, against
+G\&T-MWKR on a single $20{\times}15$ instance. Against the best plain
+rule, EST, the smallest margin is $6.3$ points. Per-instance figures are given in
 Supplementary Table~\ref{S-tab:perinstance}. This quality comes at
 a small evaluation cost. A pass of the featured rule takes
 $20.6$~ms as evolved and $11.1$~ms in its simplified form,
@@ -954,9 +951,9 @@ retraining or rescaling.
 The ranking of the classes reflects the difficulty of their instances
 more than their distance from the training size. In the two 50-job
 classes, where the rule does best, every crisp counterpart has been
-solved to optimality~\citep{CoupventdesGraviers2025} and the bounds used
-here equal the optimal makespans, so on them $\RE$ is measured against
-the optimum. The error is largest on
+solved to optimality~\citep{CoupventdesGraviers2025}. The bounds used
+here equal the optimal makespans, so on these classes $\RE$ is measured
+against the optimum. The error is largest on
 $30{\times}20$, the class with the most open instances, nine of ten.
 The reference bound of an open instance lies below its unknown optimum,
 so part of the error measured there belongs to the bound: the best known
@@ -1038,7 +1035,7 @@ Transfer is a property of the method rather than of one rule: over the
 $\RE$ on these instances, single rules ranging from $15.3\%$ to
 $23.3\%$. Since the two benchmarks use different reference bounds
 (Section~\ref{sec:problem}), $\RE$ values do not compare across them,
-but margins over baselines evaluated on the same instances do, and that
+but margins over baselines evaluated on the same instances do. That
 margin is preserved: $2.40$ times over MOR and $1.58$ over G\&T-MWKR on
 the classical set, against $2.40$ and $1.55$ on the benchmark the rules
 were evolved for.
@@ -1058,9 +1055,9 @@ In a single pass the evolved rules average $19.04\%$ on these
 instances, against $30.1\%$ (G\&T-MWKR) and $45.8\%$ (MOR) for the
 deterministic baselines. With a $1024$-sample budget the featured rule
 reaches $11.3\%$, within $1.5$ points of the $9.8\%$ published for the
-genetic algorithm, which searches every instance separately, and better
-on $3$ of the $12$ instances (paired Wilcoxon $z = 1.96$,
-$p \approx 0.05$). The ABC variants, which add neighborhood structures
+genetic algorithm, which searches every instance separately. It is
+better than the genetic algorithm on $3$ of the $12$ instances (paired
+Wilcoxon $z = 1.96$, $p \approx 0.05$). The ABC variants, which add neighborhood structures
 and local search to the population, remain ahead ($5.5$--$6.4\%$), as
 expected of purpose-built iterative search. The comparison thus places
 the evolved rules at the frontier of constructive methods, close to a
@@ -1088,9 +1085,10 @@ in its initial population, alongside $249$ random ones. The comparison is run
 on the 12 classical instances, with 30 runs of $900$~s per instance and
 method, and on three Taillard classes representative of the different
 instance sizes, $15{\times}15$, $30{\times}15$ and $50{\times}15$. Each method is run 3 times on each of
-the 10 instances of a class, for a total of 30 runs per class, with
-horizons of $900$, $1800$ and $3600$~s, chosen to extend well beyond the
-point where the curves converge (Figure~\ref{fig:budget}).
+the 10 instances of a class, for a total of 30 runs per class. The
+horizons are $900$, $1800$ and $3600$~s per instance, chosen to extend
+well beyond the point where the curves converge
+(Figure~\ref{fig:budget}).
 
 \begin{figure}[t]
 \centering
@@ -1114,11 +1112,10 @@ two converge: from $100$~s per instance onwards, the statistical tests
 detect no difference between them on any instance set (Supplementary
 Table~\ref{S-tab:semilla}). An evolved dispatching rule thus delivers in
 a single pass of milliseconds a quality that the genetic algorithm
-needs between $2$ and $46$~s per instance to reach, and as a seed it
-gives a population-based method a high-quality initial solution from
-which the search progresses faster, the role constructive heuristics
-commonly play in the initialization of such
-methods~\citep{Kazimipour2014}.
+needs between $2$ and $46$~s per instance to reach. As a seed, it gives
+a population-based method a high-quality initial solution from which
+the search progresses faster, the role constructive heuristics commonly
+play in the initialization of such methods~\citep{Kazimipour2014}.
 
 \section{Analysis}
 \label{sec:analysis}
