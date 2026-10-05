@@ -61,7 +61,10 @@ training-set and asymmetric campaigns, the genetic algorithm, the
 compiled rule and the fast simulator, and the results of the experiments on training-set
 sensitivity, asymmetric intervals, alternative realization laws, interval
 conventions and decoders, the worked example, quality against
-computational budget, and the tail risk of the executed makespan.
+computational budget, and the tail risk of the executed makespan. It
+also includes the scenario, parameter space and log of the irace
+configuration study, the per-instance results of the strongest
+baselines, and the supplementary material of the article.
 
 **Keywords** (se heredan; añadir `computational budget` si se quiere):
 interval job shop scheduling; genetic programming; hyper-heuristics;
