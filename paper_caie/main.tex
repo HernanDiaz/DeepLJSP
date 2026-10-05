@@ -307,9 +307,9 @@ each requiring a distinct machine $\mu(o_{jl})$ exclusively and
 non-preemptively. The duration of operation $o$ is an interval
 $\mathbf{p}_o = [\underline{p}_o, \overline{p}_o]$ with
 $0 < \underline{p}_o \le \overline{p}_o$: the only assumption is that the
-realized duration lies within these bounds. As in this definition,
-boldface denotes an interval-valued quantity throughout, and the
-underlined and overlined symbols its lower and upper bounds.
+realized duration lies within these bounds. Throughout, boldface
+denotes an interval-valued quantity, and underlined and overlined
+symbols its lower and upper bounds.
 
 Schedule construction uses interval arithmetic. For intervals
 $\mathbf{a}=[\underline{a},\overline{a}]$ and
@@ -321,7 +321,9 @@ the two operations required by makespan minimization are
 \max(\mathbf{a},\mathbf{b}) &= [\max(\underline{a},\underline{b}),\,
 \max(\overline{a},\overline{b})],
 \end{align}
-both component-wise, the standard operations of interval arithmetic~\citep{Moore2009} as used in the IJSP literature~\citep{DiazGA2020}. A solution determines an operation
+Both operations are component-wise, as is standard in interval
+arithmetic~\citep{Moore2009} and in the IJSP
+literature~\citep{DiazGA2020}. A solution determines an operation
 processing order $\pi$ (a permutation with repetition of jobs, decoded
 left to right). Following the notation of \citet{DiazGA2020} and
 \citet{DiazICAE2023},
@@ -352,9 +354,10 @@ The problem can be stated as
 \end{align}
 where Eq.~\eqref{eq:cmax} defines the interval makespan as the
 component-wise maximum of the job completion times,
-Eq.~\eqref{eq:prec} enforces precedence within each job and
-Eq.~\eqref{eq:cap} forbids overlaps on each machine, in both interval
-components~\citep{DiazGA2020,DiazICAE2023}. The minimum
+Eq.~\eqref{eq:prec} enforces precedence within each job, and
+Eq.~\eqref{eq:cap} forbids overlaps on each machine in both interval
+components~\citep{DiazGA2020,DiazICAE2023}. Both components follow the
+same machine order, the one given by $\pi$. The minimum
 in~\eqref{eq:obj} is taken over processing orders $\pi$ with respect
 to an interval ranking $R$,
 since intervals admit no natural total order and any ranking embodies a
@@ -367,12 +370,12 @@ bound only to break ties:
 \underline{a} \le \underline{b}\big),
 \label{eq:rank}
 \end{equation}
-one of the standard rankings of the IJSP literature and the one found
-by \citet{DiazGA2020} to yield the most robust schedules. All methods in
-this paper share one implementation of the evaluator, and all but the
-two Giffler--Thompson baselines of Section~\ref{sec:related}, which
-restrict each choice to a conflict set, also this decoder, so reported
-differences cannot stem from evaluator discrepancies.
+This is one of the standard rankings of the IJSP literature, and the one
+that \citet{DiazGA2020} found to yield the most robust schedules. All
+methods in this paper use one implementation of this decoder and
+evaluator. The only exceptions are the two Giffler--Thompson baselines,
+which share the evaluator but restrict each choice to a conflict set
+(Section~\ref{sec:related}).
 
 Performance is reported as the relative error of the expected makespan
 with respect to a crisp reference bound $\LB$ of each instance,
@@ -383,19 +386,19 @@ E[\mathbf{C}_{\max}] = \frac{\underline{C}_{\max} +
 \overline{C}_{\max}}{2},
 \end{equation}
 where $E[\mathbf{C}_{\max}]$ is the midpoint of the interval
-makespan, which the IJSP literature calls its expected makespan because
-it is the expectation under a uniform distribution on
-$[\underline{C}_{\max},\overline{C}_{\max}]$; it serves here only as a
-point summary of the interval, and no distributional assumption
-enters the problem. $\LB$ is a bound of the
-underlying deterministic instance: Taillard's bounds~\citep{Taillard1993} for the
-Taillard-derived instances, the best known ones~\citep{DiazFEABC2023} for
-the classical set. It serves as an indicative common reference, not as a
-bound for the interval problem, for which none is available.
+makespan. The IJSP literature calls it the expected makespan, because it
+is the expectation under a uniform distribution on
+$[\underline{C}_{\max},\overline{C}_{\max}]$. Here it serves only as a
+point summary of the interval, and no distributional assumption enters
+the problem. $\LB$ is a bound of the underlying deterministic instance:
+Taillard's bounds~\citep{Taillard1993} for the Taillard-derived
+instances, and the best known ones~\citep{DiazFEABC2023} for the
+classical set. It is an indicative common reference, not a bound for the
+interval problem, for which none is available.
 
 A schedule is eventually \emph{executed} under one realization of the
-durations, and a second quantity of interest is how well its a-priori
-interval predicts that execution. Measuring the gap between a predicted
+durations. A second quantity of interest is therefore how well its
+a-priori interval predicts that execution. Measuring the gap between a predicted
 schedule and its execution is the classical notion of schedule
 robustness~\citep{Leon1994}, here specialized to interval
 predictions. Following \citet{DiazGA2020}, the
