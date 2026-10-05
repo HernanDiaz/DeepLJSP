@@ -36,6 +36,8 @@ rules/
   training_sets/        150 rules, 30 per training set (new in 2.0)
   asymmetric/           60 rules, 15 per arm, on asymmetric intervals (new)
 results/                the primary files behind the article's numbers
+  irace/                scenario, parameter space and log of the configuration study
+supplementary_material.pdf  the supplementary material of the article
 code/
   ijsp_gp/              self-contained Python package (see below)
   test_equivalence.py   re-derives deposited results from scratch
@@ -142,6 +144,8 @@ python -m ijsp_gp.asymmetric --source ../instances/interval_taillard \
 | Evolution of the best rule (training, validation, test RE; size; widths) | evolution_best_rules.json |
 | Selection of the featured rule on the development set | featured_rule_selection.json |
 | Constructive baselines (RE column)                | all_baselines.csv |
+| Per-instance RE (Supplementary Table S4)          | per_instance_baselines.csv; summary.csv, method gp_tuned_seed1 |
+| Configuration study with irace (Section 5.3, Table 4) | irace/ |
 | Timing (all times in the article)                 | timing.json |
 | Generalization to the classical instances         | classic12_tuned.csv |
 | Configuration of the genetic algorithm            | budget/ga_calibration_training.json |
@@ -156,6 +160,7 @@ python -m ijsp_gp.asymmetric --source ../instances/interval_taillard \
 | Lambda sweep, full arm                            | lambda_sweep_tuned.csv, lambda_por_regla.csv |
 | Lambda sweep, no-width arm                        | lambda_nowidth_por_regla_completo.csv |
 | Robustness table (per instance)                   | robustness_seis.csv |
+| Representative rules of the robustness table      | representative_rules.json |
 | Arm-level robustness                              | eps_por_regla.csv |
 | Absolute deviation and other realization laws     | realization_laws/*.csv, realization_laws/summary.json |
 | Tail risk (VaR and CVaR at 0.95)                  | tail_risk/per_instance.csv, tail_risk/summary.json |

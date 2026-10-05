@@ -179,6 +179,54 @@ def main():
               encoding="utf-8") as h:
         csv.writer(h).writerows(r for r in base if r[0] != "GP (best)")
 
+    # las notas internas de la 1.0 (en castellano y con el Wilcoxon pareado
+    # entre brazos, ya sustituido por Mann-Whitney) no se publican en la 2.0
+    os.remove(os.path.join(R, "RESULTADOS.md"))
+
+    # representantes de la tabla 9: que semilla sale en validacion y en las
+    # 70 para cada brazo (scripts/representantes_validacion.py)
+    copia("benchmarks/representantes_validacion.json",
+          os.path.join(R, "representative_rules.json"))
+
+    # tabla S4: RE por instancia de los baselines (la de la regla destacada
+    # esta en summary.csv, metodo gp_tuned_seed1)
+    est = {r["ta"]: r for r in csv.DictReader(
+        open("benchmarks/est_per_instance.csv", encoding="utf-8"))}
+    with open(os.path.join(R, "per_instance_baselines.csv"), "w",
+              newline="", encoding="utf-8") as h:
+        w = csv.writer(h)
+        w.writerow(["ta", "instance", "lb", "EST_re", "GT-MWKR_re", "MOR_re"])
+        n_pi = 0
+        for r in csv.DictReader(open("benchmarks/constructive_per_instance.csv",
+                                     encoding="utf-8")):
+            e = est[r["ta"]]
+            w.writerow([r["ta"], e["instance"], r["lb"], e["est_re"],
+                        r["GT-MWKR_re"], r["MOR_re"]])
+            n_pi += 1
+    assert n_pi == 70, f"{n_pi} filas por instancia"
+
+    # irace (5.3, tabla 4): escenario, espacio, configuracion inicial y log,
+    # sin las rutas locales de la maquina
+    for f in ("scenario_gp.txt", "parameters_gp.txt", "configurations_gp.txt",
+              "instances.txt", "irace_gp.log"):
+        texto = open(os.path.join("tuning/gp", f), encoding="utf-8").read()
+        if f != "irace_gp.log":
+            # los comentarios son notas internas en castellano
+            texto = "".join(l for l in texto.splitlines(keepends=True)
+                            if not l.lstrip().startswith("#"))
+        texto = re.sub(r"C:/Users/[^/]+/AppData/Local/Programs/R/R-[\d.]+/library/",
+                       "<R library>/", texto)
+        texto = texto.replace("E:/PycharmProjects/DeepLJSP/tuning/gp/", "")
+        assert "Users/" not in texto and "PycharmProjects" not in texto, f
+        os.makedirs(os.path.join(R, "irace"), exist_ok=True)
+        with open(os.path.join(R, "irace", f), "w", encoding="utf-8",
+                  newline="\n") as h:
+            h.write(texto)
+
+    # el material suplementario del articulo
+    copia("paper_caie/supplementary.pdf",
+          os.path.join(DEST, "supplementary_material.pdf"))
+
     # --- 6. hoja de metadatos, fuera del zip ------------------------------
     copia(os.path.join(SRC, "ZENODO_METADATA.md"),
           os.path.join(DEST, "ZENODO_METADATA.md"))
