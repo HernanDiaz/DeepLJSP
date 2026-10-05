@@ -59,8 +59,7 @@ Edificio Departamental Oeste, 33204 Gij\'on, Asturias, Spain.
 \noindent\textbf{CRediT authorship contribution statement.}
 \textbf{Hern\'an D\'iaz}: Conceptualization, Methodology, Software,
 Validation, Formal analysis, Investigation, Resources, Data curation,
-Writing -- original draft, Writing -- review \& editing, Visualization,
-Project administration.
+Writing -- original draft, Writing -- review \& editing, Visualization.
 
 \vspace{1em}
 \noindent\textbf{Acknowledgements.}
