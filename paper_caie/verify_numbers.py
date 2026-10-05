@@ -1090,6 +1090,13 @@ else:
           f"$p={_F4['full vs nowidth/anchura']['p']:.2f}$", 'e4')
     check('la desviacion bajo makespan no separa',
           f"$p={_F4['full vs nowidth/abs']['p']:.2f}$", 'e4')
+    # el quinto contraste que sobrevive: lo que cuesta en RE el objetivo
+    # robusto con anchuras frente a su ablacion
+    _cr = _F4['rob1 vs rob1_nowidth/re']
+    assert _cr['p_holm'] < 0.05
+    check('S3: coste en RE del robusto con anchuras',
+          f"${_cr['media_a'] - _cr['media_b']:.2f}$ points of $\\RE$ ($z={_cr['z']:.2f}$)",
+          'e4, Mann-Whitney')
     _C = _A['contrastes']
     check('lo que cuesta la anchura bajo makespan',
           f"${_C['full vs nowidth']['re']['d']:.2f}$ points",
