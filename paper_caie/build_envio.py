@@ -120,7 +120,7 @@ def anonimiza(t):
     # el deposito, que identifica igual que una firma
     # el reemplazo va como funcion: si no, re interpreta los \s y \b del
     # LaTeX como escapes de plantilla
-    pat = r"\\section\*\{Data availability\}.*?(?=\\bibliographystyle)"
+    pat = r"\\section\*\{Data availability\}.*?(?=\\section\*|\\bibliographystyle)"
     t, n = re.subn(pat, lambda _: DATOS_ANON + "\n", t, flags=re.S)
     assert n == 1, "no se pudo anonimizar Data availability"
 
