@@ -1,0 +1,30 @@
+{
+ "makespan-nowidth": {
+  "criterio": "re",
+  "semilla_usada": 25,
+  "n": 30,
+  "elegida_validacion": 8,
+  "elegida_70": 25
+ },
+ "robust1-full": {
+  "criterio": "w",
+  "semilla_usada": 13,
+  "n": 30,
+  "elegida_validacion": 13,
+  "elegida_70": 13
+ },
+ "robust1-nowidth": {
+  "criterio": "w",
+  "semilla_usada": 8,
+  "n": 30,
+  "elegida_validacion": 18,
+  "elegida_70": 8
+ },
+ "lam4": {
+  "criterio": "w",
+  "semilla_usada": 10,
+  "n": 10,
+  "elegida_validacion": 10,
+  "elegida_70": 10
+ }
+}

@@ -1,0 +1,10 @@
+parameterFile = "parameters_gp.txt"
+trainInstancesDir = ""
+trainInstancesFile = "instances.txt"
+configurationsFile = "configurations_gp.txt"
+targetRunner = "./target_runner_gp.bat"
+maxExperiments = 200
+firstTest = 6
+parallel = 3
+seed = 20260710
+logFile = "irace_gp.Rdata"
