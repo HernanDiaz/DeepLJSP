@@ -633,52 +633,52 @@ and~\ref{sec:budget}.
 
 \subsection{Benchmark instances and data split}
 \label{sec:instances}
-We use two benchmarks, both taken from the IJSP
-literature~\citep{DiazGA2020,DiazFEABC2023,DiazICAE2023}: the 70 interval
-versions of Taillard's instances~\citep{Taillard1993} (TA1--TA70, seven size classes from
-$15{\times}15$ to $50{\times}20$), and the 12 classical instances on
-which the published IJSP metaheuristics report results (FT10, FT20~\citep{FisherThompson1963}, seven
-instances of the La family~\citep{Lawrence1984} and ABZ7--9~\citep{Adams1988}, from $10$ to $20$ jobs and $5$ to
-$15$ machines). Both were obtained from their crisp counterparts with
-the generation scheme introduced by \citet{DiazGA2020}: for every
-operation a value $\delta$ is drawn uniformly at random in
-$[0,\, 0.15\,p]$, where $p$ is its original duration, and that duration
-becomes the integer interval $[p-\delta,\, p+\delta]$, machine routes
-being unchanged. The interval is symmetric around $p$, so the crisp
-instance is exactly the midpoint scenario of its interval version. Both sets
-are released with this paper (see Data availability).
+We use two benchmarks from the IJSP
+literature~\citep{DiazGA2020,DiazFEABC2023,DiazICAE2023}. The first is
+the 70 interval versions of Taillard's instances~\citep{Taillard1993}
+(TA1--TA70), in seven size classes from $15{\times}15$ to $50{\times}20$.
+The second is the 12 classical instances on which the published IJSP
+metaheuristics report results: FT10 and FT20~\citep{FisherThompson1963},
+seven instances of the La family~\citep{Lawrence1984} and
+ABZ7--9~\citep{Adams1988}, with $10$ to $20$ jobs and $5$ to $15$
+machines. Both were obtained from their crisp counterparts with the
+generation scheme of \citet{DiazGA2020}. For every operation of original
+duration $p$, a value $\delta$ is drawn uniformly at random in
+$[0,\, 0.15\,p]$, and the duration becomes the integer interval
+$[p-\delta,\, p+\delta]$. Machine routes are unchanged. The interval is
+symmetric around $p$, so the crisp instance is exactly the midpoint
+scenario of its interval version. Both sets are released with this
+paper (see Data availability).
 
 The 70 interval Taillard instances are split three ways. Rules are
 evolved on TA11--TA14 ($20{\times}15$). TA15--TA20 form the
 validation set: they never contribute to fitness, but the design and
 configuration decisions of this paper, including the irace study of
 Section~\ref{sec:irace}, were selected on their performance. The
-remaining 60 instances are unseen by every design and configuration
-decision and, together with the 12 classical instances, to which the
-rules are applied without any re-evolution
-(Section~\ref{sec:classics}), constitute the generalization test.
+remaining 60 instances play no part in any of these decisions. Together
+with the 12 classical instances, to which the rules are applied without
+re-evolution (Section~\ref{sec:classics}), they form the generalization
+test.
 
 Thirty independent evolutions, differing only in their random seed,
-yield thirty rules.
-The one with the lowest mean $\RE$ on the validation set is the
-\emph{featured rule}: the 60 held-out Taillard instances and the 12
-classical ones play no part in this choice or in any design or
-configuration decision; Section~\ref{sec:robustness} states how its
-representative rules are chosen. Results are reported as the mean over the 30 rules, which no
-selection touches, beside the featured rule's value, except where a
-section states that a single rule is examined.
+yield thirty rules. The one with the lowest mean $\RE$ on the validation
+set is the \emph{featured rule}. Results are reported as the mean over
+the 30 rules, which involves no selection, together with the value of
+the featured rule. Where a section examines a single rule, it states how
+that rule is chosen.
 
-For the analysis of Section~\ref{sec:asym} the 70 Taillard instances
+For the analysis of Section~\ref{sec:asym}, the 70 Taillard instances
 were also regenerated with intervals skewed to the right. The crisp
-duration is recovered from the midpoint of the symmetric version, which
-the scheme above preserves exactly, and the bounds are drawn as
+duration $p$ is recovered from the midpoint of the symmetric version,
+which the scheme above preserves exactly. The bounds are drawn as
 $p - \mathrm{round}(p\,U[0,0.05])$ and
-$p + \mathrm{round}(p\,U[0,0.25])$, so that a duration may fall up to $5\%$ below its nominal value and up to $25\%$ above it. Machine routes are unchanged and
-the crisp Taillard bounds still apply. Over the $37{,}250$ operations
-the mean total width is $14.3\%$ of $p$ against $12.9\%$ for the
-symmetric scheme: the two benchmarks differ above all in the shape of
-the intervals, and the asymmetric intervals are also wider on average,
-by $1.4$ points of $p$.
+$p + \mathrm{round}(p\,U[0,0.25])$, so a duration may fall up to $5\%$
+below its nominal value and up to $25\%$ above it. Machine routes are
+unchanged, and the crisp Taillard bounds still apply. Over the
+$37{,}250$ operations, the mean width is $14.3\%$ of $p$, against
+$12.9\%$ for the symmetric scheme. The two benchmarks thus differ above
+all in the shape of the intervals; the asymmetric ones are also wider,
+by $1.4$ points of $p$ on average.
 
 
 \subsection{Reference methods}
@@ -687,8 +687,9 @@ The constructive baselines are the dispatching rules of
 Section~\ref{sec:related} (SPT, LPT, EST, MWKR, MOR and CR) and the two
 Giffler--Thompson combinations, G\&T-SPT and G\&T-MWKR, each applied in
 one deterministic pass. Each ranks candidates by its own criterion under
-the lexicographic order of Eq.~\eqref{eq:rank}; Section~\ref{sec:decoder} checks that this
-choice does not handicap them. A dispatcher that chooses uniformly
+the lexicographic order of Eq.~\eqref{eq:rank}.
+Section~\ref{sec:decoder} checks that this choice does not handicap
+them. A dispatcher that chooses uniformly
 among the eligible operations serves as a reference point.
 
 The sampled variant of the evolved rule is GP-best-of-$N$
@@ -701,28 +702,28 @@ and evaluator of Section~\ref{sec:problem}, so that it and the evolved
 rule differ only in the method. A solution is a permutation with
 repetition of jobs, decoded by the semi-active scheme of
 Eq.~\eqref{eq:sgs} and compared by the ranking of Eq.~\eqref{eq:rank}.
-A population of $250$ individuals is initialized at random; parents are
+A population of $250$ individuals is initialized at random. Parents are
 chosen by tournaments of size $3$ and recombined with probability $0.9$
-by a job-based order crossover, in which a random subset of jobs keeps
-its positions from the first parent and the remaining positions are
-filled in the order they take in the second; offspring are mutated with
+by a job-based order crossover: a random subset of jobs keeps its
+positions from the first parent, and the remaining positions are filled
+in the order they take in the second. Offspring are mutated with
 probability $0.2$ by swapping two positions, and the two best
 individuals pass unchanged to the next generation.
 
 \subsection{Hyperparameter configuration with irace}
 \label{sec:irace}
-Four parameters of the evolution were configured with irace~\citep{LopezIbanez2016}: tournament
-size, crossover probability, tree-size cap and elitism. Population size
-and number of generations were held fixed, so that every configuration is
-evaluated under the same evolution budget. The budget was 200
-experiments, each one a full evolution on the training instances, scored by
-the resulting rule's $\RE$ on the validation set.
-Table~\ref{tab:irace} lists the parameter space and the winning
-configuration (Table~\ref{tab:gpparams}). Of the four elite configurations
-irace retains, three favor a high selection pressure (tournament size
-$7$) and all four fall in a narrow crossover band, $0.72$--$0.77$; the
-tree-size cap does not discriminate, the elites spanning caps of $20$,
-$30$ and $40$.
+Four parameters of the evolution were configured with
+irace~\citep{LopezIbanez2016}: tournament size, crossover probability,
+tree-size cap and elitism. Population size and number of generations
+were held fixed, so every configuration runs the same number of
+evaluations. irace was given 200 experiments, each a full evolution on
+the training instances scored by the validation $\RE$ of the resulting
+rule. Table~\ref{tab:irace} lists the parameter space and the winning
+configuration (Table~\ref{tab:gpparams}). Of the four elite
+configurations that irace retains, three favor a high selection
+pressure (tournament size $7$), and all four fall in a narrow crossover
+band, $0.72$--$0.77$. The tree-size cap does not discriminate: the
+elites span caps of $20$, $30$ and $40$.
 
 \begin{table}[t]
 \centering\small
@@ -755,9 +756,10 @@ of the durations, as described in Section~\ref{sec:robustness}.
   $W = (\overline{C}_{\max}-\underline{C}_{\max})/E[\mathbf{C}_{\max}]
   \times 100$.
 \item \emph{Executional robustness}: the mean deviation of the executed
-  makespan from its prediction, both normalized, $\bar\varepsilon$ of
-  Eq.~\eqref{eq:eps}, and in time units, $|\Delta|$, the same average
-  taken before dividing by $E[\mathbf{C}_{\max}]$.
+  makespan from its prediction, relative to the expected makespan
+  ($\bar\varepsilon$, Eq.~\eqref{eq:eps}) and in time units
+  ($|\Delta|$, the same average before dividing by
+  $E[\mathbf{C}_{\max}]$).
 \item \emph{Tail of the execution}: the conditional value-at-risk at
   level $0.95$, $\mathrm{CVaR}_{0.95}$, the mean of the $5\%$
   largest values of a quantity over the same realizations. It is applied
@@ -776,13 +778,14 @@ the normal-approximation statistic $z$ and, as effect size, the
 matched-pairs rank-biserial correlation $|r|$. An \emph{arm} is a set of
 evolutions, 30 unless stated otherwise, run with the same configuration
 (terminal set, fitness and training instances) and differing only in the
-random seed; the \emph{full} arm uses the complete terminal set and the
+random seed. The \emph{full} arm uses the complete terminal set, and the
 \emph{ablated} one omits the width terminals. Two arms share nothing but
-the seed numbers, so they are compared as independent samples of rules, each
-averaged over the instances, with the two-sided Mann--Whitney rank-sum
-test, reported with its normal-approximation $z$, negative when the
-first arm named has the lower values, and the rank-biserial correlation
-$|r|$, which is $1$ when the two arms do not overlap. In
+the seed numbers, so they are compared as independent samples of rules,
+each rule averaged over the instances. The test is the two-sided
+Mann--Whitney rank-sum test, reported with its normal-approximation $z$,
+negative when the first arm named has the lower values. Its effect size
+is the rank-biserial correlation $|r|$, which is $1$ when the two arms
+do not overlap. In
 Section~\ref{sec:budget}, whose many contrasts are each over 10 to 12
 instances, the Wilcoxon test is reported instead with the number of
 instances favoring each method. Holm's correction is applied within each family
@@ -796,12 +799,11 @@ processor (4 cores, 8 threads) and 32~GB of RAM under Windows~10~Pro.
 The hyper-heuristic, the decoder, the baselines and the genetic
 algorithm are implemented in Python~3.12 with NumPy~2.3, statistical
 tests use SciPy~1.17, and the configuration study used
-irace~4.4.3~\citep{LopezIbanez2016}. All times reported are wall-clock
-times of a single simulator, an implementation of the decoder of
-Section~\ref{sec:problem} in the same language that builds exactly the
-same schedules as the one used during evolution, measured with six runs
-executing in parallel; they are comparable with one another, not with
-times obtained on other hardware or in other languages.
+irace~4.4.3~\citep{LopezIbanez2016}. All reported times are wall-clock times of a single
+simulator, which builds exactly the same schedules as the one used
+during evolution. They were measured with six runs executing in
+parallel, and are comparable with one another but not with times
+obtained on other hardware or in other languages.
 
 \section{Results}
 \label{sec:results}

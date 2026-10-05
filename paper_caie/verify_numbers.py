@@ -1166,7 +1166,7 @@ try:
         _G2 = _json.load(open(_e4g, encoding='utf-8'))
         _dw = 100 * (_G2['anchura_media_rel'] - sum(_ws) / len(_ws))
         check('diferencia de anchura entre bancos',
-              f'wider on average, by ${_dw:.1f}$ points of $p$',
+              f'also wider, by ${_dw:.1f}$ points of $p$ on average',
               'e4/resumen_generacion e instancias')
 except ImportError as _e:
     print(f'\n== anchura del banco simetrico: PEND ({_e}) ==')
