@@ -1,0 +1,90 @@
+%% Carta de presentacion para Applied Soft Computing. ASOC revisa con
+%% anonimato simple: el manuscrito lleva el nombre del autor. La firma el autor.
+\documentclass[11pt]{article}
+\usepackage[margin=1.9cm]{geometry}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{parskip}
+\setlength{\parskip}{0.4em}
+\pagestyle{empty}
+
+\begin{document}
+
+\noindent
+Hern\'an D\'iaz Rodr\'iguez\\
+Department of Computing, University of Oviedo\\
+Gij\'on, Spain\\
+diazhernan@uniovi.es
+
+\vspace{1em}
+\noindent 8 October 2026
+
+\vspace{1em}
+\noindent To the Editor-in-Chief,\\
+\emph{Applied Soft Computing}
+
+\vspace{1em}
+
+I submit for your consideration the manuscript \emph{Genetic
+Programming Hyper-Heuristics for the Job Shop Scheduling Problem with
+Interval Durations: Robustness-Aware Interpretable Rules that Generalize
+Across Instance Sizes}, as a technical paper.
+
+In many manufacturing settings the duration of an operation is not
+known in advance, and a planner can only give a lower and an upper
+bound. The interval job shop scheduling problem models this imprecision
+without assuming any probability distribution, and its best solutions
+so far come from metaheuristics that search anew for every instance.
+The manuscript brings genetic programming to this problem. A
+hyper-heuristic evolves dispatching rules that read both the worst-case
+value and the width of each uncertain quantity. The rules build a
+schedule in milliseconds and are short enough to be read and checked by
+a planner.
+
+The contribution has three parts. First, rules evolved on four
+instances improve on every constructive baseline on all seventy
+instances of the benchmark, and transfer without retraining to all size
+classes and to a second benchmark. Second, ablations show where interval
+information pays off: not in the expected makespan, but in the
+predictability of the schedule. An objective that penalizes the width of
+the predicted makespan yields schedules whose execution departs less
+from the prediction, with a single weight that sets the trade-off.
+Third, a comparison at matched budget with a genetic algorithm,
+reimplemented on the same decoder, shows up to which computational
+budget the evolved rule is the better choice, and how that budget grows
+with instance size.
+
+The work fits the scope of the journal on two counts. It applies
+evolutionary computing to a real-world complexity, uncertain processing
+times. And it does so in the spirit the journal describes: it exploits
+the tolerance for imprecision that intervals express to obtain
+schedules at low solution cost, and examines what robustness that
+tolerance can buy. The manuscript also builds on genetic programming
+hyper-heuristics for scheduling published in the journal.
+
+I confirm that the manuscript is original, that it has not been
+published elsewhere, and that it is not under consideration by another
+journal. An earlier version of this study is available as a preprint
+(SSRN, doi:10.2139/ssrn.7214286).
+
+The complete source code is openly available in Zenodo
+(doi:10.5281/zenodo.21716972; version 2.0, which accompanies this
+manuscript: doi:10.5281/zenodo.23156759): the hyper-heuristic, the
+baselines and the genetic algorithm, together with a test that
+re-derives the deposited results from scratch. The deposit also holds
+the instances, the evolved rules and the result files behind every
+table and figure. A statement on the use of generative AI in the
+preparation of the manuscript appears directly before the references,
+as the journal's policy requires.
+
+Thank you for considering this work.
+
+\vspace{0.7em}
+\noindent Yours sincerely,
+
+\vspace{1.2em}
+\noindent Hern\'an D\'iaz Rodr\'iguez\\
+Corresponding author
+
+\end{document}

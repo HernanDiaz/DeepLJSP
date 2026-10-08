@@ -1,0 +1,7 @@
+Highlights
+
+- GP evolves interpretable, interval-aware dispatching rules for the interval job shop
+- The rule selected on validation beats every constructive baseline on all 70 instances
+- Rules evolved on four 20x15 instances generalize zero-shot across sizes and families
+- Width terminals make executions more predictable under a robustness objective
+- Sampled rule beats a genetic algorithm up to budgets that grow with instance size
