@@ -662,7 +662,10 @@ Section~\ref{sec:irace}, were selected on their performance. The
 remaining 60 instances play no part in any of these decisions. Together
 with the 12 classical instances, to which the rules are applied without
 re-evolution (Section~\ref{sec:classics}), they form the generalization
-test.
+test. The four training instances were fixed before any result was
+inspected. Supplementary Section~\ref{S-sec:trainset} repeats the whole
+protocol over five other training sets, of two, four and eight
+instances.
 
 Thirty independent evolutions, differing only in their random seed,
 yield thirty rules. The one with the lowest mean $\RE$ on the validation
@@ -951,6 +954,13 @@ unseen $50{\times}15$ ($13.8\%$), and the same pattern holds on
 average ($13.7 \pm 1.5$). Because all terminals are per-operation
 attributes with no size-bound quantities, transfer requires no
 retraining or rescaling.
+
+These figures do not depend on the four instances trained on. Across
+the six training sets of Supplementary Section~\ref{S-sec:trainset},
+the mean $\RE$ over the 60 instances outside the $20{\times}15$ class
+spans $0.66$ points. That is less than the standard deviation between
+seeds within any training set, and no set differs significantly from
+TA11--TA14.
 
 The ranking of the classes reflects the difficulty of their instances
 more than their distance from the training size. In the two 50-job
@@ -1561,7 +1571,9 @@ baseline, G\&T-MWKR; the featured rule outperforms every deterministic
 constructive baseline on all 70 interval Taillard instances. Evolved on four $20{\times}15$
 instances, the rules transfer without retraining to every size class and
 to the classical instances, and perform best on the unseen
-$50{\times}15$ class.
+$50{\times}15$ class. Nor does the result rest on the four instances
+trained on: across six training sets, the mean error varies less than
+between evolution seeds.
 
 The questions of Section~\ref{sec:intro} receive the following answers.
 First, the evolution selects the classical scheduling attributes most

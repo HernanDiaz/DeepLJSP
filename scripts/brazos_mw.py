@@ -96,6 +96,28 @@ def main():
             assert len(x) == len(y) == 15
             fam[f"{par}/{med}"] = mw(x, y)
     out["asimetrico"] = holm(fam)
+    # S3: E2, cada campana de entrenamiento alternativa contra TA11--TA14
+    # (30 por campana), juzgadas en las 60 instancias fuera de la clase
+    # 20x15, que ninguna campana toca. La referencia sale de summary.csv
+    # sobre esas mismas 60, como en scripts/e2_analiza.py
+    import collections
+    import re
+    por = collections.defaultdict(dict)
+    for r in csv.DictReader(open("benchmarks/reevo_fixedfit/summary.csv",
+                                 encoding="utf-8")):
+        m = re.fullmatch(r"gp_tuned_seed(\d+)", r["method"])
+        if (m and re.match(r"int__tai\d+_\d+_\d+$", r["instance"])
+                and not r["instance"].startswith("int__tai20_15_")):
+            por[int(m.group(1))][r["instance"]] = float(r["re"])
+    assert len(por) == 30 and {len(v) for v in por.values()} == {60}
+    ref = [float(np.mean(list(v.values()))) for _, v in sorted(por.items())]
+    E2 = json.load(open("benchmarks/e2_entrenamiento/resumen.json",
+                        encoding="utf-8"))["campanas"]
+    fam = {}
+    for camp, c in E2.items():
+        assert len(c["por_semilla"]) == 30, camp
+        fam[camp] = mw(list(c["por_semilla"].values()), ref)
+    out["entrenamiento"] = holm(fam)
 
     json.dump(out, open(SALIDA, "w", encoding="utf-8"), indent=1)
     for f, v in out.items():

@@ -736,6 +736,93 @@ else:
         _z, _p, _, _ = _contraste(_ley, 'GP', 'GP-nowidth', 0)
         assert _p > 0.05, ('la ablacion se separa', _ley, _p)
 
+# E2 (revisiones r1.1 y r2 de SWEVO): sensibilidad al conjunto de
+# entrenamiento. El RE de cada regla sobre las 60 instancias fuera de la
+# clase 20x15 sale de scripts/e2_analiza.py (benchmarks/e2_entrenamiento/
+# resumen.json); la referencia se recalcula aqui desde summary.csv, y los
+# contrastes, con el Mann-Whitney de scripts/brazos_mw.py
+_e2 = os.path.join(REPO, 'benchmarks/e2_entrenamiento/resumen.json')
+_sm = os.path.join(REPO, 'benchmarks/reevo_fixedfit/summary.csv')
+if not (os.path.exists(_e2) and os.path.exists(_sm)):
+    print('\n== E2: PEND (falta resumen.json o summary.csv) ==')
+else:
+    import json as _json
+    import numpy as _np
+    sys.path.insert(0, os.path.join(REPO, "scripts"))
+    from brazos_mw import mw as _mwe2, holm as _holme2
+    print('\n== E2: sensibilidad al conjunto de entrenamiento ==')
+    _S = _json.load(open(_e2, encoding='utf-8'))
+    _por = defaultdict(dict)
+    for _r in csv.DictReader(open(_sm, encoding='utf-8')):
+        _m = re.fullmatch(r'gp_tuned_seed(\d+)', _r['method'])
+        if (_m and re.match(r'int__tai\d+_\d+_\d+$', _r['instance'])
+                and not _r['instance'].startswith('int__tai20_15_')):
+            _por[int(_m.group(1))][_r['instance']] = float(_r['re'])
+    assert len(_por) == 30 and {len(_v) for _v in _por.values()} == {60}
+    _ref = _np.array([_np.mean(list(_v.values())) for _, _v in sorted(_por.items())])
+    check('referencia, media y sd',
+          f'${_ref.mean():.2f} \\pm {_ref.std(ddof=1):.2f}$', 'summary.csv')
+    check('referencia, mejor regla', f'& {_ref.min():.2f} &', 'summary.csv')
+    _TA = {'cuatro_b': 'TA15--TA18', 'cuatro_c': 'TA17--TA20',
+           'cuatro_d': 'TA12, 14, 16, 18', 'dos': 'TA11--TA12',
+           'ocho': 'TA11--TA18'}
+    _medias, _sds, _mejores, _fam = [_ref.mean()], [_ref.std(ddof=1)], [_ref.min()], {}
+    for _c, _et in _TA.items():
+        _v = _np.array(list(_S['campanas'][_c]['por_semilla'].values()))
+        assert len(_v) == 30, _c
+        _fam[_c] = _mwe2(_v, _ref)
+        _d = _v.mean() - _ref.mean()
+        _medias.append(_v.mean())
+        _sds.append(_v.std(ddof=1))
+        _mejores.append(_v.min())
+        # la fila entera de la tabla, celda a celda
+        check(f'fila de {_et}',
+              f"{_et} & {'2' if _c == 'dos' else '8' if _c == 'ocho' else '4'} & "
+              f"${_v.mean():.2f} \\pm {_v.std(ddof=1):.2f}$ & {_v.min():.2f} & "
+              f"${'+' if _d >= 0 else '-'}{abs(_d):.2f}$ & "
+              f"${'+' if _fam[_c]['z'] >= 0 else '-'}{abs(_fam[_c]['z']):.2f}$ & "
+              f"{_fam[_c]['p']:.3f}", f'e2_entrenamiento/{_c}')
+    _holme2(_fam)
+    _pmin = min(_f['p'] for _f in _fam.values())
+    _hmin = min(_f['p_holm'] for _f in _fam.values())
+    assert _pmin > 0.05, 'alguna campana se separa sin corregir'
+    check('menor p sin corregir', f'smallest $p$ is ${_pmin:.2f}$', 'e2, derivado')
+    check('menor p tras Holm', f'and ${_hmin:.2f}$ after correction', 'e2, derivado')
+    _span = max(_medias) - min(_medias)
+    assert _span < min(_sds), 'el rango de medias ya no es menor que la sd'
+    check('rango de las seis medias (suplementario)',
+          f'The six means span ${_span:.2f}$ points, from ${min(_medias):.2f}\\%$ '
+          f'to ${max(_medias):.2f}\\%$', 'e2, derivado')
+    check('rango de las seis medias (articulo)', f'spans ${_span:.2f}$ points', 'e2, derivado')
+    check('rango de sd entre semillas',
+          f'${min(_sds):.2f}$--${max(_sds):.2f}$', 'e2, derivado')
+    check('rango de la mejor regla',
+          f'ranges from ${min(_mejores):.2f}\\%$ to ${max(_mejores):.2f}\\%$', 'e2, derivado')
+    assert _ref.min() == max(_mejores), 'la referencia ya no es el extremo desfavorable'
+    check('dos instancias cuestan',
+          f"costs ${_S['campanas']['dos']['media'] - _ref.mean():.2f}$ points",
+          'e2, derivado')
+    check('ocho instancias ganan',
+          f"gains ${_ref.mean() - _S['campanas']['ocho']['media']:.2f}$", 'e2, derivado')
+    # el uso de terminales que el texto cita
+    _fr = {_c: {_k: 100.0 * _n / sum(_u.values()) for _k, _n in _u.items()}
+           for _c, _u in _S['terminales'].items()}
+    _r0 = _fr['TA11-TA14']
+    check('WKRW en la referencia', f"from ${_r0['WKRW']:.1f}\\%$ under TA11--TA14",
+          'e2/terminales')
+    check('EST en la referencia', f"EST rises from ${_r0['EST']:.1f}\\%$", 'e2/terminales')
+    for _t in ('WKRW', 'EST'):
+        _o = [_fr[_c][_t] for _c in _TA]
+        check(f'rango de {_t} en las otras campanas',
+              f'${min(_o):.1f}$--${max(_o):.1f}\\%$', 'e2/terminales')
+    _sl = [_f['SLACK'] for _f in _fr.values()]
+    check('rango de SLACK', f'${min(_sl):.0f}\\%$ to ${max(_sl):.0f}\\%$', 'e2/terminales')
+    assert all(_f['SLACK'] == max(_f.values()) for _f in _fr.values()), \
+        'SLACK ya no encabeza el recuento en todas las campanas'
+    # "WKRW pierde peso y EST lo gana" en TODAS las otras campanas
+    assert all(_fr[_c]['WKRW'] < _r0['WKRW'] and _fr[_c]['EST'] > _r0['EST']
+               for _c in _TA), 'WKRW o EST ya no se mueven igual en todas'
+
 # E3 (revision r1.4): el caso ilustrativo. Las cifras salen de
 # scripts/e3_caso_ilustrativo.py; la figura, de make_e3_figure.py
 # sobre el mismo json, asi que texto y dibujo no pueden separarse.

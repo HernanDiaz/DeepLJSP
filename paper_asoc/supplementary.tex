@@ -195,6 +195,69 @@ distributions. The ordering is stable as uncertainty grows, and the
 advantage of the robust rule widens with it: at $+40\%$ its deviation is
 $6.08$ against $7.57$ for the makespan rule and $8.58$ for G\&T-MWKR.
 
+\section{Sensitivity to the training set}
+\label{sec:trainset}
+
+The rules of the article are evolved on four instances, TA11--TA14,
+fixed before any result was inspected. Five further campaigns repeat
+the protocol unchanged over other training sets. Each runs thirty
+independent evolutions with the same terminal set and the same irace
+configuration (Section~\ref{M-sec:irace} of the article). Three
+campaigns use alternative quadruples of the $20{\times}15$ class:
+TA15--TA18, TA17--TA20, and the even-numbered TA12, TA14, TA16 and
+TA18. The other two change the size of the training set, to a pair
+(TA11--TA12) and an octuple (TA11--TA18). All six campaigns are
+evaluated on the 60 instances of the other size classes, which none of
+them trains on. Each campaign is summarized by the mean over its thirty
+rules, with no selection step, so the validation set plays no part in
+the comparison.
+
+\begin{table}[!htb]
+\centering\small
+\caption{RE (\%) over the 60 instances that no campaign trains on, by
+training set: mean $\pm$ sd across 30 independently evolved rules, best
+rule, difference of means from the reference, and the two-sided
+Mann--Whitney contrast against the reference.}
+\label{tab:trainset}
+\begin{tabular}{lcccccc}
+\toprule
+Training set & $|T|$ & Mean $\pm$ sd & Best & $\Delta$ & $z$ & $p$ \\
+\midrule
+TA11--TA14 (reference) & 4 & $19.15 \pm 1.35$ & 17.89 & --- & --- & --- \\
+TA15--TA18 & 4 & $19.46 \pm 1.24$ & 17.57 & $+0.31$ & $+1.40$ & 0.162 \\
+TA17--TA20 & 4 & $19.53 \pm 1.07$ & 17.76 & $+0.37$ & $+1.85$ & 0.066 \\
+TA12, 14, 16, 18 & 4 & $19.07 \pm 0.93$ & 17.49 & $-0.08$ & $+0.38$ & 0.706 \\
+TA11--TA12 & 2 & $19.61 \pm 1.23$ & 17.53 & $+0.46$ & $+1.88$ & 0.061 \\
+TA11--TA18 & 8 & $18.95 \pm 1.03$ & 17.38 & $-0.20$ & $-0.21$ & 0.842 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:trainset} gives the outcome. The six means span $0.66$
+points, from $18.95\%$ to $19.61\%$. The standard deviation between
+seeds within a campaign, $0.93$--$1.35$, is larger than that span:
+which instances are trained on matters less than which seed the
+evolution starts from. Each campaign is compared with the reference as
+an independent sample of rules (Section~\ref{M-sec:stats} of the
+article). No campaign differs significantly from TA11--TA14, even before
+Holm's correction over the five contrasts: the smallest $p$ is
+$0.06$, and $0.31$ after correction. The size of the training set has
+an effect of the expected sign and small magnitude. Halving it to two
+instances costs $0.46$ points and doubling it to eight gains $0.20$,
+both within the variation between seeds. The best rule of each campaign
+ranges from $17.38\%$ to $17.89\%$, and the reference quadruple sits at
+the unfavorable end of that range.
+
+What the training set does change is the shape of the rules. SLACK
+leads the terminal count under every training set, with $21\%$ to
+$27\%$ of the leaves. The width terminal WKRW loses ground: it falls
+from $12.0\%$ under TA11--TA14 to $5.8$--$11.8\%$ under the other
+sets. EST rises from $9.7\%$ to
+$10.8$--$14.4\%$. Different instances select different tie-breakers
+around the same SLACK-led core, and reach the same performance with
+them. The featured rule of the article is thus one good solution among
+several, not the only one the method can produce.
+
 \section{Asymmetric intervals}
 \label{sec:asym}
 
