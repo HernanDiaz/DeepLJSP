@@ -1,0 +1,7 @@
+*.aux
+*.log
+*.out
+*.spl
+*.blg
+_envio/
+__pycache__/

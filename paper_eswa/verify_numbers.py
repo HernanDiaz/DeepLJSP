@@ -1,0 +1,3984 @@
+# -*- coding: utf-8 -*-
+"""Verificador de numeros del paper DRL (paper_eswa/main.tex).
+
+Mismo contrato que paper_gp/verify_numbers.py: cada afirmacion numerica
+del texto se recomputa desde los datos primarios y se compara. Ejecutar
+desde la raiz del repo:
+
+    python paper_eswa/verify_numbers.py
+
+Los RE derivados de schedules se recomputan con el makespan COMPONENTE A
+COMPONENTE ([max lowers, max uppers], la Eq. 2 del propio paper); cuando
+la convencion lexicografica pre-fix (la de scripts/re_report.py) da otro
+valor, se informa del delta.
+"""
+import glob
+import json
+import math
+import os
+import re
+import sys
+
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+if not os.path.exists("paper_eswa/main.tex"):
+    sys.exit("Ejecutar desde la raiz del repo")
+
+TEX = open("paper_eswa/main.tex", encoding="utf-8").read()
+# El Online Resource 1 (campanas de configuracion, variante de atencion
+# y tabla por instancia) forma parte del envio: sus afirmaciones se
+# verifican igual. TEX = solo el paper; TEXSUP = paper + suplementario.
+# El suplementario cita tablas, ecuaciones y figuras del principal por
+# su NUMERO literal (la clase no comparte contadores entre documentos),
+# asi que cada renumeracion del principal puede dejarlo mal en silencio:
+# los literales se contrastan contra main.aux mas abajo.
+import os as _os_sup
+SUP = (open("paper_eswa/supplementary.tex", encoding="utf-8").read()
+       if _os_sup.path.exists("paper_eswa/supplementary.tex") else "")
+TEXSUP = TEX + "\n" + SUP
+TEX_PLANO = " ".join(TEXSUP.split())
+
+ok_n, fallo_n, pend_n = 0, 0, 0
+
+
+def check(desc, esperado, real, tol=0.051):
+    """esperado: valor que afirma el texto; real: recomputado."""
+    global ok_n, fallo_n
+    bien = abs(esperado - real) <= tol
+    marca = "OK   " if bien else "FALLO"
+    extra = "" if bien else f"  (texto={esperado}, datos={real:.3f})"
+    print(f"  {marca} {desc:<58} {real:.2f}{extra}")
+    ok_n += bien
+    fallo_n += not bien
+
+
+def check_exacto(desc, cond, detalle=""):
+    global ok_n, fallo_n
+    marca = "OK   " if cond else "FALLO"
+    print(f"  {marca} {desc:<58} {detalle}")
+    ok_n += cond
+    fallo_n += not cond
+
+
+def pendiente(desc, motivo):
+    global pend_n
+    pend_n += 1
+    print(f"  PEND  {desc:<58} {motivo}")
+
+
+def en_tex(literal):
+    if " ".join(literal.split()) not in TEX_PLANO:
+        print(f"  AVISO el literal no aparece en el tex: {literal[:60]!r}")
+
+
+# --- mapa instancia -> (TA, LB de literatura) ----------------------------
+
+TA_BASE = {"15_15": 0, "20_15": 10, "20_20": 20, "30_15": 30,
+           "30_20": 40, "50_15": 50, "50_20": 60}
+LB = {}      # "TA15" -> 1339
+MOR_RE = {}  # "TA15" -> 51.3...   (constructive_per_instance, componentwise)
+GT_RE = {}
+for linea in open("benchmarks/constructive_per_instance.csv",
+                  encoding="utf-8").read().splitlines()[1:]:
+    c = linea.split(",")
+    LB[c[0]] = float(c[2])
+    MOR_RE[c[0]] = float(c[3])
+    GT_RE[c[0]] = float(c[5])
+
+
+def ta_de(nombre):
+    m = re.search(r"tai(\d+_\d+)_(\d+)", nombre.lower())
+    return f"TA{TA_BASE[m.group(1)] + int(m.group(2))}"
+
+
+# --- makespan desde un schedule guardado ---------------------------------
+
+def makespans(path):
+    """(mid componentwise, mid lexicografico) del schedule JSON."""
+    lo_max, up_max, lex = 0.0, 0.0, (0.0, 0.0)
+    for t in json.load(open(path)):
+        e = t["end"]
+        lo, up = (e["lower"], e["upper"]) if isinstance(e, dict) else (e, e)
+        lo_max, up_max = max(lo_max, lo), max(up_max, up)
+        if up > lex[1] or (up == lex[1] and lo > lex[0]):
+            lex = (lo, up)
+    return (lo_max + up_max) / 2.0, (lex[0] + lex[1]) / 2.0
+
+
+def bench_por_instancia(tag):
+    """{TA: {'mids':[por semilla], 'lex':[...]}} de un benchmark."""
+    dirs = sorted(glob.glob(f"outputs/bench_{tag}__*_seed*"))
+    if not dirs:
+        return None
+    out = {}
+    for d in dirs:
+        for p in glob.glob(f"{d}/plots/test/*_schedule.json"):
+            ta = ta_de(os.path.basename(p))
+            mid, lexm = makespans(p)
+            out.setdefault(ta, {"mids": [], "lex": []})
+            out[ta]["mids"].append(mid)
+            out[ta]["lex"].append(lexm)
+    return out
+
+
+def re_pct(mid, ta):
+    return (mid - LB[ta]) / LB[ta] * 100
+
+
+# =========================================================================
+print("== seccion 5.4: baselines (all_baselines.csv, componentwise) ==")
+ab = {}
+for linea in open("benchmarks/all_baselines.csv",
+                  encoding="utf-8").read().splitlines()[1:]:
+    c = linea.split(",")
+    ab[c[0]] = float(c[8])
+en_tex("to $29.5\\%$ of RE")
+check("G&T-MWKR sobre las 70 (texto 29.5)", 29.5, ab["G&T-MWKR"])
+check("MOR sobre las 70 (texto 45.5)", 45.5, ab["MOR"])
+check("G&T-SPT sobre las 70 (texto 70.6)", 70.6, ab["G&T-SPT"])
+# 2.2 cuantifica lo que aporta la restriccion de Giffler-Thompson
+check("2.2: MWKR sin Giffler-Thompson (texto 64.7)", 64.7, ab["MWKR"])
+check_exacto("2.2: y el texto da los dos extremos",
+             "$64.7\\%$ to\n$29.5\\%$" in TEX)
+check("EST sobre las 70 (texto 42.3)", 42.3, ab["EST"])
+check_exacto("EST es la mejor regla suelta sobre las 70",
+             ab["EST"] < min(ab["MOR"], ab["MWKR"], ab["SPT"], ab["LPT"]),
+             f"EST {ab['EST']:.1f}")
+
+# 5.5 afirma que las cuatro reglas que NO se reportan luego (SPT, LPT,
+# MWKR, G&T-SPT) estan dominadas en TODAS las clases por la mas fuerte
+# de su familia, que es lo que justifica no arrastrarlas a los resultados
+_clases = {}
+for _linea in open("benchmarks/all_baselines.csv",
+                   encoding="utf-8").read().splitlines()[1:]:
+    _c = _linea.split(",")
+    if _c[0]:
+        _clases[_c[0]] = [float(x) for x in _c[1:8]]
+_mejor_por_clase = [min(_clases["MOR"][i], _clases["EST"][i],
+                        _clases["G&T-MWKR"][i]) for i in range(7)]
+check_exacto("5.5: SPT, LPT, MWKR y G&T-SPT dominadas en las siete clases",
+             all(_clases[r][i] > _mejor_por_clase[i]
+                 for r in ("SPT", "LPT", "MWKR", "G&T-SPT")
+                 for i in range(7)))
+check_exacto("5.5: las tres que siguen son MOR, EST y G&T-MWKR",
+             all(f"{r} &" in TEX or f"{r} " in TEX
+                 for r in ("MOR", "EST", "G\\&T-MWKR")))
+
+# el resumen tiene un limite duro de la revista: <=250 palabras (guia
+# de EAAI). Se cuenta sobre el texto renderizado, no sobre LaTeX.
+_ab = TEX[TEX.index("\\begin{abstract}") + len("\\begin{abstract}"):
+           TEX.index("\\end{abstract}")].strip()
+_ab = _ab.replace("{\\times}", "x").replace("\\%", "%")
+_ab = re.sub(r"\\[a-zA-Z]+|[{}$]", " ", _ab).replace("---", " ")
+_n_ab = len([w for w in _ab.split() if any(ch.isalnum() for ch in w)])
+check_exacto("el resumen cabe en las 250 palabras de EAAI",
+             150 <= _n_ab <= 250, f"{_n_ab} palabras")
+# y sus siglas estan definidas (condicion de desk-reject de EAAI)
+_sig = sorted(set(re.findall(r"\b[A-Z]{2,}\b", _ab)))
+check_exacto("abstract: toda sigla definida entre parentesis",
+             all(f"({s})" in _ab for s in _sig), ", ".join(_sig))
+
+# EST en desarrollo es PEOR que MOR: el ~46 de las conclusiones (MOR)
+# sigue siendo la mejor regla simple en la clase de entrenamiento. El
+# abstract ya no cita esa cifra: desde la revision externa r1 compara
+# contra G&T-MWKR (27.9), la linea base fuerte, y no contra la simple
+est_pi = {r.split(",")[0]: float(r.split(",")[3])
+          for r in open("benchmarks/est_per_instance.csv",
+                        encoding="utf-8").read().splitlines()[1:]}
+est_dev = sum(est_pi[f"TA{k}"] for k in range(15, 21)) / 6
+check_exacto("en desarrollo MOR < EST (sostiene el ~46 de las "
+             "conclusiones)", est_dev > 46.0, f"EST dev {est_dev:.1f}")
+
+# centinela (el texto ya no lo imprime): greedy gana a MOR, EST y G&T
+gre = {}
+for r in open("benchmarks/fair_v2_greedy.csv",
+              encoding="utf-8").read().splitlines()[1:]:
+    c = r.split(",")
+    gre.setdefault(ta_de(c[0]), []).append(float(c[3]))
+gre = {ta: sum(v) / len(v) for ta, v in gre.items()}
+for nombre, otro in [("MOR", MOR_RE), ("G&T", GT_RE), ("EST", est_pi)]:
+    gana = sum(gre[ta] < otro[ta] for ta in gre)
+    check_exacto(f"greedy gana a {nombre} en las 70", gana == 70,
+                 f"{gana}/70")
+
+DEV = [f"TA{k}" for k in range(15, 21)]
+mor_dev = sum(MOR_RE[t] for t in DEV) / len(DEV)
+check("MOR medio en desarrollo (conclusiones ~46)", 46.0, mor_dev,
+      tol=0.55)
+# El abstract cita ahora la linea base fuerte, no la simple
+_abs_tex = re.search(r"\\begin\{abstract\}(.*?)\\end\{abstract\}",
+                     TEX, re.S).group(1)
+# Orden fijado por el autor el 2026-08-15: primero la politica (la
+# primera DRL invariante al tamano para el IJSP), despues la
+# comparacion, despues el mecanismo. El 0.63 del punto medio salio del
+# abstract mientras su confirmacion sobre no vistas esta en curso.
+_abs_plano = " ".join(_abs_tex.split())
+# El autor retiro ademas del abstract el conteo de parametros, el
+# 20x15, la coletilla sobre la laguna en la literatura y la afirmacion
+# analitica sobre el criterio (que el cuerpo ahora matiza: la clave
+# secundaria SI lee el extremo inferior; la reduccion a la primaria es
+# una propiedad medida de los pools, no un teorema)
+check_exacto("abstract: politica, luego comparacion, luego mecanismo",
+             "46\\%" not in _abs_plano
+             and "genetic programming" in _abs_plano
+             and "1.2" not in _abs_plano
+             and "20{\\times}15" not in _abs_plano
+             and "lexicographic" not in _abs_plano
+             # el autor retiro del ABSTRACT la reclamacion de primacia;
+             # vive en la primera contribucion, anclada a 2.4, que es
+             # donde se documenta el hueco
+             and "the first" not in _abs_plano
+             and _abs_plano.index("a constructive deep reinforcement")
+             < _abs_plano.index("thirty trained artifacts")
+             < _abs_plano.index("sample selection"))
+# la guia de ESWA: abstract de 250 palabras como mucho (se mantiene el
+# minimo de 150 de EAAI como guarda) y de 1 a 7 keywords. El abstract
+# se cuenta plano, sin ordenes LaTeX
+_abs_palabras = len(re.sub(r"[\\${}]", " ", _abs_tex).split())
+check_exacto("guia: abstract de 150 a 250 palabras",
+             150 <= _abs_palabras <= 250, f"{_abs_palabras} palabras")
+_kw = re.search(r"\\begin\{keyword\}(.*?)\\end\{keyword\}", TEX,
+                re.S).group(1)
+_nkw = _kw.count("\\sep") + 1
+check_exacto("guia ESWA: de 1 a 7 keywords",
+             1 <= _nkw <= 7, f"{_nkw} keywords")
+# el titulo anuncia la comparacion desde el reencuadre del 2026-08-15,
+# acotada a las hiperheuristicas GP (no es una comparacion general).
+# Se normalizan los saltos de linea del .tex antes de buscar
+_titulo = re.sub(r"\s+", " ", TEX[:TEX.index("%<<IDENTIDAD")])
+# la primacia se reclama en la contribucion 1, y solo se sostiene si
+# 2.4 sigue documentando el hueco: la literatura neuronal llega a lo
+# estocastico y lo difuso, no a lo intervalar
+check_exacto("contribucion 1: reclama la primera aplicacion de DRL al IJSP",
+             "the first application of deep reinforcement learning to this"
+             in TEX)
+check_exacto("2.4 sigue sosteniendo ese hueco",
+             "The interval\nrepresentation, the minimal of these uncertainty "
+             "models, remains\nunaddressed by this literature" in TEX)
+check_exacto("titulo: DRL, el problema y la comparacion acotada",
+             all(s in _titulo for s in
+                 ("Deep Reinforcement Learning", "Interval Job",
+                  "Genetic Programming Hyper-Heuristics",
+                  "across Inference Budgets")))
+
+# =========================================================================
+print("\n== centinela: recomputo desde schedules (componentwise) ==")
+# Desde 2026-08-16 tab:insize y fig:scaling salen del evaluador
+# independiente (se comprueban mas abajo contra validacion_unificada
+# .json). Este bloque conserva la evaluacion embebida en cada tirada de
+# entrenamiento como CENTINELA: sus cifras ya no se imprimen, pero
+# recomputarlas schedule a schedule es lo que vigila el convenio
+# componentwise del makespan, que ninguna otra comprobacion cubre.
+# Cada presupuesto agrega su brazo original (semillas 2-4) y su
+# extension (5-11): diez tiradas identicas salvo la semilla.
+TAB_INSIZE = {
+    ("v2-full", "v2-full-100ep-ext"):
+        {"TA15": (30.2, 21.9), "TA16": (26.3, 19.7), "TA17": (26.8, 18.1),
+         "TA18": (26.7, 18.4), "TA19": (28.7, 21.5), "TA20": (25.8, 18.5)},
+    ("v2-full-300ep", "v2-full-300ep-ext"):
+        {"TA15": (19.0, 16.3), "TA16": (16.3, 14.3), "TA17": (16.6, 13.3),
+         "TA18": (18.5, 16.2), "TA19": (17.2, 13.3), "TA20": (16.6, 14.9)},
+    ("v2-full-1000ep", "v2-full-1000ep-ext-c"):
+        {"TA15": (14.9, 12.1), "TA16": (13.2, 11.8), "TA17": (12.9, 10.4),
+         "TA18": (16.3, 14.6), "TA19": (12.8, 11.1), "TA20": (12.8, 10.5)},
+}
+MEDIAS = {"v2-full": (27.4, 4.69), "v2-full-300ep": (17.4, 1.30),
+          "v2-full-1000ep": (13.8, 0.47)}
+DEV6 = [f"TA{k}" for k in range(15, 21)]
+delta_max = 0.0
+_medias_presupuesto = {}
+for tags, celdas in TAB_INSIZE.items():
+    por_semilla = {}
+    for tag in tags:
+        for d in sorted(glob.glob(f"outputs/bench_{tag}__*_seed*")):
+            s = d.split("_seed")[-1]
+            for p in glob.glob(f"{d}/plots/test/*_schedule.json"):
+                ta = ta_de(os.path.basename(p))
+                por_semilla.setdefault(ta, {})[s] = makespans(p)
+    if not por_semilla:
+        pendiente(f"benchmark {tags[0]}", "sin directorios en outputs/")
+        continue
+    semillas = sorted(por_semilla["TA15"])
+    check_exacto(f"{tags[0]}: diez semillas", len(semillas) == 10,
+                 f"{len(semillas)} semillas")
+    res_mean, res_best = {}, {}
+    for ta in DEV6:
+        mids = [por_semilla[ta][s][0] for s in semillas]
+        lex = [por_semilla[ta][s][1] for s in semillas]
+        res_mean[ta] = re_pct(sum(mids) / len(mids), ta)
+        res_best[ta] = re_pct(min(mids), ta)
+        delta_max = max(delta_max,
+                        abs(res_mean[ta] - re_pct(sum(lex) / len(lex), ta)))
+    for ta, (m_tex, b_tex) in celdas.items():
+        check(f"centinela {tags[0]} {ta} media", m_tex, res_mean[ta])
+        check(f"centinela {tags[0]} {ta} mejor", b_tex, res_best[ta])
+    m_tex, sd_tex = MEDIAS[tags[0]]
+    check(f"centinela {tags[0]}: media de la fila ({m_tex})", m_tex,
+          sum(res_mean.values()) / 6)
+    _medias_presupuesto[tags[0]] = sum(res_mean.values()) / 6
+    import statistics as _si
+    por_sem = [_si.mean(re_pct(por_semilla[ta][s][0], ta) for ta in DEV6)
+               for s in semillas]
+    check(f"centinela {tags[0]}: sd de las diez ({sd_tex})",
+          sd_tex, _si.stdev(por_sem), tol=0.006)
+    # los extremos por semilla ya no se imprimen en el texto: son la
+    # banda mejor-peor de fig:scaling, cuyos valores viven en
+    # make_figures.fig_scaling
+    if tags[0] == "v2-full-1000ep":
+        check("centinela: peor semilla a 1000 eps, entrenamiento (14.6)", 14.6,
+              max(por_sem), tol=0.051)
+        check("centinela: mejor semilla a 1000 eps, entrenamiento (13.1)", 13.1,
+              min(por_sem), tol=0.051)
+        tres = [_si.mean(re_pct(por_semilla[ta][s][0], ta) for ta in DEV6)
+                for s in ("2", "3", "4")]
+        check("7.4: las tres de las ablaciones (texto 13.44)", 13.44,
+              _si.mean(tres))
+        check("centinela: las diez en entrenamiento (13.82, no impreso)", 13.82,
+              _si.mean(por_sem))
+    if tags[0] == "v2-full":
+        check("centinela: banda a 100 eps, entrenamiento, minimo (21.3)", 21.3,
+              min(por_sem), tol=0.051)
+        check("centinela: banda a 100 eps, entrenamiento, maximo (36.2)", 36.2,
+              max(por_sem), tol=0.051)
+print(f"  nota: delta maximo lex vs componentwise = {delta_max:.3f} puntos")
+
+# fila MOR de la tabla (viene de constructive_per_instance)
+FILA_MOR = {"TA15": 51.3, "TA16": 35.8, "TA17": 50.1,
+            "TA18": 54.2, "TA19": 43.2, "TA20": 43.7}
+for ta, v in FILA_MOR.items():
+    check(f"fila MOR {ta}", v, MOR_RE[ta])
+
+# 6.1(i): el rendimiento decreciente se enuncia como tasa medida, no
+# como extrapolacion a un techo. Los dos saltos son de x3 y x3.3 en
+# presupuesto, y el texto los llama "por triplicar"
+if len(_medias_presupuesto) == 3:
+    # las tasas se restan de las medias IMPRESAS, que es lo unico que el
+    # lector puede reproducir; sin redondear serian 10.06 y 3.54
+    _m = {k: round(v, 1) for k, v in _medias_presupuesto.items()}
+    _r1 = _m["v2-full"] - _m["v2-full-300ep"]
+    _r2 = _m["v2-full-300ep"] - _m["v2-full-1000ep"]
+    check_exacto("centinela: el retorno decrece tambien en entrenamiento",
+                 _r2 < _r1, f"{_r1:.1f} -> {_r2:.1f}")
+else:
+    pendiente("6.1: las dos tasas de retorno", "faltan brazos de presupuesto")
+
+# =========================================================================
+print("\n== tab:insize y fig:scaling: evaluador independiente ==")
+# La escalera de presupuesto se lee pareada sobre las MISMAS diez
+# semillas; el brazo de 1000 episodios publica ademas su vista sobre las
+# treinta de la campana, que es la que cita el resto del paper.
+_VU = "benchmarks/ext30/validacion_unificada.json"
+if not os.path.exists(_VU):
+    pendiente("tab:insize unificada", "sin validacion_unificada.json")
+else:
+    _vu = json.load(open(_VU, encoding="utf-8"))
+    _VAL6 = [f"int__tai20_15_{k:02d}" for k in range(5, 11)]
+    # (brazo, fila impresa: media [mejor] por instancia, media, sd)
+    _FILAS = [
+        ("v2-full-100ep",
+         [(31.4, 20.4), (32.2, 16.8), (28.7, 22.3), (29.4, 16.6),
+          (29.9, 13.7), (32.0, 23.9)], 30.6, 6.38),
+        ("v2-full-300ep",
+         [(18.9, 15.9), (16.3, 13.9), (16.4, 12.8), (19.5, 16.1),
+          (17.6, 12.8), (15.2, 12.7)], 17.3, 1.50),
+        ("v2-full-1000ep-diez",
+         [(14.1, 12.1), (12.8, 9.3), (12.0, 10.0), (16.0, 14.7),
+          (12.9, 10.1), (13.6, 11.8)], 13.6, 0.46),
+    ]
+    _mal_ins = 0
+    for _arm, _celdas, _m_tex, _sd_tex in _FILAS:
+        _a = _vu[_arm]
+        check_exacto(f"tab:insize {_arm}: diez semillas", _a["n"] == 10,
+                     f"{_a['n']} semillas")
+        for _i, (_m, _b) in zip(_VAL6, _celdas):
+            if abs(_a["por_instancia"][_i] - _m) > 0.051:
+                print(f"  FALLO {_arm} {_i} media: texto={_m} "
+                      f"datos={_a['por_instancia'][_i]:.2f}")
+                _mal_ins += 1
+            if abs(_a["mejor_por_instancia"][_i] - _b) > 0.051:
+                print(f"  FALLO {_arm} {_i} mejor: texto={_b} "
+                      f"datos={_a['mejor_por_instancia'][_i]:.2f}")
+                _mal_ins += 1
+        check(f"tab:insize {_arm}: media de la fila ({_m_tex})", _m_tex,
+              _a["bo64"])
+        check(f"tab:insize {_arm}: sd de las diez ({_sd_tex})", _sd_tex,
+              _a["sd"], tol=0.006)
+    check_exacto("las 36 celdas de tab:insize", _mal_ins == 0,
+                 f"{_mal_ins} celdas mal")
+    # 6.1(i): las dos tasas de retorno, restadas de las medias IMPRESAS
+    _mi = [round(_vu[a]["bo64"], 1) for a, _, _, _ in _FILAS]
+    check("6.1: primer salto, 13.3 puntos (texto)", 13.3, _mi[0] - _mi[1],
+          tol=0.02)
+    check("6.1: segundo salto, 3.7 puntos (texto)", 3.7, _mi[1] - _mi[2],
+          tol=0.02)
+    # 6.1(ii): el factor de contraccion de la dispersion
+    _fac_sd = _vu["v2-full-100ep"]["sd"] / _vu["v2-full-1000ep-diez"]["sd"]
+    check_exacto("6.1: la sd se contrae un factor ~14",
+                 13.5 <= _fac_sd <= 14.5, f"{_fac_sd:.1f}")
+    # 6.1(iii): a 100 episodios la politica AUN no bate a la constructiva
+    check_exacto("6.1: a 100 episodios la politica va por detras de G&T",
+                 _vu["v2-full-100ep"]["bo64"] > 27.9,
+                 f"{_vu['v2-full-100ep']['bo64']:.1f} vs 27.9")
+    # la campana entera: es el numero que citan 6.3 y las conclusiones
+    check("6.1: las treinta de la campana (texto 13.92)", 13.92,
+          _vu["v2-full-1000ep"]["bo64"], tol=0.006)
+    check("6.1: sd de las treinta (texto 0.60)", 0.60,
+          _vu["v2-full-1000ep"]["sd"], tol=0.006)
+    # las conclusiones resumidas (2026-08-16) ya no repiten la cifra;
+    # queda donde se argumenta, en 6.2
+    check_exacto("6.2 cita el 13.9 de las treinta",
+                 "$13.9\\%$ in-size" in TEX)
+    # fig:scaling: la banda es el rango mejor-peor de cada presupuesto
+    _BANDA = [("v2-full-100ep", 21.1, 39.2), ("v2-full-300ep", 14.5, 19.9),
+              ("v2-full-1000ep-diez", 12.8, 14.0)]
+    _fig = open("paper_eswa/make_figures.py", encoding="utf-8").read()
+    for _arm, _mej, _peor in _BANDA:
+        check(f"fig:scaling banda {_arm}, mejor ({_mej})", _mej,
+              _vu[_arm]["mejor"], tol=0.051)
+        check(f"fig:scaling banda {_arm}, peor ({_peor})", _peor,
+              _vu[_arm]["peor"], tol=0.051)
+    check_exacto("fig:scaling dibuja esas tres medias y esa banda",
+                 "ds_mean = [30.6, 17.3, 13.6]" in _fig
+                 and "ds_best = [21.1, 14.5, 12.8]" in _fig
+                 and "ds_worst = [39.2, 19.9, 14.0]" in _fig)
+
+# fig:scaling: sus dos lineas de referencia van sobre TA15-TA20, no
+# sobre las 70. G&T da 29.5 en las setenta y 27.9 aqui; usar el de las
+# setenta pondria la linea en el sitio equivocado de este eje.
+DEV6 = [f"TA{k}" for k in range(15, 21)]
+check("fig:scaling: G&T en TA15-TA20 (texto 27.9)", 27.9,
+      sum(GT_RE[t] for t in DEV6) / 6)
+_pub2 = {}
+_t2 = open("scripts/compare_pools_published.py", encoding="utf-8").read()
+exec(re.search(r"(FEABC_BEST.*?)(?=\n# |\ndef |\Z)", _t2, re.S).group(1),
+     {}, _pub2)
+check("fig:scaling: fEABC en TA15-TA20 (texto 9.6)", 9.6,
+      sum(_pub2["FEABC_AVG"][14:20]) / 6)
+
+datos1000 = bench_por_instancia("v2-full-1000ep")
+if datos1000:
+    mejor_media = sum(re_pct(min(d["mids"]), ta)
+                      for ta, d in datos1000.items()) / len(datos1000)
+    check("centinela: mejor semilla a 1000 eps (12.3)", 12.3, mejor_media)
+    # el factor de 6.1 va contra la campana entera bajo el evaluador
+    # independiente (13.92, treinta semillas), que es el numero que el
+    # resto del paper cita, no contra la vista de diez de la escalera. Y
+    # la referencia es G&T-MWKR, la mejor constructiva, no MOR
+    _gt_dev = sum(GT_RE[t] for t in DEV6) / 6
+    factor = _gt_dev / 13.92
+    check_exacto("factor ~2.0 frente a G&T-MWKR", 1.95 <= factor <= 2.05,
+                 f"{factor:.2f}")
+    # la fila de tab:insize: G&T-MWKR instancia a instancia
+    TAB_INSIZE_GT = [30.6, 34.0, 17.7, 31.8, 29.3, 24.1]
+    for _ta, _v_tex in zip(DEV6, TAB_INSIZE_GT):
+        check(f"tab:insize fila G&T-MWKR {_ta} (texto {_v_tex})", _v_tex,
+              GT_RE[_ta])
+    check("tab:insize fila G&T-MWKR, media (texto 27.9)", 27.9, _gt_dev)
+    stds = []
+    for ta, d in datos1000.items():
+        m = sum(d["mids"]) / len(d["mids"])
+        stds.append(math.sqrt(sum((x - m) ** 2 for x in d["mids"])
+                              / (len(d["mids"]) - 1)))
+    check_exacto("std de makespan por instancia 6-22 unidades",
+                 5.5 <= min(stds) and max(stds) <= 22.5,
+                 f"rango {min(stds):.0f}-{max(stds):.0f}")
+
+# =========================================================================
+print("\n== tab:insize-attn ==")
+# el 1000ep se extendio a diez semillas (tag -ext, run 80226df); los
+# duplicados accidentales del 2026-08-09 estan en cuarentena y ningun
+# glob los ve
+TAB_ATTN = {("v2-attn-300ep",): (17.6, 17.2),
+            ("v2-attn-1000ep", "v2-attn-1000ep-ext"): (14.88, 14.2),
+            ("v2-full-300ep",): (16.6, 16.2),
+            ("v2-full-1000ep", "v2-full-1000ep-ext-c"): (13.8, 13.1)}
+attn_media = {}
+
+
+def bench_por_instancia_multi(*tags):
+    out = None
+    for t in tags:
+        d = bench_por_instancia(t)
+        if d is None:
+            continue
+        if out is None:
+            out = {}
+        for ta, v in d.items():
+            out.setdefault(ta, {"mids": [], "lex": []})
+            out[ta]["mids"].extend(v["mids"])
+            out[ta]["lex"].extend(v["lex"])
+    return out
+
+
+for tags, (m_tex, b_tex) in TAB_ATTN.items():
+    tag = tags[0]
+    datos = bench_por_instancia_multi(*tags)
+    if datos is None:
+        pendiente(f"benchmark {tag}", "sin directorios en outputs/")
+        continue
+    medias = {ta: re_pct(sum(d["mids"]) / len(d["mids"]), ta)
+              for ta, d in datos.items()}
+    attn_media[tag] = sum(medias.values()) / len(medias)
+    n_sem = len(next(iter(datos.values()))["mids"])
+    por_sem = [sum(re_pct(d["mids"][i], ta) for ta, d in datos.items())
+               / len(datos) for i in range(n_sem)]
+    check(f"centinela {tag}: media sobre {n_sem} semillas ({m_tex})",
+          m_tex, attn_media[tag], tol=0.06)
+    check(f"centinela {tag}: mejor semilla ({b_tex})", b_tex, min(por_sem),
+          tol=0.06)
+
+# el makespan medio ya no se imprime (7.3 lo cuenta en puntos de RE y
+# con test pareado), pero se sigue comprobando como centinela del dato
+for tag_a, tag_b, delta_tex in [("v2-full-300ep", "v2-attn-300ep", 0.9),
+                                ("v2-full-1000ep", "v2-attn-1000ep", 1.5)]:
+    da, db = bench_por_instancia(tag_a), bench_por_instancia(tag_b)
+    if da and db:
+        base = sum(sum(d["mids"]) for d in da.values())
+        attn = sum(sum(d["mids"]) for d in db.values())
+        check(f"centinela: makespan medio {tag_b} vs base (+{delta_tex}%)",
+              delta_tex, (attn / base - 1) * 100, tol=0.1)
+
+# 7.3, la comparacion pareada que SI imprime el texto: 18 pares
+# (instancia, semilla), delta en puntos de RE, cuentas y Wilcoxon
+from scipy.stats import wilcoxon as _wilc  # noqa: E402
+
+def _p_instancia(dif_por_ta):
+    """Wilcoxon exacto con la instancia como unidad (revision r1).
+
+    Los pares (instancia, semilla) no son independientes: diez redes
+    sobre las mismas seis instancias aportan seis observaciones, no
+    sesenta. Se promedia por instancia antes del test.
+    """
+    return float(_wilc(dif_por_ta, method="exact").pvalue)
+
+
+for _tb, _d_tex, _pares_tex, _inst_tex, _p_tex, _cent in [
+        ("300ep", 1.03, 12, 5, 0.063, True),
+        ("1000ep", 1.76, 16, 6, 0.031, True)]:
+    _da = bench_por_instancia("v2-full-" + _tb)
+    _db = bench_por_instancia("v2-attn-" + _tb)
+    if not (_da and _db):
+        pendiente(f"7.3 pareado {_tb}", "sin directorios en outputs/")
+        continue
+    _dif = [re_pct(y, ta) - re_pct(x, ta) for ta in sorted(_da)
+            for x, y in zip(_da[ta]["mids"], _db[ta]["mids"])]
+    _pref = "centinela " if _cent else "7.3 "
+    check_exacto(f"{_pref}{_tb}: 18 pares (instancia, semilla)",
+                 len(_dif) == 18, str(len(_dif)))
+    check(f"{_pref}{_tb}: la atencion pierde {_d_tex} puntos de RE",
+          _d_tex, sum(_dif) / len(_dif), tol=0.011)
+    check_exacto(f"{_pref}{_tb}: peor en {_pares_tex} de los 18 pares",
+                 sum(1 for d in _dif if d > 0) == _pares_tex,
+                 str(sum(1 for d in _dif if d > 0)))
+    _pi = sum(1 for ta in _da
+              if sum(re_pct(v, ta) for v in _db[ta]["mids"])
+              > sum(re_pct(v, ta) for v in _da[ta]["mids"]))
+    check_exacto(f"{_pref}{_tb}: peor en {_inst_tex} de las 6 instancias",
+                 _pi == _inst_tex, str(_pi))
+    _dif_i = [sum(re_pct(v, ta) for v in _db[ta]["mids"])
+              / len(_db[ta]["mids"])
+              - sum(re_pct(v, ta) for v in _da[ta]["mids"])
+              / len(_da[ta]["mids"]) for ta in sorted(_da)]
+    check(f"{_pref}{_tb}: Wilcoxon por instancia p={_p_tex}", _p_tex,
+          _p_instancia(_dif_i), tol=0.0011)
+
+# 7.3 a diez semillas: 60 pares contra las diez del brazo principal
+_da10 = bench_por_instancia_multi("v2-full-1000ep", "v2-full-1000ep-ext-c")
+_db10 = bench_por_instancia_multi("v2-attn-1000ep", "v2-attn-1000ep-ext")
+if _da10 and _db10:
+    _dif10 = [re_pct(y, ta) - re_pct(x, ta) for ta in sorted(_da10)
+              for x, y in zip(_da10[ta]["mids"], _db10[ta]["mids"])]
+    check_exacto("centinela 1000ep: 60 pares (instancia, semilla)",
+                 len(_dif10) == 60, str(len(_dif10)))
+    check("centinela 1000ep: atencion -1.06 en entrenamiento", 1.06,
+          sum(_dif10) / len(_dif10), tol=0.011)
+    check_exacto("centinela 1000ep: peor en 41 de los 60 pares",
+                 sum(1 for d in _dif10 if d > 0) == 41,
+                 str(sum(1 for d in _dif10 if d > 0)))
+    _pi10 = sum(1 for ta in _da10
+                if sum(re_pct(v, ta) for v in _db10[ta]["mids"])
+                > sum(re_pct(v, ta) for v in _da10[ta]["mids"]))
+    check_exacto("7.3 1000ep: peor en las 6 instancias", _pi10 == 6,
+                 str(_pi10))
+    # y en las diez semillas de diez: la unanimidad doble que cita 7.3
+    _sems10 = sorted({i for ta in _db10
+                      for i in range(len(_db10[ta]["mids"]))})
+    _peor_sem = sum(
+        1 for i in _sems10
+        if sum(re_pct(_db10[ta]["mids"][i], ta) for ta in _db10)
+        > sum(re_pct(_da10[ta]["mids"][i], ta) for ta in _da10))
+    check_exacto("7.3 1000ep: peor en las 10 semillas de 10",
+                 len(_sems10) == 10 and _peor_sem == 10,
+                 f"{_peor_sem}/{len(_sems10)}")
+    _dif10_i = [sum(re_pct(v, ta) for v in _db10[ta]["mids"]) / 10
+                - sum(re_pct(v, ta) for v in _da10[ta]["mids"]) / 10
+                for ta in sorted(_da10)]
+    check("7.3 1000ep: Wilcoxon por instancia (texto 0.031)", 0.031,
+          _p_instancia(_dif10_i), tol=0.0011)
+    _md10 = sum(_dif10_i) / 6
+    _sd10 = (sum((x - _md10) ** 2 for x in _dif10_i) / 5) ** 0.5
+    _semi10 = 2.5706 * _sd10 / 6 ** 0.5
+    check("centinela 1000ep: IC95 inferior en entrenamiento (0.46)", 0.46,
+          _md10 - _semi10,
+          tol=0.011)
+    check("centinela 1000ep: IC95 superior en entrenamiento (1.65)", 1.65,
+          _md10 + _semi10,
+          tol=0.011)
+    # y que ninguna cuarentena contamina los globs
+    import glob as _gl
+    check_exacto("7.3: la extension tiene 7 semillas exactas (run 80226df)",
+                 len(_gl.glob(
+                     "outputs/bench_v2-attn-1000ep-ext__*_seed*")) == 7,
+                 str(len(_gl.glob(
+                     "outputs/bench_v2-attn-1000ep-ext__*_seed*"))))
+
+# 7.4 Widths as inputs, a diez semillas: 60 pares contra el brazo
+# principal, y el nulo que se afila (0.18 -> 0.04)
+_nw10 = bench_por_instancia_multi("v2-nowidth-1000ep-b",
+                                  "v2-nowidth-1000ep-ext")
+if _da10 and _nw10:
+    _difnw = [re_pct(y, ta) - re_pct(x, ta) for ta in sorted(_da10)
+              for x, y in zip(_da10[ta]["mids"], _nw10[ta]["mids"])]
+    check_exacto("7.4 no-width: 60 pares", len(_difnw) == 60,
+                 str(len(_difnw)))
+    check("centinela no-width: diez semillas en entrenamiento (13.86)",
+          13.86,
+          sum(re_pct(v, ta) for ta in _nw10
+              for v in _nw10[ta]["mids"]) / 60, tol=0.006)
+    check("centinela no-width: delta en entrenamiento (+0.04)", 0.04,
+          sum(_difnw) / len(_difnw), tol=0.006)
+    check_exacto("centinela no-width: peor en 31 de 60",
+                 sum(1 for d in _difnw if d > 0) == 31,
+                 str(sum(1 for d in _difnw if d > 0)))
+    import statistics as _st74
+    _difnw_i = [sum(re_pct(v, ta) for v in _nw10[ta]["mids"]) / 10
+                - sum(re_pct(v, ta) for v in _da10[ta]["mids"]) / 10
+                for ta in sorted(_da10)]
+    check_exacto("centinela no-width: peor en 2 de las 6",
+                 sum(1 for d in _difnw_i if d > 0) == 2,
+                 str(sum(1 for d in _difnw_i if d > 0)))
+    check("centinela no-width: Wilcoxon en entrenamiento (1.00)", 1.0,
+          _p_instancia(_difnw_i), tol=0.0011)
+    _mdnw = sum(_difnw_i) / 6
+    _seminw = 2.5706 * _st74.stdev(_difnw_i) / 6 ** 0.5
+    check("centinela no-width: IC95 en entrenamiento, inferior (-0.79)",
+          -0.79,
+          _mdnw - _seminw, tol=0.011)
+    check("centinela no-width: IC95 en entrenamiento, superior (0.87)",
+          0.87,
+          _mdnw + _seminw, tol=0.011)
+    check_exacto("7.4: la extension no-width tiene 7 semillas exactas",
+                 len(_gl.glob(
+                     "outputs/bench_v2-nowidth-1000ep-ext__*_seed*")) == 7,
+                 str(len(_gl.glob(
+                     "outputs/bench_v2-nowidth-1000ep-ext__*_seed*"))))
+
+# El sobrecoste por episodio que cita 7.3. Se mide a 300 episodios y NO
+# a 1000: alli el brazo base tiene un 1.87x de dispersion entre sus tres
+# semillas (3.97 / 6.30 / 7.41 s por episodio, misma configuracion), o
+# sea contencion de maquina, y dividir por esa media inflada rebajaba el
+# factor a 1.7. A 300 episodios los dos brazos son consistentes.
+_seg = {}
+for _t in ("v2-full-300ep", "v2-attn-300ep",
+           "v2-full-1000ep", "v2-attn-1000ep"):
+    _f = glob.glob(f"benchmarks/{_t}__*.json")
+    if _f:
+        _r = json.load(open(_f[0], encoding="utf-8"))
+        _seg[_t] = sorted(_s["wall_time_s"] / _r["config"]["episodes"]
+                          for _s in _r["seeds"].values())
+if len(_seg) == 4:
+    for _t in ("v2-full-300ep", "v2-attn-300ep"):
+        check_exacto(f"7.3: {_t} es consistente entre semillas (<4%)",
+                     _seg[_t][-1] / _seg[_t][0] < 1.04,
+                     " ".join(f"{x:.2f}" for x in _seg[_t]))
+    check("7.3: 2.2x el reloj por episodio (300 ep)", 2.2,
+          (sum(_seg["v2-attn-300ep"]) / 3) / (sum(_seg["v2-full-300ep"]) / 3),
+          tol=0.051)
+    # el resumen de 4.3 y el suplementario citan el mismo factor 2.2,
+    # y el ~30% retirado no vuelve en ninguno de los dos documentos
+    check_exacto("el resumen de la atencion cita 2.2x y no el viejo ~30%",
+                 "2.2 times the episode cost" in TEX
+                 and "by $2.2$" in SUP and "$30\\%$ more" not in TEXSUP)
+    # las conclusiones contaban dos campanas de configuracion; son tres
+    check_exacto("8: las conclusiones cuentan tres campanas",
+                 "three automatic-configuration" in TEX
+                 and "two independent automatic-configuration" not in TEX)
+    check_exacto("7.3: por que no se mide a 1000 ep (base dispersa 1.87x)",
+                 _seg["v2-full-1000ep"][-1] / _seg["v2-full-1000ep"][0] > 1.5,
+                 " ".join(f"{x:.2f}" for x in _seg["v2-full-1000ep"]))
+    # y que la variante de atencion si es estable a los dos presupuestos,
+    # lo que confirma que el disperso es el base y no la medida
+    check_exacto("7.3: la variante de atencion cuesta lo mismo a 300 y 1000",
+                 abs(sum(_seg["v2-attn-300ep"]) / sum(_seg["v2-attn-1000ep"])
+                     - 1) < 0.1,
+                 f"{sum(_seg['v2-attn-300ep'])/3:.2f} vs "
+                 f"{sum(_seg['v2-attn-1000ep'])/3:.2f} s/ep")
+
+# =========================================================================
+print("\n== especialista vs multi-tamano (centinelas: la seccion se "
+      "elimino del paper) ==")
+# bo64, media de 3 semillas, la MISMA agregacion en ambos lados
+_multi = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_multisize_bo64.csv", encoding="utf-8")):
+    brazo = "12k" if "-12k" in r["checkpoint"] else "3000"
+    _multi.setdefault((brazo, ta_de(r["instance"])), []).append(
+        float(r["re_comp"]))
+_multi = {k: sum(v) / len(v) for k, v in _multi.items()}
+_espec = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_crosssize_bo64.csv", encoding="utf-8")):
+    _espec.setdefault(ta_de(r["instance"]), []).append(float(r["re_comp"]))
+_espec = {ta: sum(v) / len(v) for ta, v in _espec.items()}
+CINCO = ["TA5", "TA25", "TA31", "TA41", "TA61"]
+for ta, v_tex in [("TA5", 15.9), ("TA25", 20.0), ("TA41", 30.6)]:
+    check(f"centinela: multi-3000 {ta} ({v_tex})", v_tex, _multi[("3000", ta)])
+for ta, v_tex in [("TA5", 9.6), ("TA25", 19.4), ("TA41", 28.3),
+                  ("TA61", 15.8)]:
+    check(f"centinela: multi-12k {ta} ({v_tex})", v_tex, _multi[("12k", ta)])
+for ta, v_tex in [("TA5", 10.5), ("TA25", 15.0), ("TA31", 15.8),
+                  ("TA41", 25.9), ("TA61", 16.8)]:
+    check(f"centinela: especialista {ta} ({v_tex})", v_tex, _espec[ta])
+gana3000 = sum(_espec[ta] < _multi[("3000", ta)] for ta in CINCO)
+check_exacto("centinela: total igualado, especialista 5/5",
+             gana3000 == 5, f"{gana3000}/5")
+gana12k = sum(_espec[ta] < _multi[("12k", ta)] for ta in CINCO)
+check_exacto("centinela: triple, el multi recupera 2 de 5",
+             gana12k == 3, f"especialista gana {gana12k}/5")
+
+# =========================================================================
+print("\n== presupuesto de inferencia y posicionamiento ==")
+filas = open("benchmarks/fair_v2_greedy.csv",
+             encoding="utf-8").read().splitlines()[1:]
+vals = [float(l.split(",")[3]) for l in filas]
+check("politica greedy sobre las 70 (texto 19.4)", 19.4,
+      sum(vals) / len(vals))
+_bo = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_fair_bo1024.csv", encoding="utf-8")):
+    _bo.setdefault(ta_de(r["instance"]), []).append(float(r["re_comp"]))
+_bo = {ta: min(v) for ta, v in _bo.items()}
+check_exacto("bo1024: 70 instancias, 3 checkpoints", len(_bo) == 70,
+             f"{len(_bo)}")
+# el 13.0 (bo1024 repartido entre 3 checkpoints) salio del texto con el
+# protocolo del campeon; queda como centinela del deposito antiguo
+check("centinela: bo1024 de 3 checkpoints (13.0)", 13.0,
+      sum(_bo.values()) / 70)
+gana_bo = {n: sum(_bo[ta] < d[ta] for ta in _bo)
+           for n, d in [("MOR", MOR_RE), ("G&T", GT_RE), ("EST", est_pi)]}
+check_exacto("centinela: bo1024 gana a MOR, G&T y EST en las 70",
+             all(v == 70 for v in gana_bo.values()), str(gana_bo))
+_bo_clases = [sum(_bo[f"TA{i * 10 + j + 1}"] for j in range(10)) / 10
+              for i in range(7)]
+TAB70_BO = [8.8, 11.2, 12.9, 15.0, 19.6, 10.4, 13.4]
+for c, (v_tex, v_dat) in enumerate(zip(TAB70_BO, _bo_clases)):
+    check(f"tab:seventy bo1024 clase {c + 1} (texto {v_tex})", v_tex,
+          v_dat)
+_gre_clases = [sum(gre[f"TA{i * 10 + j + 1}"] for j in range(10)) / 10
+               for i in range(7)]
+TAB70_GREEDY = [16.9, 18.3, 18.5, 21.2, 26.1, 15.8, 18.8]
+for c, (v_tex, v_dat) in enumerate(zip(TAB70_GREEDY, _gre_clases)):
+    check(f"tab:seventy greedy clase {c + 1} (texto {v_tex})", v_tex,
+          v_dat)
+# filas MOR y G&T de tab:seventy, por clase, desde el mismo CSV
+TAB70_MOR = [41.4, 46.7, 47.3, 44.1, 58.8, 34.1, 45.9]
+TAB70_GT = [26.7, 29.0, 30.9, 33.6, 36.8, 23.9, 25.5]
+for nombre, tab, d in (("MOR", TAB70_MOR, MOR_RE),
+                       ("G&T", TAB70_GT, GT_RE)):
+    for c, v_tex in enumerate(tab):
+        v_dat = sum(d[f"TA{c * 10 + j + 1}"] for j in range(10)) / 10
+        check(f"tab:seventy {nombre} clase {c + 1} (texto {v_tex})",
+              v_tex, v_dat)
+# distancias al fEABC: tras definirse feabc_clases, mas abajo
+
+# los publicados por instancia del suplemento (compare_pools_published)
+_pub = {}
+_t = open("scripts/compare_pools_published.py", encoding="utf-8").read()
+exec(re.search(r"(FEABC_BEST.*?)(?=\n# |\ndef |\Z)", _t, re.S).group(1),
+     {}, _pub)
+feabc_clases = [sum(_pub["FEABC_AVG"][i * 10:(i + 1) * 10]) / 10
+                for i in range(7)]
+ts_clases = [sum(_pub["TS_AVG"][i * 10:(i + 1) * 10]) / 10
+             for i in range(7)]
+check_exacto("intro: fEABC ~6-16% por clase (solo publicado)",
+             5.5 <= min(feabc_clases) <= 6.0
+             and 15.5 <= max(feabc_clases) <= 16.5,
+             f"fEABC {min(feabc_clases):.1f} .. {max(feabc_clases):.1f}")
+check("posicionamiento: fEABC medio (texto 9.4)", 9.4,
+      sum(_pub["FEABC_AVG"]) / 70)
+# el lector solo puede computar las distancias desde las celdas
+# impresas, asi que el texto cita ese redondeo
+_dist = [round(b, 1) - round(f, 1)
+         for b, f in zip(_bo_clases, feabc_clases)]
+check("centinela: distancia minima al fEABC (2.5)", 2.5, min(_dist))
+check("centinela: distancia maxima al fEABC (5.2)", 5.2, max(_dist))
+
+# =========================================================================
+print("\n== coste computacional ==")
+d = json.load(open(sorted(glob.glob(
+    "benchmarks/v2-full-1000ep__*.json"))[-1], encoding="utf-8"))
+minutos = [s["wall_time_s"] / 60 for s in d["seeds"].values()]
+media_min = sum(minutos) / len(minutos)
+check_exacto("centinela: 66-123 min por semilla",
+             round(min(minutos)) == 66 and round(max(minutos)) == 123,
+             f"semillas: {', '.join(f'{m:.0f}' for m in minutos)} min "
+             f"(media {media_min:.0f})")
+
+# =========================================================================
+print("\n== afirmaciones cerradas ==")
+check("0.99^300 ~ 0.05 (atenuacion del retorno)", 0.05, 0.99 ** 300,
+      tol=0.002)
+quick = set(re.findall(r"idea-(\w+)-quick", " ".join(
+    os.listdir("benchmarks"))))
+full = set(re.findall(r"idea-(\w+)-full", " ".join(os.listdir("benchmarks"))))
+rechazadas = quick - full
+check_exacto("trece modificaciones rechazadas (idea-* sin full)",
+             len(rechazadas) == 13, f"{len(rechazadas)} rechazadas")
+
+# 7.4 nombra dos de esas modificaciones con su cifra. La fuente es el
+# registro de la epoca, no la memoria: si alguien lo corrige, salta aqui
+if not os.path.exists("RESEARCH_IDEAS.md"):
+    pendiente("las dos ideas de 7.4", "sin RESEARCH_IDEAS.md")
+else:
+    _log = open("RESEARCH_IDEAS.md", encoding="utf-8").read()
+    for _id, _v_tex, _que in [("idea-11", 9.11, "features anexadas"),
+                              ("idea-12", 112.65, "normalizacion")]:
+        _m = re.search(re.escape(_id) + r".*?\*\*\+([\d.]+)%\*\*", _log)
+        check(f"centinela: {_id} ({_que}) en el registro", _v_tex,
+              float(_m.group(1)) if _m else -1, tol=0.006)
+    # la seccion que citaba estas cautelas se elimino del paper
+    check_exacto("las cautelas de desarrollo ya no se citan",
+                 "$9.1\\%$" not in TEX and "$112.7\\%$" not in TEX
+                 and "multi-size" not in TEX)
+
+try:
+    import torch
+
+    def _cuenta(o):
+        if hasattr(o, "numel"):
+            return o.numel()
+        if isinstance(o, dict):
+            return sum(_cuenta(v) for v in o.values())
+        return 0
+
+    sd = torch.load(glob.glob("benchmarks/v2-multisize_seed2_model.pt")[0],
+                    map_location="cpu", weights_only=True)
+    n = _cuenta(sd["network"])  # solo la red; el checkpoint guarda tambien Adam
+    check_exacto("~1.2e5 parametros (red sola)", 1.0e5 <= n <= 1.4e5,
+                 f"{n:,}")
+except Exception as e:
+    pendiente("~1.2e5 parametros", f"no medible aqui ({type(e).__name__})")
+
+# 4.4: lo que cuesta la atencion. Se instancian las dos redes en vez de
+# creer al texto: un bloque ~1.3e5, y B=2 multiplica por 3.2 la red base
+try:
+    import sys as _sys
+
+    _sys.path.insert(0, ".")
+    from jobshop_rl.agents_v2.networks import (AttentionBlock,  # noqa: E402
+                                               PolicyValueNetV2)
+
+    def _np(mod):
+        return sum(p.numel() for p in mod.parameters())
+
+    _base, _b2 = _np(PolicyValueNetV2()), _np(PolicyValueNetV2(
+        num_attention_layers=2))
+    check("4.4: un bloque de atencion, ~1.3e5 (texto)", 1.3e5,
+          _np(AttentionBlock(128, 4)), tol=0.06e5)
+    check("4.4: la variante B=2, ~3.9e5 (texto)", 3.9e5, _b2, tol=0.06e5)
+    check("4.4 y 7.3: el factor 3.2 en parametros", 3.2, _b2 / _base,
+          tol=0.06)
+
+    # tab:layers: cada celda se recomputa del modulo real, no del texto
+    _red = PolicyValueNetV2()
+    TAB_LAYERS = [("op_encoder", "16\\to128\\to128", 18944),
+                  ("context", "268\\to128\\to128", 51200),
+                  ("policy_head", "256\\to128\\to1", 33281),
+                  ("value_head", "128\\to128\\to1", 16897)]
+    _suma = 0
+    for _attr, _forma, _n_tex in TAB_LAYERS:
+        _n = _np(getattr(_red, _attr))
+        _suma += _n
+        check_exacto(f"tab:layers {_attr}: {_n_tex} parametros",
+                     _n == _n_tex, f"{_n:,}")
+        check_exacto(f"tab:layers {_attr}: forma {_forma}",
+                     f"${_forma}$" in TEX)
+    # que la suma de los cuatro bloques SEA la red entera es la prueba de
+    # que el pooling (y el softmax) no aportan parametros, como dice la
+    # tabla con su guion
+    check_exacto("tab:layers: la base suma 120.322", _suma == _base == 120322,
+                 f"{_suma:,} / {_base:,}")
+    check_exacto("tab:layers: el pooling no tiene parametros",
+                 _base - _suma == 0)
+    check_exacto("tab:layers: el bloque de atencion, 132.480",
+                 _np(AttentionBlock(128, 4)) == 132480,
+                 f"{_np(AttentionBlock(128, 4)):,}")
+    # y la forma interna que 4.4 afirma: 4 cabezas de 32, FF 128->256->128
+    _blk = AttentionBlock(128, 4)
+    check_exacto("4.4: 4 cabezas de dimension 32",
+                 _blk.attn.num_heads == 4 and _blk.attn.head_dim == 32,
+                 f"{_blk.attn.num_heads}x{_blk.attn.head_dim}")
+    check_exacto("4.4: feed-forward 128->256->128",
+                 [_l.out_features for _l in _blk.ff
+                  if hasattr(_l, "out_features")] == [256, 128])
+    check_exacto("4.4: sin dropout en la atencion",
+                 float(getattr(_blk.attn, "dropout", 0.0)) == 0.0)
+    # 4.3: LayerNorm y ReLU entre las dos capas, salida lineal
+    import torch.nn as _nn
+    _tipos = [type(m).__name__ for m in _red.op_encoder]
+    check_exacto("4.3: encoder = Linear, LayerNorm, ReLU, Linear",
+                 _tipos == ["Linear", "LayerNorm", "ReLU", "Linear"],
+                 str(_tipos))
+    check_exacto("4.3: sesgos inicializados a cero",
+                 all(float(m.bias.abs().sum()) == 0.0
+                     for m in _red.modules() if isinstance(m, _nn.Linear)))
+    # el cableado que afirma la Eq. de puntuacion: la politica lee
+    # [phi_i; g] (256) y el valor lee g solo (128)
+    check_exacto("4.3: la politica lee [phi_i; g], el valor solo g",
+                 _red.policy_head[0].in_features == 256
+                 and _red.value_head[0].in_features == 128,
+                 f"{_red.policy_head[0].in_features} / "
+                 f"{_red.value_head[0].in_features}")
+    # y donde va la atencion: ENTRE el encoder y el pooling, que sigue
+    # ahi. 7.3 llego a decir que la sustituia; que no vuelva a pasar
+    _fw = __import__("inspect").getsource(PolicyValueNetV2.forward)
+    check_exacto("4.4 y 7.3: la atencion va antes del pooling, que sigue",
+                 _fw.index("self.attention") < _fw.index("mean_pool")
+                 < _fw.index("max_pool") and "self.attention" in _fw)
+    check_exacto("4.4: la red base no lleva bloques de atencion",
+                 len(_red.attention) == 0
+                 and len(PolicyValueNetV2(num_attention_layers=2).attention) == 2)
+    # los dos cardinales del encoder que 4.2 y 4.3 afirman, contra el
+    # codigo y contra el numero de filas de cada tabla de features
+    from jobshop_rl.agents_v2.networks import (  # noqa: E402
+        GLOBAL_FEATURE_DIM, OP_FEATURE_DIM)
+
+    check_exacto("4.2: 16 features por operacion", OP_FEATURE_DIM == 16,
+                 str(OP_FEATURE_DIM))
+    check_exacto("4.2: 12 features globales", GLOBAL_FEATURE_DIM == 12,
+                 str(GLOBAL_FEATURE_DIM))
+    check_exacto("4.3: el encoder recibe esas 16 y el contexto 2h+12",
+                 _red.op_encoder[0].in_features == OP_FEATURE_DIM
+                 and _red.context[0].in_features == 2 * 128
+                 + GLOBAL_FEATURE_DIM,
+                 f"{_red.op_encoder[0].in_features} / "
+                 f"{_red.context[0].in_features}")
+    # las tablas numeran por rangos (1--2, 9--10...), asi que se suman
+    _filas = {}
+    for _lab, _tab in (("op", "tab:opfeatures"),
+                       ("glob", "tab:globalfeatures")):
+        # partir por la ETIQUETA, no por la primera mencion: desde que
+        # las tablas van tras el parrafo que las referencia, la primera
+        # aparicion de la cadena es un \ref y no el \label
+        _bloque = TEX.split("\\label{" + _tab + "}")[1] \
+                     .split(r"\end{tabular")[0]
+        _n = 0
+        for _l in _bloque.splitlines():
+            _m = re.match(r"\s*(\d+)(?:--(\d+))?\s*&", _l)
+            if _m:
+                _n += (int(_m.group(2)) - int(_m.group(1)) + 1
+                       if _m.group(2) else 1)
+        _filas[_lab] = _n
+    check_exacto("4.2: la Tabla 1 enumera las 16", _filas["op"] == 16,
+                 str(_filas["op"]))
+    check_exacto("4.2: la Tabla 2 enumera las 12", _filas["glob"] == 12,
+                 str(_filas["glob"]))
+except Exception as e:
+    pendiente("estructura de la red", f"no medible aqui ({type(e).__name__})")
+
+# el abstract de EAAI va limitado a 250 palabras; llego a estar en
+# 250 justas con la guia de JIM
+_abs = TEX.split("\\begin{abstract}")[1].split("\\end{abstract}")[0]
+_abs = re.sub(r"\\[a-zA-Z]+", " ", _abs)
+_abs = re.sub(r"[{}$\\]", " ", _abs)
+_npal = len([x for x in _abs.split() if any(c.isalnum() for c in x)])
+check_exacto("abstract dentro de 150-250 palabras (con margen)",
+             150 <= _npal <= 245, f"{_npal} palabras")
+
+# bibliografia: que ninguna clave citada falte y que no sobre ninguna
+_bib = open("paper_eswa/refs.bib", encoding="utf-8").read()
+_citadas = set()
+for _m in re.finditer(r"\\cite[a-zA-Z]*\*?(?:\[[^\]]*\])*\{([^}]*)\}",
+                      TEXSUP):
+    _citadas.update(_k.strip() for _k in _m.group(1).split(","))
+_citadas.discard("")
+_enbib = set(re.findall(r"@\w+\{([^,]+),", _bib))
+check_exacto("toda clave citada existe en refs.bib",
+             not (_citadas - _enbib), str(sorted(_citadas - _enbib)))
+check_exacto("refs.bib no arrastra entradas sin citar",
+             not (_enbib - _citadas), str(sorted(_enbib - _citadas)))
+
+try:
+    pass
+except Exception as e:
+    pendiente("coste de la atencion", f"no medible aqui ({type(e).__name__})")
+
+# tab:environment: las versiones se leen de lo que hay instalado, no del
+# texto. Si alguien actualiza una libreria y no toca la tabla, salta aqui
+print("\n== tab:environment: la maquina y el software ==")
+try:
+    import importlib
+    import platform as _pl
+
+    _tex_env = {"Python": _pl.python_version(),
+                "PyTorch": importlib.import_module("torch").__version__,
+                "NumPy": importlib.import_module("numpy").__version__,
+                "SciPy": importlib.import_module("scipy").__version__,
+                "Matplotlib": importlib.import_module("matplotlib").__version__,
+                "svglib": importlib.import_module("svglib").__version__}
+    for nombre, v in _tex_env.items():
+        v = v.split("+")[0]                     # 2.9.1+cu130 -> 2.9.1
+        check_exacto(f"tab:environment, {nombre} {v}",
+                     f"${v}$" in TEX, v)
+    # la construccion CUDA de torch, y que la tabla no invente una GPU
+    _cu = importlib.import_module("torch").version.cuda
+    check_exacto(f"tab:environment, CUDA {_cu}", f"CUDA ${_cu}$" in TEX,
+                 str(_cu))
+except Exception as e:
+    pendiente("tab:environment", f"no medible aqui ({type(e).__name__})")
+
+# =========================================================================
+print("\n== irace ==")
+datos_e = bench_por_instancia("v2-elite27-1000ep")
+if datos_e:
+    media_e = sum(re_pct(sum(d["mids"]) / len(d["mids"]), ta)
+                  for ta, d in datos_e.items()) / len(datos_e)
+    media_e_lex = sum(re_pct(sum(d["lex"]) / len(d["lex"]), ta)
+                      for ta, d in datos_e.items()) / len(datos_e)
+    print(f"  info  v2-elite27-1000ep: {media_e:.2f}% comp / "
+          f"{media_e_lex:.2f}% lex (texto: 14.5 campana 1 / 14.73 campana 2)")
+    check("5.3: el elite de la campana 1 a 1000 eps (texto 14.5)", 14.5,
+          media_e_lex, tol=0.051)
+    check_exacto("el elite confirmado no mejora el 13.4 por defecto",
+                 media_e > 13.4, f"{media_e:.2f} > 13.4")
+    # 5.3 ya NO afirma nada sobre el coste de ese brazo: los relojes de
+    # las dos corridas no son comparables (el brazo por defecto dispersa
+    # 1.87x entre sus propias semillas), y el ~60% que decia el texto
+    # ademas invertia el sentido -- el elite corrio mas barato, no mas caro
+    check_exacto("5.3 no afirma un sobrecoste del elite (dato no fiable)",
+                 "higher training cost" not in TEX)
+# confirmacion del elite 22 (campana 2): tuning/confirm_elite22.log
+t22 = open("tuning/confirm_elite22.log", encoding="utf-8",
+           errors="replace").read()
+m = re.search(r"MEDIA\s+([\d.]+)\s+([\d.]+)\s+\+([\d.]+)", t22)
+if m:
+    check("elite 22: media (texto 14.73)", 14.73, float(m.group(1)))
+    check("default en esa confirmacion (texto 13.52)", 13.52,
+          float(m.group(2)))
+    check("delta (texto +1.21)", 1.21, float(m.group(3)))
+    check_exacto("mejor en 2, peor en 4",
+                 "mejor en 2 instancias, peor en 4" in t22)
+else:
+    pendiente("confirmacion del elite 22", "formato inesperado del log")
+
+# presupuestos de las dos campanas de irace
+raw = open("tuning/irace_deepsets.log", "rb").read()
+try:
+    t1 = raw.decode("utf-16")
+except Exception:
+    t1 = raw.decode("utf-8", errors="replace").replace(chr(0), "")
+u1 = [int(x) for x in re.findall(r"experimentsUsed:\s*(\d+)", t1)]
+t2 = open("tuning/irace_serious.log", encoding="utf-8",
+          errors="replace").read()
+u2 = [int(x) for x in re.findall(r"experimentsUsed:\s*(\d+)", t2)]
+check_exacto("campana 1: presupuesto 330, 309 usados",
+             bool(u1) and max(u1) == 309 and "remainingBudget: 330" in t1,
+             f"usados {max(u1) if u1 else '?'}")
+check_exacto("campana 2: 295 de 300",
+             bool(u2) and max(u2) == 295, f"usados {max(u2) if u2 else '?'}")
+
+# las elites finales de la campana 1, leidas del propio log: el texto
+# dice tres, con clip 0.3, 8 epochs, GAE 0.90, minibatch y update-every
+# en sus defaults, e insensibles al ancho de la red
+_cola1 = t1[t1.rfind("Elite configurations"):]
+_el1 = re.findall(r"\n\s*\d+\s+([0-9.e-]+)\s+[0-9.]+\s+([0-9.]+)\s+"
+                  r"(\d+)\s+(\d+)\s+(\d+)\s+([0-9.]+)\s+(\d+)",
+                  _cola1[:_cola1.find("# Total")])
+check_exacto("campana 1: tres elites finales (texto)", len(_el1) == 3,
+             f"{len(_el1)} elites")
+check_exacto("elites: clip 0.3, 8 epochs, GAE 0.90 (texto)",
+             all(c == "0.3" and k == "8" and g == "0.90"
+                 for _, c, k, _mb, _u, g, _h in _el1))
+check_exacto("elites: minibatch 256 y update-every 4, los defaults",
+             all(mb == "256" and u == "4"
+                 for _, _c, _k, mb, u, _g, _h in _el1))
+check_exacto("elites: anchos 128 y 256 presentes (insensibles)",
+             {h for *_, h in _el1} == {"128", "256"})
+
+# =========================================================================
+print("\n== 6.2: la transferencia mejora con el presupuesto ==")
+# La tabla de nueve instancias desaparecio (6.2 va por clase sobre las
+# 70), pero el texto sigue citando TA41 y TA51 a dos presupuestos, y esa
+# comparacion vive en los CSV de crosssize.
+_cs = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_crosssize_bo64.csv", encoding="utf-8")):
+    _cs.setdefault(ta_de(r["instance"]), []).append(float(r["re_comp"]))
+
+# la transferencia mejora con el presupuesto (300ep vs 1000ep, medias)
+_c300 = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_crosssize_bo64_300ep.csv", encoding="utf-8")):
+    _c300.setdefault(ta_de(r["instance"]), []).append(float(r["re_comp"]))
+_c300 = {ta: sum(v) / len(v) for ta, v in _c300.items()}
+check("centinela: TA41 con 300 eps (30.3)", 30.3, _c300["TA41"])
+check("centinela: TA51 con 300 eps (22.2)", 22.2, _c300["TA51"])
+check_exacto("centinela: mas presupuesto mejora la transferencia",
+             _c300["TA41"] > sum(_cs["TA41"]) / 3
+             and _c300["TA51"] > sum(_cs["TA51"]) / 3)
+
+# =========================================================================
+print("\n== robustez ejecucional (eval_eps_all.csv, x1000) ==")
+# El fichero es el nuevo, no eval_eps_policy.csv: aquel sembraba las
+# realizaciones con hash() de la cadena, que Python aleatoriza por
+# proceso, y su barrido se relanzo a mitad. Este se calculo entero en un
+# proceso con semilla crc32 y trae el brazo robusto.
+_eps, _anch = {}, {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_eps_all.csv", encoding="utf-8")):
+    m = r["method"]
+    if m.startswith("lam1-") and m.endswith("-bo64"):
+        g = "lam1-bo64"
+    elif m.startswith("lam1-"):
+        g = "lam1-greedy"
+    elif m.startswith("policy-greedy"):
+        g = "policy-greedy"
+    elif m.startswith("policy-bo64"):
+        g = "policy-bo64"
+    else:
+        g = m
+    _eps.setdefault(g, {}).setdefault(r["instance"], []).append(
+        float(r["eps"]) * 1000)
+    _anch.setdefault(g, {}).setdefault(r["instance"], []).append(
+        float(r["width_rel"]))
+_eps = {g: {i: sum(v) / len(v) for i, v in d.items()}
+        for g, d in _eps.items()}
+_anch = {g: {i: sum(v) / len(v) for i, v in d.items()}
+         for g, d in _anch.items()}
+# El CSV se regenera por instancias: comprobar contra una tirada a medias
+# daria fallos que no son del paper sino del reloj.
+_n_eps = len(_eps.get("EST", {}))
+if _n_eps < 15:
+    pendiente("robustez ejecucional",
+              f"eval_eps_policy.csv incompleto ({_n_eps}/15 instancias)")
+else:
+    for g, v_tex in [("MOR", 7.14), ("GT-MWKR", 6.86), ("EST", 6.35),
+                     ("GP", 6.12), ("policy-greedy", 6.18),
+                     ("policy-bo64", 6.12), ("lam1-bo64", 5.83)]:
+        vals = list(_eps[g].values())
+        check(f"eps x1000 {g} (texto {v_tex})", v_tex,
+              sum(vals) / len(vals), tol=0.006)
+    # los anchos que 7.6 contrasta: el brazo robusto predice mas estrecho
+    for g, v_tex in [("policy-bo64", 12.3), ("lam1-bo64", 11.5)]:
+        check(f"ancho relativo {g} (texto {v_tex})", v_tex,
+              sum(_anch[g].values()) / 15, tol=0.051)
+    _ii = sorted(_eps["EST"])
+    for g, gana_tex in [("MOR", 14), ("GT-MWKR", 13), ("EST", 9),
+                        ("GP", 9), ("lam1-bo64", 6)]:
+        gana = sum(_eps[g][i] > _eps["policy-bo64"][i] for i in _ii)
+        check_exacto(f"la politica es mas fiel que {g} en {gana_tex}/15",
+                     gana == gana_tex, f"{gana}/15")
+    try:
+        from scipy import stats as _st
+        for g, lo, hi, etiq in [("MOR", 0, 1e-3, "p<0.001"),
+                                ("GT-MWKR", 0, 1e-3, "p<0.001"),
+                                ("EST", 0.27, 0.34, "p=0.30"),
+                                ("GP", 0.68, 0.77, "p=0.72"),
+                                ("lam1-bo64", 0.20, 0.26, "p=0.23")]:
+            d = [_eps[g][i] - _eps["policy-bo64"][i] for i in _ii]
+            p = _st.wilcoxon(d)[1]
+            check_exacto(f"eps frente a {g} ({etiq})", lo <= p <= hi,
+                         f"p={p:.3f}")
+        # la afirmacion de fondo: el GP y la politica, indistinguibles
+        check_exacto("GP y politica empatados en cabeza",
+                     abs(sum(_eps["GP"].values()) / 15
+                         - sum(_eps["policy-bo64"].values()) / 15) < 0.15,
+                     "diferencia < 0.15")
+        # y la nueva: el brazo robusto encabeza, pero sin significacion
+        check_exacto("el brazo robusto es el mas fiel de los siete",
+                     sum(_eps["lam1-bo64"].values()) / 15
+                     == min(sum(v.values()) / 15 for v in _eps.values()),
+                     f"{sum(_eps['lam1-bo64'].values()) / 15:.2f}")
+    except ImportError:
+        pendiente("Wilcoxon de eps", "sin scipy")
+
+print("\n== clasicas (tab:classics) ==")
+_clas = {r["inst"]: r for r in __import__("csv").DictReader(
+    open("benchmarks/classic12_tuned.csv", encoding="utf-8"))}
+_est12 = {r["inst"]: float(r["est_re"]) for r in __import__("csv").DictReader(
+    open("benchmarks/classic12_est.csv", encoding="utf-8"))}
+_pol12 = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_classic12_policy.csv", encoding="utf-8")):
+    _pol12.setdefault(r["name"], []).append(float(r["re"]))
+# La tupla anterior comprobaba una columna MOR que la tabla no imprime y
+# se saltaba la de GP, que si imprime: nunca se verifico. Ahora el orden
+# es EXACTAMENTE el de tab:classics, con las dos columnas nuevas.
+_gre12 = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_classic12_greedy.csv", encoding="utf-8")):
+    _gre12.setdefault(r["name"], []).append(float(r["re"]))
+check_exacto("greedy en las 12: 3 checkpoints cada una",
+             len(_gre12) == 12 and all(len(v) == 3
+                                       for v in _gre12.values()),
+             f"{len(_gre12)} instancias")
+
+# El brazo GP a los tres presupuestos. OJO: "mejor" es la mejor REGLA
+# por su media sobre las 12, no el minimo instancia a instancia, que no
+# corresponde a ninguna regla real (el virtual best da 11.97 a una
+# pasada y seria una cifra inventada).
+_bon = {}
+for _f in glob.glob("benchmarks/classic12_arm_bon/*.csv"):
+    _r_id = os.path.splitext(os.path.basename(_f))[0]
+    _bon[_r_id] = {r["inst"]: (float(r["gp"]), float(r["gp64"]),
+                               float(r["gp1024"]))
+                   for r in __import__("csv").DictReader(
+                       open(_f, encoding="utf-8"))}
+if len(_bon) < 30:
+    pendiente("brazo GP a 3 presupuestos", f"{len(_bon)}/30 reglas")
+    _mejor_regla = {}
+else:
+    check_exacto("brazo GP a 3 presupuestos: 30 reglas x 12",
+                 all(len(v) == 12 for v in _bon.values()), "30 reglas")
+    _INST12 = sorted(_bon["gp_tuned_seed1"])
+    _mejor_regla = {}
+    for _k, _v_med, _v_mej in [(0, 19.0, 15.3), (1, 14.6, 12.8),
+                               (2, 12.2, 11.0)]:
+        _med = {r: sum(_bon[r][i][_k] for i in _INST12) / 12 for r in _bon}
+        _mejor_regla[_k] = min(_med, key=_med.get)
+        check(f"6.3: media de las 30, presupuesto {_k} (texto {_v_med})",
+              _v_med, sum(_med.values()) / 30, tol=0.051)
+        check(f"6.3: mejor regla, presupuesto {_k} (texto {_v_mej})",
+              _v_mej, _med[_mejor_regla[_k]], tol=0.051)
+        check_exacto(f"6.3: la destacada bate a la media de 30 (pres. {_k})",
+                     _med["gp_tuned_seed1"] < sum(_med.values()) / 30,
+                     f"{_med['gp_tuned_seed1']:.2f} < "
+                     f"{sum(_med.values()) / 30:.2f}")
+
+# G&T, GP mn[bst], Pol.gre mn[bst], GP64 mn[bst], Pol.64 mn[bst], ESABC.
+# ESABC sustituyo al GA en la tabla el 2026-08-15: dos columnas "GP" al
+# lado de una "GA" invitaban a confundir programacion genetica con
+# algoritmo genetico. El GA sigue citado en la prosa de 6.3.
+# Los corchetes de la politica son la mejor semilla de tres; los del GP,
+# la mejor regla de treinta. El pie de la tabla lo advierte.
+# el 1024 por semilla, que la tabla usa en su tercer grupo (el fichero
+# agregado se lee mas abajo, para el numero que cita 6.4)
+_ps = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_classic12_bo1024_porsemilla.csv",
+             encoding="utf-8")):
+    _ps.setdefault(r["name"], []).append(float(r["re"]))
+
+# Tabla 2 de Diaz et al. (2023), Natural Computing: columna Best de GA
+GA_BEST = {"ABZ7": 6.3, "ABZ8": 11.3, "ABZ9": 13.0, "FT10": 1.8,
+           "FT20": 1.5, "La21": 3.2, "La24": 4.1, "La25": 1.9,
+           "La27": 4.6, "La29": 11.1, "La38": 6.0, "La40": 5.1}
+_CLAS30 = __import__("json").load(
+    open("benchmarks/ext30/resumen_clasicas30.json", encoding="utf-8"))
+TAB_CLASSICS = {
+    "FT10": (32.2, 17.0, 7.2, 12.8, 6.6, 11.8, 5.2, 7.9, 4.3,
+             8.5, 4.2, 6.1, 4.3, 3.0),
+    "FT20": (40.0, 18.5, 9.4, 12.2, 3.4, 13.3, 5.8, 8.1, 3.4,
+             10.3, 5.4, 6.2, 2.4, 1.8),
+    "La21": (24.1, 15.9, 10.3, 18.1, 12.4, 12.6, 10.0, 12.5, 8.6,
+             10.7, 6.8, 9.5, 6.7, 4.0),
+    "La24": (26.3, 16.1, 10.1, 16.6, 9.2, 11.5, 8.6, 11.2, 8.8,
+             9.2, 6.2, 9.3, 5.9, 5.0),
+    "La25": (16.9, 17.6, 9.6, 18.4, 8.3, 12.3, 8.7, 10.3, 7.8,
+             9.3, 5.1, 8.2, 5.8, 2.7),
+    "La27": (34.8, 18.3, 12.3, 14.9, 8.9, 12.5, 10.7, 11.4, 8.4,
+             11.3, 8.2, 9.3, 7.7, 4.1),
+    "La29": (24.5, 19.9, 12.9, 22.4, 13.2, 15.0, 11.4, 15.9, 12.3,
+             12.6, 9.7, 13.5, 7.8, 7.0),
+    "La38": (27.0, 17.4, 9.2, 15.8, 10.8, 14.3, 9.2, 11.1, 8.0,
+             12.0, 7.1, 9.1, 7.0, 5.8),
+    "La40": (27.9, 16.7, 11.7, 13.4, 9.3, 12.3, 8.8, 8.5, 6.0,
+             10.0, 7.1, 7.2, 4.5, 4.1),
+    "ABZ7": (28.7, 17.6, 13.3, 18.2, 14.1, 14.3, 11.7, 13.5, 10.4,
+             12.2, 8.9, 11.6, 8.5, 6.7),
+    "ABZ8": (36.9, 24.6, 18.1, 21.4, 16.8, 20.9, 17.0, 17.5, 15.0,
+             18.6, 15.0, 15.3, 12.6, 10.9),
+    "ABZ9": (41.8, 29.0, 19.5, 24.7, 19.7, 24.0, 17.9, 19.5, 16.3,
+             21.5, 17.4, 17.3, 13.2, 11.2),
+}
+fallos_clas = 0
+for inst, fila in TAB_CLASSICS.items():
+    c = _clas[inst]
+
+    def _gp(k, i=inst):
+        if not _bon:
+            return -1, -1
+        v = [_bon[r][i][k] for r in _bon]
+        return sum(v) / len(v), min(v)
+
+    # las columnas de politica salen ahora de las TREINTA semillas
+    # (campana de 2026-08-15), no de las tres desplegadas
+    _cl30 = _CLAS30["presupuestos"]
+    reales = (float(c["gt"]),
+              *_gp(0), _cl30["1"]["politica"]["media"][inst],
+              _cl30["1"]["politica"]["mejor"][inst],
+              *_gp(1), _cl30["64"]["politica"]["media"][inst],
+              _cl30["64"]["politica"]["mejor"][inst],
+              *_gp(2), _cl30["1024"]["politica"]["media"][inst],
+              _cl30["1024"]["politica"]["mejor"][inst],
+              float(c["ESABC"]))
+    for v_tex, v_dat in zip(fila, reales):
+        if abs(v_tex - v_dat) > 0.051:
+            print(f"  FALLO celda {inst}: texto={v_tex} datos={v_dat:.2f}")
+            fallos_clas += 1
+check_exacto("las 168 celdas de tab:classics", fallos_clas == 0,
+             f"{fallos_clas} celdas mal")
+# 6.3 explica el cambio de orden por el tamano. Las dimensiones se leen
+# de los propios ficheros de instancia, no de memoria: el 2026-08-16 el
+# texto afirmaba "diez y quince trabajos frente a veinte", y ABZ7-9 son
+# 20x15, exactamente la clase de entrenamiento
+_DIM = {}
+for _f in glob.glob("zenodo_deposit/instances/interval_classical/F0.15.0.*.txt"):
+    _nom = os.path.basename(_f).split(".")[-2].split("_")[0].upper()
+    _ls = [l.strip() for l in open(_f, encoding="utf-8", errors="replace")
+           if l.strip()]
+    _n = [int(l) for l in _ls if l.isdigit()][:2]
+    if len(_n) == 2:
+        _DIM[_nom] = tuple(_n)
+if len(_DIM) != 12:
+    pendiente("dimensiones de las 12 clasicas", f"{len(_DIM)} ficheros")
+else:
+    check_exacto("6.3: las clasicas van de 10x10 a 20x15",
+                 min(_DIM.values()) == (10, 10)
+                 and max(_DIM.values()) == (20, 15),
+                 f"{min(_DIM.values())} a {max(_DIM.values())}")
+    check_exacto("6.3: ninguna excede la clase de entrenamiento 20x15",
+                 all(j <= 20 and m <= 15 for j, m in _DIM.values()),
+                 str(sorted(set(_DIM.values()))))
+    check_exacto("6.3: y el texto lo dice asi",
+                 "range from $10{\\times}10$ to $20{\\times}15$" in TEX)
+check_exacto("tab:classics ya no imprime el mejor de GA",
+             "9.8 [5.8]" not in TEX)
+_blkclas = TEX[TEX.index("\\label{tab:classics}"):
+               TEX.index("\\end{table}",
+                         TEX.index("\\label{tab:classics}"))]
+check_exacto("tab:classics imprime ESABC y ya no imprime GA",
+             "ESABC" in _blkclas and "& GA" not in _blkclas)
+check_exacto("la fila Mean de tab:classics cierra con ESABC (5.5)",
+             "& 5.5 \\\\" in _blkclas.split("Mean &", 1)[1],
+             _blkclas.split("Mean &", 1)[1].splitlines()[0].strip())
+# 6.3: la dispersion de las 30 reglas evolucionadas. OJO: la media POR
+# REGLA sobre las 12, no el minimo instancia a instancia (ese "virtual
+# best" da 11.97 y no corresponde a ninguna regla real)
+_arm12 = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/classic12_arm.csv", encoding="utf-8")):
+    _arm12.setdefault(r["rule"], {})[r["inst"]] = float(r["re"])
+check_exacto("las 30 reglas GP sobre las 12", len(_arm12) == 30
+             and all(len(v) == 12 for v in _arm12.values()),
+             f"{len(_arm12)} reglas")
+_m_regla = {k: sum(v.values()) / 12 for k, v in _arm12.items()}
+check("6.3: mejor regla de las 30 (texto 15.3)", 15.3, min(_m_regla.values()))
+check("6.3: peor regla de las 30 (texto 23.3)", 23.3, max(_m_regla.values()))
+check("6.3: media de las 30 reglas (texto 19.0)", 19.0,
+      sum(_m_regla.values()) / 30)
+_pub = _m_regla["gp_tuned_seed1"]
+# el analisis de la transferencia de la seleccion GP salio del texto:
+# queda como centinela del dato
+check_exacto("centinela: la regla publicada es la 13 de 30 en las clasicas",
+             sum(1 for v in _m_regla.values() if v < _pub) == 12,
+             f"{sum(1 for v in _m_regla.values() if v < _pub)}/30 mejores")
+try:
+    import statistics as _stt
+    _insts12 = sorted(_arm12["gp_tuned_seed1"])
+    _sd_gp = sum(_stt.stdev([_arm12[r][i] for r in _arm12])
+                 for i in _insts12) / 12
+    _sd_pol = sum(_stt.stdev(v) for v in _gre12.values()) / 12
+    # el pasaje de estadistica de orden que citaba estas dispersiones se
+    # retiro: con 30 artefactos por lado el corchete deja de estar
+    # sesgado y la explicacion sobra. Quedan como centinelas del dato
+    check("centinela: sd entre reglas GP sobre las 12 (4.3)", 4.3,
+          _sd_gp, tol=0.06)
+    check("centinela: sd entre semillas DRL sobre las 12 (2.2)", 2.2,
+          _sd_pol, tol=0.06)
+    check_exacto("6.3: ya no argumenta con estadistica de orden",
+                 "0.85" not in TEX and "2.04" not in TEX)
+except Exception as e:
+    pendiente("dispersion GP vs DRL", type(e).__name__)
+
+# tab:cost (7.2) da la cuenta de pared de las dos familias. Las filas
+# de entrenamiento vienen del artefacto derivado de los timestamps de
+# las dos campanas (scripts/mide_tiempos_entrenamiento.py); las de
+# inferencia, de las dos mediciones en el harness sobre las mismas
+# instancias representativas (tiempos_inferencia.csv para la politica,
+# tiempos_gp_harness para la regla destacada).
+_TPO = "benchmarks/tiempos/tiempos_entrenamiento.json"
+if not os.path.exists(_TPO):
+    pendiente("tiempos de entrenamiento", "sin tiempos_entrenamiento.json")
+else:
+    _tt = json.load(open(_TPO, encoding="utf-8"))
+    check("tab:cost: una evolucion tarda 26 min", 26,
+          _tt["gp"]["evolucion_min"], tol=0.51)
+    check("tab:cost: mediana de un entrenamiento, 92 min", 92,
+          _tt["politica"]["mediana_min"], tol=0.51)
+    check("tab:cost: rango 60-153 del entrenamiento", 60,
+          _tt["politica"]["min_min"], tol=0.51)
+    check("tab:cost: rango 60-153 del entrenamiento (max)", 153,
+          _tt["politica"]["max_min"], tol=0.51)
+    check("tab:cost: 30 evoluciones son 4.4 h", 4.4,
+          _tt["gp"]["total_h_tres_carriles"], tol=0.051)
+    check("tab:cost: 30 entrenamientos son 16 h", 16,
+          _tt["politica"]["total_h_tres_carriles"], tol=0.051)
+    check_exacto("tab:cost: 30 semillas en el artefacto de tiempos",
+                 len(_tt["politica"]["por_semilla_min"]) == 30)
+_TGP = "benchmarks/tiempos_gp_harness/tiempos_gp.csv"
+_TIN = "benchmarks/tiempos_inferencia.csv"
+if not (os.path.exists(_TGP) and os.path.exists(_TIN)):
+    pendiente("tiempos por schedule", "faltan CSV de tiempos")
+else:
+    _csvt = __import__("csv")
+    _gp_t = {r["clase"]: r for r in
+             _csvt.DictReader(open(_TGP, encoding="utf-8"))}
+    _po_t = {r["clase"]: r for r in
+             _csvt.DictReader(open(_TIN, encoding="utf-8"))}
+    check_exacto("tab:cost: mismas instancias representativas",
+                 all(_gp_t[c]["instancia"] == _po_t[c]["instancia"]
+                     for c in ("20x15", "50x20")))
+    for _c, _gp_det, _gp_mu, _po_det, _po_mu in [
+            ("20x15", 0.10, 0.10, 0.86, 1.03),
+            ("50x20", 1.00, 0.93, 3.98, 6.4)]:
+        check(f"tab:cost regla det {_c}", _gp_det,
+              float(_gp_t[_c]["det_s"]), tol=0.006)
+        check(f"tab:cost regla muestra {_c}", _gp_mu,
+              float(_gp_t[_c]["por_muestra_s"]), tol=0.006)
+        check(f"tab:cost politica greedy {_c}", _po_det,
+              float(_po_t[_c]["greedy_s"]), tol=0.006)
+        check(f"tab:cost politica muestra {_c}", _po_mu,
+              float(_po_t[_c]["bo64_s"]) / 64, tol=0.051)
+    # el factor de las conclusiones y de 7.2: siete a once veces
+    _f2015 = (float(_po_t["20x15"]["bo64_s"]) / 64
+              / float(_gp_t["20x15"]["por_muestra_s"]))
+    _f5020 = (float(_po_t["50x20"]["bo64_s"]) / 64
+              / float(_gp_t["50x20"]["por_muestra_s"]))
+    check_exacto("7.2 y conclusiones: la regla es ~7-11 veces mas barata",
+                 6.5 <= min(_f2015, _f5020) and max(_f2015, _f5020) <= 11.5,
+                 f"{_f5020:.1f} a {_f2015:.1f}")
+    check_exacto("7.2: el muestreo eps-greedy no encarece la pasada GP",
+                 all(float(_gp_t[c]["por_muestra_s"])
+                     <= float(_gp_t[c]["det_s"]) * 1.1
+                     for c in _gp_t))
+
+# 6.3 y 6.4 afirman COMO se eligio la regla destacada. Es una afirmacion
+# sobre el otro paper, asi que se contrasta contra su fuente, no de
+# memoria. La fuente es la version en revision en ASOC (paper_asoc/), no
+# la de SWEVO (paper_gp/): alli la destacada se elige en validacion y la
+# media de las 30 es 18.99. Se compara con los espacios colapsados, para
+# que el reflujo del parrafo no tumbe la comprobacion.
+_GP_TEX = "paper_asoc/main.tex"
+if not os.path.exists(_GP_TEX):
+    pendiente("protocolo de la regla destacada", "sin paper_asoc/main.tex")
+else:
+    _g = re.sub(r"\s+", " ", open(_GP_TEX, encoding="utf-8").read())
+    _t1 = re.sub(r"\s+", " ", TEX)
+    check_exacto("6.3: la destacada es la de menor RE en validacion",
+                 "The one with the lowest mean $\\RE$ on the validation set "
+                 "is the \\emph{featured rule}" in _g
+                 and "Both studies select their artifact on the validation "
+                 "instances" in _t1)
+    check_exacto("6.3: las 60 de prueba y las 12 clasicas no intervienen",
+                 "The remaining 60 instances play no part in any of these "
+                 "decisions" in _g)
+    check_exacto("6.4: media de las 30 sobre las 70 es 18.99",
+                 "$18.99\\%$ ($\\pm1.33$)" in _g and "$18.99\\%$" in TEX)
+    check_exacto("6.4: la destacada sobre las 70 es 17.71",
+                 "The rule selected on the validation set attains $17.71\\%$"
+                 in _g)
+    # tab:cost mide en el entorno compartido; el texto cita ademas el
+    # tiempo del simulador propio del estudio GP, que se lee de su fuente
+    check_exacto("7.2: el estudio GP publica 20.6 ms por pasada",
+                 "A pass of the featured rule takes $20.6$~ms as evolved"
+                 in _g and "$20.6$~ms per pass" in _t1)
+    # 3 afirma que las cuatro convenciones del planteamiento son las
+    # mismas en los dos estudios. Es una afirmacion sobre SU paper, asi
+    # que cada una se contrasta contra su fuente: si el companero cambia
+    # el arithmetic, el decodificador, el ranking o la metrica, salta
+    check_exacto("3: la aritmetica de intervalos es componentwise en ambos",
+                 "Both operations are component-wise, as is standard in "
+                 "interval" in _g)
+    check_exacto("3: el decodificador semiactivo es el mismo",
+                 "\\emph{semi-active} schedule" in _g)
+    check_exacto("3: el ranking lexicografico es el mismo",
+                 "comparing upper bounds first and using the lower bound "
+                 "only to break ties" in _g)
+    check_exacto("3: la metrica RE y sus cotas son las mismas",
+                 "Taillard's bounds~\\citep{Taillard1993} for the" in _g
+                 and "the best known ones~\\citep{DiazFEABC2023} for the "
+                     "classical set" in _g)
+    check_exacto("3: y el texto declara ese reparto de convenciones",
+                 "Every element of this section is shared with the genetic"
+                 in TEX)
+    # 5.1 afirma ademas que el reparto de instancias es el mismo. Se lee
+    # de su fuente: evolucion en TA11-TA14, validacion en TA15-TA20
+    check_exacto("5.1: el estudio GP evoluciona en TA11-TA14",
+                 "evolved on TA11--TA14 ($20{\\times}15$)" in _g)
+    check_exacto("5.1: y toma sus decisiones en TA15-TA20",
+                 "TA15--TA20 form the validation set" in _g)
+    check_exacto("5.1: el texto declara ese reparto compartido",
+                 "The genetic programming study splits the benchmark the\n"
+                 "same three ways" in TEX)
+    # 7.5 compara nuestro brazo robusto con el barrido de lambda del
+    # companero. Son afirmaciones sobre SU paper: se leen de su fuente.
+    check_exacto("7.5: el companero usa el mismo f_lambda con lambda=1",
+                 "the weight $\\lambda$ sets the balance between the two. "
+                 "Here $\\lambda = 1$" in _g)
+    # las dos anchuras se derivan de los extremos que publica su barrido
+    _m = re.search(r"falls from \$([\d.]+) \\pm [\d.]+\$ to \$([\d.]+) "
+                   r"\\pm", _g)
+    _m0 = re.search(r"Its width stays between \$([\d.]+)\$ and "
+                    r"\$([\d.]+)\$ for every \$\\lambda\$ from \$0\$ to "
+                    r"\$4\$", _g)
+    check_exacto("7.5: su barrido mueve 1.64 puntos de anchura",
+                 _m is not None and abs(float(_m.group(1))
+                                        - float(_m.group(2)) - 1.64) < 0.005
+                 and "by $1.64$ points for rules that have" in _t1)
+    check_exacto("7.5: y 0.13 sin los terminales de anchura",
+                 _m0 is not None and abs(float(_m0.group(2))
+                                         - float(_m0.group(1)) - 0.13) < 0.005
+                 and "by $0.13$ for rules that do not" in _t1)
+    check_exacto("7.5: su conclusion es que el objetivo actua por la "
+                 "representacion",
+                 "the objective works through the representation" in _g)
+    # el precio del intercambio en su barrido: 0.5 -> 4 en lambda
+    _w_gp = (12.18 - 10.54)
+    _re_gp = (23.27 - 19.20)
+    check("7.5: el companero paga ~2.5 RE por punto de anchura", 2.5,
+          _re_gp / _w_gp, tol=0.06)
+    check("centinela: tasa a tres semillas (~2.0 RE/punto)", 2.0,
+          (15.38 - 13.44) / (12.85 - 11.90), tol=0.06)
+
+# 6.3: el enfrentamiento a presupuesto igualado sobre las 12
+_gp1 = {i: float(_clas[i]["gp"]) for i in _clas}
+_gp64 = {i: float(_clas[i]["gp64"]) for i in _clas}
+_pg = {i: sum(v) / 3 for i, v in _gre12.items()}
+_pb = {i: sum(v) / len(v) for i, v in _pol12.items()}
+check("clasicas: GP una pasada (texto 17.9)", 17.9,
+      sum(_gp1.values()) / 12)
+check("centinela: politica greedy, tres semillas (17.2)", 17.2,
+      sum(_pg.values()) / 12)
+# las cifras que 6.3 cita ahora, de las TREINTA semillas
+_enf_cl = "benchmarks/ext30/enfrentamiento_clasicas.json"
+if not os.path.exists(_enf_cl):
+    pendiente("enfrentamiento en las clasicas", "sin json")
+else:
+    _ec = __import__("json").load(open(_enf_cl, encoding="utf-8"))
+    for _k, _dif, _gana, _p in [("1_media", 1.64, 7, 0.0923),
+                                ("1_mejor", 0.92, 7, 0.2661),
+                                ("64_media", 2.28, 11, 0.0034),
+                                ("64_mejor", 1.31, 10, 0.0049),
+                                ("1024_media", 1.96, 10, 0.0034),
+                                ("1024_mejor", 1.21, 10, 0.0122)]:
+        _e = _ec[_k]
+        check(f"6.3 {_k}: ventaja de la politica (texto {_dif})", _dif,
+              _e["gp"] - _e["pol"], tol=0.006)
+        check_exacto(f"6.3 {_k}: gana en {_gana} de 12",
+                     _e["gana_pol"] == _gana, f"{_e['gana_pol']}/12")
+        check(f"6.3 {_k}: p (texto {_p})", _p, _e["p"], tol=0.0006)
+check("clasicas: GP con 64 (texto 14.2)", 14.2, sum(_gp64.values()) / 12)
+_gp1024c = {i: float(_clas[i]["gp1024"]) for i in _clas}
+_p1024 = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_classic12_bo1024.csv", encoding="utf-8")):
+    _p1024.setdefault(r["name"], []).append(float(r["re"]))
+check_exacto("clasicas a 1024: 12 instancias x 3 checkpoints",
+             len(_p1024) == 12 and all(len(v) == 3 for v in _p1024.values()),
+             f"{len(_p1024)} instancias")
+_p1024 = {i: min(v) for i, v in _p1024.items()}   # agrega los tres, como
+# el bo1024 de las Taillard: 342 por checkpoint, mejor global al juntar
+check("clasicas: GP con 1024 (texto 11.3)", 11.3,
+      sum(_gp1024c.values()) / 12)
+check("clasicas: politica con 1024 agregada (texto 10.13)", 10.13,
+      sum(_p1024.values()) / 12, tol=0.006)
+
+# 6.3: por que los corchetes ordenan al reves que las medias. Son minimos
+# por instancia sobre muestras desiguales (30 evoluciones contra 3
+# semillas) y dispersiones desiguales; se recomputan ambas y el
+# contrafactual de seleccionar la politica sobre 30
+import statistics as _stt
+_C3, _C30 = 0.8463, 2.0428
+
+
+def _disp_gp(k):
+    _sd, _mn = [], []
+    for _i in _INST12:
+        _v = [_bon[_r][_i][k] for _r in _bon]
+        _sd.append(_stt.stdev(_v))
+        _mn.append(min(_v))
+    return _stt.mean(_sd), _stt.mean(_mn)
+
+
+def _disp_pol(fichero, col="re"):
+    _d = {}
+    for _r in __import__("csv").DictReader(open(fichero, encoding="utf-8")):
+        _d.setdefault(_r["name"], []).append(float(_r[col]))
+    assert all(len(v) == 3 for v in _d.values())
+    return (_stt.mean([_stt.stdev(v) for v in _d.values()]),
+            _stt.mean([min(v) for v in _d.values()]),
+            _stt.mean([_stt.mean(v) for v in _d.values()]))
+
+
+if _mejor_regla:
+    _POL_F = ["benchmarks/eval_classic12_greedy.csv",
+              "benchmarks/eval_classic12_policy.csv",
+              "benchmarks/eval_classic12_bo1024_porsemilla.csv"]
+    _SD_GP_TEX = [4.3, 2.3, 2.0]
+    _SD_POL_TEX = [2.2, 1.4, 0.7]
+    _CONTRA_TEX = [12.7, 9.6, 8.8]
+    for _k, (_f, _sg_tex, _sp_tex, _c_tex) in enumerate(
+            zip(_POL_F, _SD_GP_TEX, _SD_POL_TEX, _CONTRA_TEX)):
+        _sd_gp, _min_gp = _disp_gp(_k)
+        _sd_pol, _min_pol, _mu_pol = _disp_pol(_f)
+        check(f"6.3: sd de las 30 reglas, presupuesto {_k} (texto {_sg_tex})",
+              _sg_tex, _sd_gp, tol=0.051)
+        check(f"6.3: sd de las 3 semillas, presupuesto {_k} "
+              f"(texto {_sp_tex})", _sp_tex, _sd_pol, tol=0.051)
+        check(f"6.3: contrafactual c30 sobre la politica (texto {_c_tex})",
+              _c_tex, _mu_pol - _C30 * _sd_pol, tol=0.06)
+        check_exacto(f"6.3: el corchete de GP es menor, presupuesto {_k}",
+                     _min_gp < _min_pol,
+                     f"GP {_min_gp:.1f} vs Pol {_min_pol:.1f}")
+        check_exacto(f"6.3: la sd de la politica es menor, presupuesto {_k}",
+                     _sd_pol < _sd_gp, f"{_sd_pol:.2f} < {_sd_gp:.2f}")
+
+# el 1024 POR SEMILLA: cada checkpoint con sus propias 1024 muestras,
+# que es lo comparable con "una regla con 1024" del lado GP
+_ps = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_classic12_bo1024_porsemilla.csv",
+             encoding="utf-8")):
+    _ps.setdefault(r["name"], []).append(float(r["re"]))
+check_exacto("1024 por semilla: 12 instancias x 3 checkpoints",
+             len(_ps) == 12 and all(len(v) == 3 for v in _ps.values()),
+             f"{len(_ps)} instancias")
+_ps_m = {i: sum(v) / 3 for i, v in _ps.items()}
+# 6.3 ya no compara el mejor por instancia contra la media del GA (era
+# un mejor virtual sobre 30 tiradas, que ninguna tirada alcanza). Lo que
+# afirma ahora es que la MEDIA de las 30 a 1024 muestras queda a medio
+# punto de la media de 30 tiradas del GA. El GA ya no esta en la tabla
+# (la ultima columna es ESABC desde 2026-08-15), asi que la media sale
+# del CSV publicado, no de TAB_CLASSICS
+_ga_media = sum(float(c["GA"]) for c in _clas.values()) / 12
+_pol1024 = _CLAS30["presupuestos"]["1024"]["politica"]["media_global"]
+check("6.3: la politica a 1024 sobre las 12 (texto 10.2)", 10.2,
+      _pol1024, tol=0.051)
+check("6.3: GA sobre las 12 (texto 9.8)", 9.8, _ga_media, tol=0.051)
+check_exacto("6.3: la distancia a GA es de medio punto",
+             0 < _pol1024 - _ga_media < 0.5,
+             f"{_pol1024 - _ga_media:.2f} puntos")
+check("centinela: politica con 1024, tres semillas (10.27)", 10.27,
+      sum(_ps_m.values()) / 12, tol=0.006)
+if _mejor_regla:
+    _gp1024m = {i: sum(_bon[r][i][2] for r in _bon) / len(_bon)
+                for i in _INST12}
+    _n1024 = sum(_ps_m[i] < _gp1024m[i] for i in _INST12)
+    check_exacto("clasicas a 1024 por semilla: gana 10 de 12",
+                 _n1024 == 10, f"{_n1024}/12")
+    try:
+        from scipy import stats as _st3
+        _p1024w = _st3.wilcoxon([_ps_m[i] - _gp1024m[i]
+                                 for i in _INST12])[1]
+        check_exacto("clasicas a 1024: significativo (texto p=0.009)",
+                     0.008 <= _p1024w <= 0.011, f"p={_p1024w:.4f}")
+    except ImportError:
+        pendiente("Wilcoxon de las clasicas a 1024", "sin scipy")
+for etiq, riv, pol_d, n_tex in [("una pasada", _gp1, _pg, 7),
+                                ("64 muestras", _gp64, _pb, 9)]:
+    n = sum(pol_d[i] < riv[i] for i in _clas)
+    check_exacto(f"clasicas, {etiq}: la politica gana {n_tex} de 12",
+                 n == n_tex, f"{n}/12")
+try:
+    from scipy import stats as _st2
+    _p1 = _st2.wilcoxon([_pg[i] - _gp1[i] for i in _clas])[1]
+    _p2 = _st2.wilcoxon([_pb[i] - _gp64[i] for i in _clas])[1]
+    check_exacto("clasicas, una pasada: empate (texto p=0.73)",
+                 0.70 <= _p1 <= 0.76, f"p={_p1:.3f}")
+    check_exacto("clasicas, 64 muestras: marginal (texto p=0.077)",
+                 0.070 <= _p2 <= 0.085, f"p={_p2:.4f}")
+except ImportError:
+    pendiente("Wilcoxon de las 12 clasicas", "sin scipy")
+_medias_pol = [sum(v) / len(v) for v in _pol12.values()]
+check("clasicas: politica media (texto 12.4)", 12.4,
+      sum(_medias_pol) / 12)
+check("clasicas: G&T media (texto 30.1)", 30.1,
+      sum(float(c["gt"]) for c in _clas.values()) / 12)
+for col, v_tex in [("GA", 9.8), ("ESABC", 5.5)]:
+    check(f"clasicas: {col} media (texto {v_tex})", v_tex,
+          sum(float(c[col]) for c in _clas.values()) / 12)
+gana12 = sum(sum(_pol12[i]) / len(_pol12[i]) <
+             min(_est12[i], float(_clas[i]["mor"]), float(_clas[i]["gt"]))
+             for i in _clas)
+check_exacto("la politica gana a las tres reglas en las 12", gana12 == 12,
+             f"{gana12}/12")
+mejor = {i: min(_pol12[i]) for i in _pol12}
+check_exacto("mejor semilla < GA en La40, ABZ7 y ABZ8",
+             all(mejor[i] < float(_clas[i]["GA"])
+                 for i in ("La40", "ABZ7", "ABZ8")))
+
+print("\n== importancia de features ==")
+# 7.1 cita la medida con CINCO permutaciones por columna; la de una sola
+# extraccion se conserva en feature_importance.csv y se comprueba abajo
+# como centinela, porque sus magnitudes ya no se imprimen
+_rep = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/feature_importance_rep.csv", encoding="utf-8")):
+    _rep.setdefault(r["feature"], []).append(float(r["delta_puntos"]))
+    _base = float(r["re_base"])
+check_exacto("importancia: 16 features x 5 permutaciones",
+             len(_rep) == 16 and all(len(v) == 5 for v in _rep.values()),
+             f"{len(_rep)} features")
+check("base greedy del test (texto 18.2)", 18.2, _base)
+_med = {f: sum(v) / len(v) for f, v in _rep.items()}
+_sd = {f: _stt.stdev(v) for f, v in _rep.items()}
+for f, m_tex, s_tex in [("holgura", 56.5, 2.4), ("pos_restante", 33.6, 1.4),
+                        ("rem_up", 9.6, 1.0)]:
+    check(f"7.1: permutar {f} (texto +{m_tex})", m_tex, _med[f], tol=0.051)
+    check(f"7.1: su desviacion sobre las cinco (texto {s_tex})", s_tex,
+          _sd[f], tol=0.051)
+# el segundo escalon y el suelo que describe el texto
+_orden = sorted(_med.items(), key=lambda kv: -kv[1])
+check_exacto("7.1: el orden de cabeza es holgura, pos_restante, rem_up",
+             [f for f, _ in _orden[:3]] == ["holgura", "pos_restante",
+                                            "rem_up"],
+             str([f for f, _ in _orden[:3]]))
+check_exacto("7.1: segundo escalon de tres, entre 1.8 y 2.9 puntos",
+             all(1.75 <= v <= 2.95 for _, v in _orden[3:6]),
+             " ".join(f"{f}={v:.2f}" for f, v in _orden[3:6]))
+check_exacto("7.1: suelo de diez features entre +0.3 y +1.0",
+             len(_orden[6:]) == 10
+             and all(0.25 <= v <= 1.0 for _, v in _orden[6:]),
+             " ".join(f"{v:.2f}" for _, v in _orden[6:]))
+check_exacto("7.1: las dos anchuras estan en el suelo, una la ultima",
+             _orden[-1][0] == "dur_width_rel"
+             and "est_width_rel" in [f for f, _ in _orden[6:]],
+             f"ultima: {_orden[-1][0]}")
+for f, m_tex, s_tex in [("dur_width_rel", 0.3, 0.3),
+                        ("est_width_rel", 0.9, 0.5)]:
+    check(f"7.1 y 8: {f} (texto +{m_tex})", m_tex, _med[f], tol=0.051)
+    check(f"7.1: su desviacion (texto {s_tex})", s_tex, _sd[f], tol=0.051)
+# centinela del fichero de una sola extraccion: sus magnitudes eran las
+# que el texto citaba antes (51.0 / 28.1 / 10.6) y las de anchura casi
+# nulas; se guarda para que se vea de donde viene el cambio
+_imp = {r["feature"]: float(r["delta_puntos"])
+        for r in __import__("csv").DictReader(
+            open("benchmarks/feature_importance.csv", encoding="utf-8"))}
+for f, v in [("holgura", 51.0), ("pos_restante", 28.1), ("rem_up", 10.6)]:
+    check(f"centinela: una sola permutacion daba {f} = {v}", v, _imp[f],
+          tol=0.06)
+# 7.1 dice que una sola extraccion reordena la mitad baja pero no las
+# tres de cabeza; es exactamente lo que separa los dos ficheros
+_o1 = [f for f, _ in sorted(_imp.items(), key=lambda kv: -kv[1])]
+_o5 = [f for f, _ in _orden]
+check_exacto("7.1: una extraccion conserva las tres de cabeza",
+             _o1[:3] == _o5[:3], str(_o1[:3]))
+# la asimetria entre extremos que cita 7.1: en los dos pares que salen
+# del suelo el superior cuesta varias veces mas que el inferior
+for _sup, _inf, _m_sup, _m_inf in [("rem_up", "rem_lo", 9.6, 1.8),
+                                   ("dur_up", "dur_lo", 2.1, 1.0)]:
+    check(f"7.1: {_sup} (texto +{_m_sup})", _m_sup, _med[_sup], tol=0.051)
+    check(f"7.1: {_inf} (texto +{_m_inf})", _m_inf, _med[_inf], tol=0.051)
+    check_exacto(f"7.1: {_sup} cuesta varias veces {_inf}",
+                 _med[_sup] / _med[_inf] >= 2.0,
+                 f"{_med[_sup] / _med[_inf]:.1f}x")
+# y que el tercer par se queda en el suelo, por eso el texto dice DOS
+check_exacto("7.1: el par de comienzo no sale del suelo",
+             _med["est_up"] <= 1.0 and _med["est_lo"] <= 1.0,
+             f"{_med['est_up']:.2f} / {_med['est_lo']:.2f}")
+check_exacto("7.1: pero reordena la mitad baja",
+             _o1[8:] != _o5[8:],
+             f"{sum(a == b for a, b in zip(_o1, _o5))}/16 posiciones iguales")
+
+# =========================================================================
+
+print("\n== la regla del companion como baseline publicado ==")
+_clas = {r["inst"]: r for r in __import__("csv").DictReader(
+    open("benchmarks/classic12_tuned.csv", encoding="utf-8"))}
+_est12 = {r["inst"]: float(r["est_re"]) for r in __import__("csv").DictReader(
+    open("benchmarks/classic12_est.csv", encoding="utf-8"))}
+_pol12 = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/eval_classic12_policy.csv", encoding="utf-8")):
+    _pol12.setdefault(r["name"], []).append(float(r["re"]))
+_gp = {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/reevo_fixedfit/summary.csv", encoding="utf-8")):
+    if r["method"] == "gp_tuned_seed1":
+        _gp[ta_de(r["instance"])] = float(r["re"])
+check_exacto("la regla destacada cubre las 70", len(_gp) == 70, str(len(_gp)))
+check("GP sobre las 70 (publicado 17.71)", 17.71, sum(_gp.values()) / 70)
+_gp_clases = [sum(_gp[f"TA{i * 10 + j + 1}"] for j in range(10)) / 10
+              for i in range(7)]
+for c, v_tex in enumerate([15.7, 16.6, 18.1, 21.1, 24.1, 13.8, 14.6]):
+    check(f"tab:seventy GP clase {c + 1} (texto {v_tex})", v_tex,
+          _gp_clases[c])
+
+# el enfrentamiento, a PRESUPUESTOS EMPAREJADOS: una pasada contra una
+# pasada, y 1024 muestras contra 1024 (comparar 1 contra 1024 sesgaba)
+_gp1024 = {ta_de(r["instance"]): float(r["best_at_1024"]) for r in
+           __import__("csv").DictReader(
+               open("benchmarks/gp_destacada/gp_destacada_presupuestos.csv", encoding="utf-8"))}
+check("GP una pasada sobre las 70 (texto 17.7)", 17.7,
+      sum(_gp.values()) / 70)
+check("GP con 1024 muestras (texto 13.8)", 13.8,
+      sum(_gp1024.values()) / 70)
+
+# tab:seventy: las dos filas de best-of-64 que la tabla fusionada anade.
+# Las de GP salen del mismo deposito que su 1024 (fair_gp_eps.csv), donde
+# el brazo va aleatorizado con epsilon-greedy; su "una pasada" NO es esa
+# columna sino la regla determinista, que es lo que la caption declara
+_gp_bon = {}
+for _r in __import__("csv").DictReader(
+        open("benchmarks/gp_destacada/gp_destacada_presupuestos.csv", encoding="utf-8")):
+    _gp_bon[ta_de(_r["instance"])] = (float(_r["best_at_1"]),
+                                      float(_r["best_at_64"]))
+_gp64_clases = [sum(_gp_bon[f"TA{i * 10 + j + 1}"][1] for j in range(10)) / 10
+                for i in range(7)]
+TAB70_GP64 = [11.7, 14.9, 16.0, 17.6, 21.9, 11.3, 13.1]
+for c, (v_tex, v_dat) in enumerate(zip(TAB70_GP64, _gp64_clases)):
+    check(f"tab:seventy GP-64 clase {c + 1} (texto {v_tex})", v_tex, v_dat)
+check("tab:seventy GP con 64 sobre las 70 (texto 15.2)", 15.2,
+      sum(v[1] for v in _gp_bon.values()) / 70)
+check("el B=1 del brazo muestreado ES la pasada publicada", 17.7142,
+      sum(v[0] for v in _gp_bon.values()) / 70, tol=0.006)
+# centinela: el greedy de las TRES semillas desplegadas, que ya no es
+# lo que reporta tab:seventy (ahora van la media de 30 y el campeon)
+check("centinela: greedy de las 3 desplegadas (era 19.4)", 19.4,
+      sum(gre[ta] for ta in _gp) / 70)
+
+# el enfrentamiento simetrico, treinta artefactos contra treinta, que
+# escribe scripts/enfrenta_gp_treinta.py
+_enf_j = "benchmarks/ext30/enfrentamiento70.json"
+if not os.path.exists(_enf_j):
+    pendiente("enfrentamiento simetrico", "sin enfrentamiento70.json")
+else:
+    import json as _jenf
+    _enf = _jenf.load(open(_enf_j, encoding="utf-8"))
+    for _k, _ma, _mb, _gana, _med, _p in [
+            ("1pass_media", 19.82, 18.99, 26, 0.72, 0.006),
+            ("1pass_elegido", 18.49, 17.71, 26, 1.06, 0.028),
+            ("bo64_elegido", 15.02, 15.21, 36, -0.13, 0.629),
+            ("bo1024_elegido", 13.25, 13.85, 42, -0.57, 0.028)]:
+        _e = _enf[_k]
+        check(f"6.2 {_k}: politica (texto {_ma})", _ma, _e["media_a"],
+              tol=0.006)
+        check(f"6.2 {_k}: GP (texto {_mb})", _mb, _e["media_b"], tol=0.006)
+        check_exacto(f"6.2 {_k}: gana en {_gana} de 70",
+                     _e["gana_a"] == _gana, f"{_e['gana_a']}/70")
+        # las medianas ya no se imprimen (sintesis de 6.2, 2026-08-14):
+        # quedan como centinela del dato
+        check(f"centinela {_k}: mediana {_med:+.2f}", _med,
+              _e["mediana_dif"], tol=0.006)
+        check(f"6.2 {_k}: p (texto {_p})", _p, _e["p"], tol=0.0006)
+
+# las filas de la tabla: media de las 30 evoluciones por clase
+_gp30_j = "benchmarks/ext30/gp30_por_clase.json"
+if not os.path.exists(_gp30_j):
+    pendiente("media de las 30 evoluciones por clase", "sin gp30_por_clase")
+else:
+    import json as _jgp
+    _gp30 = _jgp.load(open(_gp30_j, encoding="utf-8"))
+    check_exacto("tab:seventy: 30 evoluciones en el deposito publicado",
+                 _gp30["n"] == 30, str(_gp30["n"]))
+    # las medias por clase de las 30 evoluciones salieron de la tabla
+    # con la sintesis de 6.2 (2026-08-14): quedan como centinelas
+    for _c, _v in zip(["tai15_15", "tai20_15", "tai20_20", "tai30_15",
+                       "tai30_20", "tai50_15", "tai50_20"],
+                      [18.1, 18.0, 20.9, 21.4, 25.7, 13.7, 15.1]):
+        check(f"centinela GP-media30 {_c}", _v, _gp30["por_clase"][_c])
+    check("6.2: GP-media30 global (texto 18.99)", 18.99,
+          _gp30["media_global"], tol=0.006)
+    # la dispersion de las dos familias, que 6.3 comparaba
+    check("6.3: sd de las 30 evoluciones sobre las 70 (1.33)", 1.33,
+          _gp30["sd"], tol=0.006)
+
+# las filas de la politica: media de 30 y campeon a los tres presupuestos
+_r70_tab = "benchmarks/ext30/resumen70_una_pasada.json"
+if os.path.exists(_r70_tab):
+    import json as _jr70
+    _j = _jr70.load(open(_r70_tab, encoding="utf-8"))
+    for _c, _m, _k in zip(["tai15_15", "tai20_15", "tai20_20", "tai30_15",
+                           "tai30_20", "tai50_15", "tai50_20"],
+                          [17.4, 18.6, 19.9, 21.8, 26.6, 16.1, 18.4],
+                          [15.0, 17.4, 17.7, 21.4, 24.7, 16.1, 17.1]):
+        check(f"centinela POL-media30 {_c}", _m,
+              _j["por_clase_media_30"][_c])
+        check(f"tab:seventy POL-campeon {_c} (texto {_k})", _k,
+              _j["por_clase_campeon"][_c])
+    # 6.2: el deficit del campeon a una pasada vive en las dos clases
+    # grandes (texto: pierde por 2.3 y 2.5 puntos)
+    check("6.2: campeon pierde 2.3 en 50x15 (texto)", 2.3,
+          _j["por_clase_campeon"]["tai50_15"] - _gp_clases[5], tol=0.06)
+    check("6.2: campeon pierde 2.5 en 50x20 (texto)", 2.5,
+          _j["por_clase_campeon"]["tai50_20"] - _gp_clases[6], tol=0.06)
+    # las conclusiones y la tabla citan el mayor presupuesto (13.2; el
+    # 13.3 que estuvo un dia en la tabla era un redondeo mal hecho de
+    # 13.248 que este check descubrio)
+    if "bo1024" in _j.get("campeon_muestreado", {}):
+        check("8 y tab:seventy: la politica a 1024 (texto 13.2)", 13.2,
+              _j["campeon_muestreado"]["bo1024"]["global"], tol=0.051)
+    _cm = _j["campeon_muestreado"]
+    for _etq, _fila in (("bo64", [10.7, 12.8, 14.1, 17.6, 22.3, 12.8, 14.8]),
+                        ("bo1024", [9.3, 11.2, 12.2, 15.6, 19.9, 10.9,
+                                    13.7])):
+        for _c, _v in zip(["tai15_15", "tai20_15", "tai20_20", "tai30_15",
+                           "tai30_20", "tai50_15", "tai50_20"], _fila):
+            check(f"tab:seventy campeon {_etq} {_c} (texto {_v})", _v,
+                  _cm[_etq]["por_clase"][_c])
+try:
+    from scipy import stats as _st
+except ImportError:
+    pendiente("Wilcoxon frente al GP", "sin scipy")
+
+# la fila de medias de tab:classics
+_med_tex = [40.6, 30.1, 17.9, 12.4, 11.1, 9.8, 6.4, 5.8, 5.5]
+_med_dat = [
+    sum(_est12.values()) / 12,
+    sum(float(c["gt"]) for c in _clas.values()) / 12,
+    sum(float(c["gp"]) for c in _clas.values()) / 12,
+    sum(sum(v) / len(v) for v in _pol12.values()) / 12,
+    sum(min(v) for v in _pol12.values()) / 12,
+    sum(float(c["GA"]) for c in _clas.values()) / 12,
+    sum(float(c["ABCE3"]) for c in _clas.values()) / 12,
+    sum(float(c["fEABC"]) for c in _clas.values()) / 12,
+    sum(float(c["ESABC"]) for c in _clas.values()) / 12,
+]
+_mal_med = sum(abs(a - b) > 0.051 for a, b in zip(_med_tex, _med_dat))
+check_exacto("la fila de medias de tab:classics", _mal_med == 0,
+             f"{_mal_med} mal")
+
+print("\n== apendice por instancia ==")
+# la tabla por instancia vive en el Online Resource 1 desde 2026-08-15
+_blk = SUP[SUP.index("\\label{sup:tab-perinstance}"):]
+_blk = _blk[_blk.index("\\midrule"):_blk.index("\\bottomrule")]
+_n = len(re.findall(r"TA\d+ & \d+ &", _blk))
+check_exacto("filas del apendice: 70/70", _n == 70, f"{_n}/70")
+# y sus columnas coinciden con las fuentes, no solo su numero
+_filas = {m[0]: m[1:] for m in re.findall(
+    r"(TA\d+) & \d+ & ([\d.]+) & ([\d.]+) & ([\d.]+) & ([\d.]+) & ([\d.]+)",
+    _blk)}
+# las dos columnas de politica son las del ARTEFACTO SELECCIONADO,
+# como tab:seventy, no la media de las tres desplegadas ni el bo1024
+# repartido entre sus tres puntos de control (protocolo anterior)
+_camp_ap = __import__("json").load(
+    open("benchmarks/ext30/campeon.json", encoding="utf-8"))["campeon"]
+_pol_ap, _bo_ap = {}, {}
+for _r in __import__("csv").DictReader(
+        open("benchmarks/eval70_diez_semillas.csv", encoding="utf-8")):
+    if int(_r["seed"]) == _camp_ap:
+        _pol_ap[ta_de(_r["instance"])] = float(_r["re_greedy"])
+for _f in sorted(glob.glob("benchmarks/ext30/eval70_greedy_*.csv")):
+    for _r in __import__("csv").DictReader(open(_f, encoding="utf-8")):
+        if int(_r["seed"]) == _camp_ap:
+            _pol_ap[ta_de(_r["instance"])] = float(_r["re_greedy"])
+for _f in sorted(glob.glob("benchmarks/ext30/camp_bo1024_*.csv")):
+    for _r in __import__("csv").DictReader(open(_f, encoding="utf-8")):
+        _bo_ap[ta_de(_r["instance"])] = float(_r["re_bo"])
+_mal = 0
+for ta, celdas in _filas.items():
+    reales = (est_pi[ta], GT_RE[ta], _gp[ta], _pol_ap[ta], _bo_ap[ta])
+    for v_tex, v_dat in zip(celdas, reales):
+        if abs(float(v_tex) - v_dat) > 0.051:
+            _mal += 1
+check_exacto(f"las {len(_filas) * 5} celdas del apendice", _mal == 0,
+             f"{_mal} mal")
+# y la columna de cotas, que es el denominador de todas las demas
+_lbs = dict(re.findall(r"(TA\d+) & (\d+) &", _blk))
+_mal_lb = [ta for ta, v in _lbs.items() if int(v) != LB[ta]]
+check_exacto("las 70 cotas inferiores del apendice", not _mal_lb,
+             str(_mal_lb[:5]))
+
+
+print("\n== delimitacion de la conciencia intervalar ==")
+
+# 7.5 afirma que NINGUN componente de recompensa lee la cota inferior
+# salvo en la rama de lambda. Es la premisa de todo el argumento, asi
+# que se comprueba contra el codigo y no contra la memoria: si alguien
+# anade un componente que use .lower, la afirmacion deja de ser cierta
+# y hay que enterarse aqui, no en la revision.
+_comp = glob.glob("jobshop_rl/rewards/components/*.py")
+check_exacto("hay 6 componentes de recompensa mas __init__",
+             len(_comp) == 8, f"{len(_comp)} ficheros")
+_con_lower = {}
+for _p in _comp:
+    _src = open(_p, encoding="utf-8").read()
+    # se ignoran comentarios y docstrings: lo que importa es el codigo
+    _codigo = re.sub(r'""".*?"""', "", _src, flags=re.S)
+    _codigo = "\n".join(l for l in _codigo.splitlines()
+                        if not l.strip().startswith("#"))
+    _n = _codigo.count(".lower")
+    if _n:
+        _con_lower[os.path.basename(_p)] = _n
+check_exacto("solo makespan.py lee la cota inferior",
+             list(_con_lower) == ["makespan.py"], str(_con_lower))
+# y ese unico .lower vive dentro del if de lambda: se comprueba sobre el
+# codigo sin docstrings, donde el env var aparece una sola vez
+_ms = open("jobshop_rl/rewards/components/makespan.py",
+           encoding="utf-8").read()
+_ms_cod = re.sub(r'""".*?"""', "", _ms, flags=re.S)
+_i = _ms_cod.index("DEEPLJSP_V2_LAMBDA")
+_j = _ms_cod.index(".lower", _i)
+check_exacto("y ese unico .lower esta dentro de la rama de lambda",
+             0 < _j - _i < 200 and "if lam" in _ms_cod[_i:_j],
+             f"{_j - _i} caracteres tras el env var")
+
+# Los pesos del reward se verifican mas abajo por la RUTA REAL
+# (main.py -> factory -> AdaptiveRewardStrategy); el check que
+# vivia aqui recomputaba el generador AdaptiveConfigGenerator,
+# una ruta que el punto de entrada batch anula (R2-1).
+# El bonus terminal (rampa bajo el 5% de gap) existe en el codigo pero
+# se omite del texto porque nunca se activo: el mejor episodio de todo
+# el entrenamiento quedo al 19.5% de LBi (medido el 2026-08-13 sobre
+# los logs de las siete semillas ext-c). Se comprueba que sigue asi.
+try:
+    import csv as _csv
+    sys.path.insert(0, ".")
+    from jobshop_rl.data import PROBLEM_REGISTRY as _REG
+    _g_min = 1e9
+    for _k in range(1, 5):
+        _pd = _REG[f"int__tai20_15_{_k:02d}"]()
+        _cg, _durs, _seqs = {}, _pd["durations"], _pd["sequences"]
+        for _j, _fila in enumerate(_durs):
+            for _kk, _d in enumerate(_fila):
+                _mu = _seqs[_j][_kk]
+                _cg[_mu] = _cg.get(_mu, 0) + float(_d.upper)
+        _lbi = max(max(_cg.values()),
+                   max(sum(float(_d.upper) for _d in _fila)
+                       for _fila in _durs))
+        for _f in glob.glob(
+                "outputs/bench_v2-full-1000ep-ext-c__*_seed*/"
+                f"INT__TAI20_15_{_k:02d}.F.15_01_INTERVAL_training_log.csv"):
+            for _r in _csv.DictReader(open(_f)):
+                _v = (float(_r["best_makespan_upper"]) - _lbi) / _lbi
+                if _v < _g_min:
+                    _g_min = _v
+    check_exacto("4.1: bonus terminal omitido por inactivo "
+                 "(gap minimo entrenado > 5%)", _g_min > 0.05,
+                 f"gap minimo {_g_min * 100:.1f}%")
+except Exception as _e:
+    pendiente("bonus terminal inactivo", f"{type(_e).__name__}: {_e}")
+# 4.1 afirma que el makespan proyectado en caso peor nunca baja, de
+# modo que la mejora local nunca premia y la rama kappa=2 es la
+# unica que llega a aplicarse. Se mide sobre episodios al azar del
+# propio entorno en vez de darlo por razonado
+try:
+    import random as _rnd
+    from jobshop_rl.experiments.factory import (
+        EnvironmentFactory as _EF)
+    from jobshop_rl.models.interval import Interval as _Iv
+    _r = _rnd.Random(7)
+    _sube = _baja = 0
+    for _pid in [f"int__tai20_15_{_k:02d}" for _k in (1, 2)]:
+        for _ep in range(6):
+            _env = _EF.create_from_problem_id(_pid, 'basic', seed=_ep)
+            _env.reset()
+            _prev = None
+            while _env.eligible_ops:
+                _env.step(_r.randrange(len(list(_env.eligible_ops))))
+                _cur = max(float(_c.upper)
+                           if isinstance(_c, _Iv) else float(_c)
+                           for _c in _env.machine_completion_time)
+                if _prev is not None:
+                    if _cur > _prev:
+                        _sube += 1
+                    elif _cur < _prev:
+                        _baja += 1
+                _prev = _cur
+    check_exacto('4.1: el makespan proyectado nunca baja '
+                 '(la mejora local nunca premia)',
+                 _baja == 0 and _sube > 0,
+                 f'{_sube} subidas, {_baja} bajadas')
+except Exception as _e:                                  # noqa: BLE001
+    pendiente('monotonia de M^U', f'{type(_e).__name__}: {_e}')
+_li = open("jobshop_rl/rewards/components/local_improvement.py",
+           encoding="utf-8").read()
+check_exacto("4.1: deterioros penalizados x2 (codigo)",
+             "* 2.0" in _li)
+# Escala del balance: el texto la da como 1.5 x desviacion tipica de
+# las cargas en caso peor (se explicito el 2026-08-13 tras la revision
+# externa r1, que la senalo como irreproducible)
+_ba = open("jobshop_rl/rewards/components/balance.py",
+           encoding="utf-8").read()
+check_exacto("4.1: escala de balance = 1.5 x sd de cargas (codigo)",
+             "np.std(load_values) * 1.5" in _ba)
+check_exacto("4.1: la carga de balance usa el extremo superior",
+             "load_values.append(load.upper)" in _ba)
+# Parametros de un bloque de atencion: h=128, 4 cabezas de 32,
+# feed-forward 128->256->128, dos LayerNorm. La cifra del texto debe
+# salir de esas dimensiones y no de una medida suelta.
+_h, _ff = 128, 256
+_qkv = 3 * (_h * _h + _h)
+_out = _h * _h + _h
+_ffn = (_h * _ff + _ff) + (_ff * _h + _h)
+_ln = 2 * 2 * _h
+check("4.4: parametros por bloque de atencion (texto 132480)",
+      132480, _qkv + _out + _ffn + _ln, tol=0.5)
+# El .tex no debe contener caracteres de control colados por escapes
+# de Python: un \r dentro de \ref rompio una referencia de la seccion 2
+# sin que LaTeX diera error (revision externa r1, arreglado)
+_tex_b = open("paper_eswa/main.tex", "rb").read()
+check_exacto("tex: sin caracteres de control anomalos",
+             not any(c < 32 and c not in (9, 10, 13) for c in _tex_b))
+check_exacto("tex: sin comandos LaTeX rotos (ef{, egin{, rac{)",
+             not re.search(r"(?<![\\A-Za-z])(ef|egin|rac|ext)\{",
+                           open("paper_eswa/main.tex", encoding="utf-8").read()))
+# La campana de treinta semillas y la eleccion del campeon SOBRE
+# VALIDACION (5.4). El json lo escribe scripts/elige_campeon.py desde
+# los CSV de benchmarks/ext30/, evaluados todos con el mismo evaluador
+# y las mismas semillas de evaluacion.
+_camp_j = "benchmarks/ext30/campeon.json"
+if not os.path.exists(_camp_j):
+    pendiente("campeon de las 30 semillas", "sin campeon.json")
+else:
+    import json as _json
+    import statistics as _stc
+    _cj = _json.load(open(_camp_j, encoding="utf-8"))
+    _cv = [r["bo64"] for r in _cj["ranking"]]
+    # el apartado con la dispersion de las 30 se retiro del texto
+    # (2026-08-15, peticion del autor): quedan como centinelas del dato,
+    # y la definicion de "la politica reportada" vive en dos frases de
+    # Training and inference
+    check_exacto("5.4: treinta semillas en el ranking", len(_cv) == 30,
+                 f"{len(_cv)}")
+    check_exacto("5.4: la politica reportada es la semilla 5",
+                 _cj["campeon"] == 5, f"semilla {_cj['campeon']}")
+    check("centinela: mejor de las 30 en validacion (12.77)", 12.77,
+          min(_cv), tol=0.006)
+    check("centinela: peor de las 30 (15.25)", 15.25, max(_cv), tol=0.006)
+    check("centinela: sd de las 30 (0.60)", 0.60, _stc.stdev(_cv),
+          tol=0.006)
+    check("centinela: recorrido de las 30 (2.48)", 2.48,
+          max(_cv) - min(_cv), tol=0.006)
+    check("centinela: la elegida bajo la mediana (1.12)", 1.12,
+          _stc.median(_cv) - min(_cv), tol=0.006)
+    check_exacto("5.4: la politica se elige en validacion, no en las 70",
+                 "TA15-TA20" in _cj["criterio"], _cj["criterio"])
+    check_exacto("5.4: el texto define la politica reportada",
+                 "the lowest mean\nRE on the validation instances" in TEX
+                 or "lowest mean RE on the validation instances"
+                 in " ".join(TEX.split()))
+
+# Las 30 semillas sobre las 70: las dos lecturas simetricas frente al
+# estudio del GP. Lo escribe scripts/resume_70_treinta.py fusionando el
+# greedy de las tres procedencias (comparable entre si porque el greedy
+# es determinista) y los carriles del campeon.
+_r70 = "benchmarks/ext30/resumen70_una_pasada.json"
+if not os.path.exists(_r70):
+    pendiente("las 30 sobre las 70", "sin resumen70_una_pasada.json")
+else:
+    import json as _json70
+    _j70 = _json70.load(open(_r70, encoding="utf-8"))
+    check_exacto("6.2: treinta semillas completas sobre las 70",
+                 _j70["n"] == 30, str(_j70["n"]))
+    check("6.2: media de las 30 a una pasada (texto 19.82)", 19.82,
+          _j70["media_30"], tol=0.006)
+    check("6.2: sd de las 30 sobre las 70 (texto 1.29)", 1.29,
+          _j70["sd_30"], tol=0.006)
+    check("6.2: el campeon a una pasada (texto 18.49)", 18.49,
+          _j70["campeon_re"], tol=0.006)
+    # El paper NO argumenta ya sobre el conjunto en que cada estudio
+    # selecciona su artefacto: el autor confirma que en el estudio del
+    # GP seleccionar sobre las 70 devuelve la misma regla, de modo que
+    # no hay sesgo que cuantificar. Estas dos cifras quedan como
+    # centinelas del dato, sin aparecer en el texto.
+    check("centinela: la mejor tirada sobre test da 18.06", 18.06,
+          _j70["mejor_en_test"], tol=0.006)
+    check_exacto("centinela: la tirada elegida queda 5a de 30 sobre test",
+                 _j70["puesto_campeon_en_test"] == 5,
+                 str(_j70["puesto_campeon_en_test"]))
+    check_exacto("6.2: no argumenta sobre el conjunto de seleccion",
+                 "18.06" not in TEX and "denies itself" not in TEX)
+    if "bo64" in _j70.get("campeon_muestreado", {}):
+        check("6.2: el campeon a 64 muestras (texto 15.02)", 15.02,
+              _j70["campeon_muestreado"]["bo64"]["global"], tol=0.006)
+    else:
+        pendiente("campeon a 64 muestras", "carriles sin terminar")
+    if "bo1024" in _j70.get("campeon_muestreado", {}):
+        check_exacto("6.2: el campeon a 1024 muestras existe", True,
+                     f"{_j70['campeon_muestreado']['bo1024']['global']:.2f}")
+    else:
+        pendiente("campeon a 1024 muestras", "carriles en curso")
+
+# El deposito propio: la declaracion de datos cita el DOI de CONCEPTO
+# (21970431), que resuelve siempre a la ultima version. Versiones:
+# v1 = 21970432 (2026-08-16), v2 = 22010213 (2026-08-19, con barrido y
+# curva a diez semillas e instancias)
+check_exacto("declaracion de datos: cita el deposito propio",
+             "DiazDRLDataset2026" in TEX
+             and "10.5281/zenodo.21970431" in open(
+                 "paper_eswa/refs.bib", encoding="utf-8").read())
+# el deposito propio es la UNICA fuente que la declaracion cita desde
+# 2026-08-18: instancias incluidas, sin remitir al deposito GP ni a
+# GitHub
+check_exacto("declaracion de datos: solo el deposito propio",
+             "github.com" not in TEX
+             and "DiazDataset2026" not in TEX
+             and "The benchmark instances, the code," in TEX)
+
+
+# =========================================================================
+print("\n== codigo vs texto: lo que la revision Codex destapo (2026-08-25) ==")
+# La leccion: 800 checks numericos no vigilaban que el TEXTO describiera
+# el CODIGO. Estos si. Fuentes: paper/revisiones/2026-08-25_*.md.
+
+# (1) El regimen de transferencia real: cada bloque arranca del mejor
+# bloque previo por makespan BRUTO; en 26 de 30 tiradas TA14 arranco de
+# TA12, y TA14 gano en las 30 (el artefacto es su red final)
+_rotas, _gana14, _tot = 0, 0, 0
+for _d in sorted(glob.glob("outputs/bench_v2-full-1000ep*")):
+    if "ext__" in _d or "ext-b" in _d:
+        continue
+    try:
+        _fs = list(__import__("csv").DictReader(
+            open(_d + "/training_summary.csv", encoding="utf-8")))
+    except OSError:
+        continue
+    if len(_fs) != 4:
+        continue
+    _tot += 1
+    _mk = [float(r["best_makespan"]) for r in _fs]
+    if min(range(3), key=lambda i: _mk[i]) != 2:
+        _rotas += 1
+    if min(range(4), key=lambda i: _mk[i]) == 3:
+        _gana14 += 1
+if _tot != 30:
+    pendiente("regimen de transferencia", f"{_tot} tiradas")
+else:
+    check_exacto("5.4: TA14 arranca de TA12 en 26 de 30 (texto)",
+                 _rotas == 26 and "in 26 of the 30 runs" in TEX,
+                 f"{_rotas}/30")
+    check_exacto("5.4: TA14 es el mejor bloque en las 30 (texto)",
+                 _gana14 == 30 and "in all 30 runs" in TEX,
+                 f"{_gana14}/30")
+    check_exacto("5.4: el texto declara el regimen y el artefacto reales",
+                 "best block so far" in TEX
+                 and "lowest raw" in TEX
+                 and "are tracked during training but are not the" in TEX
+                 and "the stored weights are the" not in TEX)
+
+# (2) La semantica del idle: la resta intervalar hace que el peor caso
+# del hueco lea el extremo INFERIOR de la maquina, y 4.1 lo imprime
+from jobshop_rl.models.interval import Interval as _Iv
+_res = (_Iv(5, 9) - _Iv(2, 4))
+check_exacto("4.1: la resta intervalar da s^U - c^L en el upper",
+             float(_res.upper) == 9 - 2,
+             f"upper={_res.upper}")
+check_exacto("4.1: el texto imprime el idle implementado (c^L)",
+             "s^{U}_{o_{jk}}-c^{L}_{\\mu}" in TEX
+             and "reads the machine's" in TEX)
+check_exacto("7.3: el canal del extremo inferior se declara",
+             "does\nexist" in TEX or "does exist" in " ".join(TEX.split()))
+
+# (3) Los pesos de la recompensa por la RUTA REAL (R2-1, revision del
+# 2026-08-25): run_benchmark.py -> main.py --mode batch pasa un vector
+# explicito que anula el generador; AdaptiveRewardStrategy reajusta el
+# balance por instancia. Se reproduce la cadena entera, no una ruta
+# plausible: el vector se extrae del propio main.py.
+try:
+    _src = open("jobshop_rl/main.py", encoding="utf-8").read()
+    # el dict del modo batch (el de las campanas), no el del modo single
+    _src = _src[_src.index("def run_batch_experiment"):]
+    _m = re.search(r"reward_params = \{(.*?)\}", _src, re.S)
+    _entrada = dict(re.findall(r'"(\w+)":\s*([\d.]+)', _m.group(1)))
+    _entrada = {k: float(v) for k, v in _entrada.items()}
+    check_exacto("4.1: main.py entrega el vector explicito (ba 0.15)",
+                 _entrada == {"makespan_weight": 1.0, "idle_weight": 0.15,
+                              "critical_weight": 0.05,
+                              "balance_weight": 0.15,
+                              "progress_weight": 0.05,
+                              "local_improvement_weight": 0.3})
+    import os as _os
+    _os.environ.pop("DEEPLJSP_REWARD_WEIGHTS", None)
+    from jobshop_rl.data import PROBLEM_REGISTRY as _REG
+    from jobshop_rl.utils.problem_analyzer import ProblemAnalyzer as _PA
+    from jobshop_rl.rewards.strategies.adaptive import (
+        AdaptiveRewardStrategy as _ARS)
+    _efectivos = []
+    for _pid in [f"int__tai20_15_{k:02d}" for k in (1, 2, 3, 4)]:
+        _pr = _REG[_pid]()
+        _pa = _PA.analyze_problem(_pr["sequences"], _pr["durations"])
+        _s = _ARS(problem_analysis=_pa, **_entrada)
+        _efectivos.append(tuple(_s.weights[k] for k in (
+            "makespan_weight", "idle_weight", "critical_weight",
+            "balance_weight", "progress_weight",
+            "local_improvement_weight")))
+    _esper = (1.0, 0.15, 0.05, 0.1, 0.05, 0.3)
+    check_exacto("4.1: efectivos (1,.15,.05,.10,.05,.30) en TA11-14",
+                 all(_e == _esper for _e in _efectivos),
+                 str(sorted(set(_efectivos))))
+    # los efectivos se imprimen en la fila de tab:reward
+    _tabla = re.sub(r"\s+", " ", TEX)
+    _filas = [("mk", "1.00"), ("pr", "0.05"),
+              ("id", "0.15"), ("li", "0.30"),
+              ("cr", "0.05"), ("ba", "0.10")]
+    _faltan = [_c for _c, _w in _filas
+               if f"({_c}) & ${_w}$ &" not in _tabla]
+    check_exacto("4.1: tab:reward imprime los efectivos",
+                 not _faltan, str(_faltan))
+    check_exacto("4.1: el texto declara el reajuste del balance",
+                 "nominally $0.15$" in TEX
+                 and "the generator is bypassed" in TEX)
+except Exception as _e:
+    pendiente("pesos ruta real", f"{type(_e).__name__}: {_e}")
+
+# (4) M5: la seleccion de la regla GP sobre validacion elige la misma
+_val6 = {f"int__tai20_15_{k:02d}" for k in range(5, 11)}
+_pv, _p70 = {}, {}
+for r in __import__("csv").DictReader(
+        open("benchmarks/reevo_fixedfit/summary.csv", encoding="utf-8")):
+    if not r["method"].startswith("gp_tuned"):
+        continue
+    _p70.setdefault(r["method"], []).append(float(r["re"]))
+    if r["instance"] in _val6:
+        _pv.setdefault(r["method"], []).append(float(r["re"]))
+_mv = {m: sum(v) / 6 for m, v in _pv.items() if len(v) == 6}
+_regla_val = min(_mv, key=_mv.get)
+_orden = sorted(_mv.values())
+check_exacto("6.2: la seleccion en validacion da la misma regla",
+             _regla_val == "gp_tuned_seed1"
+             and abs(_orden[0] - 17.45) < 0.005
+             and abs(_orden[1] - 18.13) < 0.005
+             and "$17.45\\%$" in TEX and "$18.13\\%$" in TEX,
+             f"{_regla_val}: {_orden[0]:.2f} vs {_orden[1]:.2f}")
+
+# (5) La figura 2 declara su eje real
+check_exacto("fig 2: el pie dice peor caso, no RE del punto medio",
+             "worst-case gap to" in TEX
+             and "not the midpoint RE" in TEX)
+check_exacto("fig 2: el script etiqueta el eje como peor caso",
+             'worst-case gap' in open(
+                 "scripts/make_training_curve_figure.py",
+                 encoding="utf-8").read())
+
+
+# =========================================================================
+print("\n== conformidad con ESWA (guia para autores, 2026-10) ==")
+# ESWA no fija limite de paginas; se informa para seguirlo
+if os.path.exists("paper_eswa/main.log"):
+    _mp = re.search(r"Output written on .*\((\d+) pages",
+                    open("paper_eswa/main.log", encoding="utf-8",
+                         errors="replace").read())
+    check_exacto("ESWA: el manuscrito compila (sin limite de paginas)",
+                 _mp is not None, f"{_mp.group(1) if _mp else '?'} paginas")
+# la declaracion de IA es obligatoria y va antes de las referencias
+check_exacto("ESWA: seccion de declaracion de IA presente",
+             "Declaration of generative AI" in TEX
+             and TEX.index("Declaration of generative AI")
+             < TEX.index("\\bibliography{refs}"))
+# los highlights: de 3 a 5 puntos de <=85 caracteres
+if os.path.exists("paper_eswa/highlights.tex"):
+    _hl = re.findall(r"\\item (.+)", open("paper_eswa/highlights.tex",
+                                            encoding="utf-8").read())
+    check_exacto("ESWA: de 3 a 5 highlights", 3 <= len(_hl) <= 5,
+                 f"{len(_hl)}")
+    check_exacto("ESWA: highlights de 85 caracteres o menos",
+                 all(len(h.strip()) <= 85 for h in _hl),
+                 f"max {max(len(h.strip()) for h in _hl)}")
+else:
+    pendiente("ESWA highlights", "sin paper_eswa/highlights.tex")
+# la title page lleva la financiacion y el CRediT: el manuscrito es anonimo
+if os.path.exists("paper_eswa/title_page.tex"):
+    _tp = open("paper_eswa/title_page.tex", encoding="utf-8").read()
+    check_exacto("ESWA: title page con beca y CRediT",
+                 "PID2022-141746OB-I00" in _tp and "CRediT" in _tp
+                 and "diazhernan@uniovi.es" in _tp)
+else:
+    pendiente("ESWA title page", "sin paper_eswa/title_page.tex")
+
+# =========================================================================
+print("\n== la clave de retencion del best-of-N (revision r3) ==")
+# evaluate_policy retenia por el extremo superior y rompia empates por
+# orden de aparicion; corregido a la clave (U, L) de la Eq. (3), con
+# regresion en tests/test_seleccion_lexicografica.py. Aqui se guarda
+# cuanto habria cambiado, medido sobre el deposito de la curva.
+_CR = "benchmarks/curva_intervalo/clave_retencion.json"
+if not os.path.exists(_CR):
+    pendiente("clave de retencion", "sin clave_retencion.json")
+else:
+    _cr = json.load(open(_CR, encoding="utf-8"))
+    check_exacto("la eleccion difiere en menos del 2% de los sorteos",
+                 _cr["pct_que_difieren"] < 2.0,
+                 f"{_cr['pct_que_difieren']}% de {_cr['sorteos']}")
+    check_exacto("el efecto en RE es menor que una centesima de punto",
+                 0 <= _cr["delta_re_medio"] < 0.01,
+                 f"{_cr['delta_re_medio']:+.4f} puntos")
+    _src = open("jobshop_rl/agents_v2/agent.py", encoding="utf-8").read()
+    check_exacto("agent.py retiene por (upper, lower) con lambda=0",
+                 "_clave_retencion" in _src
+                 and "(float(m.upper), float(m.lower))" in _src)
+    check_exacto("el rastreador usa el componente a componente por defecto",
+                 "max_time = final_makespan(" in _src
+                 and _src.index("DEEPLJSP_V2_LEGACY_TRACKING")
+                 < _src.index("max_time = max(self.env"))
+    check_exacto("la semantica historica vive tras su bandera",
+                 "DEEPLJSP_V2_LEGACY_TRACKING" in
+                 open("README.md", encoding="utf-8").read())
+
+# =========================================================================
+print("\n== 6.2 sobre las 60 no vistas, por tamano (revision r4) ==")
+# el contraste agregado de las 70 incluye las diez de entrenamiento y
+# validacion de AMBAS familias; el de las 60 restantes esconde una
+# cancelacion entre dos regimenes de tamano opuestos
+_NV = "benchmarks/ext30/no_vistas.json"
+if not os.path.exists(_NV):
+    pendiente("no vistas por tamano", "sin no_vistas.json")
+else:
+    _nv = json.load(open(_NV, encoding="utf-8"))
+    _s, _p, _g = (_nv["sesenta_no_vistas"], _nv["hasta_30x20"],
+                  _nv["cincuenta_xN"])
+    check_exacto("las 60 no vistas excluyen la clase 20x15",
+                 _s["bo64_elegido"]["n"] == 60
+                 and _p["bo64_elegido"]["n"] == 40
+                 and _g["bo64_elegido"]["n"] == 20)
+    check("6.2: una pasada sobre las 60, elegido (texto 18.68)", 18.68,
+          _s["1pass_elegido"]["media_politica"], tol=0.006)
+    check("6.2: p de una pasada sobre las 60 (texto 0.034)", 0.0343,
+          _s["1pass_elegido"]["p"], tol=0.0006)
+    check("6.2: p a 64 sobre las 60 (texto 0.55)", 0.5512,
+          _s["bo64_elegido"]["p"], tol=0.0006)
+    check("6.2: p a 1024 sobre las 60 (texto 0.343)", 0.3430,
+          _s["bo1024_elegido"]["p"], tol=0.0006)
+    check("6.2: a 64 hasta 30x20 no separan (texto 0.14)", -0.60,
+          _p["bo64_elegido"]["dif_media"], tol=0.006)
+    check("6.2: ventaja a 1024 hasta 30x20 (texto 0.97)", -0.97,
+          _p["bo1024_elegido"]["dif_media"], tol=0.006)
+    check_exacto("6.2: hasta 30x20 empatan a 64 y separan a 1024",
+                 _p["bo64_elegido"]["p"] > 0.05
+                 and _p["bo1024_elegido"]["p"] < 0.005,
+                 f"{_p['bo64_elegido']['p']:.4f} y "
+                 f"{_p['bo1024_elegido']['p']:.4f}")
+    check_exacto("6.2: hasta 30x20 empatan a una pasada (texto 0.94)",
+                 _p["1pass_elegido"]["p"] > 0.9,
+                 f"{_p['1pass_elegido']['p']:.2f}")
+    check("6.2: deficit a una pasada en 50xN (texto 2.41)", 2.41,
+          _g["1pass_elegido"]["dif_media"], tol=0.006)
+    check("6.2: deficit a 64 en 50xN (texto 1.61)", 1.61,
+          _g["bo64_elegido"]["dif_media"], tol=0.006)
+    check("6.2: deficit a 1024 en 50xN (texto 0.99)", 0.99,
+          _g["bo1024_elegido"]["dif_media"], tol=0.006)
+    check_exacto("6.2: las tres de 50xN significativas (texto <=0.005)",
+                 all(_g[k]["p"] <= 0.005 for k in
+                     ("1pass_elegido", "bo64_elegido", "bo1024_elegido")))
+    check_exacto("6.2 y el abstract declaran la frontera de tamano",
+                 "$30{\\times}20$" in TEX
+                 and "the rule leads at" in TEX
+                 and "they differ significantly at every" not in TEX)
+
+# =========================================================================
+print("\n== 7.2: las dos curvas a presupuesto igualado ==")
+# la regla y la politica bajo el MISMO decodificador, cada una con su
+# pasada determinista mas B-1 muestras retenidas por (U, L)
+import collections as _col
+import csv as _csvmod
+_gpp, _gplb = _col.defaultdict(dict), {}
+for _r in sorted(glob.glob("benchmarks/gp_destacada/pool_*.csv")):
+    for _f in _csvmod.DictReader(open(_r, encoding="utf-8")):
+        _gpp[_f["instance"]][int(_f["sample_idx"])] = (float(_f["lo"]),
+                                                       float(_f["up"]))
+        _gplb[_f["instance"]] = float(_f["lb"])
+check_exacto("7.2: el pool del GP cubre las 70 con 1024 rollouts",
+             len(_gpp) == 70
+             and all(len(v) == 1024 for v in _gpp.values()),
+             f"{len(_gpp)} instancias")
+
+
+def _gp_en(b):
+    _acc = []
+    for _i, _v in _gpp.items():
+        _lb = _gplb[_i]
+        _pool = [_v[0]] + [_v[_k] for _k in range(1, b)]
+        _m = min(_pool, key=lambda p: (p[1], p[0]))
+        _acc.append(((_m[0] + _m[1]) / 2 - _lb) / _lb * 100)
+    return sum(_acc) / len(_acc)
+
+
+_pol = json.load(open("benchmarks/curva_intervalo/curva_intervalo.json",
+                      encoding="utf-8"))["por_presupuesto"]
+# la curva de la regla se reconstruye IGUAL que la de la politica,
+# como media de 200 subconjuntos, y su dispersion entre repeticiones
+# es la que fija hasta donde puede afinarse la comparacion
+import numpy as _np
+_rng72 = _np.random.RandomState(20260818)
+_nm = min(len(v) for v in _gpp.values()) - 1
+
+
+def _gp_curva(b, reps):
+    _out = []
+    for _ in range(reps):
+        _acc = []
+        for _i, _v in _gpp.items():
+            _lb = _gplb[_i]
+            if b == 1:
+                _m = _v[0]
+            else:
+                _ix = _rng72.choice(_nm, b - 1, replace=False)
+                _m = min([_v[0]] + [_v[int(_k) + 1] for _k in _ix],
+                         key=lambda p: (p[1], p[0]))
+            _acc.append(((_m[0] + _m[1]) / 2 - _lb) / _lb * 100)
+        _out.append(sum(_acc) / len(_acc))
+    return sum(_out) / len(_out), float(_np.std(_out)) if reps > 1 else 0.0
+
+
+_pol = json.load(open("benchmarks/curva_intervalo/curva_intervalo.json",
+                      encoding="utf-8"))["por_presupuesto"]
+_g1, _ = _gp_curva(1, 1)
+_g8, _sd8 = _gp_curva(8, 200)
+_g32, _sd32 = _gp_curva(32, 200)
+_g48, _sd48 = _gp_curva(48, 200)
+check("7.2: la regla arranca 1.8 por delante (texto)", 1.76,
+      _pol["1"]["media"] - _g1, tol=0.06)
+check("7.2: 0.54 por delante en B=8 (texto)", 0.54,
+      _pol["8"]["media"] - _g8, tol=0.08)
+check("7.2: 0.15 en B=32 (texto)", 0.15,
+      _pol["32"]["media"] - _g32, tol=0.08)
+check_exacto("7.2: la dispersion del GP ronda 0.11 (texto)",
+             0.06 <= max(_sd8, _sd32, _sd48) <= 0.16,
+             f"sd {_sd8:.3f}, {_sd32:.3f}, {_sd48:.3f}")
+check_exacto("7.2: desde B=48 la diferencia cae bajo la dispersion",
+             abs(_pol["48"]["media"] - _g48) < max(_sd48, 0.11)
+             and abs(_pol["32"]["media"] - _g32) > 0.10,
+             f"B=48: {_pol['48']['media'] - _g48:+.3f}")
+check_exacto("7.2 declara la paridad sin fijar un cruce exacto",
+             "parity with the" in TEX
+             and "cannot be located" in TEX
+             and "draws level at" not in TEX)
+
+# =========================================================================
+print("\n== 7.3: la frontera de lambda, diez semillas por brazo ==")
+_FR = "benchmarks/robust_lambda_fix/frontera_fix.json"
+if not os.path.exists(_FR):
+    pendiente("frontera de lambda", "sin frontera_fix.json")
+else:
+    _fr = json.load(open(_FR, encoding="utf-8"))
+    _mo, _pools = _fr["modos"], _fr["pools_por_brazo"]
+    check_exacto("7.3: los cinco brazos con sus 60 pools",
+                 all(_pools[a] == 60 for a in
+                     ("base", "lam0p5", "lam1", "lam2", "lam4")),
+                 str(sorted(_pools.items())))
+    check("7.3: ancho del brazo por defecto (texto 13.05)", 13.05,
+          _mo["propia"]["base"]["ancho"], tol=0.006)
+    check("7.3: ancho a lambda=1 desplegado (texto 11.98)", 11.98,
+          _mo["propia"]["lam1"]["ancho"], tol=0.006)
+    check("7.3: RE a lambda=1 desplegado (texto 15.22)", 15.22,
+          _mo["propia"]["lam1"]["re"], tol=0.006)
+    check("7.3: el extremo de la frontera (texto 11.07)", 11.07,
+          _mo["propia"]["lam4"]["ancho"], tol=0.006)
+    check("7.3: la subida de RE hasta lambda=4 (texto 3.86)", 3.86,
+          _mo["propia"]["lam4"]["re"] - _mo["propia"]["base"]["re"],
+          tol=0.006)
+    check_exacto("7.3: la frontera desplegada es monotona en las dos",
+                 all(_mo["propia"][a]["ancho"] > _mo["propia"][b]["ancho"]
+                     and _mo["propia"][a]["re"] < _mo["propia"][b]["re"]
+                     for a, b in zip(
+                         ("base", "lam0p5", "lam1", "lam2"),
+                         ("lam0p5", "lam1", "lam2", "lam4"))))
+    check_exacto("7.3: con criterio fijo, anchos entre 12.90 y 13.23",
+                 all(12.895 <= _mo["fija"][a]["ancho"] <= 13.235
+                     for a in ("lam0p5", "lam1", "lam2", "lam4")),
+                 ", ".join(f"{a}:{_mo['fija'][a]['ancho']:.2f}"
+                           for a in ("lam0p5", "lam1", "lam2", "lam4")))
+    check_exacto("7.3: ninguna diferencia de ancho es significativa",
+                 min(_mo["fija"][a]["p_ancho"] for a in
+                     ("lam0p5", "lam1", "lam2", "lam4")) >= 0.21,
+                 f"minimo p={min(_mo['fija'][a]['p_ancho']
+                 for a in ('lam0p5', 'lam1', 'lam2', 'lam4')):.2f}")
+    check_exacto("7.3: con criterio fijo, RE entre +0.20 y +0.54",
+                 all(0.195 <= _mo["fija"][a]["re"] - _mo["fija"]["base"]["re"]
+                     <= 0.545 for a in
+                     ("lam0p5", "lam1", "lam2", "lam4")))
+    check("7.3: el rerank termina en 11.04 de ancho (texto)", 11.04,
+          _mo["rerank"]["lam4"]["ancho"], tol=0.006)
+    check("7.3: y en 17.16 de RE (texto)", 17.16,
+          _mo["rerank"]["lam4"]["re"], tol=0.006)
+    check_exacto("7.3 imprime las cifras nuevas y no las viejas",
+                 "$11.07\\%$" in TEX and "$3.86$ points" in TEX
+                 and "$11.08\\%$" not in TEX
+                 and "post-hoc code review" not in TEX)
+
+# Marcadores \todo pendientes: se imprimen en rojo en el PDF (uno de
+# ellos llego a salir dentro de la bibliografia), asi que ninguno puede
+# sobrevivir al envio. Se listan en cada pasada hasta que desaparezcan.
+for _f in ("paper_eswa/main.tex", "paper_eswa/refs.bib"):
+    for _t in re.findall(r"(?<!newcommand\{)\\todo\{([^}]*)\}",
+                         open(_f, encoding="utf-8").read()):
+        pendiente(f"{_f}: marcador \\todo sin resolver", _t)
+# La tabla de posicionamiento del estado del arte (menor 17 de la
+# revision r1) se escribio y se retiro el mismo dia por decision del
+# autor: se repondra solo si un revisor la pide. El .log no debe traer
+# citas ni referencias sin resolver
+if os.path.exists("paper_eswa/main.log"):
+    _log = open("paper_eswa/main.log", encoding="utf-8",
+                errors="replace").read()
+    check_exacto("tex: sin citas ni referencias sin resolver",
+                 "undefined" not in _log.lower().replace(
+                     "undefined control", ""))
+else:
+    pendiente("log de compilacion", "sin paper_eswa/main.log (paquete)")
+
+# los numeros literales con que el suplementario cita al principal,
+# contrastados contra main.aux: si una renumeracion los mueve, esto
+# salta en vez de dejar el suplementario apuntando a la tabla equivocada
+if os.path.exists("paper_eswa/main.aux"):
+    _aux = open("paper_eswa/main.aux", encoding="utf-8",
+                errors="replace").read()
+
+    def _num_de(etiqueta):
+        _m = re.search(r"newlabel\{" + re.escape(etiqueta)
+                       + r"\}\{\{(\d+)\}", _aux)
+        return int(_m.group(1)) if _m else -1
+
+    for _etq, _num, _uso in [("tab:hyper", 6, "Table~6 of the paper"),
+                             ("eq:reward", 5, "Eq.~(5) of the paper"),
+                             ("fig:arch", 2, "Figure~2 of the paper"),
+                             ("tab:classics", 9, "Table~9 of")]:
+        check_exacto(f"sup cita {_etq} como numero {_num}",
+                     _num_de(_etq) == _num and _uso in SUP,
+                     f"aux dice {_num_de(_etq)}")
+else:
+    pendiente("citas literales del suplementario",
+              "sin paper_eswa/main.aux (paquete)")
+# el bloque de identidad vive SOLO en el principal (el suplementario
+# es anonimo: EAAI lo publica tal cual y la revision es doble anonima)
+check_exacto("identidad en el principal, suplementario anonimo",
+             "Department of Computing, University of Oviedo" in TEX
+             and "Universidad Europea de Madrid" in TEX
+             and "%<<IDENTIDAD" in TEX and "%IDENTIDAD>>" in TEX
+             and TEXSUP.count("diazhernan@uniovi.es") == 1
+             and "Oviedo" not in SUP)
+# dos autores: el manuscrito y la title page deben coincidir, y las
+# declaraciones ir en plural
+_tp = ("drl-eaai/title_page.tex" if os.path.exists("drl-eaai/title_page.tex")
+       else None)
+if _tp:
+    _tptxt = open(_tp, encoding="utf-8").read()
+    check_exacto("los dos autores, en el manuscrito y en la title page",
+                 all(x in TEX for x in ("Gil Ruiz",
+                                        "jesus.gil@universidadeuropea.es"))
+                 and all(x in _tptxt for x in ("Gil Ruiz",
+                                               "0000-0003-0675-2038")))
+    check_exacto("los dos ORCID en la title page",
+                 "0000-0003-2615-0042" in _tptxt
+                 and "0000-0003-0675-2038" in _tptxt
+                 and "pendiente de que el autor" not in _tptxt)
+    check_exacto("CRediT cubre a los dos autores",
+                 _tptxt.count("textbf{") == 2 and "CRediT" in _tptxt)
+    check_exacto("las declaraciones van en plural",
+                 "The authors have no competing" in TEX
+                 and "the authors used Claude" in TEX
+                 and "The author has no competing" not in TEX)
+else:
+    pendiente("autoria en la title page", "sin drl-eaai/")
+
+
+def _por_par(*tags):
+    """{(TA, semilla): RE} de una o varias campanas, componentwise.
+
+    Acepta varias porque los brazos extendidos viven en un tag propio:
+    v2-full-1000ep y v2-full-1000ep-ext-c son las mismas diez tiradas.
+    """
+    out = {}
+    for tag in tags:
+        for d in sorted(glob.glob(f"outputs/bench_{tag}__*_seed*")):
+            s = d.split("_seed")[-1]
+            for p in glob.glob(f"{d}/plots/test/*_schedule.json"):
+                ta = ta_de(os.path.basename(p))
+                out[(ta, s)] = re_pct(makespans(p)[0], ta)
+    return out
+
+
+_full = _por_par("v2-full-1000ep")
+_nw = _por_par("v2-nowidth-1000ep-b")
+_mp = _por_par("v2-midpoint-1000ep-b")
+
+# 7.5: el punto medio a DIEZ semillas, que es donde el efecto se
+# detecta. El brazo de no-width sigue en tres: su d=0.12 necesitaria
+# unas noventa, y el texto lo dice en vez de pedirlas.
+_full10 = _por_par("v2-full-1000ep", "v2-full-1000ep-ext-c")
+_mp10 = _por_par("v2-midpoint-1000ep-b", "v2-midpoint-1000ep-ext")
+_c10 = sorted(set(_full10) & set(_mp10))
+check_exacto("punto medio: diez semillas x seis instancias",
+             len(_c10) == 60, f"{len(_c10)} pares")
+check("centinela punto medio: diez en entrenamiento (14.45)", 14.45,
+      sum(_mp10[k] for k in _c10) / 60, tol=0.006)
+_d10 = [_mp10[k] - _full10[k] for k in _c10]
+check("centinela punto medio: diferencia en entrenamiento (+0.63)",
+      0.63,
+      sum(_d10) / 60, tol=0.006)
+check_exacto("punto medio: peor en 36 de 60",
+             sum(x > 0 for x in _d10) == 36,
+             f"{sum(x > 0 for x in _d10)}/60")
+_sem10 = sorted({k[1] for k in _c10}, key=int)
+_pos = sum(1 for s in _sem10
+           if sum(_mp10[k] - _full10[k] for k in _c10 if k[1] == s) > 0)
+check_exacto("punto medio: positivo en 8 de las 10 semillas",
+             _pos == 8, f"{_pos}/10")
+try:
+    from scipy import stats as _stmp
+    _tas_mp = sorted({t for t, _ in _c10}, key=lambda x: int(x[2:]))
+    _sem_mp = sorted({s for _, s in _c10}, key=int)
+    _d10_i = [sum(_mp10[(t, s)] - _full10[(t, s)] for s in _sem_mp)
+              / len(_sem_mp) for t in _tas_mp]
+    check_exacto("punto medio: peor en las 6 instancias",
+                 sum(x > 0 for x in _d10_i) == 6,
+                 f"{sum(x > 0 for x in _d10_i)}/6")
+    check("centinela punto medio: Wilcoxon en entrenamiento (0.031)",
+          0.031,
+          float(_stmp.wilcoxon(_d10_i, method="exact").pvalue), tol=0.0011)
+    _mdmp = sum(_d10_i) / 6
+    import statistics as _stmpd
+    _semimp = 2.5706 * _stmpd.stdev(_d10_i) / 6 ** 0.5
+    check("centinela punto medio: IC95 inferior (0.08)", 0.08,
+          _mdmp - _semimp,
+          tol=0.011)
+    check("centinela punto medio: IC95 superior (1.17)", 1.17,
+          _mdmp + _semimp,
+          tol=0.011)
+    # la potencia que cita 7.4, recomputada con la instancia como unidad
+    _dmp = _mdmp / _stmpd.stdev(_d10_i)
+    _ncp = _dmp * 6 ** 0.5
+    _tc = _stmp.t.ppf(0.975, 5)
+    _pot = (1 - _stmp.nct.cdf(_tc, 5, _ncp) + _stmp.nct.cdf(-_tc, 5, _ncp))
+    check("centinela punto medio: potencia ~0.7 en entrenamiento", 0.7,
+          _pot, tol=0.05)
+except ImportError:
+    pendiente("Wilcoxon del punto medio a diez", "sin scipy")
+
+# =========================================================================
+print("\n== 7.3: las dos ablaciones tal como se reportan ==")
+# Desde 2026-08-16 el texto lee las dos ablaciones bajo el evaluador
+# independiente y sobre TRES conjuntos: las seis de validacion a 64
+# muestras, treinta instancias no vistas al mismo presupuesto (la
+# confirmacion que cerro el 2026-08-16) y sesenta no vistas a una
+# pasada. Las cifras de arriba, de la evaluacion embebida, quedan como
+# centinela y no deben mezclarse con estas.
+_ABL = [("benchmarks/ext30/ablaciones_unificadas.json", "validacion", 6),
+        ("benchmarks/ext30/ablaciones_treinta_bo64.json", "no vistas 64", 30),
+        ("benchmarks/ext30/ablaciones_sesenta.json", "no vistas 1 pasada", 60)]
+_abl = {}
+for _ruta, _etq, _n in _ABL:
+    if not os.path.exists(_ruta):
+        pendiente(f"ablaciones sobre {_etq}", f"sin {os.path.basename(_ruta)}")
+        continue
+    _abl[_etq] = json.load(open(_ruta, encoding="utf-8"))
+
+if len(_abl) == 3:
+    _v, _t30, _s60 = (_abl["validacion"], _abl["no vistas 64"],
+                      _abl["no vistas 1 pasada"])
+    _NW, _MP = "v2-nowidth-1000ep", "v2-midpoint-1000ep"
+    # el brazo base de las tres lecturas: las mismas diez semillas
+    check("7.3: base de validacion a diez semillas (texto 13.57)", 13.57,
+          _v[_NW]["base"], tol=0.006)
+    check_exacto("7.3: el base de las dos ablaciones es el mismo",
+                 _v[_NW]["base"] == _v[_MP]["base"]
+                 and _t30[_NW]["base"] == _t30[_MP]["base"])
+    for _a in (_v, _t30, _s60):
+        for _arm in (_NW, _MP):
+            check_exacto(f"7.3: diez semillas en {_arm}",
+                         _a[_arm]["n_semillas"] == 10,
+                         f"{_a[_arm]['n_semillas']} semillas")
+    check_exacto("7.3: la confirmacion son treinta instancias",
+                 _t30[_NW]["n_instancias"] == 30
+                 and _t30[_MP]["n_instancias"] == 30)
+    # y son exactamente las cinco primeras por indice de cada clase no
+    # vista, el corte prefijado que declara el texto
+    _c64i = sorted({r["instance"] for r in __import__("csv").DictReader(
+        open("benchmarks/ext30/c64_v2-full-1000ep_1.csv",
+             encoding="utf-8"))})
+    _esp30 = sorted(f"int__{c}_{k:02d}"
+                    for c in ("tai15_15", "tai20_20", "tai30_15",
+                              "tai30_20", "tai50_15", "tai50_20")
+                    for k in range(1, 6))
+    check_exacto("7.3: las treinta son las cinco primeras por clase",
+                 _c64i == _esp30, f"{len(_c64i)} instancias")
+
+    # --- anchuras como entrada: nulo en los tres conjuntos ---
+    check("7.3 no-width: validacion, brazo (texto 13.98)", 13.98,
+          _v[_NW]["brazo"], tol=0.006)
+    check("7.3 no-width: validacion, diferencia (texto 0.42)", 0.42,
+          _v[_NW]["dif"], tol=0.006)
+    check("7.3 no-width: validacion, p (texto 0.094)", 0.094,
+          _v[_NW]["p"], tol=0.0011)
+    check("7.3 no-width: no vistas, base (texto 15.55)", 15.55,
+          _t30[_NW]["base"], tol=0.006)
+    check("7.3 no-width: no vistas, brazo (texto 15.53)", 15.53,
+          _t30[_NW]["brazo"], tol=0.006)
+    check("7.3 no-width: no vistas, diferencia (texto -0.02)", -0.02,
+          _t30[_NW]["dif"], tol=0.006)
+    check_exacto("7.3 no-width: peor en 15 de las 30",
+                 _t30[_NW]["peor_en"] == 15, f"{_t30[_NW]['peor_en']}/30")
+    check("7.3 no-width: no vistas, p (texto 0.90)", 0.90,
+          _t30[_NW]["p"], tol=0.006)
+    check("7.3 no-width: IC95 inferior (texto -0.34)", -0.34,
+          _t30[_NW]["ic95"][0], tol=0.006)
+    check("7.3 no-width: IC95 superior (texto 0.29)", 0.29,
+          _t30[_NW]["ic95"][1], tol=0.006)
+    check("7.3 no-width: una pasada, diferencia (texto -0.24)", -0.24,
+          _s60[_NW]["dif"], tol=0.006)
+    check("7.3 no-width: una pasada, p (texto 0.10)", 0.10,
+          _s60[_NW]["p"], tol=0.006)
+    check_exacto("7.3 no-width: ningun conjunto separa los brazos",
+                 all(a[_NW]["p"] > 0.05 for a in (_v, _t30, _s60)))
+    check_exacto("7.3 no-width: el IC de las no vistas es el mas estrecho",
+                 (_t30[_NW]["ic95"][1] - _t30[_NW]["ic95"][0])
+                 < min(_v[_NW]["ic95"][1] - _v[_NW]["ic95"][0],
+                       _s60[_NW]["ic95"][1] - _s60[_NW]["ic95"][0]))
+
+    # --- intervalos como datos: presente al muestrear, ausente a una
+    # pasada. Es la disociacion que 7.3 usa para situar el efecto ---
+    check("7.3 punto medio: validacion, brazo (texto 14.14)", 14.14,
+          _v[_MP]["brazo"], tol=0.006)
+    check("7.3 punto medio: validacion, diferencia (texto 0.57)", 0.57,
+          _v[_MP]["dif"], tol=0.006)
+    check("7.3 punto medio: validacion, p (texto 0.063)", 0.063,
+          _v[_MP]["p"], tol=0.0011)
+    check("7.3 punto medio: no vistas, brazo (texto 15.99)", 15.99,
+          _t30[_MP]["brazo"], tol=0.006)
+    check("7.3 punto medio: no vistas, diferencia (texto 0.43)", 0.43,
+          _t30[_MP]["dif"], tol=0.006)
+    check("7.3 punto medio: no vistas, p (texto 0.045)", 0.045,
+          _t30[_MP]["p"], tol=0.0011)
+    check_exacto("7.3 punto medio: peor en 21 de las 30",
+                 _t30[_MP]["peor_en"] == 21, f"{_t30[_MP]['peor_en']}/30")
+    check("7.3 punto medio: IC95 inferior (texto 0.03)", 0.03,
+          _t30[_MP]["ic95"][0], tol=0.006)
+    check("7.3 punto medio: IC95 superior (texto 0.84)", 0.84,
+          _t30[_MP]["ic95"][1], tol=0.006)
+    check("7.3 punto medio: una pasada, diferencia (texto -0.04)", -0.04,
+          _s60[_MP]["dif"], tol=0.006)
+    check("7.3 punto medio: una pasada, p (texto 0.65)", 0.65,
+          _s60[_MP]["p"], tol=0.006)
+    check_exacto("7.3 punto medio: significativo al muestrear, no a una "
+                 "pasada", _t30[_MP]["p"] < 0.05 <= _s60[_MP]["p"],
+                 f"64: p={_t30[_MP]['p']:.3f}, 1 pasada: "
+                 f"p={_s60[_MP]['p']:.2f}")
+    # y que el texto no vuelva a mezclar las dos procedencias
+    check_exacto("7.3 no reintroduce las cifras de la evaluacion embebida",
+                 not any(s in TEX for s in ("13.82", "13.86", "14.45")))
+
+    # --- la atencion, que vive en el suplementario, bajo el mismo
+    # evaluador: el paper cita 1.4 puntos y el suplementario el detalle
+    _at = _v["v2-attn-1000ep"]
+    check("S2: la atencion pierde 1.36 puntos a diez semillas", 1.36,
+          _at["dif"], tol=0.006)
+    check("S2: IC95 de la atencion, inferior (0.64)", 0.64,
+          _at["ic95"][0], tol=0.006)
+    check("S2: IC95 de la atencion, superior (2.08)", 2.08,
+          _at["ic95"][1], tol=0.006)
+    check_exacto("S2: peor en las seis instancias",
+                 _at["peor_en"] == 6, f"{_at['peor_en']}/6")
+    check("S2: p de la atencion (0.031)", 0.031, _at["p"], tol=0.0011)
+    check_exacto("7.2 redondea ese deficit a 1.4 puntos",
+                 "by $1.4$ points" in TEX)
+    _at3 = _v["v2-attn-300ep"]
+    check("S2: a 300 episodios la atencion pierde 0.42", 0.42,
+          _at3["dif"], tol=0.006)
+    check("S2: y ahi p=0.69", 0.69, _at3["p"], tol=0.006)
+    check_exacto("S2: a 300 episodios, peor en 3 de las 6",
+                 _at3["peor_en"] == 3, f"{_at3['peor_en']}/6")
+    # las filas de sup:tab-attn, con las semillas pareadas de cada
+    # presupuesto (tres a 300, diez a 1000)
+    for _fila in ("Deep Sets & \\textbf{17.0} [16.7] & "
+                  "\\textbf{13.6} [12.8] \\\\",
+                  "+ attention ($B{=}2$) & 17.4 [16.9] & 14.9 [13.7] \\\\"):
+        check_exacto(f"sup:tab-attn imprime {_fila.split('&')[0].strip()}",
+                     _fila in SUP)
+
+    # --- la tercera limitacion: lo que tres semillas no ven ---
+    # se recomputa el mismo contraste restringido a las semillas 2-4,
+    # leyendo los CSV crudos del evaluador independiente
+    # los ficheros de la campana no llevan columna de brazo: son todos
+    # del principal a 1000 episodios
+    _bruto = {}
+    _csvmod = __import__("csv")
+    for _f in (sorted(glob.glob("benchmarks/ext30/val_*.csv"))
+               + sorted(glob.glob("benchmarks/ext30/eval_val_bo64*.csv"))):
+        for _r in _csvmod.DictReader(open(_f, encoding="utf-8")):
+            _bruto.setdefault(_r.get("arm", "v2-full-1000ep"), {}).setdefault(
+                _r["seed"], {})[_r["instance"]] = float(_r["re_bo"])
+    _tres = {}
+    for _arm in ("v2-attn-1000ep", _NW, _MP):
+        _sem3 = [s for s in ("2", "3", "4")]
+        _a3 = {i: sum(_bruto[_arm][s][i] for s in _sem3) / 3 for i in _VAL6}
+        _b3 = {i: sum(_bruto["v2-full-1000ep"][s][i] for s in _sem3) / 3
+               for i in _VAL6}
+        _tres[_arm] = sum(_a3[i] - _b3[i] for i in _VAL6) / 6
+    check("limitacion 3: no-width a tres semillas (-0.99)", -0.99,
+          _tres[_NW], tol=0.006)
+    check("limitacion 3: punto medio a tres semillas (0.18)", 0.18,
+          _tres[_MP], tol=0.006)
+    check("limitacion 3: atencion a tres semillas (0.75)", 0.75,
+          _tres["v2-attn-1000ep"], tol=0.006)
+    check_exacto("limitacion 3: el no-width cambia de signo con diez",
+                 _tres[_NW] < 0 < _v[_NW]["dif"],
+                 f"{_tres[_NW]:+.2f} -> {_v[_NW]['dif']:+.2f}")
+# el punto medio a 3 semillas ya no se imprime (7.4 reporta solo las
+# diez, a peticion del autor); sus numeros quedan como centinelas
+for nombre, arm, v_tex, es_cent in [("no-width", _nw, 13.62, True),
+                                    ("punto medio", _mp, 14.18, True)]:
+    if not arm:
+        pendiente(f"brazo {nombre}", "sin directorios en outputs/")
+        continue
+    _pref = "centinela: " if es_cent else ""
+    check_exacto(f"{_pref}{nombre}: 3 semillas x 6 instancias",
+                 len(arm) == 18, f"{len(arm)} pares")
+    check(f"{_pref}{nombre}: media ({v_tex})", v_tex,
+          sum(arm.values()) / len(arm))
+    comunes = sorted(set(_full) & set(arm))
+    d = [arm[k] - _full[k] for k in comunes]
+    peor = sum(x > 0 for x in d)
+    try:
+        from scipy import stats as _st
+        p = _st.wilcoxon(d)[1]
+        if nombre == "no-width":
+            check("centinela: no-width delta medio a 3 semillas (+0.18)", 0.18,
+                  sum(d) / len(d), tol=0.02)
+            # 7.5 razona con el tamano del efecto, no solo con el p
+            import statistics as _s7
+            _sd = _s7.stdev(d)
+            check("centinela: no-width sd a 3 semillas (1.54)", 1.54,
+                  _sd, tol=0.006)
+            check("centinela: no-width d a 3 semillas (0.12)", 0.12,
+                  abs(sum(d) / len(d)) / _sd, tol=0.006)
+            check_exacto("centinela: a 3 semillas salian ~90 semillas",
+                         80 <= (2.8 / (abs(sum(d) / len(d)) / _sd)) ** 2 / 6
+                         <= 100,
+                         f"{(2.8 / (abs(sum(d) / len(d)) / _sd)) ** 2 / 6:.0f}")
+            check_exacto("centinela: no-width peor en 12 de 18", peor == 12,
+                         f"{peor}/18")
+            check_exacto("centinela: no-width p=0.47 a 3 semillas",
+                         0.44 <= p <= 0.50, f"p={p:.3f}")
+        else:
+            print(f"  info  punto medio a tres semillas: p={p:.3f} "
+                  f"(el texto usa las diez)")
+    except ImportError:
+        pendiente(f"Wilcoxon {nombre}", "sin scipy")
+check("brazo principal de referencia (texto 13.44)", 13.44,
+      sum(_full.values()) / len(_full))
+
+# 6.1: las diez semillas. El 13.44 son las tres del paper; conviene que
+# el texto no pueda separarse de la distribucion completa sin avisar
+_ext = _por_par("v2-full-1000ep-ext-c")
+if not _ext:
+    pendiente("extension de semillas", "sin directorios en outputs/")
+else:
+    _diez = {}
+    for k, v in list(_full.items()) + list(_ext.items()):
+        _diez.setdefault(k[1], []).append(v)
+    check_exacto("diez semillas de seis instancias",
+                 len(_diez) == 10 and all(len(v) == 6
+                                          for v in _diez.values()),
+                 f"{len(_diez)} semillas")
+    _m = sorted(sum(v) / len(v) for v in _diez.values())
+    check("centinela diez semillas en entrenamiento: media (13.82)",
+          13.82,
+          sum(_m) / len(_m), tol=0.006)
+    check("centinela diez semillas en entrenamiento: minimo (13.12)",
+          13.12, _m[0], tol=0.006)
+    check("centinela diez semillas en entrenamiento: maximo (14.62)",
+          14.62, _m[-1], tol=0.006)
+    try:
+        import statistics as _stat
+        check("centinela diez semillas en entrenamiento: sd (0.47)", 0.47,
+              _stat.stdev(_m), tol=0.006)
+    except Exception:
+        pendiente("sd de las diez semillas", "no calculable")
+
+
+# --- el brazo robusto lambda=1: RE Y ancho, que es lo que lambda toca ---
+def _extremos(path):
+    lo_max = up_max = 0.0
+    for t in json.load(open(path)):
+        e = t["end"]
+        lo, up = (e["lower"], e["upper"]) if isinstance(e, dict) else (e, e)
+        lo_max, up_max = max(lo_max, lo), max(up_max, up)
+    return lo_max, up_max
+
+
+def _re_y_ancho(tag):
+    """{(TA, semilla): (RE, ancho relativo %)} desde los schedules."""
+    out = {}
+    for d in sorted(glob.glob(f"outputs/bench_{tag}__*_seed*")):
+        s = d.split("_seed")[-1]
+        for p in glob.glob(f"{d}/plots/test/*_schedule.json"):
+            ta = ta_de(os.path.basename(p))
+            lo, up = _extremos(p)
+            mid = (lo + up) / 2
+            out[(ta, s)] = (re_pct(mid, ta), (up - lo) / mid * 100)
+    return out
+
+
+_lam = _re_y_ancho("v2-robust-lam1")
+_base_a = _re_y_ancho("v2-full-1000ep")
+if not _lam:
+    pendiente("brazo lambda=1", "sin directorios en outputs/")
+else:
+    check_exacto("lambda=1: 3 semillas x 6 instancias", len(_lam) == 18,
+                 f"{len(_lam)} pares")
+    check("centinela lambda=1 a tres semillas: RE (15.38)", 15.38,
+          sum(v[0] for v in _lam.values()) / len(_lam))
+    check("centinela lambda=1 a tres semillas: ancho (11.90)", 11.90,
+          sum(v[1] for v in _lam.values()) / len(_lam))
+    check("centinela base a tres semillas: ancho (12.85)", 12.85,
+          sum(v[1] for v in _base_a.values()) / len(_base_a))
+    _com = sorted(set(_base_a) & set(_lam))
+    _dre = [_lam[k][0] - _base_a[k][0] for k in _com]
+    _dan = [_lam[k][1] - _base_a[k][1] for k in _com]
+    check("centinela lambda=1 a tres semillas: +1.94", 1.94,
+          sum(_dre) / len(_dre), tol=0.02)
+    try:
+        from scipy import stats as _st
+        _tas_l = sorted({t for t, _ in _com}, key=lambda x: int(x[2:]))
+        _sem_l = sorted({s for _, s in _com}, key=int)
+        _dre_i = [sum(_lam[(t, s)][0] - _base_a[(t, s)][0] for s in _sem_l)
+                  / len(_sem_l) for t in _tas_l]
+        _dan_i = [sum(_lam[(t, s)][1] - _base_a[(t, s)][1] for s in _sem_l)
+                  / len(_sem_l) for t in _tas_l]
+        check_exacto("lambda=1: mas estrecho en las 6 instancias",
+                     sum(x < 0 for x in _dan_i) == 6,
+                     f"{sum(x < 0 for x in _dan_i)}/6")
+        check_exacto("lambda=1: peor RE en las 6 instancias",
+                     sum(x > 0 for x in _dre_i) == 6,
+                     f"{sum(x > 0 for x in _dre_i)}/6")
+        check("lambda=1: RE por instancia (texto 0.031)", 0.031,
+              float(_st.wilcoxon(_dre_i, method="exact").pvalue), tol=0.0011)
+        check("lambda=1: ancho por instancia (texto 0.031)", 0.031,
+              float(_st.wilcoxon(_dan_i, method="exact").pvalue), tol=0.0011)
+    except ImportError:
+        pendiente("Wilcoxon lambda=1", "sin scipy")
+
+# el control que separa entrenamiento de seleccion: mismo deposito de
+# rollouts, mismo criterio, solo cambian los pesos
+_ROLL = "benchmarks/robust_lambda/rollouts.csv"
+if not os.path.exists(_ROLL):
+    pendiente("control de seleccion fijada", "sin rollouts.csv")
+else:
+    import csv as _csv
+    _pool = {}
+    for r in _csv.DictReader(open(_ROLL, encoding="utf-8")):
+        _pool.setdefault((r["arm"], r["seed"], r["instance"]), []).append(
+            (float(r["lower"]), float(r["upper"])))
+    check_exacto("deposito: 36 combinaciones de 64 rollouts",
+                 len(_pool) == 36 and all(len(v) == 64
+                                          for v in _pool.values()),
+                 f"{len(_pool)} combinaciones")
+
+    def _ancho_medio(brazo, criterio):
+        anchos = []
+        for k, v in _pool.items():
+            if k[0] != brazo:
+                continue
+            lo, up = min(v, key=(lambda t: (t[1], t[0])) if criterio == "up"
+                         else (lambda t: 2 * t[1] - t[0]))
+            anchos.append((up - lo) / ((lo + up) / 2) * 100)
+        return sum(anchos) / len(anchos)
+
+    # (centinela: seleccion fijada a tres semillas, ya no impresa)
+    for brazo, crit, v_tex in [("base", "up", 12.80), ("lam1", "up", 12.69),
+                               ("base", "rob", 11.74), ("lam1", "rob", 12.20)]:
+        check(f"seleccion fijada, {brazo} por {crit} (texto {v_tex})",
+              v_tex, _ancho_medio(brazo, crit), tol=0.02)
+
+    # el barrido: frontera desplegada monotona, nulo con seleccion
+    # fijada, y la misma frontera gratis desde el deposito del base
+    _ROLL2 = "benchmarks/robust_lambda/rollouts_sweep.csv"
+    if not os.path.exists(_ROLL2):
+        pendiente("barrido de lambda", "sin rollouts_sweep.csv")
+    else:
+        _lbs2 = {}
+        for _ruta in (_ROLL, _ROLL2):
+            for r in _csv.DictReader(open(_ruta, encoding="utf-8")):
+                _pool.setdefault((r["arm"], r["seed"], r["instance"]),
+                                 []).append((float(r["lower"]),
+                                             float(r["upper"])))
+                _lbs2[r["instance"]] = float(r["lb"])
+        # rollouts.csv se relee: dedup por longitud
+        for k in list(_pool):
+            _pool[k] = _pool[k][:64]
+        check_exacto("barrido: 90 combinaciones de 64 rollouts",
+                     len(_pool) == 90 and all(len(v) == 64
+                                              for v in _pool.values()),
+                     f"{len(_pool)} combinaciones")
+        # 7.5: la clave secundaria del criterio lexicografico nunca
+        # decide -- el minimo del extremo superior es unico en cada pool
+        _con_empate = sum(
+            1 for v in _pool.values()
+            if sum(1 for lo, up in v if up == min(u for _, u in v)) > 1)
+        check_exacto("7.5: el minimizador del extremo superior es unico "
+                     "en los 90 pools", _con_empate == 0,
+                     f"{_con_empate} pools con empate")
+        # el matiz que el texto anade el 2026-08-16: los empates del
+        # extremo superior en general son COMUNES (todos los pools
+        # tienen alguno); lo que no se da nunca es el empate en el
+        # minimo, el unico que entregaria la seleccion a la clave
+        # secundaria
+        _con_alguno = sum(1 for v in _pool.values()
+                          if len({u for _, u in v}) < len(v))
+        check_exacto("7.5: y aun asi los empates en general son comunes",
+                     _con_alguno == 90, f"{_con_alguno}/90 pools")
+
+        # --- la ampliacion a diez semillas (2026-08-17): 300 pools ---
+        _pool300 = dict(_pool)
+        for _ruta in sorted(glob.glob(
+                "benchmarks/robust_lambda/rollouts_ext_*.csv")):
+            for r in _csv.DictReader(open(_ruta, encoding="utf-8")):
+                _pool300.setdefault((r["arm"], r["seed"], r["instance"]),
+                                    []).append((float(r["lower"]),
+                                                float(r["upper"])))
+        _pool300 = {k: v[:64] for k, v in _pool300.items()}
+        check_exacto("7.3: 300 pools con la ampliacion",
+                     len(_pool300) == 300
+                     and all(len(v) == 64 for v in _pool300.values()),
+                     f"{len(_pool300)} pools")
+        _emp300 = sum(1 for v in _pool300.values()
+                      if [u for _, u in v].count(min(u for _, u in v)) > 1)
+        check_exacto("7.3: el minimo empata en 7 de los 300",
+                     _emp300 == 7, f"{_emp300} pools")
+        # 7.3 lo dice con cifras y 7.1 con letras; la contribucion 3
+        # dejo de repetirlo el 2026-08-18 (el autor: no es una
+        # observacion analitica, es una contingencia medida)
+        check_exacto("7.3: el texto dice 7 de 300 y su eco en 7.1",
+                     "in 7 of the 300 pools" in TEX
+                     and TEX.count("seven of the three hundred") == 1)
+
+        # --- la frontera a diez semillas, contra su artefacto ---
+        _FD = "benchmarks/robust_lambda/frontera_diez.json"
+        if not os.path.exists(_FD):
+            pendiente("frontera a diez semillas", "sin frontera_diez.json")
+        else:
+            _fd = json.load(open(_FD, encoding="utf-8"))
+            _pr = _fd["modos"]["propia"]
+            _fj = _fd["modos"]["fija"]
+            _rr = _fd["modos"]["rerank"]
+            check_exacto("frontera: 60 pools por brazo",
+                         all(v == 60 for v in
+                             _fd["pools_por_brazo"].values()))
+            check("frontera: base RE (texto 13.96)", 13.96,
+                  _pr["base"]["re"], tol=0.006)
+            check("frontera: base ancho (texto 13.05)", 13.05,
+                  _pr["base"]["ancho"], tol=0.006)
+            # el paquete desplegado a lambda=1, ahora a diez semillas
+            check("lambda=1 a diez: ancho (texto 12.18)", 12.18,
+                  _pr["lam1"]["ancho"], tol=0.006)
+            check("lambda=1 a diez: RE (texto 15.11)", 15.11,
+                  _pr["lam1"]["re"], tol=0.006)
+            check("lambda=1 a diez: +1.15 de RE", 1.15,
+                  _pr["lam1"]["d_re"], tol=0.006)
+            check_exacto("lambda=1 a diez: ambos efectos p=0.031",
+                         abs(_pr["lam1"]["p_re"] - 0.03125) < 1e-6
+                         and abs(_pr["lam1"]["p_ancho"] - 0.03125) < 1e-6)
+            # la frontera desplegada: monotona y significativa entera
+            check("frontera desplegada: lam4 ancho (texto 11.08)", 11.08,
+                  _pr["lam4"]["ancho"], tol=0.006)
+            check("frontera desplegada: lam4 +3.40 de RE", 3.40,
+                  _pr["lam4"]["d_re"], tol=0.006)
+            check_exacto("frontera desplegada: estrecha en 6/6 a toda "
+                         "lambda con p=0.031",
+                         all(_pr[b]["estrecho_en"] == 6
+                             and abs(_pr[b]["p_ancho"] - 0.03125) < 1e-6
+                             for b in ("lam0p5", "lam1", "lam2", "lam4")))
+            _anchos = sorted(_pr[b]["ancho"] for b in
+                             ("base", "lam0p5", "lam1", "lam2", "lam4"))
+            check_exacto("frontera desplegada: monotona en lambda",
+                         _anchos == [_pr[b]["ancho"] for b in
+                                     ("lam4", "lam2", "lam1", "lam0p5",
+                                      "base")])
+            # criterio fijado: el nulo, ahora a ocho centesimas
+            check_exacto("criterio fijado: anchos a una decima del base",
+                         all(abs(_fj[b]["d_ancho"]) <= 0.1
+                             for b in ("lam0p5", "lam1", "lam2", "lam4")),
+                         " ".join(f"{_fj[b]['d_ancho']:+.2f}"
+                                  for b in ("lam0p5", "lam1", "lam2",
+                                            "lam4")))
+            check("criterio fijado: lam1 ancho (texto 12.98)", 12.98,
+                  _fj["lam1"]["ancho"], tol=0.006)
+            check_exacto("criterio fijado: lam1 p=1.00 y minima p 0.44",
+                         abs(_fj["lam1"]["p_ancho"] - 1.0) < 1e-6
+                         and abs(min(_fj[b]["p_ancho"] for b in
+                                     ("lam0p5", "lam1", "lam2", "lam4"))
+                                 - 0.4375) < 1e-6)
+            _dre_f = [_fj[b]["d_re"] for b in ("lam0p5", "lam1", "lam2",
+                                               "lam4")]
+            check_exacto("criterio fijado: RE entre -0.07 y +0.47, "
+                         "p minima 0.16",
+                         min(_dre_f) >= -0.075 and max(_dre_f) <= 0.475
+                         and abs(min(_fj[b]["p_re"] for b in
+                                     ("lam0p5", "lam1", "lam2", "lam4"))
+                                 - 0.15625) < 1e-6,
+                         f"{min(_dre_f):+.2f} a {max(_dre_f):+.2f}")
+            # el rerank del deposito base
+            check("rerank: base bajo f_4, ancho (texto 11.04)", 11.04,
+                  _rr["lam4"]["ancho"], tol=0.006)
+            check("rerank: base bajo f_4, RE (texto 17.16)", 17.16,
+                  _rr["lam4"]["re"], tol=0.006)
+            # la tasa que citan 7.3 y las conclusiones
+            _tasa = ((_pr["lam4"]["re"] - _pr["base"]["re"])
+                     / (_pr["base"]["ancho"] - _pr["lam4"]["ancho"]))
+            check("7.3: tasa ~1.7 RE por punto de anchura", 1.7, _tasa,
+                  tol=0.06)
+            check_exacto("7.3: el texto declara la base 13.96 del "
+                         "deposito", "stand at $13.96\\%$" in TEX)
+            check_exacto("fig:frontier: el pie dice 60 pools",
+                         "over the 60 (instance, seed) pools" in TEX)
+
+
+        def _sel64(v, lam):
+            if lam == 0.0:
+                return min(v, key=lambda t: (t[1], t[0]))
+            return min(v, key=lambda t: t[1] + lam * (t[1] - t[0]))
+
+        def _re_anc(brazo, lam):
+            re, anc, inst = [], [], []
+            for k, v in sorted(_pool.items()):
+                if k[0] != brazo:
+                    continue
+                lo, up = _sel64(v, lam)
+                mid = (lo + up) / 2
+                re.append((mid - _lbs2[k[2]]) / _lbs2[k[2]] * 100)
+                anc.append((up - lo) / mid * 100)
+                inst.append(k[2])
+            return (sum(re) / len(re), sum(anc) / len(anc),
+                    re, anc, inst)
+
+        def _por_inst(vals, inst):
+            """Promedia sobre las semillas: la instancia es la unidad."""
+            agg = {}
+            for v, i in zip(vals, inst):
+                agg.setdefault(i, []).append(v)
+            return [sum(agg[i]) / len(agg[i]) for i in sorted(agg)]
+
+        _BRAZOS = [("base", 0.0, 12.80), ("lam0p5", 0.5, 12.38),
+                   ("lam1", 1.0, 12.20), ("lam2", 2.0, 11.88),
+                   ("lam4", 4.0, 10.99)]
+        _prop = {}
+        for brazo, lam, v_tex in _BRAZOS:
+            _prop[brazo] = _re_anc(brazo, lam)
+            check(f"barrido desplegado, ancho {brazo} (texto {v_tex})",
+                  v_tex, _prop[brazo][1], tol=0.02)
+        check_exacto("barrido: el ancho desplegado cae monotonamente",
+                     all(_prop[a][1] > _prop[b][1] for (a, _, _), (b, _, _)
+                         in zip(_BRAZOS, _BRAZOS[1:])))
+        check("centinela barrido a tres: RE lam4 (17.75)", 17.75,
+              _prop["lam4"][0])
+        check("centinela barrido a tres: lam4 +3.49", 3.49,
+              _prop["lam4"][0] - _prop["base"][0], tol=0.02)
+
+        # seleccion fijada por cota superior para los cuatro brazos
+        _fija = {b: _re_anc(b, 0.0) for b, _, _ in _BRAZOS}
+        _mas_anchos = sum(_fija[b][1] > _fija["base"][1]
+                          for b in ("lam0p5", "lam1", "lam2", "lam4"))
+        check_exacto("barrido fijado: 3 de 4 mas anchos que base (texto)",
+                     _mas_anchos == 3, f"{_mas_anchos}/4")
+        try:
+            from scipy import stats as _st2
+            _re4_i = _por_inst(_prop["lam4"][2], _prop["lam4"][4])
+            _reb_i = _por_inst(_prop["base"][2], _prop["base"][4])
+            _p4 = float(_st2.wilcoxon([a - b for a, b in
+                                       zip(_re4_i, _reb_i)],
+                                      method="exact").pvalue)
+            check("barrido: RE lam4 por instancia (texto 0.031)", 0.031,
+                  _p4, tol=0.0011)
+            _ancb_i = _por_inst(_fija["base"][3], _fija["base"][4])
+            _pmin = min(
+                float(_st2.wilcoxon(
+                    [a - b for a, b in
+                     zip(_por_inst(_fija[br][3], _fija[br][4]), _ancb_i)],
+                    method="exact").pvalue)
+                for br in ("lam0p5", "lam1", "lam2", "lam4"))
+            check_exacto("barrido fijado: ancho nunca significativo por "
+                         "instancia (texto: smallest p=0.31)",
+                         0.30 <= _pmin <= 0.32, f"p_min={_pmin:.3f}")
+            _p_l1 = float(_st2.wilcoxon(
+                [a - b for a, b in
+                 zip(_por_inst(_fija["lam1"][3], _fija["lam1"][4]),
+                     _ancb_i)], method="exact").pvalue)
+            check("barrido fijado: lam1 por instancia (texto 0.69)", 0.69,
+                  _p_l1, tol=0.0051)
+        except ImportError:
+            pendiente("Wilcoxon del barrido", "sin scipy")
+
+        # la frontera gratis: el deposito del base bajo f_4
+        _re_g, _anc_g, _, _, _ = _re_anc("base", 4.0)
+        check("centinela frontera gratis a tres: ancho (11.09)",
+              11.09, _anc_g, tol=0.02)
+        check("centinela frontera gratis a tres: RE (17.05)",
+              17.05, _re_g, tol=0.02)
+        check("precio del barrido: 1.9 RE por punto de ancho (texto)",
+              1.9, (_prop["lam4"][0] - _prop["base"][0])
+              / (_prop["base"][1] - _prop["lam4"][1]), tol=0.06)
+
+
+print("\n== tab:crosssize: best-of-64 sobre las 70 por clase ==")
+_B64 = "benchmarks/bo64_70.csv"
+if not os.path.exists(_B64):
+    pendiente("tab:crosssize sobre las 70", "sin bo64_70.csv")
+else:
+    _b64 = list(__import__("csv").DictReader(open(_B64, encoding="utf-8")))
+    check_exacto("bo64_70: las 70 instancias", len(_b64) == 70,
+                 f"{len(_b64)} filas")
+    _pc = {}
+    for r in _b64:
+        _pc.setdefault(r["cls"], []).append((float(r["re_mean"]),
+                                             float(r["re_best"])))
+    TAB7 = {"15x15": (11.0, 9.6), "20x15": (13.6, 13.0),
+            "20x20": (14.8, 14.0), "30x15": (16.8, 16.0),
+            "30x20": (22.0, 20.7), "50x15": (12.2, 11.1),
+            "50x20": (15.5, 13.9)}
+    _mal7 = 0
+    for cls, (m_tex, b_tex) in TAB7.items():
+        v = _pc[cls]
+        check_exacto(f"tab:seventy {cls}: diez instancias", len(v) == 10,
+                     f"{len(v)}")
+        for tex, dat in ((m_tex, sum(a for a, _ in v) / 10),
+                         (b_tex, sum(b for _, b in v) / 10)):
+            if abs(tex - dat) > 0.051:
+                print(f"  FALLO {cls}: texto={tex} datos={dat:.2f}")
+                _mal7 += 1
+    # la media por clase va impresa en tab:seventy; el "mejor por semilla"
+    # ya no se imprime desde que la tabla se fusiono, pero se sigue
+    # comprobando como centinela del dato
+    check_exacto("las 14 celdas de politica a 64 (media y mejor)",
+                 _mal7 == 0, f"{_mal7} mal")
+    _todo7 = [x for v in _pc.values() for x in v]
+    check("tab:seventy fila Policy-64, All (texto 15.1)", 15.1,
+          sum(a for a, _ in _todo7) / 70)
+    check("centinela: mejor por semilla a 64 sobre las 70 (14.0)", 14.0,
+          sum(b for _, b in _todo7) / 70)
+    # la afirmacion de 6.2 es POR SEMILLA ("every seed's network"), no
+    # sobre la media: hay que reconstruir el best-of-64 de cada checkpoint
+    # desde el deposito de rollouts, 210 pares (instancia, semilla)
+    import collections as _col
+    _dep = _col.defaultdict(lambda: _col.defaultdict(list))
+    _lb_dep = {}
+    for _r in __import__("csv").DictReader(
+            open("benchmarks/eval_budget_curve.csv", encoding="utf-8")):
+        _s = re.search(r"seed(\d+)", _r["checkpoint"]).group(1)
+        _dep[_r["instance"]][_s].append(float(_r["mid_comp"]))
+        _lb_dep[_r["instance"]] = float(_r["lb"])
+    _pares = _malG = _malM = 0
+    for _inst, _seeds in _dep.items():
+        _ta, _lb = ta_de(_inst), _lb_dep[_inst]
+        for _s, _vals in _seeds.items():
+            _re64 = (min(_vals[:64]) - _lb) / _lb * 100
+            _pares += 1
+            _malG += _re64 >= GT_RE[_ta]
+            _malM += _re64 >= MOR_RE[_ta]
+    check_exacto("6.2: 210 pares (instancia, semilla)", _pares == 210,
+                 f"{_pares}")
+    check_exacto("centinela: cada semilla bate a G&T-MWKR a 64 muestras",
+                 _malG == 0, f"{_malG} pares sin batirla")
+    check_exacto("centinela: y tambien a MOR (afirmacion mas debil)",
+                 _malM == 0, f"{_malM} pares sin batirla")
+    # 6.2 dice ahora que esa dominacion es del presupuesto muestreado y
+    # NO de la red: a una pasada, 64 de los 2100 pares fallan contra G&T
+    _pol30 = _col.defaultdict(dict)
+    for _r in __import__("csv").DictReader(
+            open("benchmarks/fair_v2_greedy.csv", encoding="utf-8")):
+        _pol30[ta_de(_r["instance"])][
+            int(_r["checkpoint"].split("seed")[1].split(".")[0])] = float(
+                _r["re_mid"])
+    for _r in __import__("csv").DictReader(
+            open("benchmarks/eval70_diez_semillas.csv", encoding="utf-8")):
+        _pol30[ta_de(_r["instance"])][int(_r["seed"])] = float(
+            _r["re_greedy"])
+    for _f in sorted(glob.glob("benchmarks/ext30/eval70_greedy_*.csv")):
+        for _r in __import__("csv").DictReader(open(_f, encoding="utf-8")):
+            _pol30[ta_de(_r["instance"])][int(_r["seed"])] = float(
+                _r["re_greedy"])
+    _tot30 = sum(len(v) for v in _pol30.values())
+    _fallos30 = sum(1 for _t, _v in _pol30.items() for _s, _x in _v.items()
+                    if _x >= GT_RE[_t])
+    # y que el CAMPEON si las bate todas, a los tres presupuestos, que
+    # es lo que 6.2 afirma (el 3% que falla es de la poblacion, no suyo)
+    _camp_pres = {"1 pasada": {t: v[5] for t, v in _pol30.items()}}
+    for _etq in ("bo64", "bo1024"):
+        _d = {}
+        for _f in sorted(glob.glob(f"benchmarks/ext30/camp_{_etq}_*.csv")):
+            for _r in __import__("csv").DictReader(
+                    open(_f, encoding="utf-8")):
+                _d[ta_de(_r["instance"])] = float(_r["re_bo"])
+        if len(_d) == 70:
+            _camp_pres[_etq] = _d
+    for _etq, _d in _camp_pres.items():
+        _mal = sum(1 for _t, _x in _d.items() if _x >= GT_RE[_t])
+        check_exacto(f"6.2: el campeon bate a G&T-MWKR en las 70 ({_etq})",
+                     _mal == 0, f"{_mal} sin batirla")
+    check_exacto("6.2: 2100 pares (instancia, tirada) a una pasada",
+                 _tot30 == 2100, f"{_tot30}")
+    check_exacto("6.2: 64 de ellos no baten a G&T-MWKR (texto)",
+                 _fallos30 == 64, f"{_fallos30}")
+    check("6.2: es el tres por ciento (texto)", 3.0,
+          _fallos30 / _tot30 * 100, tol=0.06)
+    # y que 50x15 transfiere mejor que las de 30 maquinas, como dice 6.2
+    check_exacto("6.2: 50x15 transfiere mejor que 30x15 y 30x20",
+                 sum(a for a, _ in _pc["50x15"]) / 10
+                 < min(sum(a for a, _ in _pc[c]) / 10
+                       for c in ("30x15", "30x20")))
+
+print("\n== fig:budget: la curva con el decodificador desplegado ==")
+# Desde 2026-08-26 (revision R2-2) la curva se reconstruye del deposito
+# con extremos: greedy incluido en el pool y retencion por (U, L), el
+# protocolo de 5.4. El deposito de puntos medios de agosto queda como
+# centinela mas abajo.
+_CI = "benchmarks/curva_intervalo/curva_intervalo.json"
+if not os.path.exists(_CI):
+    pendiente("curva con extremos", "sin curva_intervalo.json")
+else:
+    _ci = json.load(open(_CI, encoding="utf-8"))
+    _pp = _ci["por_presupuesto"]
+    check_exacto("curva: diez tiradas completas",
+                 len(_ci["tiradas"]) == 10, f"{len(_ci['tiradas'])}")
+    check_exacto("curva: el protocolo es el desplegado",
+                 "(U, L)" in _ci["protocolo"])
+    check("curva: greedy medio de las diez (texto 19.5)", 19.47,
+          _ci["greedy_media"], tol=0.006)
+    check("curva: RE a 64 muestras (texto 15.3)", 15.34,
+          _pp["64"]["media"], tol=0.006)
+    check("curva: RE a 342 muestras (texto 14.2)", 14.19,
+          _pp["342"]["media"], tol=0.006)
+    check_exacto("curva: mejora al greedy desde B=2 y a la regla en B=6",
+                 _ci["cruce_greedy"] == 2 and _ci["cruce_gp"] == 6,
+                 f"greedy B={_ci['cruce_greedy']}, GP B={_ci['cruce_gp']}")
+    check_exacto("curva: monotona en el presupuesto",
+                 all(_pp[str(a)]["media"] > _pp[str(b)]["media"]
+                     for a, b in zip(_ci["presupuestos"],
+                                     _ci["presupuestos"][1:])))
+    # la clave de seleccion es inmaterial: mid rebaja <=0.17 puntos
+    _difs = [_pp[str(b)]["media"]
+             - _ci["por_presupuesto_mid"][str(b)]["media"]
+             for b in _ci["presupuestos"]]
+    check_exacto("curva: lex vs mid dentro de 0.17 puntos (texto)",
+                 0 <= max(_difs) <= 0.17
+                 and "$0.17$ points" in TEX,
+                 f"max {max(_difs):.3f}")
+    # los retornos por duplicacion que cita 7.2 (estimadores Monte
+    # Carlo: precision de lo impreso)
+    _g = _ci["ganancia_por_duplicacion"]
+    check("curva: ganancia 32->64 (texto 0.56)", 0.56, _g["32->64"],
+          tol=0.011)
+    check("curva: ganancia 128->256 (texto 0.46)", 0.46, _g["128->256"],
+          tol=0.011)
+    check_exacto("curva: la ganancia se contrae octava a octava",
+                 _g["32->64"] > _g["64->128"] > _g["128->256"])
+    # coherencia con la medicion independiente de tab:seventy
+    check_exacto("curva: el campeon a bo64 mejora la media de las diez",
+                 15.02 < _pp["64"]["media"] < 15.5,
+                 f"{_pp['64']['media']:.2f} vs 15.02")
+    check_exacto("7.2 declara el deposito, el protocolo y sus cifras",
+                 "each of the ten training runs" in TEX
+                 and "$239{,}400$ schedules" in TEX
+                 and "retained by the criterion"
+                 in " ".join(TEX.split()))
+    check_exacto("7.2 imprime 15.3 a 64 y 14.2 a 342",
+                 "$15.3\\%$ at $64$ and $14.2\\%$ at $342$" in TEX)
+
+print("\n== centinela: la curva de puntos medios (ya no impresa) ==")
+_CD = "benchmarks/curva_diez/curva_diez.json"
+if not os.path.exists(_CD):
+    pendiente("centinela curva_diez", "sin curva_diez.json")
+else:
+    _cd = json.load(open(_CD, encoding="utf-8"))
+    check("centinela viejo: curva_diez a 64 (15.24)", 15.24,
+          _cd["por_presupuesto"]["64"]["media"], tol=0.006)
+    check("centinela viejo: curva_diez a 341 (14.04)", 14.04,
+          _cd["por_presupuesto"]["341"]["media"], tol=0.006)
+
+print("\n== centinela: la curva a tres tiradas (ya no impresa) ==")
+_POOL = "benchmarks/eval_budget_curve.csv"
+if not os.path.exists(_POOL):
+    pendiente("curva de presupuesto", "sin eval_budget_curve.csv")
+else:
+    _cur = {}
+    _lbc = {}
+    for r in __import__("csv").DictReader(open(_POOL, encoding="utf-8")):
+        _cur.setdefault((r["instance"], r["checkpoint"]), []).append(
+            (int(r["sample_idx"]), float(r["mid_comp"])))
+        _lbc[r["instance"]] = float(r["lb"])
+    _inst_c = {i for i, _ in _cur}
+    check_exacto("centinela: el deposito viejo cubre las 70 con 3",
+                 len(_inst_c) == 70 and len(_cur) == 210
+                 and all(len(v) == 342 for v in _cur.values()),
+                 f"{len(_inst_c)} instancias, {len(_cur)} pares")
+    # el greedy del deposito (indice 0), agregado como la curva: el mejor
+    # de los tres checkpoints, no la media, que es el 19.4 de 6.4
+    _gre_pool = {}
+    for (i, ck), v in _cur.items():
+        _gre_pool.setdefault(i, []).append(dict(v)[0])
+    check("centinela: greedy mejor de 3 en el deposito viejo (17.0)",
+          17.0,
+          sum((min(v) - _lbc[i]) / _lbc[i] * 100
+              for i, v in _gre_pool.items()) / 70, tol=0.051)
+    # y que la referencia del GP de la figura sea la regla PUBLICADA,
+    # no la columna GP_re de constructive_per_instance, que no lo es
+    _gp_cpi = {r["ta"]: float(r["GP_re"]) for r in
+               __import__("csv").DictReader(
+                   open("benchmarks/constructive_per_instance.csv",
+                        encoding="utf-8"))}
+    check_exacto("aviso: GP_re de constructive_per_instance NO es la "
+                 "regla publicada",
+                 abs(sum(_gp_cpi.values()) / 70 - 17.71) > 0.5,
+                 f"{sum(_gp_cpi.values()) / 70:.2f} vs 17.71")
+
+    print("\n== centinela: tasas del deposito viejo ==")
+    # misma reconstruccion que la figura (reparto del presupuesto entre los
+    # tres checkpoints, min del subconjunto), remuestreada con semilla fija
+    import numpy as _np
+    _NCK, _R = 341, 150
+    _POT = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1023]
+    _pools = {}
+    for (i, ck), v in _cur.items():
+        _pools.setdefault(i, []).append(
+            [x for idx, x in sorted(v) if idx != 0][:_NCK])
+    _pools = {i: _np.array(p) for i, p in _pools.items() if len(p) == 3}
+    _rng = _np.random.RandomState(20260807)
+    _curva = []
+    for _b in _POT:
+        _tot = 0.0
+        for _i, _pl in _pools.items():
+            _lb, _acc = _lbc[_i], 0.0
+            for _ in range(_R):
+                _q, _rst = divmod(_b, 3)
+                _cnt = [_q] * 3
+                for _c in _rng.choice(3, _rst, replace=False):
+                    _cnt[_c] += 1
+                _mej = float("inf")
+                for _c in range(3):
+                    if _cnt[_c]:
+                        _ix = _rng.choice(_NCK, _cnt[_c], replace=False)
+                        _mej = min(_mej, _pl[_c, _ix].min())
+                _acc += (_mej - _lb) / _lb * 100
+            _tot += _acc / _R
+        _curva.append(_tot / len(_pools))
+    _re = dict(zip(_POT, _curva))
+    _gan = {_POT[k]: _curva[k - 1] - _curva[k] for k in range(1, len(_POT))}
+    # en B=1 la esperanza es exacta (la media de las 1023 muestras), no
+    # hace falta remuestrear: es ademas el 21.4 que ya citaba el texto
+    check("centinela viejo: RE en B=1 (21.4)", 21.4,
+          sum((_pl.mean() - _lbc[_i]) / _lbc[_i] * 100
+              for _i, _pl in _pools.items()) / len(_pools), tol=0.051)
+    for _b, _esp in ((8, 17.1), (64, 14.9), (128, 14.3),
+                     (256, 13.8), (512, 13.3), (1023, 12.9)):
+        check(f"centinela viejo: RE en B={_b}", _esp, _re[_b], tol=0.11)
+    for _b, _esp in ((8, 1.03), (64, 0.62), (128, 0.57), (256, 0.50),
+                     (512, 0.46), (1023, 0.42)):
+        check(f"centinela viejo: ganancia sobre B/2 en B={_b}", _esp,
+              _gan[_b], tol=0.055)
+    # la pendiente log-lineal de las tres ultimas octavas que cita el texto
+    _x = [math.log2(_b) for _b in _POT[-4:]]
+    _y = _curva[-4:]
+    _mx, _my = sum(_x) / 4, sum(_y) / 4
+    _pend = (sum((_a - _mx) * (_c - _my) for _a, _c in zip(_x, _y))
+             / sum((_a - _mx) ** 2 for _a in _x))
+    check("centinela viejo: pendiente 0.46 por duplicacion", 0.46, -_pend,
+          tol=0.03)
+    check("centinela viejo: cuatro duplicaciones al 11%", 11.0,
+          _curva[-1] + 4 * _pend, tol=0.15)
+    # "cada octava rinde una decima parte menos que la anterior"
+    _raz = [_gan[_POT[k]] / _gan[_POT[k - 1]] for k in range(6, len(_POT))]
+    check_exacto("centinela viejo: la ganancia mengua ~10% por octava",
+                 all(0.82 <= _r <= 0.98 for _r in _raz),
+                 " ".join(f"{_r:.2f}" for _r in _raz))
+    # el coste: lineal en B sobre el tiempo por muestra medido
+    _tie = {r["clase"]: r for r in __import__("csv").DictReader(
+        open("benchmarks/tiempos_inferencia.csv", encoding="utf-8"))}
+    _s2015 = float(_tie["20x15"]["bo64_s"]) / 64
+    _s5020 = float(_tie["50x20"]["bo64_s"]) / 64
+    check("7.2: segundos por muestra en 20x15", 1.03, _s2015, tol=0.006)
+    check("7.2: segundos por muestra en 50x20", 6.4, _s5020, tol=0.05)
+    check("7.2: 1024 muestras son 18 min en 20x15", 18.0,
+          1023 * _s2015 / 60,
+          tol=0.5)
+    check("7.2: 1024 muestras son 1.8 h en 50x20", 1.8,
+          1023 * _s5020 / 3600,
+          tol=0.05)
+    check("centinela: x16 el presupuesto son 4.7 h en 20x15", 4.7,
+          16 * 1023 * _s2015 / 3600, tol=0.05)
+    check("centinela: x16 el presupuesto son 29 h en 50x20", 29.0,
+          16 * 1023 * _s5020 / 3600, tol=0.5)
+
+    print("\n== 8: el hueco entre el argmax y la cola de su distribucion ==")
+    # la cuarta direccion de las conclusiones: cuanto separa la decision
+    # comprometida de la mejor que la propia distribucion produce, en la
+    # politica y en la regla, y con que dispersion
+    _mu = _sg = _zg = _zt = 0.0
+    for _i, _pl in _pools.items():
+        _lb = _lbc[_i]
+        _r = (_pl.ravel() - _lb) / _lb * 100
+        _gre = min((_v - _lb) / _lb * 100 for _v in _gre_pool[_i])
+        _m, _s = _r.mean(), _r.std()
+        _mu += _m
+        _sg += _s
+        _zg += (_m - _gre) / _s
+        _zt += (_m - _r.min()) / _s
+    _n = len(_pools)
+    check("8: sd de la distribucion muestreada (3.2 puntos)", 3.2,
+          _sg / _n, tol=0.051)
+    check("8: el argmax esta a 1.4 sd de la media", 1.4, _zg / _n,
+          tol=0.051)
+    check("8: la mejor de mil esta a 2.6 sd de la media", 2.6, _zt / _n,
+          tol=0.051)
+    # y el mismo hueco en la regla evolucionada, desde su propio deposito
+    _gp = list(__import__("csv").DictReader(
+        open("benchmarks/gp_destacada/gp_destacada_presupuestos.csv", encoding="utf-8")))
+    check_exacto("8: fair_gp_eps cubre las 70", len(_gp) == 70, str(len(_gp)))
+    check("8: la regla a 1024 muestras (tab:seventy 13.8)", 13.8,
+          sum(float(r["best_at_1024"]) for r in _gp) / 70, tol=0.051)
+    check("8: y a 64, para identificar que es la publicada (15.2)", 15.2,
+          sum(float(r["best_at_64"]) for r in _gp) / 70, tol=0.051)
+    # la tabla lleva ahora cuatro filas "GP rule": la media de las 30 a
+    # una pasada y la regla destacada a los tres presupuestos. La de una
+    # pasada seleccionada se localiza por su primera celda
+    _lin = TEX.splitlines()
+    _k = next(k for k, l in enumerate(_lin)
+              if l.startswith("GP rule, 1 pass"))
+    _fila = _lin[_k]
+    while "\\\\" not in _fila:             # la fila se parte en varias
+        _k += 1
+        _fila += " " + _lin[_k]
+    # la fila lleva solo la regla destacada desde que la media de las
+    # 30 salio de la tabla (peticion del autor, 2026-08-14)
+    _paso_gp = float(_fila.split("&")[8].replace("\\\\", "").strip())
+    check("8: la pasada unica de la regla destacada (tab:seventy)", 17.7,
+          _paso_gp)
+
+# 7.3 explica el nulo de la atencion diciendo que dos features ya son
+# relacionales (holgura contra el minimo de las elegibles, congestion
+# contra la carga media). Si esas definiciones cambian en la Tabla 1,
+# la explicacion deja de sostenerse y hay que enterarse aqui
+_fila_slack = next((l for l in TEX.splitlines()
+                    if "& slack &" in l), "")
+_fila_cong = next((l for l in TEX.splitlines()
+                   if "machine congestion" in l), "")
+check_exacto("7.3: la holgura se mide contra el minimo de las elegibles",
+             r"\min_{o'\in\mathcal{E}}" in _fila_slack,
+             _fila_slack.strip()[:60])
+check_exacto("7.3: la congestion se mide contra la carga media",
+             r"\bar L" in _fila_cong, _fila_cong.strip()[:60])
+
+print("\n== fig:eps: la regla a presupuesto igualado ==")
+if not os.path.exists("benchmarks/eval_eps_gp_bo64.csv"):
+    pendiente("GP best-of-64 en fig:eps", "sin eval_eps_gp_bo64.csv")
+else:
+    _g64 = {r["instance"]: float(r["eps"]) * 1000 for r in
+            __import__("csv").DictReader(
+                open("benchmarks/eval_eps_gp_bo64.csv", encoding="utf-8"))}
+    _g1 = {r["instance"]: float(r["eps"]) * 1000 for r in
+           __import__("csv").DictReader(
+               open("benchmarks/eval_eps_all.csv", encoding="utf-8"))
+           if r["method"] == "GP"}
+    check_exacto("GP-bo64: las quince instancias", len(_g64) == 15,
+                 str(len(_g64)))
+    check("centinela: eps15 GP best-of-64 (6.34)", 6.34,
+          sum(_g64.values()) / 15)
+    _dg = [_g64[i] - _g1[i] for i in sorted(_g64)]
+    check_exacto("7.5: peor en 9 de 15 frente a su pasada unica",
+                 sum(1 for x in _dg if x > 0) == 9,
+                 f"{sum(1 for x in _dg if x > 0)}/15")
+    try:
+        from scipy.stats import wilcoxon as _w75
+        check("centinela: eps15 Wilcoxon GP-bo64 (0.31)", 0.31,
+              _w75(_dg).pvalue, tol=0.005)
+    except ImportError:
+        pendiente("Wilcoxon GP-bo64", "sin scipy")
+
+print("\n== 7.5 sobre las setenta ==")
+if not os.path.exists("benchmarks/eval_eps_all70.csv"):
+    pendiente("robustez sobre las 70", "sin eval_eps_all70.csv")
+else:
+    import statistics as _s70
+    from scipy.stats import wilcoxon as _w70
+    _e70 = {}
+    for r in __import__("csv").DictReader(
+            open("benchmarks/eval_eps_all70.csv", encoding="utf-8")):
+        _e70.setdefault(r["instance"], {})[r["method"]] = (
+            float(r["eps"]) * 1000, float(r["width_rel"]))
+    _i70 = sorted(_e70)
+    check_exacto("eps70: 70 instancias x 17 metodos",
+                 len(_i70) == 70 and all(len(v) == 17
+                                         for v in _e70.values()),
+                 f"{len(_i70)} x {len(next(iter(_e70.values())))}")
+
+    def _g70(f):
+        return {i: f(_e70[i]) for i in _i70}
+
+    _mor = _g70(lambda d: d["MOR"][0])
+    _gt = _g70(lambda d: d["GT-MWKR"][0])
+    _est = _g70(lambda d: d["EST"][0])
+    _gp1 = _g70(lambda d: d["GP"][0])
+    _gpb = _g70(lambda d: d["GP-bo64"][0])
+    _pg = _g70(lambda d: _s70.mean(d[f"policy-greedy-seed{s}"][0]
+                                   for s in (2, 3, 4)))
+    _pb = _g70(lambda d: _s70.mean(d[f"policy-bo64-seed{s}"][0]
+                                   for s in (2, 3, 4)))
+    _lb_ = _g70(lambda d: _s70.mean(d[f"lam1-seed{s}-bo64"][0]
+                                    for s in (2, 3, 4)))
+    for _nom, _dd, _v in [("MOR", _mor, 6.48), ("GT-MWKR", _gt, 6.27),
+                          ("EST", _est, 5.71), ("GP una pasada", _gp1, 5.66),
+                          ("GP bo64", _gpb, 5.56),
+                          ("politica greedy", _pg, 5.59),
+                          ("politica bo64", _pb, 5.48),
+                          ("robusto bo64", _lb_, 5.23)]:
+        check(f"eps70: {_nom} (texto {_v})", _v,
+              _s70.mean(_dd.values()), tol=0.006)
+
+    def _par70(a, b):
+        d = [a[i] - b[i] for i in _i70]
+        return (sum(1 for x in d if x < 0), _w70(d, method="exact").pvalue)
+
+    _n, _p = _par70(_pb, _mor)
+    check_exacto("eps70: politica mas fiel que MOR en 63/70, p<1e-10",
+                 _n == 63 and _p < 1e-10, f"{_n}/70 p={_p:.1e}")
+    _n, _p = _par70(_pb, _gt)
+    check_exacto("eps70: y que GT-MWKR en 65/70, p<1e-10",
+                 _n == 65 and _p < 1e-10, f"{_n}/70 p={_p:.1e}")
+    _n, _p = _par70(_pb, _est)
+    check_exacto("eps70: y que EST en 45/70, p=0.010",
+                 _n == 45 and 0.008 <= _p <= 0.014, f"{_n}/70 p={_p:.3f}")
+    _n, _p = _par70(_pb, _gp1)
+    check_exacto("eps70: nivelada con GP a una pasada (p=0.069)",
+                 0.06 <= _p <= 0.08, f"{_n}/70 p={_p:.3f}")
+    _n, _p = _par70(_pb, _gpb)
+    check_exacto("eps70: y con GP bo64 (p=0.39)",
+                 0.35 <= _p <= 0.42, f"p={_p:.2f}")
+    _n, _p = _par70(_pb, _pg)
+    check_exacto("eps70: muestrear no degrada a la politica (p=0.29)",
+                 0.26 <= _p <= 0.33, f"p={_p:.2f}")
+    _n, _p = _par70(_gpb, _gp1)
+    check_exacto("eps70: ni a la regla (p=0.54)",
+                 0.50 <= _p <= 0.58, f"p={_p:.2f}")
+    _n, _p = _par70(_lb_, _pb)
+    check_exacto("eps70: el robusto gana al default en 49/70, p<0.001",
+                 _n == 49 and _p < 1e-3, f"{_n}/70 p={_p:.1e}")
+    _wl = _s70.mean(_s70.mean(_e70[i][f"lam1-seed{s}-bo64"][1]
+                              for s in (2, 3, 4)) for i in _i70)
+    _wp = _s70.mean(_s70.mean(_e70[i][f"policy-bo64-seed{s}"][1]
+                              for s in (2, 3, 4)) for i in _i70)
+    check("eps70: ancho del robusto (texto 11.2)", 11.2, _wl, tol=0.05)
+    check("eps70: ancho del default (texto 11.8)", 11.8, _wp, tol=0.05)
+
+    # coherencia entre depositos: en las 15 instancias compartidas, el
+    # protocolo identico debe reproducir los valores del fichero de 15
+    _e15 = {}
+    for r in __import__("csv").DictReader(
+            open("benchmarks/eval_eps_all.csv", encoding="utf-8")):
+        _e15[(r["instance"], r["method"])] = float(r["eps"])
+    _difmax = max(abs(_e15[k] - _e70[k[0]][k[1]][0] / 1000)
+                  for k in _e15 if k[1] in _e70[k[0]])
+    check_exacto("eps70: reproduce el deposito de 15 en lo compartido",
+                 _difmax < 1e-9, f"dif max {_difmax:.2e}")
+
+print("\n== tab:irace: el espacio de busqueda ==")
+
+
+def _espacio(path):
+    """{nombre: (tipo, [valores])} de un parameters.txt de irace."""
+    out = {}
+    for linea in open(path, encoding="utf-8"):
+        linea = linea.strip()
+        if not linea or linea.startswith("#"):
+            continue
+        m = re.match(r'(\w+)\s+"[^"]*"\s+(\S+)\s+\((.*)\)', linea)
+        if m:
+            out[m.group(1)] = (m.group(2),
+                               [x.strip() for x in m.group(3).split(",")])
+    return out
+
+
+_c1 = _espacio("tuning/parameters.txt")
+_c2 = _espacio("tuning/parameters_serious.txt")
+print("\n== campana 3: los pesos del reward ==")
+_t3 = open("tuning/confirm_reward.log", encoding="utf-8",
+           errors="replace").read()
+_m3 = re.search(r"MEDIA\s+([\d.]+)\s+([\d.]+)\s+([+-][\d.]+)", _t3)
+check("5.3: la ganadora de pesos a 1000 eps (texto 14.04)", 14.04,
+      float(_m3.group(1)), tol=0.005)
+check("5.3: el default en la misma confirmacion (texto 13.55)", 13.55,
+      float(_m3.group(2)), tol=0.005)
+check_exacto("5.3: mejor en 7 de los 18 pares",
+             "mejor en 7 de 18 pares" in _t3)
+check("5.3: Wilcoxon de la confirmacion (texto 0.21)", 0.21,
+      float(re.search(r"Wilcoxon pareado: p=([\d.]+)", _t3).group(1)),
+      tol=0.005)
+check_exacto("5.3: el veredicto es la regla 1 del plan",
+             "sin mejora significativa" in _t3)
+# el reanalisis bajo la convencion 5.1 (R2-3, revision 2026-08-25):
+# reevaluacion determinista de los seis checkpoints, 6 medias por
+# instancia, Wilcoxon exacto
+_re3 = json.load(open("benchmarks/confirm_reward/reanalisis.json",
+                      encoding="utf-8"))
+check("5.3: el reanalisis reproduce la media ganadora", 14.04,
+      _re3["media_ganadora_18"], tol=0.005)
+check("5.3: el reanalisis reproduce la media default", 13.55,
+      _re3["media_default_18"], tol=0.005)
+check("5.3: reanalisis, p pre-registrado reproducido", 0.2097,
+      _re3["p_18pares_preregistrado"], tol=0.0005)
+check("5.3: reanalisis, p exacto sobre 6 medias (texto 0.31)", 0.3125,
+      _re3["p_6medias_exacto"], tol=0.0005)
+check_exacto("5.3: el suplementario da ambos p y la divulgacion",
+             "$p=0.21$" in SUP and "$p=0.31$" in SUP
+             and "immediately preceding" in SUP)
+# el espacio que se corrio: seis pesos, cada uno en [0,1]
+_p3 = _espacio("tuning/parameters_reward.txt")
+check_exacto("5.3: seis pesos, todos en [0, 1]",
+             len(_p3) == 6 and all(v[1] == ["0.0", "1.0"]
+                                   for v in _p3.values()),
+             str(sorted(_p3)))
+_l3 = open("tuning/irace_reward.log", encoding="utf-8",
+           errors="replace").read()
+check_exacto("5.3: 299 experimentos",
+             "# experimentsUsed: 299" in _l3)
+# la solo-terminal, eliminada en la primera ronda
+_sem = [l.split() for l in
+        open("tuning/configurations_reward.txt", encoding="utf-8")
+        .read().splitlines()[1:]]
+check_exacto("5.3: se sembro la solo-terminal (1,0,0,0,0,0)",
+             ["1.0", "0.0", "0.0", "0.0", "0.0", "0.0"] in _sem,
+             str(_sem))
+_it1 = _l3.split("Iteration 2 of")[0]
+_el1 = _it1.rsplit("Elite configurations", 1)[-1]
+check_exacto("5.3: la solo-terminal no sobrevive la primera ronda",
+             not re.search(r"^\s*2\s+1\.0+\s+0\.0+", _el1, re.M),
+             _el1.strip().splitlines()[-1][:60])
+# las cuatro elites finales: dispersion y concordancia entre semillas
+_fin = _l3.split("# Best configurations (")[1]
+_elites = [[float(x) for x in m.group(2).split()]
+           for m in re.finditer(r"\s*(\d+)\s+((?:[\d.]+\s*){6})$",
+                                _fin, re.M)]
+check_exacto("5.3: cuatro elites finales", len(_elites) == 4,
+             str(len(_elites)))
+_rango = max(max(c[j] for c in _elites) - min(c[j] for c in _elites)
+             for j in range(6))
+check("5.3: se diferencian hasta 0.48 en una componente", 0.48, _rango,
+      tol=0.005)
+_kw = [float(w) for _, w in re.findall(
+    r"\|\s*[-=x.:!]\s*\|.*?\|([-+][\d.]+)\|([\d.]+)\|",
+    _l3.rsplit("Iteration 5 of 5", 1)[-1])]
+check_exacto("5.3: Kendall W de 0.02 a 0.05 al final de la carrera",
+             _kw and 0.02 <= min(_kw[-5:]) and max(_kw[-5:]) <= 0.05,
+             " ".join(f"{w:.2f}" for w in _kw[-5:]))
+
+# el limite de resolucion que 5.3 declara: sd 0.46 entre medias de
+# semilla y n=3 por brazo dan ~1 punto de efecto minimo detectable
+_mde = 2.8 * 0.46 * (2.0 / 3) ** 0.5
+check("5.3: tres semillas resuelven ~1 punto de RE", 1.0, _mde, tol=0.11)
+check_exacto("5.3: y el 0.46 es el de 6.1",
+             "$0.46$ at $1000$" in TEX and "$0.46$-point" in TEX)
+# la contraprueba de que la inyeccion por entorno llega al modelo: la
+# elite 27 llevaba hidden=64 y su checkpoint no tiene 120.322 parametros
+try:
+    import torch as _th
+
+    _d27 = sorted(glob.glob("outputs/bench_v2-elite27-1000ep__*_seed2"))
+    if _d27:
+        _sd27 = _th.load(_d27[0] + "/best_model.pt", map_location="cpu",
+                         weights_only=True)
+        _r27 = _sd27.get("network", _sd27)
+        _w27 = next(v for k, v in _r27.items()
+                    if k.endswith("weight") and v.dim() == 2
+                    and v.shape[1] == 16)
+        check_exacto("5.3: la inyeccion por entorno llego al modelo "
+                     "(elite 27, hidden 64)", int(_w27.shape[0]) == 64,
+                     f"hidden={int(_w27.shape[0])}")
+except Exception as e:
+    pendiente("inyeccion de la elite 27", f"no medible ({type(e).__name__})")
+
+check_exacto("campana 1: 8 parametros", len(_c1) == 8, str(len(_c1)))
+check_exacto("campana 2: 6 parametros", len(_c2) == 6, str(len(_c2)))
+check_exacto("campana 2 fija minibatch y update-every",
+             "minibatch" not in _c2 and "updateevery" not in _c2)
+
+# los rangos que imprime la tabla, contra los ficheros
+ESPERADO = {
+    "lr": ("0.0001", "0.001"), "entropy": ("0.003", "0.03"),
+    "clip": ("0.1", "0.2", "0.3"), "kepochs": ("2", "4", "8"),
+    "minibatch": ("128", "256", "512"), "updateevery": ("2", "4", "8"),
+    "gae": ("0.90", "0.95", "0.98"), "hidden": ("64", "128", "256"),
+}
+_mal = [k for k, v in ESPERADO.items() if tuple(_c1[k][1]) != v]
+check_exacto("tab:irace, columna de la campana 1", not _mal, str(_mal))
+ESPERADO2 = {"kepochs": ("4", "8"), "hidden": ("128", "256"),
+             "clip": ("0.1", "0.2", "0.3"),
+             "gae": ("0.90", "0.95", "0.98")}
+_mal2 = [k for k, v in ESPERADO2.items() if tuple(_c2[k][1]) != v]
+check_exacto("tab:irace, columna de la campana 2", not _mal2, str(_mal2))
+
+# la afirmacion del pie: todo defecto cae dentro del espacio buscado
+DEFECTOS = {"lr": 3e-4, "entropy": 0.01, "clip": 0.2, "kepochs": 4,
+            "minibatch": 256, "updateevery": 4, "gae": 0.95, "hidden": 128}
+_fuera = []
+for k, d in DEFECTOS.items():
+    tipo, vals = _c1[k]
+    if tipo.startswith("r"):
+        if not float(vals[0]) <= d <= float(vals[1]):
+            _fuera.append(k)
+    elif str(d) not in [v.lstrip("0") or "0" for v in vals] \
+            and not any(abs(float(v) - d) < 1e-9 for v in vals):
+        _fuera.append(k)
+check_exacto("todo defecto esta dentro del espacio buscado", not _fuera,
+             str(_fuera))
+
+# los presupuestos declarados en los escenarios
+for fichero, v_tex in [("tuning/scenario.txt", 330),
+                       ("tuning/scenario_serious.txt", 300)]:
+    txt = open(fichero, encoding="utf-8").read()
+    m = re.search(r"maxExperiments\s*=\s*(\d+)", txt)
+    check_exacto(f"{fichero.split('/')[-1]}: presupuesto {v_tex}",
+                 m and int(m.group(1)) == v_tex,
+                 m.group(1) if m else "?")
+
+# el cuerpo explica la figura del Gantt con los extremos de s_o y
+# c_o, que la Ec. (1) tiene que declarar antes de usarlos
+check_exacto(
+    "extremos de s_o y c_o declarados",
+    "s^{L}_{o},\\,s^{U}_{o}" in TEX and "c^{L}_{o},\\,c^{U}_{o}" in TEX,
+    "declaracion en la Ec. (1)")
+
+# el ejemplo de la figura del Gantt se explica en el cuerpo del
+# texto, no en la leyenda: se recalcula con el mismo entorno que
+# lo dibuja
+try:
+    import importlib.util as _ilu
+    _spec = _ilu.spec_from_file_location(
+        "_mgf", "scripts/make_gantt_figure.py")
+    _mgf = _ilu.module_from_spec(_spec)
+    _spec.loader.exec_module(_mgf)
+    _sched, (_glo, _gup) = _mgf.construye()
+    _llano = re.sub(r"\s+", " ", TEX)
+    _m = re.search(r"makespan is \$\[(\d+),(\d+)\]\$", _llano)
+    check_exacto("figura del Gantt: makespan del ejemplo",
+                 bool(_m) and (int(_m.group(1)), int(_m.group(2)))
+                 == (int(_glo), int(_gup)),
+                 f"figura [{_glo:.0f},{_gup:.0f}] / texto "
+                 f"{_m.groups() if _m else '?'}")
+    check_exacto("figura del Gantt: nueve operaciones dibujadas",
+                 len(_sched) == 9, str(len(_sched)))
+    _fin = [_mgf.extremos(_c) for _c in _mgf.EJEMPLO_FIN]
+    _m2 = re.search(r"job~2 completing in \$\[(\d+),(\d+)\]\$ and job~3 in \$\[(\d+),(\d+)\]\$", _llano)
+    check_exacto("figura del Gantt: fin de los trabajos 2 y 3",
+                 bool(_m2) and [int(_x) for _x in _m2.groups()]
+                 == [int(_fin[1][0]), int(_fin[1][1]),
+                     int(_fin[2][0]), int(_fin[2][1])],
+                 f"{_fin[1]} {_fin[2]} / "
+                 f"{_m2.groups() if _m2 else '?'}")
+    _lo = [_f[0] for _f in _fin]
+    _up = [_f[1] for _f in _fin]
+    check_exacto(
+        "figura del Gantt: cada extremo de Cmax en un trabajo",
+        _lo.index(max(_lo)) != _up.index(max(_up))
+        and _lo.count(max(_lo)) == 1 and _up.count(max(_up)) == 1,
+        f"L<-job {_lo.index(max(_lo)) + 1}, "
+        f"U<-job {_up.index(max(_up)) + 1}")
+    _cap = re.search(r"\\caption\{([^}]*)\}[^%]*?fig:gantt", TEX, re.S).group(1).split()
+    check_exacto("figura del Gantt: leyenda breve",
+                 len(_cap) <= 25, f"{len(_cap)} palabras")
+except Exception as _e:                                  # noqa: BLE001
+    pendiente("figura del Gantt", f"{type(_e).__name__}: {_e}")
+
+print(f"\n{ok_n} comprobaciones correctas, {fallo_n} fallos, "
+      f"{pend_n} pendientes de fuente")
+
+# codigo de salida distinto de cero si algo fallo: sin esto el
+# verificador no sirve como comprobacion automatizable
+# (revision del 2026-08-26)
+sys.exit(1 if fallo_n else 0)

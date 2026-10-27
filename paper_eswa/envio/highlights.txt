@@ -1,0 +1,7 @@
+Highlights
+
+- A size-invariant deep RL policy schedules interval job shops of any size
+- Trained on one size class, it beats every priority rule on all 70 instances
+- Thirty artifacts per paradigm compared in one harness at one constructive pass
+- Which learner leads is decided by the inference budget and the size class
+- A width penalty narrows policy schedules mainly by selection, GP by structure

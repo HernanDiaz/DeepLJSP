@@ -1,0 +1,2246 @@
+%% Plantilla Elsevier (elsarticle) para Expert Systems with Applications:
+%% una columna, autor-anyo (elsarticle-harv, APA en la guia), revision
+%% doblemente anonima. Copia de paper/ (version EAAI, rechazada sin
+%% revision el 2026-10-25), que queda intacta.
+\documentclass[preprint,authoryear,12pt]{elsarticle}
+
+% T1: la clase no lo carga y \DJ (Đurašević) no existe en OT1.
+% lmodern ANTES: sin el, T1 cae en las EC de mapa de bits (Type 3) y el
+% PDF de envio deja de ser vectorial.
+% elsarticle a 12pt deja 390pt de linea, demasiado
+% estrecho para las tablas anchas de este paper
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+% Sin barreras, la cola de flotantes de la seccion de resultados se
+% desbordaba sobre la de analisis y cada figura aparecia dos o tres
+% paginas despues del parrafo que la cita, junto a texto de otra
+% subseccion. FloatBarrier obliga a resolverlos antes de seguir.
+\usepackage{placeins}
+% Con los valores por defecto LaTeX se rinde enseguida y encola; estos
+% le dejan poner hasta tres flotantes arriba y llenar mas pagina antes
+% de mandarlos a una pagina propia.
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.6}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.75}
+\setcounter{topnumber}{3}
+\setcounter{totalnumber}{4}
+\usepackage{amsmath,amssymb}
+\usepackage{amsthm}
+\usepackage{booktabs}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{xcolor}
+% (tikz ya no se usa: la figura de arquitectura viene como PDF vectorial
+% generado por fig_arch_svg.py, con la fuente Times registrada)
+
+% elsarticle no carga hyperref; DOIs como enlaces completos
+\usepackage[hidelinks]{hyperref}
+\providecommand{\doi}[1]{\href{https://doi.org/#1}{\nolinkurl{https://doi.org/#1}}}
+
+\newcommand{\ECmax}{E[\mathbf{C}_{\max}]}
+\newcommand{\Cmax}{\mathbf{C}_{\max}}
+\newcommand{\LBi}{\widehat{\mathrm{LB}}}
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
+\raggedbottom
+
+\journal{Expert Systems with Applications}
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{Deep Reinforcement Learning for the Interval Job Shop
+Scheduling Problem: A Comparison with Genetic Programming
+Hyper-Heuristics across Inference Budgets}
+
+%<<IDENTIDAD (el generador del envio anonimo elimina este bloque;
+% ORCID se introduce en Editorial Manager al enviar)
+\author[1]{Hern\'an D\'iaz Rodr\'iguez}
+\ead{diazhernan@uniovi.es}
+\author[2]{Jes\'us Gil Ruiz}
+\ead{jesus.gil@universidadeuropea.es}
+\address[1]{Department of Computing, University of Oviedo,
+Gij\'on, Spain}
+\address[2]{Universidad Europea de Madrid, Madrid, Spain}
+%IDENTIDAD>>
+
+\begin{abstract}
+The interval job shop scheduling problem (IJSP) models each uncertain
+processing time as an interval between known bounds and is solved in
+the literature by per-instance metaheuristic search. This paper
+contributes a constructive deep reinforcement learning policy for the
+problem, with dimensionless features and a permutation-invariant
+encoder, so that one trained network schedules any size
+without retraining or architectural change. Trained on a single
+size class, the validation-selected policy improves on every
+hand-crafted rule on all seventy benchmark instances, six
+of the seven size classes unseen. It further contributes a
+controlled comparison against genetic programming hyper-heuristics in
+one harness at matched inference budgets, over thirty trained
+artifacts per family at one constructive pass and over the selected
+pair when sampling, which shows that neither learned
+paradigm dominates: the leader is decided by the inference budget and
+the size class. The rule leads by $0.8$ points of relative error at one
+constructive pass each; the two draw level at $64$ sampled schedules,
+and the policy passes the rule at $1024$ by $0.6$. On instances
+neither family has seen that advantage holds up to $30{\times}20$ and
+on twelve classical instances outside the training family, while on
+the two largest classes the rule leads at every budget. The paradigms
+also differ in where a width-penalizing objective acts: the policy
+narrows its schedules mainly through sample selection, whereas the
+same objective acts through the evolved representation in the rules.
+\end{abstract}
+
+\begin{keyword}
+job shop scheduling \sep interval uncertainty \sep deep
+reinforcement learning \sep neural combinatorial optimization \sep
+genetic programming hyper-heuristics \sep size invariance
+\end{keyword}
+
+\end{frontmatter}
+
+\section{Introduction}
+\label{sec:intro}
+
+In the job shop scheduling problem (JSP), every job visits the
+machines of a shop in its own prescribed order, and the task is to
+sequence the operations on each machine so that the overall
+completion time is as small as possible. The
+problem lies at the core of manufacturing operations planning:
+NP-hard~\citep{GareyJohnson1976}
+and industrially ubiquitous, it is studied predominantly under the
+assumption that every processing time is known exactly. Real
+production environments seldom satisfy that assumption: schedules are
+committed before the work they plan is executed, and the processing
+times they assume are no more than estimates, displaced in practice
+by tool wear, operator variability and material differences. Among
+the formalisms proposed for this uncertainty, stochastic and fuzzy
+models~\citep{GonzalezRodriguez2010} require the decision maker to
+supply probability distributions or membership functions; the
+\emph{interval} model requires only bounds. In the resulting
+interval JSP (IJSP), each duration is a closed interval, schedule
+evaluation propagates those intervals, and the makespan is itself an
+interval, compared through a ranking criterion~\citep{Lei2011,
+DiazICAE2023}.
+
+The state of the art in IJSP makespan minimization is currently
+held by per-instance metaheuristic search: elitist artificial bee colony
+algorithms~\citep{DiazFEABC2023,DiazICAE2023} reach mean relative
+errors (RE, measured against crisp Taillard lower bounds) between
+roughly $6\%$ and $16\%$ depending on the size class. This cost is structural: the search must
+be repeated for every new instance, at seconds to minutes per run on
+dedicated hardware.
+
+At the opposite end of the computational spectrum lie
+\emph{constructive} methods, which build a schedule in a single pass
+without search. The classical representatives are priority dispatching
+rules, myopic functions such as shortest processing time or most
+operations remaining~\citep{Panwalkar1977,Haupt1989}, which are fast
+and interpretable but leave a wide quality gap on the IJSP. Genetic
+programming (GP) hyper-heuristics narrow that gap by evolving
+dispatching rules offline from a training
+set~\citep{Branke2016,Nguyen2017}; a rule recently evolved for the
+interval benchmark studied here~\citep{DiazGP2026} constitutes the
+strongest constructive baseline available. Both families deliver
+schedules at negligible per-instance cost, which makes them the
+natural referents and competitors for a learned policy.
+
+The deterministic scheduling literature has developed a third
+constructive approach, \emph{learning to dispatch}: a deep
+reinforcement learning (DRL) agent builds the schedule constructively,
+choosing one eligible operation at a
+time~\citep{Zhang2020L2D,Park2021GNN,Tassel2021}. The
+training cost is incurred once; thereafter the policy returns a
+schedule for a new instance in seconds, which makes it attractive both
+as a standalone solver under tight time budgets and as an initializer
+for search. This paradigm has not, however, been extended to interval
+durations: a recent survey of
+learning-based job shop scheduling~\citep{Xu2025} lists no method
+addressing interval-valued processing times.
+
+Two obstacles separate standard JSP-DRL designs from the IJSP.
+The first is representational: the natural assumption, and the one
+this line of work has operated under, is that the uncertainty must be
+observable to the agent, which should treat an operation with
+duration $[10,11]$ differently from one with duration $[5,16]$ even
+though both share the same midpoint. The second is
+architectural: the amortization argument that motivates learning
+requires one network to serve instances of any size. Designs that
+encode the instance as a fixed-dimension tensor are tied to the size
+class they were trained on, and graph-based encoders achieve size
+transfer~\citep{Zhang2020L2D,Park2021GNN} through message passing
+over the full disjunctive graph; whether the same invariance can be
+obtained with a substantially simpler encoder is a design question
+this paper answers in the affirmative.
+
+This paper builds the policy those obstacles call for and uses it to
+compare the two families of learned constructive heuristic on the same
+ground. \emph{Q1:} which of the two produces the better schedules for
+the IJSP, and does the answer hold across inference budgets, instance
+sizes and shop families? \emph{Q2:} where in each paradigm does the
+handling of the uncertainty live, that is, which uses of the interval
+information are load-bearing for a policy and which are inert, and at
+what stage of each method does an objective that values robustness
+act? \emph{Q3:} what does either learner buy over the hand-crafted
+rules it replaces, and where do both stand relative to the
+per-instance metaheuristic state of the art?
+
+\paragraph{Contributions}
+\begin{enumerate}
+\item \emph{A size-invariant constructive DRL policy for the
+  IJSP} (Section~\ref{sec:method}), and to the best of our knowledge
+  the first application of deep reinforcement learning to this
+  problem: the uncertainty axis of the neural scheduling literature
+  reaches stochastic and fuzzy durations but not interval ones
+  (Section~\ref{sec:related-learning}). All features are dimensionless:
+  temporal quantities are scaled by a per-instance lower bound and
+  interval uncertainty enters as relative widths. A Deep
+  Sets~\citep{Zaheer2017} encoder over the eligible-operation set,
+  combined with a pooled global context, yields policy \emph{and}
+  value networks with no dimension depending on the numbers of jobs
+  and machines.
+\item \emph{A head-to-head comparison of the two learned constructive
+  paradigms, deep reinforcement learning and genetic programming
+  hyper-heuristics, under a shared protocol}
+  (Sections~\ref{sec:positioning} and~\ref{sec:results-classics}),
+  whose absence from the literature the survey of~\citet{Xu2025}
+  highlights. Thirty evolved rules against thirty trained policies,
+  on the 70 benchmark instances and on twelve classical ones, run in
+  a single harness that fixes the instances, the interval arithmetic,
+  the ranking criterion, the inference budgets and the execution
+  realizations, with per-instance results reported in full
+  (supplementary material). Thirty meet thirty at one constructive
+  pass; at the sampled budgets the contrast is between the artifact
+  each family selects on the validation instances. Which of the two
+  leads is decided by the inference budget and by the size class: on
+  instances neither family has seen, the two are level up to
+  $30{\times}20$ until the budget reaches $1024$ schedules, where the
+  policy leads, and the rule leads at every budget on the two
+  largest classes.
+\item \emph{A localization of where each paradigm handles the
+  uncertainty} (Section~\ref{sec:ablations-interval}), in three
+  parts. The mechanism the design offers: schedule selection ranks
+  by the worst case first and consults widths only on ties of that
+  key, measured to decide two per cent of selections, while the
+  training signal retains one lower-endpoint term, so what the widths
+  contribute is settled empirically rather than assumed. Its
+  examination on the trained policy: a permutation
+  audit and two retraining ablations that probe the widths as inputs,
+  whose effect on unseen instances is bounded within a third of a
+  point either way, and the intervals as training data. And the contrast between the paradigms: a width-penalizing
+  objective narrows the policy's schedules mainly through sample
+  selection, no systematic narrowing surviving a common selection
+  criterion, and acts through the evolved representation in the GP
+  study~\citep{DiazGP2026}.
+\item \emph{An account of which standard components earn their cost}
+  (Sections~\ref{sec:arch}, \ref{sec:hyperconfig}
+  and~\ref{sec:analysis}): best-of-$N$ inference does,
+  self-attention and three automatic-configuration campaigns do not,
+  and under Monte Carlo execution the learned schedules track their
+  predicted makespans more faithfully than those of every
+  hand-crafted rule.
+\end{enumerate}
+
+Section~\ref{sec:related} reviews related work and
+Section~\ref{sec:problem} states the problem.
+Section~\ref{sec:method} presents the policy,
+Section~\ref{sec:setup} the experimental methodology and
+Section~\ref{sec:results} the results;
+Section~\ref{sec:analysis} analyses them and states the limitations,
+and Section~\ref{sec:conclusions} concludes.
+
+\section{Related Work}
+\label{sec:related}
+
+\subsection{Job shop scheduling under interval uncertainty}
+
+Uncertain processing times have been modeled with probability
+distributions, fuzzy numbers and intervals. The fuzzy line is the most
+mature: durations are represented as fuzzy numbers, schedules are
+compared through the expected value of their fuzzy makespan, and two
+decades of population-based solvers have consolidated both the model
+and its evaluation
+conventions~\citep{GonzalezRodriguez2010,Abdullah2014,Palacios2015}.
+The interval model can be read as the minimal-commitment limit of
+that representation: it retains only the support bounds, asks the
+decision maker for no shape information inside them, and is the
+standard minimal description of uncertainty in robust discrete
+optimization at large, where it underpins min--max and
+min--max-regret formulations~\citep{Kouvelis1997,Kasperski2016}.
+\citet{Lei2011} opened the interval JSP line, propagating interval
+durations through the schedule with interval arithmetic and steering
+a population-based neighborhood search by direct comparison of
+interval makespans. Later work broadened both the model and its
+toolkit. \citet{DiazGA2020} compared the candidate interval rankings
+systematically within a genetic algorithm and identified the
+lexicographic criterion adopted in this paper as the most robust
+choice for the problem; \citet{DiazTardiness2022} shifted the
+objective to total tardiness and paired it with explicit robustness
+measures; \citet{Sotskov2020} delimited analytically solvable special
+cases; and \citet{Zheng2024} carried interval durations into richer
+shop variants. On the Taillard-derived benchmark used here, the
+strongest published makespan results belong to the elitist artificial
+bee colony family~\citep{DiazICAE2023,DiazFEABC2023}, whose
+successive refinements, elitist replacement and neighborhood
+filtering among them, progressively reduced the mean relative error
+to the single digits on most size classes; these works also
+fixed the evaluation conventions this paper adopts (interval
+arithmetic, lexicographic ranking during construction, expected
+makespan for reporting). Common to the whole line is per-instance
+search; fast constructive alternatives for the IJSP have begun to be
+explored only recently, through the evolved rule discussed in
+Section~\ref{sec:related-gp}.
+
+\subsection{Priority dispatching rules}
+\label{sec:related-rules}
+
+The oldest constructive approach to the job shop builds a schedule in
+a single left-to-right pass, repeatedly choosing which of the eligible
+operations to place next. A \emph{priority dispatching rule} makes
+that choice by scoring the candidates with a fixed formula over their
+attributes. Surveys catalogue well over a hundred
+variants~\citep{Panwalkar1977,Haupt1989,Durasevic2018}; the baselines
+of this paper are the classical single-attribute ones, retained with
+their usual acronyms. Shortest and longest processing time (SPT, LPT)
+read the operation itself, earliest starting time (EST) reads the
+schedule built so far, and most work remaining and most operations
+remaining (MWKR, MOR) read the job the operation belongs to, counting
+its pending work in time units and in operations respectively. Under
+interval durations these attributes are intervals, and candidates are
+compared with the ranking of Section~\ref{sec:problem}.
+
+The active-schedule generator of \citet{GifflerThompson1960} is a
+refinement of the dispatching step rather than a rule: it restricts
+the candidates to the conflict set of the machine that would finish
+earliest and applies a priority rule only within that set,
+guaranteeing \emph{active} schedules, in which no operation can be
+started earlier without delaying another. The restriction is worth
+more than the choice of rule it wraps, taking MWKR from $64.7\%$ to
+$29.5\%$ of RE on the benchmark used here; G\&T-SPT and G\&T-MWKR
+denote the two combinations reported below.
+
+One pass and no search makes these rules the cheapest constructive
+option available, and a fixed formula suiting neither every shop nor
+every objective~\citep{Haupt1989} is what motivates learning one
+instead, by either of the two routes that follow. It is also why a
+constructive policy is measured against them rather than against
+per-instance metaheuristics, which belong to a different
+computational class.
+
+\subsection{Genetic programming hyper-heuristics}
+\label{sec:related-gp}
+
+Learning constructive heuristics is older than its neural
+incarnation. Genetic programming hyper-heuristics evolve priority
+expressions, trees over hand-crafted attributes such as processing
+time or work remaining, offline on a training set, and deploy the
+best expression as an ordinary dispatching rule: the artifact is
+interpretable and its inference cost is that of evaluating a formula.
+Design choices (attribute sets, fitness, generalization across
+instances) are reviewed by \citet{Branke2016}, and \citet{Nguyen2017}
+organize the broader family under a unified framework. For the job
+shop specifically, \citet{Nguyen2013} showed that the choice of rule
+representation materially shapes the quality of the evolved
+dispatchers, and \citet{Karunakaran2016} evolved rules for dynamic
+job shops with uncertain processing times, exposing duration
+deviations to the rules as attributes, under an uncertainty model
+that is, once again, distributional rather than interval-valued. A recent
+study~\citep{DiazGP2026} develops the GP side for the interval
+benchmark used here, evolving interval-aware rules under the same
+ranking and evaluation conventions, with both a deterministic pass
+and a sampling variant.
+
+\subsection{Neural constructive policies for scheduling}
+\label{sec:related-learning}
+
+Neural combinatorial optimization began with pointer
+networks~\citep{Vinyals2015}, sequence models that emit a permutation
+of their input and can therefore represent tours and schedules;
+\citet{Bello2016} trained them with policy gradients, removing the
+need for supervised targets, and attention-based
+encoder--decoders trained against greedy-rollout baselines then
+became the standard for routing~\citep{Kool2019,Nazari2018}.
+Reinforcement learning for job-shop dispatching predates the deep
+era: \citet{Gabel2008} already learned decentralized dispatching
+policies by gradient ascent. Its modern applications to machine
+scheduling are surveyed by \citet{Kayhan2023}. For the deterministic
+JSP the reference design is that of \citet{Zhang2020L2D}: the partial
+schedule is encoded as a disjunctive graph, a graph neural network
+embeds it, and the policy trained by PPO on small synthetic instances
+generalizes zero-shot to larger ones while surpassing the classical
+priority rules. \citet{Park2021GNN} refine that representation and
+document the cross-size generalization explicitly.
+\citet{Ou2026HetGraph} add the machines as nodes of a dynamic
+heterogeneous graph, which improves both the state representation and
+the transfer across benchmark sizes.
+\citet{Tassel2021} show that the environment formulation
+itself (state design and reward shaping) accounts for a substantial
+share of the attainable performance. The paradigm has since expanded
+along three axes: to richer shops, with heterogeneous-graph and
+lightweight perceptron policies for the flexible
+JSP~\citep{Song2023FJSP,Yuan2024FJSP}; from construction to
+improvement, with DRL-guided local search over complete
+schedules~\citep{Zhang2024L2S}; and toward uncertainty. On that third
+axis, \citet{Grumbach2024} size slack buffers in stochastic flow
+shops under a distributional, event-driven model;
+\citet{Smit2024Stochastic} extend constructive policies to stochastic
+processing times by processing sampled duration scenarios with an
+attention module; and \citet{Wang2025FuzzyAR} train an autoregressive
+generative model for the fuzzy job shop. The interval
+representation, the minimal of these uncertainty models, remains
+unaddressed by this literature, which is the gap the present paper
+fills.
+
+Two further components of the toolbox matter here. Sampling several
+rollouts at inference and keeping the best is a standard quality
+lever whose returns grow with the diversity of the learned
+distribution~\citep{Kool2019,Kwon2020}. Permutation-invariant set
+encoders were formalized as Deep Sets~\citep{Zaheer2017}, of which
+self-attention is the natural strict generalization; the architecture
+of Section~\ref{sec:arch} builds on the former, and the latter is
+evaluated as a controlled ablation in the supplementary material.
+
+The survey by \citet{Xu2025} compares the GP and RL families for job
+shop scheduling and notes the scarcity of comparisons under a common
+protocol. The availability of the evolved rule of
+Section~\ref{sec:related-gp} on the very benchmark studied here lets
+Section~\ref{sec:positioning} put the two learned artifacts on the
+same instances at matched \emph{inference} budgets.
+
+\section{Problem Statement}
+\label{sec:problem}
+
+\begin{definition}[IJSP]
+An IJSP instance comprises $n$ jobs $J_1,\dots,J_n$ and $m$ machines,
+indexed $1,\dots,m$.
+Job $J_j$ is a fixed sequence of $m$ operations
+$(o_{j1},\dots,o_{jm})$, where operation $o_{jk}$ requires machine
+$\nu_{jk}\in\{1,\dots,m\}$ and an uncertain processing time known
+only to lie in the interval
+$\mathbf{p}_{jk}=[p^{L}_{jk},\,p^{U}_{jk}]$, with $0\le p^L_{jk}\le
+p^U_{jk}$. Each job visits each machine exactly once, so
+$(\nu_{j1},\dots,\nu_{jm})$ is a permutation of the machine indices.
+Each machine processes at most one operation at a time, operations of
+the same job cannot overlap, and preemption is not allowed.
+\end{definition}
+
+A solution is a processing order of all $nm$ operations, that is, a
+sequence in which $o_{jk}$ appears before $o_{j,k+1}$ for every job
+$j$ and every $k<m$. We encode it as a \emph{permutation with
+repetition} of job indices, where the $k$-th occurrence of $j$
+denotes $o_{jk}$. The order induces, on each machine, a sequence over
+the operations that require it, and its \emph{semiactive schedule}
+starts every operation as early as those sequences permit: no
+operation can start before its job predecessor $JP(o_{jk})=o_{j,k-1}$
+or its machine predecessor $MP(o_{jk})$, the operation immediately
+preceding $o_{jk}$ on machine $\nu_{jk}$ in the induced sequence,
+have completed. With component-wise interval
+addition $[a,b]+[c,d]=[a+c,\,b+d]$ and join
+$\max([a,b],[c,d])=[\max(a,c),\max(b,d)]$, the start and completion
+times of every operation are themselves intervals, given by the
+recursion
+\begin{equation}
+\mathbf{s}_{o}=\max\!\big(\mathbf{c}_{JP(o)},\,\mathbf{c}_{MP(o)}\big),
+\qquad
+\mathbf{c}_{o}=\mathbf{s}_{o}+\mathbf{p}_{o},
+\label{eq:semiactive}
+\end{equation}
+with the completion of a missing predecessor taken as $[0,0]$, and
+with $\mathbf{s}_{o}=[s^{L}_{o},\,s^{U}_{o}]$ and
+$\mathbf{c}_{o}=[c^{L}_{o},\,c^{U}_{o}]$ for their endpoints.
+The interval makespan collects the job completions component-wise,
+\begin{equation}
+\Cmax=\Big[\max_{j} c^{L}_{o_{jm}},\;\max_{j} c^{U}_{o_{jm}}\Big]
+=:\big[C^{L}_{\max},\,C^{U}_{\max}\big].
+\label{eq:cmax}
+\end{equation}
+A \emph{realization} of the instance assigns to each operation a
+crisp duration $p_{jk}\in\mathbf{p}_{jk}$; \emph{executing} a
+processing order under a realization means evaluating the recursion
+of Eq.~\eqref{eq:semiactive} with those crisp durations, which yields
+a crisp makespan. Because the recursion is monotone in the durations,
+the executed makespan of \emph{every} realization falls inside
+$\Cmax$, whose two endpoints are themselves the makespans of the two
+corner realizations. Figure~\ref{fig:gantt} draws both for one
+processing order: every operation $o$ is a single shape whose upper
+edge runs from $s^{L}_{o}$ to $c^{L}_{o}$ and whose lower edge runs
+from $s^{U}_{o}$ to $c^{U}_{o}$, so the upper edges are the schedule
+of the lower corner realization and the lower edges that of the
+upper one, while the two sloped sides are the slack in the start and
+in the completion. There the makespan is $[26,35]$, with job~2
+completing in $[26,34]$ and job~3 in $[25,35]$: the two endpoints of
+Eq.~\eqref{eq:cmax} come from different jobs, and neither is the
+completion of a single one.
+
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig_gantt.pdf}
+  \caption{A processing order on a $3\times3$ interval instance and
+  the family of schedules it induces.}
+  \label{fig:gantt}
+\end{figure} Intervals carry no canonical total order, so
+schedule comparison requires a ranking choice; during construction and
+search we use the lexicographic order
+\begin{equation}
+\mathbf{a}\prec_{lex}\mathbf{b}
+\iff
+a^{U}<b^{U} \;\vee\; \big(a^{U}=b^{U}\wedge a^{L}<b^{L}\big)
+\label{eq:lex}
+\end{equation}
+for intervals $\mathbf{a}=[a^L,a^U]$ and $\mathbf{b}=[b^L,b^U]$,
+which prioritizes the worst case, in line with min--max robust
+optimization~\citep{Bertsimas2004,Kasperski2016}. The optimization
+problem is then to find a processing order whose interval makespan is
+minimal under this order. This modeling
+choice is not reopened here: a systematic study of the alternative
+ranking criteria found the lexicographic order the most robust for
+this problem~\citep{DiazGA2020}, and it is kept fixed throughout so
+that every method in this paper is judged by the same
+criterion. For reporting we follow the field
+convention~\citep{DiazGA2020,DiazICAE2023}, which writes the interval
+midpoint as $\ECmax$ and uses it as the scalar summary of an interval
+makespan; the notation is conventional, as under an interval-only
+model of uncertainty no distribution is specified and the midpoint is
+a proxy rather than a derived expectation:
+\begin{equation}
+\mathrm{RE}(\%)=\frac{\ECmax-\mathrm{LB}}{\mathrm{LB}}\times100,
+\qquad \ECmax=\tfrac12\big(C^L_{\max}+C^U_{\max}\big),
+\label{eq:re}
+\end{equation}
+with LB the published lower bound of the crisp Taillard
+counterpart~\citep{Taillard1993}, an indicative,
+hardware-independent yardstick rather than a strict optimality gap, since the crisp JSP and
+the IJSP are different problems.
+
+Every element of this section is shared with the genetic programming
+study this paper compares against~\citep{DiazGP2026}.
+
+\section{Method}
+\label{sec:method}
+
+Reinforcement learning is learning to decide from experience. An
+\emph{agent} interacts with an environment in steps: it observes the
+current \emph{state} $s$, chooses an \emph{action} $a$ among those
+available, and receives a numeric \emph{reward} signalling how good
+the consequences were. The agent's behavior is its \emph{policy}
+$\pi(a\,|\,s)$: a function that, given the state $s$, assigns a
+probability to each available action $a$. The policy is the object of
+learning: training increases the probability of actions followed by a
+high cumulative reward (the \emph{return}).
+
+Policy-gradient methods such as PPO~\citep{Schulman2017} judge an
+action not by its return alone but by comparing that return with what
+was \emph{expected} from the state where the action was taken; only
+the surplus, the \emph{advantage}, moves the policy. The
+expectation is itself learned: a \emph{value function} $V(s)$
+estimates the return attainable from state $s$. In practice both
+functions share one network with two outputs, a \emph{policy head}
+that scores the available actions and a \emph{value head} that
+estimates $V(s)$, trained jointly. This is why the network in this
+paper has two heads.
+
+Instantiated on scheduling, the agent is a dispatcher and schedule
+construction is a finite-horizon \emph{Markov decision process} of
+exactly $nm$ steps, one per operation. The state after $t$ steps is
+the partial schedule (each job's next-operation pointer, the job and
+machine completion intervals), a sufficient statistic for the
+remaining decisions; the available actions are the \emph{eligible}
+operations, that is, the next unscheduled operation of each job,
+collected in the set $\mathcal{E}_t$ with $1\le|\mathcal{E}_t|\le n$
+and written $\mathcal{E}$ when the step is immaterial. The generic
+$\pi(a\,|\,s)$ thus specializes to $\pi(i\,|\,s)$, a distribution
+over which eligible operation $i$ to schedule next; the transition
+applies Eq.~\eqref{eq:semiactive} deterministically; an
+\emph{episode} is the construction of one complete schedule, and the
+reward is a function of the makespan achieved. The trained policy is then a
+dispatching criterion in its own right: at each step it orders the
+eligible operations by preferences learned from experience rather than
+by a fixed, hand-written formula.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_arch.pdf}
+\caption{The size-invariant policy/value network. Solid edges are the
+base model's data path; the grey dashed edge is the per-candidate
+skip connection; the dashed detour is the self-attention variant reported
+in the supplementary material, not part of the base model ($B{=}0$).}
+\label{fig:arch}
+\end{figure}
+
+Figure~\ref{fig:arch} shows the network, read from the input at the
+top down to the two outputs. Each
+eligible operation enters as a row of $16$ numbers that describe it:
+how long it may take, how much work its job still carries, how soon it
+could start (Section~\ref{sec:features}). A multilayer
+perceptron (MLP), the \emph{same} one for every candidate, turns
+each row into an \emph{embedding}: a vector of $h$ learned quantities
+that re-describe the candidate.
+
+The number of candidates varies from step to step, so the embeddings
+are \emph{pooled}: their mean and their componentwise maximum are two
+fixed-size summaries of the whole set. Joined with $12$ numbers
+describing the shop as a whole
+(the \emph{global state}), these summaries are condensed by another
+MLP into a single \emph{context} vector $g$, a fixed-size summary of
+the current decision state.
+
+The two heads introduced above read from this context. Pooling,
+however, discards by design which candidate is which, so the context
+alone cannot rank them. The policy head therefore
+receives two inputs, the shared context $g$ and each candidate's own
+embedding, carried past the pooling stage by the \emph{skip
+connection} visible in Figure~\ref{fig:arch}. The head is applied
+once per candidate: for eligible operation $i$ it reads the pair
+(embedding of $i$, context) and outputs a single scalar score, so
+$|\mathcal{E}|$ candidates yield $|\mathcal{E}|$ scores, each tied to
+its operation by construction because it was computed from that
+operation's embedding. A \emph{softmax} over these scores (the
+\emph{logits}, in network terms) turns them into the probabilities
+$\pi(i\,|\,s)$, one per eligible operation, however many there are
+(\emph{masked} means that unused padding slots are excluded). The
+value head estimates the situation rather than any one candidate, so
+it reads $g$ alone and outputs $V(s)$. In total, four two-layer
+MLPs (the candidate encoder $\phi$, the context combiner, and the
+two heads) are composed into a single network and trained jointly end to
+end.
+
+The dashed detour between the embeddings and the pooling is an
+\emph{optional} self-attention stage, evaluated as a variant in the
+supplementary material; the base model, which every headline
+result of this paper uses, omits it.
+
+Sections~\ref{sec:mdp}--\ref{sec:arch} specify, in order, the
+reward, the $16{+}12$ input quantities, and the network stages.
+Training and
+inference are described with the experimental setting in
+Section~\ref{sec:training}.
+
+\subsection{The reward}
+\label{sec:mdp}
+
+The \emph{reward} at step $t$ is a weighted sum of six shaping
+components,
+\begin{equation}
+\label{eq:reward}
+r_t \;=\; w_{\mathrm{mk}}\,r^{\mathrm{mk}}_t
+      + w_{\mathrm{pr}}\,r^{\mathrm{pr}}_t
+      + w_{\mathrm{id}}\,r^{\mathrm{id}}_t
+      + w_{\mathrm{li}}\,r^{\mathrm{li}}_t
+      + w_{\mathrm{cr}}\,r^{\mathrm{cr}}_t
+      + w_{\mathrm{ba}}\,r^{\mathrm{ba}}_t,
+\end{equation}
+with terminal makespan ($\mathrm{mk}$), job progress ($\mathrm{pr}$),
+machine idleness ($\mathrm{id}$), local improvement ($\mathrm{li}$),
+operation criticality ($\mathrm{cr}$) and load balance
+($\mathrm{ba}$). Table~\ref{tab:reward} defines the six components
+and gives their fixed weights $w_{\bullet}\in[0,1]$.
+
+Every component is dimensionless, and comparable across instances and
+sizes: five are divided by a magnitude of the instance, and job
+progress is by construction a fraction of the episode. Several of
+those scales use $\LBi$, a lower bound on the makespan that the
+method computes from the instance itself as the larger of the two
+classical relaxations, the most loaded machine and the longest job,
+in worst-case durations:
+\begin{equation*}
+\LBi=\max\Big(\;\max_{\mu}\sum_{(j,k)\,:\,\nu_{jk}=\mu} p^{U}_{jk},
+\;\;\max_{j}\sum_{k=1}^{m} p^{U}_{jk}\Big).
+\end{equation*}
+It is an internal estimate, so the method does not depend on
+externally supplied references. In the table, step $t$ schedules
+operation $o_{jk}$ on machine $\mu=\nu_{jk}$, $c^{U}_{\mu}$ is the
+worst-case completion time of machine $\mu$ over the operations
+scheduled so far, and $M^{U}_{t}=\max_{\mu}c^{U}_{\mu}$ is the
+projected worst-case makespan after $t$ decisions.
+
+\begin{table}[t]
+\centering\small
+\caption{The six shaping components of Eq.~\eqref{eq:reward} and the
+weights the training entry point supplies.}
+\label{tab:reward}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}lcp{0.55\linewidth}@{}}
+\toprule
+Component & $w_{\bullet}$ & Value at step $t$, with its scale \\
+\midrule
+Terminal makespan (mk) & $1.00$ &
+$-C^{U}_{\max}/s_{\mathrm{mk}}$ at $t=nm$ and zero before, with
+$s_{\mathrm{mk}}=\LBi/10$ \\
+Job progress (pr) & $0.05$ &
+$1/(nm)$ on every step but the terminal one, where the terminal
+component replaces it \\
+Machine idleness (id) & $0.15$ &
+$-\big(s^{U}_{o_{jk}}-c^{L}_{\mu}\big)/s_{\mathrm{id}}$ when
+$JP(o_{jk})$ decides the start under Eq.~\eqref{eq:lex} and zero
+otherwise, with $s_{\mathrm{id}}=2\bar p$ and $\bar p$ the mean
+midpoint duration of the instance \\
+Local improvement (li) & $0.30$ &
+$\kappa_{t}\big(M^{U}_{t-1}-M^{U}_{t}\big)\big/(s_{\mathrm{mk}}/10)$,
+with $\kappa_{t}=2$ if $M^{U}_{t}>M^{U}_{t-1}$ and $1$ otherwise,
+and zero on the first step \\
+Operation criticality (cr) & $0.05$ &
+$\big(\sum_{k'>k}p^{U}_{jk'}\big)/s_{\mathrm{cr}}$, with
+$s_{\mathrm{cr}}=W^{U}/2n$ and $W^{U}$ the instance's total
+worst-case work \\
+Load balance (ba) & $0.10$ &
+$-\sigma_{\mu}\big(c^{U}_{\mu}\big)/s_{\mathrm{ba}}$, the standard
+deviation across the machines already in use, with
+$s_{\mathrm{ba}}=1.5\,\sigma_{\mu}\big(L^{U}_{\mu}\big)$ over the
+total worst-case loads
+$L^{U}_{\mu}=\sum_{(j,k)\,:\,\nu_{jk}=\mu}p^{U}_{jk}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Substituting its scale, the terminal component is
+$r^{\mathrm{mk}}_{nm}=-10\,(1+g)$, with
+$g=(C^{U}_{\max}-\LBi)/\LBi$ the relative gap to the instance bound:
+a function of the relative gap alone, so a schedule of the same
+relative quality receives the same reward on any instance, whatever
+its size and time scale. The robust arms of
+Section~\ref{sec:ablations-interval} replace $C^{U}_{\max}$ here by
+$f_\lambda$. Job progress adds a constant per operation scheduled and
+sums to $(nm-1)/nm$ over every complete schedule, so with $\gamma=1$
+and the fixed $nm$-step horizon it stabilizes value estimation rather
+than shaping the policy's preferences. Local improvement is the step
+change of the projected makespan, a dense signal so that early
+decisions are not credited only $nm$ steps later. Its name is
+historical: scheduling an operation can only push a machine's
+completion later, so $M^{U}_{t}$ never falls and the component never
+rewards. In the runs of this paper it is a penalty on how much each
+decision extends the projected worst case, and the $\kappa_t{=}2$
+branch is the only one that ever applies, which makes its effective
+weight $0.60$ on every step that moves the projection. Operation criticality is the worst-case work
+remaining in the scheduled operation's job, and favoring jobs with
+much work remaining is a standard proxy for the emerging critical
+path. Load balance refers the dispersion the machine completion times
+exhibit to the dispersion of the instance's own loads, which
+discourages lopsided machine loads without penalizing an instance for
+being intrinsically unbalanced.
+
+The idle penalty is the one component that consults a \emph{lower}
+endpoint: an idle gap is widest when the machine freed at its
+earliest, so its worst case reads the machine's lower completion
+time. It is the only place where the training signal does so, a fact
+Section~\ref{sec:ablations-interval} returns to.
+
+The training entry point sets the six weights as fixed constants,
+with $w_{\mathrm{ba}}$ nominally $0.15$. A per-instance adjustment
+layer can then override three of them by fixed deterministic
+threshold rules of the instance's own statistics; on the four
+training instances the only rule that fires is the one lowering the
+balance weight to $0.10$ under high dispersion of the machine loads,
+and it fires on all four, so the effective vector is the one of
+Table~\ref{tab:reward}, identical across the training set. The
+implementation also contains a generator that would derive all six
+weights from instance statistics, but the training entry point
+supplies its explicit vector and the generator is bypassed; it played
+no part in any experiment of this paper. These constants were fixed
+during early development and carried unchanged into every experiment;
+no claim of optimality is attached to them. Two further elements are
+dormant: floors on the scales that never bound on these instances,
+and a discontinuous terminal bonus below a $5\%$ gap that no recorded
+training episode reached. The configuration campaign of
+Section~\ref{sec:hyperconfig} later raced the six weights, each free
+in $[0,1]$ (explicit weights bypass the adjustment layer), and did
+not improve on the deployed vector within the protocol's resolution;
+the internal constants were not raced.
+
+\subsection{State representation}
+\label{sec:features}
+
+The state observed at each decision comprises two groups of
+features: a per-operation description of every eligible operation,
+scored one candidate at a time by the policy head, and a description
+of the shop as a whole, which enters the shared context. Operation
+$o=o_{jk}$ on machine $\mu=\nu_{jk}$ is described by the $16$
+quantities of Table~\ref{tab:opfeatures}, and the global state by the
+$12$ aggregates of Table~\ref{tab:globalfeatures}.
+
+Both groups are dimensionless: every temporal quantity is expressed
+as a fraction of the computed bound $\LBi$ of Section~\ref{sec:mdp},
+and every uncertainty as a ratio of interval width to magnitude.
+Absolute times are not comparable across instances, since their
+magnitude reflects the time scale of the instance at hand, and a
+policy trained on them would be tied to the scale of its training
+set. The dimensionless representation renders the observation
+comparable across instances and sizes, which is one of the two
+components of size invariance; the other is the architecture of
+Section~\ref{sec:arch}.
+
+\begin{table}[!htb]
+\centering\small
+\caption{Per-operation features (all dimensionless). $d=\mathbf{p}_{jk}$,
+$\mathbf{est}$ = earliest start interval, $\mathbf{rem}$ = remaining work
+interval of the job strictly after $o$, excluding $o$ itself;
+$\mathrm{mid}(\cdot)$ is the interval
+midpoint; $L(\mu)$ the remaining worst-case load of machine $\mu$;
+$\bar L$ its average over machines; $\mathbf{c}_{J}$ and
+$\mathbf{c}_{\mu}$ the completion intervals of the operation's job
+and machine over what is scheduled so far.}
+\label{tab:opfeatures}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lll}
+\toprule
+\# & Feature & Definition \\
+\midrule
+1--2 & duration bounds & $d^L/\LBi$, $d^U/\LBi$ \\
+3 & duration uncertainty & $(d^U-d^L)/\mathrm{mid}(d)$ \\
+4--5 & earliest start bounds & $est^L/\LBi$, $est^U/\LBi$ \\
+6 & start uncertainty & $(est^U-est^L)/\mathrm{mid}(\mathbf{est})$ \\
+7--8 & remaining job work & $rem^L/\LBi$, $rem^U/\LBi$ \\
+9--10 & job position & $(m-k)/m$, $(k-1)/m$ \\
+11 & machine load & $L(\mu)/\LBi$ \\
+12 & potential idle gap & $\max(0,\,c^U_{J}-c^U_{\mu})/\LBi$ \\
+13 & machine congestion & $L(\mu)/\bar L$ \\
+14 & slack & $(est^U-\min_{o'\in\mathcal{E}}est^U_{o'})/\LBi$ \\
+15--16 & completions & $c^U_{\mu}/\LBi$, $c^U_{J}/\LBi$ \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\begin{table}[!htb]
+\centering\small
+\caption{Global state features (all dimensionless aggregates,
+notation as in Table~\ref{tab:opfeatures}; no dimension depends on
+$n$ or $m$). Rows that list several statistics contribute one feature
+each, for $12$ in total.}
+\label{tab:globalfeatures}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lll}
+\toprule
+\# & Feature & Definition \\
+\midrule
+1 & progress & scheduled operations $/\,nm$ \\
+2 & partial makespan & $\max_\mu c^U_\mu / \LBi$ \\
+3--4 & machine completions & mean and std of $c^U_\mu/\LBi$ \\
+5--7 & remaining loads & mean, max and std of $L(\mu)/\LBi$ \\
+8--9 & remaining job work & mean and max of job remaining $/\LBi$ \\
+10 & eligibility & $|\mathcal{E}|/n$ \\
+11 & pending uncertainty & $\sum(\text{widths})/\sum(\text{midpoints})$ of
+unscheduled ops \\
+12 & total load & $\sum_\mu L(\mu)/(\LBi\cdot m)$ \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+Every quantity consulted by the dispatching rules of
+Section~\ref{sec:related-rules} (processing times, remaining work,
+earliest start times, slack, machine load) appears among the
+per-operation features, so that no advantage over those rules can be
+attributed to a wider per-operation vocabulary. The representation
+extends that shared vocabulary in two directions: the interval
+bounds and relative widths of every temporal quantity, which make the
+uncertainty explicit, and the global aggregates, which no
+per-operation priority rule consults. Which of these inputs the
+trained network comes to rely on is measured a posteriori by the
+audit of Section~\ref{sec:results-importance}.
+
+\FloatBarrier
+\subsection{Size-invariant architecture}
+\label{sec:arch}
+
+The second component of size invariance is architectural. The number
+of candidates changes at every step and from instance to instance,
+while a neural network requires inputs of fixed dimension. What is
+fixed here is the dimension of a single candidate and not their
+number: the eligible set enters as a $|\mathcal{E}|\times16$ matrix
+whose rows share one encoder, so the count is a row dimension that no
+weight matrix sees. Two elements resolve the difficulty on that
+basis: the \emph{same} network reads every candidate, so any number
+of them can be processed, and the resulting embeddings are
+\emph{pooled} into fixed-size summaries, so the scoring stage
+receives a representation of the whole decision. Let
+$x_i\in\mathbb{R}^{16}$ be the features of eligible operation $i$ and
+$g_0\in\mathbb{R}^{12}$ the global state; the construction has
+three stages (Figure~\ref{fig:arch}).
+
+\emph{Embed.} The shared two-layer MLP $\phi$ (width $h{=}128$,
+LayerNorm, ReLU, orthogonal initialization) maps each candidate to an
+embedding $\phi_i=\phi(x_i)$. The whole eligible set is processed in
+one forward pass, as the $|\mathcal{E}|\times16$ matrix of its rows.
+Sharing the weights across rows allows the stage to accept any number
+of candidates and makes it equivariant to their order. Candidates do
+not interact at this stage: $\phi_i$ depends on $x_i$ alone.
+
+\emph{Pool into a context.} The variable-size set
+$\{\phi_1,\dots,\phi_{|\mathcal{E}|}\}$ must be reduced to a
+fixed-size vector before it can be combined with the global state. Mean and max
+pooling provide two complementary permutation-invariant
+summaries~\citep{Zaheer2017} which, concatenated with the global
+state $g_0$, are mixed into the context:
+\begin{equation}
+g=\mathrm{MLP}_{ctx}\big(\big[\textstyle\frac1{|\mathcal{E}|}\sum_i\phi_i;\;
+\max_i\phi_i;\;g_0\big]\big)\in\mathbb{R}^{h}.
+\end{equation}
+Pooling introduces no parameters: it maps the
+$|\mathcal{E}|\times h$ embeddings to the $2h$ summaries the context
+MLP consumes. Both statistics are taken over the non-padded
+candidates only, since in batched training the sets are padded to the
+batch maximum: the mean divides by the true count and the max ignores
+the padded rows.
+This embed-then-pool pattern is the \emph{Deep Sets} construction
+of~\citet{Zaheer2017}, whose central result is that, with sum
+pooling and suitable choices of the two maps, any permutation-invariant
+function of a set admits this form. The guarantee concerns the
+pattern, not this network: with mean and max pooling at finite width,
+what is representable is an empirical matter, which the ablations of
+Section~\ref{sec:analysis} probe. The result tables
+refer to the base model by this name.
+
+\emph{Score.} The \emph{policy head} scores each pair (candidate
+embedding, context), and a masked softmax over the scores yields the
+distribution over eligible operations. The \emph{value head}
+computes the state value $V(s)$ used in the advantage estimation,
+reading the context alone, since that expectation concerns the state
+rather than any one candidate:
+\begin{equation}
+\pi(i\,|\,s)=\mathrm{softmax}_i\,\mathrm{MLP}_{\pi}([\phi_i;g]),
+\qquad
+V(s)=\mathrm{MLP}_{V}(g).
+\end{equation}
+Table~\ref{tab:layers} specifies the four trainable blocks. Each is a
+two-layer perceptron with LayerNorm and ReLU between its layers and a
+linear output; all hidden layers are initialized orthogonally with
+gain $\sqrt2$ and zero biases. The output layer of the policy head
+uses gain $10^{-2}$, so at the start every candidate receives a
+nearly equal score and the untrained policy is close to uniform; the
+output layer of the value head uses gain $1$. Pooling and the masked
+softmax carry no parameters, so those four blocks account for the
+whole network: $120{,}322$ parameters, no dimension of which depends
+on $n$ or $m$.
+
+\begin{table}[!htb]
+\centering\small
+\caption{Layer specification of the policy/value network at the
+hidden width $h{=}128$. Shapes are input, hidden and output
+dimensions.}
+\label{tab:layers}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llr}
+\toprule
+Block & Shape & Parameters \\
+\midrule
+Candidate encoder $\phi$ & $16\to128\to128$ & $18{,}944$ \\
+Pooling (mean, max) & $|\mathcal{E}|\times128\to256$ & --- \\
+Context MLP & $268\to128\to128$ & $51{,}200$ \\
+Policy head & $256\to128\to1$ & $33{,}281$ \\
+Value head & $128\to128\to1$ & $16{,}897$ \\
+\midrule
+Base network & & $\mathbf{120{,}322}$ \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+Self-attention over the candidate set is the extension most commonly
+adopted in this literature to let one candidate condition on another,
+which pooling cannot express. A variant with two pre-LN transformer
+blocks between the embedding and pooling stages was evaluated as a
+controlled ablation and yielded no improvement at either training
+budget, degrading the operating one by $1.4$ points while carrying
+3.2 times the parameters and 2.2 times the episode cost; its
+architecture and the full comparison are given in the supplementary material.
+
+\section{Experimental Methodology}
+\label{sec:setup}
+
+\subsection{Instances, data split and metric}
+\label{sec:instances}
+
+Experiments use the 70 interval Taillard instances TA1--TA70 that
+anchor the recent IJSP
+literature~\citep{DiazFEABC2023,DiazICAE2023}: seven size classes from
+$15{\times}15$ to $50{\times}20$,
+each crisp duration replaced by an integer interval symmetric around
+it, with half-width drawn uniformly up to $15\%$ of the original
+value~\citep{DiazGA2020}. The benchmark is openly
+available~\citep{DiazDRLDataset2026}. Figure~\ref{fig:split} shows
+how they are divided. The validation instances never produce
+gradients, but every design and configuration decision was judged on
+them, so they are reported separately and excluded from claims about
+unseen data. The genetic programming study splits the benchmark the
+same three ways~\citep{DiazGP2026}, so the two families learned from
+the same four instances and were tuned against the same six. A second
+benchmark of twelve classical instances (FT10, FT20, La21, La24,
+La25, La27, La29, La38, La40 and ABZ7--9), intervalized with the same
+symmetric scheme~\citep{DiazGA2020}, is reserved for the cross-family
+evaluation of Section~\ref{sec:results-classics}.
+
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig_split.pdf}
+  \caption{The data split. Both learners train on TA11--TA14 and take
+  every design decision on TA15--TA20, all of the $20{\times}15$
+  class; the remaining sixty Taillard instances and the twelve
+  classical ones are seen by neither family before evaluation.}
+  \label{fig:split}
+\end{figure}
+
+One convention governs every significance test reported below. The
+independent unit is the instance, not the pair (instance, seed):
+policies trained under different seeds are evaluated on the same
+instances, so their results are averaged over seeds before any
+instance is entered into a paired test. Tests are two-sided exact Wilcoxon
+signed-rank tests over the instances of the set in question, reported
+with the mean difference and, as a descriptive summary of spread
+rather than a second inferential statement, its $95\%$ Student~$t$
+interval over the instance differences. The
+smallest attainable $p$-value is $0.031$ on the six validation
+instances and below $10^{-3}$ on the seventy. No correction for
+multiple comparisons is applied: each test is reported as an
+individually interpreted contrast, one per question, so the
+$p$-values are evidence about each contrast on its own and not a
+family-wise claim.
+
+\subsection{Computational environment}
+\label{sec:environment}
+
+Table~\ref{tab:environment} lists the machine and the software
+stack. One aspect bears on the costs reported later: every number in
+this paper (training, evaluation, the dispatching-rule baselines and
+the ablations) was produced on the CPU, with the single exception of
+the tuning campaign of Section~\ref{sec:hyperconfig}. At the width of
+Section~\ref{sec:arch}, a forward pass is negligible next to the
+environment step that follows it, so the GPU yields no speedup for a
+single rollout; it was used only for the vectorized batched rollouts
+of the operating-fidelity tuning campaign
+(Section~\ref{sec:hyperconfig}), where many episodes advance in
+lockstep and the batched forward pass amortizes. The method therefore
+carries no dependence on specialized hardware.
+
+\begin{table}[t]
+\centering\small
+\caption{Machine and software used for every experiment in this paper.}
+\label{tab:environment}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{ll}
+\toprule
+Component & Specification \\
+\midrule
+CPU & AMD Ryzen 5 3400G, 4 cores / 8 threads, $3.7$ GHz \\
+Thread limit & 2 per process (\texttt{OMP} and \texttt{MKL}) \\
+Memory & $32$ GB \\
+GPU & NVIDIA GeForce RTX 5060 Ti, $16$ GB (tuning only) \\
+Operating system & Windows 10 Pro 22H2 (64-bit) \\
+\addlinespace
+Language & Python $3.12.6$ \\
+Learning & PyTorch $2.9.1$, CUDA $13.0$ build \\
+Numerics & NumPy $2.3.5$, SciPy $1.17.0$ \\
+Figures & Matplotlib $3.10.8$; svglib $2.1.0$ (diagram) \\
+Tuning & irace $4.4.3$ on R $4.6.1$ (Section~\ref{sec:hyperconfig}) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Hyperparameter configuration}
+\label{sec:hyperconfig}
+
+\begin{table}[t]
+\centering\small
+\caption{Hyperparameters, identical across every experiment reported
+in this paper.}
+\label{tab:hyper}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lr@{\hskip 1.3em}|@{\hskip 1.3em}lr}
+\toprule
+Hyperparameter & Value & Hyperparameter & Value \\
+\midrule
+\textit{Optimizer} & & \textit{PPO objective} & \\
+\quad learning rate (Adam) & $3\cdot10^{-4}$ &
+  \quad clipping range & $0.2$ \\
+\quad Adam $\epsilon$ & $10^{-5}$ &
+  \quad GAE $\lambda$ & $0.95$ \\
+\quad gradient clipping & $0.5$ &
+  \quad discount factor $\gamma$ & $1.0$ \\
+\addlinespace
+\textit{Network and schedule} & & \textit{PPO updates} & \\
+\quad hidden width $h$ & $128$ &
+  \quad epochs per update & $4$ \\
+\quad weight initialization & orthogonal &
+  \quad minibatch size & $256$ \\
+\quad policy update & every $4$ ep. &
+  \quad entropy coefficient & $0.01$ \\
+\quad greedy evaluation & every $10$ ep. &
+  \quad advantage normalization & per update \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+All reported results use the hyperparameters of
+Table~\ref{tab:hyper}. Their values were fixed by hand during
+development, most of them at the defaults customary in the PPO
+literature. Whether automatic tuning would improve on them was
+assessed with three irace~\citep{LopezIbanez2016} campaigns of about
+$300$ experiments each, two over the optimizer (one at reduced
+fidelity, one at the operating budget) and one over the six reward
+weights of Eq.~\eqref{eq:reward}: none of their winners improved on
+the hand-set values under a paired confirmation, whose resolution,
+set by the $0.46$-point standard deviation across seeds
+(Section~\ref{sec:results-insize}), is approximately one point of RE.
+The campaigns therefore exclude improvements larger than that
+magnitude, not the existence of smaller ones. Their search spaces,
+outcomes and by-products are provided in the supplementary
+material.
+
+\subsection{Training and inference}
+\label{sec:training}
+
+The policy is trained with PPO~\citep{Schulman2017} under the
+hyperparameters of Table~\ref{tab:hyper}. Training on a set of
+instances proceeds in blocks, one instance at a time. Each new block
+starts from the weights of the \emph{best block so far}, best being
+judged by the lowest best-episode makespan in raw time units; raw
+makespans are not comparable across instances, so this rule follows
+the instances' time scales as much as learning progress, and on
+TA11--TA14 it made the final block start from TA12's weights rather
+than TA13's in 26 of the 30 runs. Only the policy and value weights
+cross the block boundary: the optimizer is rebuilt with the block, so
+its moment estimates start afresh each time. Every block receives the same
+number of episodes, and the instances are presented in their
+benchmark order, TA11 to TA14, which the seed does not permute: it
+governs network initialization, action sampling and minibatch
+composition, and the random streams are reseeded with it at the start
+of every block, not only once per run.
+A \emph{rollout} is one complete construction episode
+played by the current policy: \emph{sampled} when each operation is
+drawn from $\pi$, as during training, and \emph{greedy} when every
+step takes the most probable operation. Every tenth episode
+(Table~\ref{tab:hyper}), the current policy is additionally evaluated
+with one greedy rollout. The \emph{deployed artifact} of a run is
+the network as it stands at the end of the block with the lowest raw
+best-episode makespan, which on this training set was the final
+block, TA14, in all 30 runs; the weights of the best individual
+episode are tracked during training but are not the serialized
+artifact. The training pipeline can also evaluate that best-episode
+snapshot in process, and it is the one distinction that matters for
+reading the records: every number this paper reports comes from the
+standalone evaluators acting on the serialized end-of-block
+checkpoint, never from that in-process reading. These conventions,
+the transfer rule and the artifact identity, define the system that
+every result in this paper measures.
+
+The discount factor is $\gamma=1$ rather than the $0.99$ customary in
+deep RL~\citep{Schulman2017}. The horizon here is finite and known,
+so future rewards can be credited in full; at $\gamma=0.99$ the
+terminal makespan, the quantity being minimized, would reach the
+earliest decisions of a $20{\times}15$ instance attenuated to
+$0.99^{nm}\approx0.05$ of itself. Updates are likewise applied over
+transitions pooled from four consecutive episodes rather than from
+one, in minibatches of $256$ and with advantages normalized within
+each update, because the $nm$ steps of a single episode are few and
+strongly correlated: pooling widens the sample the advantage estimate
+is computed from, and normalizing keeps the gradient scale
+comparable across instances of different size.
+
+Thirty runs of this protocol were trained, differing from one
+another only in their random seed, and the one with the lowest mean
+RE on the validation instances at the deployed budget is \emph{the
+policy} this paper reports; the seventy benchmark instances take no
+part in that choice.
+
+\paragraph{Best-of-$N$ inference} At evaluation time the stochastic
+policy is exploited by drawing one greedy rollout and $N-1$ sampled
+ones, and keeping the best solution under the ranking of
+Eq.~\eqref{eq:lex}, the standard sampled decoding of neural
+combinatorial optimization~\citep{Kool2019}. The deployed budget is
+$N{=}64$; results are additionally reported for a single greedy pass
+and, in the budget-matched comparisons of
+Sections~\ref{sec:results-insize} and~\ref{sec:positioning}, for
+$N{=}1024$. Section~\ref{sec:ablations-bon} measures what each budget
+buys.
+
+\subsection{Baselines}
+\label{sec:baselines}
+
+Constructive baselines are the dispatching rules of
+Section~\ref{sec:related-rules} (SPT, LPT, MOR, MWKR and EST) and
+the two Giffler--Thompson combinations. The results of
+Section~\ref{sec:results} carry the strongest of each family, namely
+MOR, EST and G\&T-MWKR, while SPT, LPT, MWKR and the SPT tie-break of
+Giffler--Thompson are dominated by a wide margin in every size class
+and are not reported further. The
+learned-symbolic baseline is the dispatching rule evolved by genetic
+programming for this same benchmark by~\citet{DiazGP2026}, compared budget by budget in
+Section~\ref{sec:positioning}. The budget that is matched there is the
+number of schedules each method constructs, not the wall-clock time it
+spends: both run the same schedule builder once per sample and differ
+in what scores a candidate, a forward pass of the network against the
+evaluation of an evolved expression, which is the cheaper of the two.
+Matched sample counts therefore favour the policy in computational
+terms, and the comparison should be read as one of sample efficiency.
+
+That asymmetry has measured magnitudes: Table~\ref{tab:cost}
+(Section~\ref{sec:ablations-bon}) prices training and inference for
+both families in this same harness.
+
+Three published IJSP metaheuristics are included as reference
+yardsticks rather than as direct competitors, since each searches
+every instance separately for minutes on dedicated hardware and
+reports 30-run averages: the genetic algorithm (GA)
+of~\citet{DiazGA2020}, the enhanced swarm artificial bee colony
+ESABC~\citep{DiazICAE2023} and the filtered elitist artificial bee
+colony fEABC~\citep{DiazFEABC2023}, the strongest of the three. Their
+figures are quoted from those papers, not re-run here.
+
+\section{Results}
+\label{sec:results}
+
+\begin{table}[t]
+\centering\small
+\caption{RE (\%) per validation instance and training budget, mean
+[best] over ten training runs at best-of-64 inference. The last row
+is the strongest constructive baseline, a single deterministic pass.}
+\label{tab:insize}
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lcccccccc}
+\toprule
+Budget & TA15 & TA16 & TA17 & TA18 & TA19 & TA20 & Mean & SD \\
+\midrule
+100 eps & 31.4 [20.4] & 32.2 [16.8] & 28.7 [22.3] & 29.4 [16.6] &
+29.9 [13.7] & 32.0 [23.9] & 30.6 & 6.38 \\
+300 eps & 18.9 [15.9] & 16.3 [13.9] & 16.4 [12.8] & 19.5 [16.1] &
+17.6 [12.8] & 15.2 [12.7] & 17.3 & 1.50 \\
+1000 eps & \textbf{14.1} [12.1] & \textbf{12.8} [9.3] &
+\textbf{12.0} [10.0] & \textbf{16.0} [14.7] & \textbf{12.9} [10.1] &
+\textbf{13.6} [11.8] & \textbf{13.6} & \textbf{0.46} \\
+\midrule
+G\&T-MWKR & 30.6 & 34.0 & 17.7 & 31.8 & 29.3 & 24.1 & 27.9 & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{In-size performance and budget scaling}
+\label{sec:results-insize}
+
+This section reports what the policy achieves on the class it is
+trained on, first during training and then at deployment on the
+validation instances.
+
+Figure~\ref{fig:training} shows the training dynamics at the
+operating budget. Within each block the episode RE falls steeply over
+the first ${\sim}200$ episodes and stabilizes, with no divergence in
+any seed; across blocks, each instance starts better than its
+predecessor did, the visible effect of starting each block from
+weights already trained on earlier instances, and
+the spread between seeds narrows as training advances. The levels in
+this figure are higher than the deployed ones because training
+episodes are \emph{sampled}, with exploration active, rather than
+greedy.
+
+Deployment on the validation instances is reported in
+Table~\ref{tab:insize}, per instance and for increasing training
+budgets, with Figure~\ref{fig:scaling} showing their means against
+the budget. The three budgets are paired on the same ten training
+runs, which differ only in their random seed, and all of them are
+read under the standalone evaluator. The operating
+budget was afterwards extended to the thirty runs of the campaign,
+whose mean is $13.92\%$ with a standard deviation of $0.60$.
+Three observations follow.
+(i) The policy scales monotonically with budget
+($30.6\%\to17.3\%\to13.6\%$ mean RE at $100/300/1000$ episodes per
+instance), with the return per tripling of the budget falling from
+$13.3$ points to $3.7$. (ii) The spread between training runs
+contracts as the budget grows, the standard deviation across the ten
+seed means falling from $6.38$ points at $100$ episodes to $1.50$ at
+$300$ and $0.46$ at $1000$, a factor of fourteen, so what the extra
+budget yields is not only a better mean but a more reproducible one;
+this is the deployed counterpart of the narrowing seed band of
+Figure~\ref{fig:training}. (iii) The gap to the strongest
+constructive baseline is a factor ${\approx}2.0$, and it is opened by
+the budget: at $100$ episodes the policy is still behind that
+baseline.
+Figure~\ref{fig:scaling} places the curve between two dotted
+references measured on the same six instances: G\&T-MWKR above, at
+$27.9\%$, and fEABC below, at $9.6\%$, the latter a reference from
+per-instance search.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=.92\linewidth]{figures/fig_training.pdf}
+  \caption{Training dynamics of the deployed arm: worst-case gap to
+  the instance bound of the sampled training episodes (smoothed over
+  $25$ episodes; the band spans the best and worst seed) and of the
+  best schedule
+  found so far, over the four training blocks TA11--TA14. The
+  training logs record the worst-case makespan, the quantity the
+  reward optimizes, so the axis is not the midpoint RE of
+  Eq.~\eqref{eq:re}.}
+  \label{fig:training}
+\end{figure}
+
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=.7\linewidth]{figures/fig_scaling.pdf}
+  \caption{Mean RE on the six validation instances TA15--TA20
+  ($20{\times}15$) against the \emph{training} budget, the episodes
+  spent once per instance before deployment, on a logarithmic axis
+  and over ten training runs. The band spans the best and worst of
+  them; the dotted lines are G\&T-MWKR and fEABC on the same six
+  instances.}
+  \label{fig:scaling}
+\end{figure}
+
+\FloatBarrier
+\subsection{Cross-size generalization and position among
+constructive methods}
+\label{sec:results-crosssize}
+\label{sec:positioning}
+
+The size-invariant design allows direct evaluation of the trained
+network on any class. Six of the seven are \emph{zero-shot}: the
+weights are applied to sizes they never saw, with no additional
+training or fine-tuning of any kind. The seventh, marked in the
+table, is $20{\times}15$, which holds the four training and the six
+validation instances.
+Table~\ref{tab:seventy} reports RE over all seventy instances by size
+class, ten to a class, with its per-instance values in the supplementary material.
+Each learned family trains thirty artifacts and appears as the one
+its study selects: the rule
+\citet{DiazGP2026} features and the policy of
+Section~\ref{sec:training}. Both were fitted on the $20{\times}15$
+instances, so the other six classes lie outside the training
+distribution of either and the transfer the table asks for is the
+same on both sides. The GP rule is
+deterministic at one pass and randomized by $\epsilon$-greedy
+dispatching when sampled; fEABC closes the table as a 30-run average
+from a different computational class.
+
+At every budget the policy improves on G\&T-MWKR, the strongest of
+the hand-crafted baselines considered here, on \emph{every} one of the
+seventy, with class means at $64$ samples from $10.7\%$ on
+$15{\times}15$ to $22.3\%$ on the hardest transfer, $30{\times}20$,
+and no failure mode up to $1000$-operation episodes. That is a
+property of the selected run rather than of the arm: across the thirty
+runs at one pass, $64$ of the $2100$ (instance, run) pairs fail to
+improve on the same rule, three per cent of them.
+
+\begin{table}[t]
+\centering\small
+\caption{Mean RE (\%) per size class over the 70 interval Taillard
+instances. The $20{\times}15$ column ($\dagger$) holds the training and
+validation instances. GP and policy rows carry the artifact each study
+selects among its thirty.}
+\label{tab:seventy}
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lcccccccc}
+\toprule
+Method & $15{\times}15$ & $20{\times}15^{\dagger}$ & $20{\times}20$ &
+$30{\times}15$ & $30{\times}20$ & $50{\times}15$ & $50{\times}20$ &
+All \\
+\midrule
+EST & 32.3 & 49.2 & 41.5 & 42.4 & 56.6 & 33.2 & 41.0 & 42.3 \\
+MOR & 41.4 & 46.7 & 47.3 & 44.1 & 58.8 & 34.1 & 45.9 & 45.5 \\
+G\&T-MWKR & 26.7 & 29.0 & 30.9 & 33.6 & 36.8 & 23.9 & 25.5 & 29.5 \\
+\midrule
+GP rule, 1 pass & 15.7 & 16.6 & 18.1 & 21.1 & 24.1 & 13.8 & 14.6 &
+17.7 \\
+\textbf{Policy}, 1 pass & 15.0 & 17.4 & 17.7 & 21.4 & 24.7 & 16.1 &
+17.1 & 18.5 \\
+\midrule
+GP rule, 64 & 11.7 & 14.9 & 16.0 & 17.6 & 21.9 & 11.3 & 13.1 &
+15.2 \\
+\textbf{Policy}, 64 & 10.7 & 12.8 & 14.1 & 17.6 & 22.3 & 12.8 &
+14.8 & 15.0 \\
+\midrule
+GP rule, 1024 & 10.6 & 13.5 & 14.6 & 15.5 & 20.1 & 10.4 &
+12.1 & 13.8 \\
+\textbf{Policy}, 1024 & 9.3 & 11.2 & 12.2 & 15.6 & 19.9 &
+10.9 & 13.7 & 13.2 \\
+\midrule
+fEABC (30 runs) & 5.9 & 8.7 & 10.3 & 9.8 & 16.4 & 5.7 & 9.0 & 9.4 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+Against the GP rule the comparison is not one-sided: its outcome
+depends on the inference budget both methods receive
+(Figure~\ref{fig:byclass}). With one pass each the rule is better,
+$17.71\%$ against the policy's $18.49\%$, which is ahead on only
+26 of the 70; with $64$ samples each the two draw level, $15.02\%$
+against $15.21\%$ and ahead on 36 of the 70, and only at $1024$ does
+the policy pass the rule, $13.25\%$ against $13.85\%$ and ahead on 42.
+With the instance as the experimental unit
+(Section~\ref{sec:instances}), the one-pass deficit and the
+$1024$-sample lead are significant ($p=0.028$ in both), while at $64$
+samples the two are indistinguishable ($p=0.63$). Sampling therefore
+buys the policy the ordering, but it takes a budget well above the
+$64$ at which the two meet.
+
+Ten of the seventy instances, the $20{\times}15$ class, are the ones
+on which both families were trained and selected, so the contrast is
+read again over the sixty neither has seen. The one-pass deficit
+survives the restriction ($18.68\%$ against $17.89\%$, $p=0.034$; over
+the thirty artifacts of each family, $20.02\%$ against $19.15\%$,
+$p=0.006$), and neither sampled contrast separates ($15.40\%$ against
+$15.27\%$ at $64$ samples, $p=0.55$; $13.59\%$ against $13.90\%$ at
+$1024$, $p=0.343$). Those aggregates cover two regimes that pull in
+opposite directions. On the forty unseen instances up to
+$30{\times}20$ the two are level at one pass ($p=0.94$) and at $64$
+samples ($p=0.14$), and the policy leads by $0.97$ points at $1024$,
+ahead on 28 of the 40 ($p=0.003$). On the twenty of $50{\times}15$
+and $50{\times}20$ the rule leads at every budget, by $2.41$ points at
+one pass and by $1.61$ and $0.99$ when both sample, ahead on 16 and 17
+of the 20 ($p\le0.004$ throughout). What decides the comparison on
+unseen instances is therefore the size class, and the budget decides
+only how large a sample the policy needs before its advantage becomes
+visible where it has one: the boundary between the two regimes falls
+between $30{\times}20$ and $50{\times}15$.
+
+The deficit does not depend on which run each side put forward. The
+means over the thirty, which no choice touches, stand $18.99\%$
+against $19.82\%$ and separate with $p=0.006$, so the ordering at one
+pass is a property of the two families and not of the two artifacts
+that represent them. Both studies select their artifact on the
+validation instances. The GP study features the rule with the lowest
+mean RE there at one constructive pass, $17.45\%$ against $18.13\%$
+for the runner-up, and the thirty-run means involve no selection at
+all. The rule is selected at one pass only: that does not establish
+that validation selection under a sampled budget would return the
+same rule, and the selected-pair contrasts at $64$ and $1024$ should
+be read with that in mind.
+
+The per-class columns qualify the aggregate. The one-pass deficit is
+not spread evenly: the policy is \emph{better} on $15{\times}15$
+and $20{\times}20$, and the whole of the aggregate gap comes from
+$50{\times}15$ and $50{\times}20$, where it loses by $2.3$ and $2.5$
+points; the means over the thirty artifacts follow the same pattern.
+Both families are size-agnostic in form, the rule as an expression
+over per-operation attributes and the network by construction, so
+what separates them on the largest classes is not applicability but
+capacity. The network fitted its decision function to the states a
+$20{\times}15$ episode visits, and those move with size: a
+$50{\times}20$ episode runs more than three times longer and offers
+up to fifty candidates at a step rather than twenty. A short
+expression has little room to encode a dependence on that
+distribution, and correspondingly little to lose when it shifts.
+Sampling recovers most of the gap, but the two largest classes remain
+where the evolved rule is hardest to beat.
+
+The network's advantage therefore lies in its distribution, whose
+samples improve faster with budget than those of the randomized
+rule. The best-of-$N$ ablation of
+Section~\ref{sec:ablations-bon} reaches the same conclusion from the
+training side. The policy's
+standalone RE ($13.9\%$ in-size, $9$--$20\%$ class means at the
+largest budget) places it between the dispatching rules ($42.3\%$ for
+EST, the strongest) and the per-instance metaheuristics ($9.4\%$ for
+fEABC).
+This is the ordering that \citet{Zhang2020L2D} established for the
+deterministic JSP, in which a learned constructive policy improves on
+the hand-crafted rules but does not reach the methods that search
+each instance anew, trading some solution quality for a cost
+incurred once at training rather than at every instance; it had not
+been established for the interval variant.
+
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig_byclass.pdf}
+  \caption{RE by size class over the 70 interval Taillard instances,
+  the two learners paired at one pass and at $1024$ samples. Boxes
+  span the quartiles with whiskers at $1.5$ IQR; every instance is
+  overlaid as a point. The shaded $20{\times}15$ class holds the
+  training and validation instances.}
+  \label{fig:byclass}
+\end{figure}
+
+\FloatBarrier
+\subsection{Cross-family generalization: the classical instances}
+\label{sec:results-classics}
+
+The IJSP literature also reports on interval versions of twelve
+classical instances (FT10 and FT20, seven of the La family, and
+ABZ7--9), generated from their crisp counterparts with the same
+symmetric scheme as the Taillard set~\citep{DiazGA2020}. None of these
+families was seen during training or validation, so they double as a
+cross-family generalization test. What changes is the family of
+underlying scheduling instances, not the way uncertainty is
+generated, which is the same construction in both benchmarks; the
+test therefore speaks to transfer across shop structures and leaves
+transfer across uncertainty regimes open. Following the literature, RE is
+measured here against the best-known expected-makespan
+values~\citep{DiazFEABC2023}.
+
+\begin{table}[!htb]
+\centering\small
+\caption{RE (\%) on the 12 classical interval instances, by inference
+budget. Entries are means over thirty runs, with the per-instance
+best over those runs in brackets.}
+\label{tab:classics}
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lcccccccc}
+\toprule
+& rule & \multicolumn{2}{c}{learned} &
+\multicolumn{2}{c}{learned} & \multicolumn{2}{c}{learned} & search \\
+& 1 pass & \multicolumn{2}{c}{one pass} &
+\multicolumn{2}{c}{64 samples} & \multicolumn{2}{c}{1024 samples} &
+30 runs \\
+\cmidrule(lr){2-2}\cmidrule(lr){3-4}\cmidrule(lr){5-6}
+\cmidrule(lr){7-8}\cmidrule(lr){9-9}
+Inst. & G\&T & GP & \textbf{Pol.} & GP & \textbf{Pol.} & GP &
+\textbf{Pol.} & ESABC \\
+ & & {\scriptsize mn [bst]} & {\scriptsize mn [bst]} &
+{\scriptsize mn [bst]} & {\scriptsize mn [bst]} &
+{\scriptsize mn [bst]} & {\scriptsize mn [bst]} &
+{\scriptsize mn} \\
+\midrule
+FT10 & 32.2 & 17.0 [7.2] & 12.8 [6.6] & 11.8 [5.2] & 7.9 [4.3] & 8.5 [4.2] & 6.1 [4.3] & 3.0 \\
+FT20 & 40.0 & 18.5 [9.4] & 12.2 [3.4] & 13.3 [5.8] & 8.1 [3.4] & 10.3 [5.4] & 6.2 [2.4] & 1.8 \\
+La21 & 24.1 & 15.9 [10.3] & 18.1 [12.4] & 12.6 [10.0] & 12.5 [8.6] & 10.7 [6.8] & 9.5 [6.7] & 4.0 \\
+La24 & 26.3 & 16.1 [10.1] & 16.6 [9.2] & 11.5 [8.6] & 11.2 [8.8] & 9.2 [6.2] & 9.3 [5.9] & 5.0 \\
+La25 & 16.9 & 17.6 [9.6] & 18.4 [8.3] & 12.3 [8.7] & 10.3 [7.8] & 9.3 [5.1] & 8.2 [5.8] & 2.7 \\
+La27 & 34.8 & 18.3 [12.3] & 14.9 [8.9] & 12.5 [10.7] & 11.4 [8.4] & 11.3 [8.2] & 9.3 [7.7] & 4.1 \\
+La29 & 24.5 & 19.9 [12.9] & 22.4 [13.2] & 15.0 [11.4] & 15.9 [12.3] & 12.6 [9.7] & 13.5 [7.8] & 7.0 \\
+La38 & 27.0 & 17.4 [9.2] & 15.8 [10.8] & 14.3 [9.2] & 11.1 [8.0] & 12.0 [7.1] & 9.1 [7.0] & 5.8 \\
+La40 & 27.9 & 16.7 [11.7] & 13.4 [9.3] & 12.3 [8.8] & 8.5 [6.0] & 10.0 [7.1] & 7.2 [4.5] & 4.1 \\
+ABZ7 & 28.7 & 17.6 [13.3] & 18.2 [14.1] & 14.3 [11.7] & 13.5 [10.4] & 12.2 [8.9] & 11.6 [8.5] & 6.7 \\
+ABZ8 & 36.9 & 24.6 [18.1] & 21.4 [16.8] & 20.9 [17.0] & 17.5 [15.0] & 18.6 [15.0] & 15.3 [12.6] & 10.9 \\
+ABZ9 & 41.8 & 29.0 [19.5] & 24.7 [19.7] & 24.0 [17.9] & 19.5 [16.3] & 21.5 [17.4] & 17.3 [13.2] & 11.2 \\
+\midrule
+Mean & 30.1 & 19.0 [12.0] & 17.4 [11.0] & 14.6 [10.4] & 12.3 [9.1] & 12.2 [8.4] & 10.2 [7.2] & 5.5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The per-instance metaheuristics
+are quoted from Table~2 of~\citet{DiazFEABC2023} and belong to a
+different computational class. The policy improves on
+EST and G\&T-MWKR on all twelve instances and lands at $12.3\%$ mean
+RE at its deployed budget, between the hand-crafted constructive
+baselines ($30.1\%$ for G\&T-MWKR) and the per-instance searchers,
+represented in the table by ESABC at $5.5\%$. Given $1024$ samples
+the mean over its thirty runs reaches $10.2\%$, within half a point
+of the $30$-run average of the weakest of those searchers, the GA
+of~\citet{DiazGA2020} at $9.8\%$, a method that searches each of
+these instances from scratch while the policy has never seen them;
+ESABC stays clear of both learners.
+
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=.78\linewidth]{figures/fig_ladder.pdf}
+  \caption{Mean RE over the 12 classical interval instances, grouped
+  by the inference budget each method is given. Both learned entries
+  are means over the thirty independent runs of their family.}
+  \label{fig:ladder}
+\end{figure}
+
+Against the evolved rules the comparison is again made budget by
+budget, and Figure~\ref{fig:ladder} is arranged that way. The policy
+holds the lower figure in all six cells, and the two readings agree
+at every budget. Given one pass each it leads by $1.64$ points on the
+means and $0.92$ on the brackets, ahead on 7 of the 12 instances, a
+margin this sample cannot separate ($p=0.09$ and $p=0.27$). Given
+$64$ samples each, with the rules randomized by the
+$\epsilon$-greedy dispatching their own study provides, it leads by
+$2.28$ and $1.31$ points, ahead on 11 and 10 of the 12
+($p=0.003$ and $p=0.005$); at $1024$ samples, by $1.96$ and $1.21$,
+ahead on 10 of the 12 in both readings ($p=0.003$ and $p=0.012$).
+
+The ordering therefore differs from the one the Taillard set gives.
+There the rule was ahead at a single pass; here it is behind at every
+budget, though the one-pass difference does not reach significance.
+Size is one difference between the two tests. These twelve instances
+range from $10{\times}10$ to $20{\times}15$, so none of them exceeds
+the class both learners were trained on, whereas the Taillard set
+reaches $50{\times}20$. The classes on which the rule overtook the
+policy there are therefore absent here.
+
+
+
+
+\section{Analysis}
+\label{sec:analysis}
+
+Three questions remain about the policy itself: which of its inputs
+it consults, which of its design choices earn their cost, and how far
+the makespans it predicts survive execution.
+
+\subsection{Which inputs the decisions depend on}
+\label{sec:results-importance}
+
+The policy is not interpretable the way a priority expression is, but
+its inputs can be audited. Figure~\ref{fig:importance} reports a
+permutation test~\citep{Breiman2001}: at every decision of a greedy
+rollout, one feature
+column is shuffled across the eligible operations, and the resulting
+mean RE over the validation set and the first three training seeds is
+compared with the intact rollouts ($18.2\%$).
+
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig_importance.pdf}
+  \caption{Permutation importance of the 16 operation features, as the
+  change in mean validation-set RE. Bars are the mean of five
+  independent permutation draws and whiskers their standard deviation;
+  the two interval-width features are highlighted.}
+  \label{fig:importance}
+\end{figure}
+
+Each column is permuted five times with independent draws, and the
+figure reports the mean degradation and its standard deviation over
+the five; a single draw moves the magnitudes by several points and
+reorders the lower half, though not the leading three. Three features
+carry the policy: the relative slack
+(whose permutation adds $56.5\pm2.4$ points of RE), the number of
+remaining operations in the job ($+33.6\pm1.4$), and the job's
+worst-case remaining work ($+9.6\pm1.0$). These are the attribute
+families behind MOR and MWKR, and the very attributes the
+evolved expressions of~\citet{DiazGP2026} select. Below a second tier of
+three features costing between $1.8$ and $2.9$ points, the remaining
+ten fall into a floor between $+0.3$ and $+1.0$ points that no
+measurement of this precision separates. The floor is not exactly
+zero because permuting any column perturbs an input distribution the
+network was trained against, whether or not that column informs the
+decision.
+
+The two interval-width features sit inside that floor, one of them
+last of the sixteen ($+0.3\pm0.3$ for the duration width,
+$+0.9\pm0.5$ for the start width), and their position is consistent
+with the selection objective. The primary key of the criterion of
+Eq.~\eqref{eq:lex}, the worst-case makespan, on which the terminal
+reward trains, is a function of the upper endpoints alone
+(Section~\ref{sec:ablations-interval}), so a width can influence the
+\emph{selection} only through the secondary key, that is, through
+exact ties of the upper endpoint, and
+Section~\ref{sec:ablations-interval} measures how rarely such ties
+decide, in seven of its three hundred rollout pools. The training
+signal is less pure, one shaping term reading a lower endpoint
+(Section~\ref{sec:mdp}), which makes the floor position of the width
+features a measured outcome rather than a foregone one. The same
+asymmetry appears within
+the features themselves: three quantities enter as a pair of interval
+endpoints, and in the two pairs that rise above the floor the upper
+endpoint costs several times its lower counterpart ($9.6$ against
+$1.8$ for the job's remaining work, $2.1$ against $1.0$ for the
+duration), as a criterion written in upper endpoints alone should
+induce.
+
+The audit is therefore conditional on what the policy was trained
+to optimize, namely this objective and the reward weights of
+Section~\ref{sec:mdp}, and a different one need not produce the same
+ranking. The corresponding test is an objective that does contain
+the width, which Section~\ref{sec:ablations-interval} carries out:
+retraining
+under $f_\lambda$ leaves the weights indistinguishable from the
+default arm's under a common selection criterion, which is evidence
+that the ranking would survive that change, though the audit itself
+was not repeated on those arms.
+
+
+\subsection{Ablation: best-of-$N$ inference}
+\label{sec:ablations-bon}
+
+\begin{figure}[!b]
+  \centering
+  \includegraphics[width=.62\linewidth]{figures/fig_budget.pdf}
+  \caption{RE against the \emph{inference} budget $B$ on a base-2
+  logarithmic axis, for both learners under the same decoder: the
+  schedule each retains from its deterministic pass plus $B-1$
+  samples, kept by the criterion of Eq.~\eqref{eq:lex} and averaged
+  over the 70 instances. Both curves average $200$ random subsets of
+  the corresponding pool. The axis ends at $B{=}342$, the size of
+  the deposited policy pool; the rule's own pool holds $1024$. The policy curve is the mean over the ten
+  training runs and the band spans the best and worst of them, a
+  dispersion across artifacts; the rule is the single
+  validation-selected one, so its curve carries no such band and its
+  own dispersion, across subsets, is quoted in the text. The dotted
+  line marks the rule's deterministic pass.}
+  \label{fig:budget}
+\end{figure}
+
+Section~\ref{sec:positioning} samples the budget axis at three
+points, so it locates the meeting of the two learners no more
+precisely than between $64$ and $1024$. This section reconstructs
+both curves. Sampling starts paying for the policy at once: it
+improves on its own greedy pass from $B{=}2$, and by $B{=}6$ it is
+already below the figure the evolved rule reaches in a single
+deterministic pass. Against the rule's own curve the ascent is
+slower. Both curves are reconstructed alike, as the mean over $200$
+random subsets of each pool, and the rule's points carry a dispersion
+of about $0.11$ points across those subsets, which sets the
+resolution of any comparison between them. The rule begins $1.8$
+points ahead, and the gap closes monotonically: $0.54$ points at
+$B{=}8$, $0.15$ at $B{=}32$, and from $B{=}48$ onwards it stays below
+that dispersion, so the two curves are indistinguishable over the
+upper half of the axis. What the budget buys the policy on this
+benchmark is therefore parity with the rule rather than a lead over
+it, and the sampling budget at which parity arrives cannot be located
+more finely than the interval in which the difference sinks below the
+noise, between $B{=}32$ and $B{=}64$. The reconstruction retains
+both endpoints of
+all $342$ rollouts of each of the ten training runs on each of the 70
+instances ($239{,}400$ schedules), so that best-of-$B$ under the
+deployed protocol, the greedy pass plus $B-1$ samples retained by the
+criterion of Eq.~\eqref{eq:lex}, can be read
+off for arbitrary $B$ without further evaluation. Each run spends its
+own budget, as a deployed policy does, and the curve is the mean over
+the ten; Figure~\ref{fig:budget} plots it with a band spanning the
+best and worst run, the dispersion a practitioner training once would
+face. EST, at $42.3\%$, lies above the frame. A single \emph{sampled}
+rollout is worse than the greedy one, $21.3\%$ against $19.5\%$: the
+argmax is a high-quality sequence within a broadly dispersed
+distribution. The selection key is immaterial to the level of the
+curve: retaining by the midpoint instead of the lexicographic key
+lowers the reported RE by at most $0.17$ points anywhere on the
+axis, so the curve measures the budget and not the tiebreaking
+convention. Past the crossing the returns are near-logarithmic,
+$15.3\%$ at $64$ and $14.2\%$ at $342$, without an inflection: no
+budget within the tested range saturates. The level agrees with the
+independent measurements of Table~\ref{tab:seventy}, where the
+selected run reaches $15.0\%$ at the same budget, slightly ahead of
+this ten-run mean as the best of thirty should be.
+
+The same reconstruction quantifies the marginal return of further
+sampling and its computational cost. The marginal return decays
+slowly but does not vanish, from $0.56$ points between $32$ and $64$
+samples to $0.46$ between $128$ and $256$, a rate of about half a
+point per doubling that is itself contracting by roughly a tenth per
+octave; wall-clock cost, by contrast, scales linearly in $B$. On the
+machine of Table~\ref{tab:environment} a sampled rollout requires
+$1.03$ s on a $20{\times}15$ instance and $6.4$ s on a
+$50{\times}20$ one, timed end to end over the episode, so that the
+figure covers the forward passes, the environment transitions and the
+interval arithmetic of the schedule builder, and excludes only the
+one-off loading of the model. Accordingly the $1024$ samples of the
+largest budget reported amount to $18$ minutes and $1.8$ hours per
+instance, and closing the residual gap to fEABC's $9.4\%$ would take
+some ten further doublings at the measured rate, which the same
+arithmetic prices in months. Sampling is therefore an inefficient
+route to that gap, which fEABC's own study reports attaining in
+minutes per instance on the hardware of that study. The extrapolation
+is the optimistic reading twice over: budgets above the measured
+range are outside it, and within it the return per doubling is
+already shrinking.
+
+\begin{table}[!htb]
+\centering\small
+\caption{Wall-clock cost of the two families on the machine of
+Table~\ref{tab:environment}.}
+\label{tab:cost}
+\begin{tabular}{lcc}
+\toprule
+ & GP rule & Policy \\
+\midrule
+Training one artifact & $26$ min & $92$ min [$60$--$153$] \\
+Thirty artifacts & $4.4$ h & $16$ h \\
+\addlinespace
+One deterministic pass, $20{\times}15$ & $0.10$ s & $0.86$ s \\
+\phantom{One deterministic pass, }$50{\times}20$ & $1.00$ s & $3.98$ s \\
+Per sample at best-of-64, $20{\times}15$ & $0.10$ s & $1.03$ s \\
+\phantom{Per sample at best-of-64, }$50{\times}20$ & $0.93$ s & $6.4$ s \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:cost} closes the budget analysis by pricing both
+families in this harness, on the same machine, the same
+representative instance per class and, for the training rows, the
+same three concurrent processes. Evolving one rule takes $26$ minutes
+against a median of $92$ for training one policy, $4.4$ against $16$
+hours for the thirty artifacts of each family, both costs incurred
+once. Per schedule, with the best-of-64 batch timed whole and
+divided by $64$, the rule is about seven to eleven times cheaper
+depending on the size, and $\epsilon$-greedy sampling adds nothing
+measurable to its deterministic pass. Both families run the same
+schedule builder, so the factor is the forward pass against the
+evaluation of a compact expression. The sample-matched protocol of
+Section~\ref{sec:positioning} charges for neither difference, which
+is the premium behind the sample-efficiency reading fixed in
+Section~\ref{sec:baselines}. These absolute times belong to the shared
+harness. The GP study times its rule on a dedicated simulator that
+builds the same schedules, at a mean of $20.6$~ms per pass over the
+seventy instances~\citep{DiazGP2026}; the ratio between the families,
+not the absolute figures, is what this comparison measures.
+
+\subsection{Where each paradigm handles the uncertainty}
+\label{sec:ablations-interval}
+
+Componentwise addition and join act on each endpoint separately, so
+the recursion of Eq.~\eqref{eq:semiactive} splits in two. The upper
+half,
+\begin{equation}
+c^{U}_{o}=\max\!\big(c^{U}_{JP(o)},\,c^{U}_{MP(o)}\big)+p^{U}_{o},
+\label{eq:upperclosed}
+\end{equation}
+makes $C^U_{\max}$ a deterministic function of the processing order
+and the upper endpoints alone, the lower half determining
+$C^L_{\max}$ without ever entering it. $C^U_{\max}$ is the primary
+key of the lexicographic criterion of Eq.~\eqref{eq:lex}, whose
+secondary key, the lower endpoint, is consulted only on exact ties of
+the upper one. Ties are common, every one of the 300 (arm, instance,
+seed) rollout pools of this section containing some, but only a tie
+at the \emph{minimum} hands the selection to the secondary key, and
+that happens in 7 of the 300 pools; where it does, the key chooses
+among schedules with the same worst case, so it sets the width of the
+reported schedule and never the objective. The training signal is a
+different matter: the terminal reward of Section~\ref{sec:mdp} trains
+on that primary key, but one of its shaping components, the idle
+penalty, charges the worst case of an idle interval, which reads the
+machine's lower completion endpoint, so a channel through which
+interval information beyond the upper endpoints reaches the weights
+does exist. Whether the width features inform the trained policy is
+therefore an empirical question rather than a corollary of the
+objective.
+
+The permutation audit of Section~\ref{sec:results-importance} found
+both width features at the floor of its ranking, consistent with this
+entailment. The three training-time ablations of
+Table~\ref{tab:ablations} ask the causal questions the audit cannot.
+All three share one design: ten retrained seeds per arm, each paired
+with the same ten seeds of the main arm, the standalone evaluator,
+and the instance as the experimental unit; the thirty unseen
+instances are five per size class, fixed by benchmark index before
+any result was seen. Under the paper's selection criterion the main
+arm's deposits stand at $13.96\%$, the baseline of every figure in
+this analysis.
+
+\begin{table}[t]
+\centering\small
+\caption{The three training-time ablations of this section, and the
+instances each is read on. The sampled evaluation costs $64$ rollouts
+per instance and the single pass one, which is what decides how many
+instances each reading can afford.}
+\label{tab:ablations}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}p{0.21\linewidth}p{0.39\linewidth}p{0.32\linewidth}@{}}
+\toprule
+Ablation & Question & Read on \\
+\midrule
+Widths as inputs &
+Would the policy be any worse without the lower-endpoint and
+width features? &
+the six validation and thirty unseen instances when sampled, all
+sixty at one pass \\
+Intervals as training data &
+Must the upper bounds shown during training be the true ones? &
+the same \\
+A width-penalizing objective &
+Would the policy come to consult the widths under an objective that
+pays for them? &
+deposits that retain all $64$ rollouts per (arm, instance, seed) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Widths as inputs} The first ablation removes the
+information: the encoder collapses every interval to its worst case
+before the features are computed, so the width features are
+identically zero and the bounds coincide, while the architecture, the
+hyperparameters and the schedule builder remain untouched and the
+environment still executes interval semantics. No set separates the
+two arms: $13.98\%$ against $13.57\%$ on the validation instances
+($0.42$ points, $p=0.094$), an indistinguishable $15.53\%$ against
+$15.55\%$ on the thirty unseen ones (worse on 15 of the 30,
+$p=0.90$), and nominally ahead by $0.24$ points at one pass over the
+sixty ($p=0.10$). The measurement is not redundant with
+Eq.~\eqref{eq:upperclosed}, which constrains the objective but not
+the value function or the exploration the widths might have shaped;
+they shape neither, and the thirty unseen instances bound what room
+remains between $-0.34$ and $+0.29$ points with $95\%$ confidence.
+
+\paragraph{Intervals as training data} The second ablation removes
+the uncertainty from training altogether. The benchmark perturbs each
+crisp duration symmetrically, so the original crisp instances
+\emph{are} the midpoint scenario of their interval counterparts: the
+policy is trained on them and evaluated, unchanged, on the interval
+instances. This is the one case Eq.~\eqref{eq:upperclosed} leaves
+open, since midpoint training replaces the upper endpoints
+themselves. Here the sets do not agree, and the disagreement is
+informative. At the deployed budget
+the gap is present on both: $0.57$ points on the validation
+instances, from $13.57\%$ to $14.14\%$ ($p=0.063$), and $0.43$ points
+on the thirty unseen ones, from $15.55\%$ to $15.99\%$ ($95\%$ CI
+$0.03$ to $0.84$), worse on 21 of the 30 ($p=0.045$). At one
+constructive pass over sixty unseen instances it vanishes
+($-0.04$ points, $p=0.65$). Training on the true upper bounds is
+therefore better than training on their midpoints when the policy
+samples, and not measurably so when it constructs once, which places
+the contribution of the interval data at the same stage the objective
+ablation below identifies. The two halves have different reach. On
+the selection side, Eq.~\eqref{eq:upperclosed} holds for any method
+that ranks semiactive schedules by Eq.~\eqref{eq:lex}: widths enter
+selection only through the two per cent of tied minima, whatever the
+model class. On the training side no such entailment is available,
+since this reward carries a lower-endpoint term; the inertness of
+widths as \emph{inputs} and the value of intervals as
+\emph{training distribution} are both empirical facts about this
+reward and this benchmark, measured above.
+
+\paragraph{A width-penalizing objective} The third ablation changes
+the objective so that the width enters it. The policy is retrained,
+unchanged in every other respect, under
+\begin{equation}
+\label{eq:robust}
+f_\lambda \;=\; C^U_{\max} + \lambda\,\bigl(C^U_{\max}-C^L_{\max}\bigr),
+\qquad \lambda=1,
+\end{equation}
+which charges the schedule for the width of the interval it predicts
+and is the analogue of the robust objective of the GP study~\citep{DiazGP2026};
+since optimizing one quantity and selecting by another would be
+incoherent, the best-of-$N$ inference of this arm ranks its samples by
+$f_\lambda$ as well. Deployed as that package, the objective delivers
+what it promises: over the ten seeds the predicted interval narrows
+from $13.05\%$ to $11.98\%$ of the midpoint makespan (narrower on all
+six instances, $p=0.031$) while the midpoint makespan rises by
+$1.26$ points, to $15.22\%$ (higher on all six, $p=0.031$). Unlike
+the two ablations above, both effects are significant: a
+width-rewarding objective is available, at a price of about one point
+of RE at this $\lambda$.
+
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=.66\linewidth]{figures/fig_frontier.pdf}
+  \caption{Mean relative width of the selected schedule against its
+  mean RE, over the 60 (instance, seed) pools of each arm's common
+  rollout deposit, under three selection regimes.}
+  \label{fig:frontier}
+\end{figure}
+
+Figure~\ref{fig:frontier} locates where that trade is produced.
+Training and selection changed together in the deployed package, so
+the two are separated on the common deposits, with three further arms
+retrained from scratch at $\lambda=0.5$, $2$ and $4$, ten seeds each.
+When deployed, with each arm's samples ranked by its own
+$f_\lambda$, the five arms trace a monotone frontier, from $13.05\%$
+relative width at the default end to $11.07\%$ at $\lambda=4$, with
+the midpoint makespan climbing by $3.86$ points and every step of
+the narrowing significant ($p=0.031$, all six instances from
+$\lambda=1$ on). Under a common selection criterion the frontier
+vanishes: no retrained arm proposes rollouts narrower than the
+default's by more than a fifth of a point, the four widths falling
+between $12.90\%$ and $13.23\%$ against the default's $13.05\%$, none
+of the differences significant (smallest $p=0.22$), and the RE
+differences are of the same order, between $+0.20$ and $+0.54$
+points. Conversely, re-ranking the \emph{default} policy's own
+deposit by each $f_\lambda$ in turn retraces the frontier almost
+point for point, ending at $11.04\%$ width and $17.16\%$ RE where
+the arm trained on $f_4$ lands at $11.07\%$ and $17.82\%$. What
+narrows the interval is which sample is kept rather than which
+weights produced it: the retrained arms propose samples as wide as the
+default's, and the default's own samples suffice to trace the
+frontier. The predictability--performance trade is real, tunable and
+monotone, and selection alone reproduces it. The reading is a bounded
+one. The five arms are compared on the six validation instances, so
+$p=0.031$ is the smallest two-sided exact value attainable when the
+six paired differences share a sign, and several related contrasts are
+examined without a multiplicity correction; one of them does separate,
+the RE of the $\lambda=0.5$ arm rising $0.50$ points under common
+selection at that value. What these deposits establish is that no
+systematic narrowing survives fixing the selection criterion, not that
+training left the weights untouched.
+
+\paragraph{Contrast with the evolved rule} The GP study runs
+the same objective at the same $\lambda$ and reaches the opposite
+finding. There, penalizing width narrows the schedules only when the
+rule has width terminals to act through: sweeping $\lambda$ up to $4$
+moves the relative width by $1.64$ points for rules that have
+them and by $0.13$ for rules that do not, from which that study
+concludes that the objective works \emph{through} the
+representation~\citep{DiazGP2026}. The network of this paper has
+both the terminals' equivalent and the objective, and still the
+rollouts it proposes are no narrower at any $\lambda$ once the
+selection criterion is held common; what moves is the ranking among
+its samples. The same reward therefore reaches the decision
+function of an evolved rule and not that of a trained policy, at
+least at this training scale. The rate of the trade is comparable on
+the two sides, about $2.5$ points of RE per point of width across
+that study's sweep and about $1.7$ across ours, so what separates
+the paradigms is the stage at which the cost is incurred: in GP the
+decision function, the evolved rule becoming width-averse in every
+schedule it constructs; in DRL the selection, the cost arising
+whenever the ranking passes over a rollout with a better expected
+makespan in favor of a narrower one. At deployment the difference is
+operational: retuning a width-averse rule means evolving a new one,
+whereas the policy's trade-off is a parameter of the ranking,
+adjustable at inference time over the same samples. Two explanations
+remain open: that no training signal reaches these features, or that
+the semiactive constructive setting fixes the width independently of
+the policy's decisions.
+
+\FloatBarrier
+\subsection{Executional robustness}
+\label{sec:results-eps}
+
+The evaluations so far concern the quality of a predicted schedule
+rather than its reliability. A schedule is committed as a
+processing order before the durations are known and is eventually
+executed under one realization of them, and its prediction is useful
+insofar as the realized makespan stays close to the expected
+value reported in advance. This is quantified with the field's $\bar\varepsilon$
+measure~\citep{Leon1994,DiazGA2020}: for a fixed processing order with
+predicted makespan $\Cmax$,
+\begin{equation}
+\bar\varepsilon=\frac{1}{K}\sum_{k=1}^{K}
+\frac{\big|C^{\mathrm{ex},k}_{\max}-\ECmax\big|}{\ECmax},
+\label{eq:eps}
+\end{equation}
+where $C^{\mathrm{ex},k}_{\max}$ is the crisp makespan of executing
+the order under the $k$-th realization, durations drawn independently
+and uniformly within their intervals. $\bar\varepsilon$ is thus the
+mean relative distance between the executed makespan and the reported
+value, a measure of the calibration of the prediction, in which
+lower is more faithful. The measurement uses $K{=}1000$ common random numbers per
+instance (identical realizations for every method, drawn from a
+generator seeded by the instance identifier so that the draws
+reproduce across runs and machines), so every comparison below is
+paired realization by realization. The measurement covers the full
+seventy-instance benchmark.
+
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=.75\linewidth]{figures/fig_eps.pdf}
+  \caption{Executional robustness by method:
+  $\bar\varepsilon\times10^{3}$ over the seventy benchmark instances;
+  lower is a more faithful prediction. Boxes span the quartiles with
+  whiskers at $1.5$ IQR, and diamonds mark the means quoted in the
+  text; the number in parentheses is the inference budget in
+  constructed schedules.}
+  \label{fig:eps}
+\end{figure}
+
+The constructive methods separate into two groups
+(Figure~\ref{fig:eps}). MOR and G\&T-MWKR deviate by
+$\bar\varepsilon\times10^{3}=6.48$ and $6.27$; every remaining
+method lies between $5.2$ and $5.7$, and the distance is
+systematic: the policy at best-of-64 is more faithful than MOR on 63
+of the seventy instances and than G\&T-MWKR on 65 (paired Wilcoxon
+signed-rank, $p<10^{-10}$ in both cases). Within the faithful group
+the policy's best-of-64 ($5.48$) is more faithful than EST ($5.71$;
+$45/70$, $p=0.010$) and level with the evolved rule
+of~\citet{DiazGP2026} at both of its budgets ($5.66$ at one pass,
+$p=0.069$; $5.56$ at $64$ samples, $p=0.39$). Sampling degrades
+calibration for neither learner: the policy's best-of-64 deviates as
+its greedy pass does ($5.48$ against $5.59$, $p=0.29$), and the rule
+under the $\epsilon$-greedy dispatching of its study as its
+deterministic pass does ($5.56$ against $5.66$, $p=0.54$).
+
+The composition of the leading group explains the ranking. It holds a
+hand-crafted rule and both learners at their two inference budgets,
+and the presence of EST, the weakest method of this paper
+in solution quality at $42.3\%$ mean RE
+(Table~\ref{tab:seventy}) yet well clear of MOR and G\&T-MWKR in
+faithfulness, shows that faithfulness and quality are separate
+properties: a method can predict reliably while scheduling poorly,
+and optimizing the makespan secures no reliability in return.
+The mechanism is the interval itself. Every realization's makespan
+lies within the predicted interval (Section~\ref{sec:problem}), so
+the width of that interval bounds the deviation any execution can
+produce: the narrower the prediction, the smaller the largest
+deviation it admits. None of the methods in the leading group optimizes
+the width of the interval it predicts, so their faithfulness is
+bounded by whatever widths their makespan-directed construction
+happens to produce. Faithfulness must therefore be pursued
+deliberately rather than inherited from a makespan objective; the GP
+study reaches the same conclusion from its side, where its rule
+likewise improves on G\&T-MWKR but not on EST until an objective that
+penalizes width is introduced~\citep{DiazGP2026}.
+
+The robust arm of Section~\ref{sec:ablations-interval} is the direct
+test of that reading: it is the one method in the comparison whose
+objective charges for the width, and it attains the lowest deviation
+of the pool, $\bar\varepsilon\times10^{3}=5.23$ against $5.48$ for
+the default arm, more faithful on 49 of the seventy instances
+($p<0.001$) and with the narrowest predictions ($11.2\%$ of the
+midpoint makespan against $11.8\%$). This is the direction the
+argument predicts, demonstrated at benchmark scale, and it comes at
+the price Section~\ref{sec:ablations-interval} measured: about one
+point of midpoint makespan at this $\lambda$. The result completes the chain begun there: the
+narrowing that Section~\ref{sec:ablations-interval} traced to sample
+selection is not confined to the predicted interval but carries
+through to execution, as schedules whose realized makespans stay
+closer to the value reported in advance. Whether that trade is worth
+making depends on the shop rather than on the model; the comparison
+above shows it is obtained only when the objective charges for the
+width.
+
+
+\subsection{Limitations}
+\label{sec:limitations}
+
+Five limitations bound the scope of these conclusions. First, the
+benchmark follows the symmetric $\pm15\%$ generation scheme standard
+in the IJSP literature; asymmetric intervals, and distributions in
+which the uncertainty varies sharply from one operation to another,
+may separate the worst-case and expected-value criteria far more
+than they do here, and no policy was trained under them. The second
+benchmark changes the family of scheduling instances but not this
+scheme, so no result here speaks to a different uncertainty regime,
+and the finding that widths are inert as inputs is a statement about
+this objective on this construction rather than about interval
+scheduling at large. Second, the
+policy builds semiactive schedules, so the space it searches excludes
+the active schedules that the conflict-set restriction reaches and
+the insertion-based ones beyond them; the strongest constructive
+baseline of this paper exploits the first of those and the policy
+still leads it, but the ceiling is real. Third, the frontier of Section~\ref{sec:ablations-interval}, though
+it runs on ten seeds per arm, is measured on the six validation
+instances, so where the width--makespan trade is produced is
+established on the class the policy was tuned on rather than on
+unseen instances. Fourth, the four training instances are
+always presented in the same order, so the variability the seeds
+measure is that of a fixed curriculum; whether a different order
+would move the arm was not tested. Finally, the comparison with the rule evolved by
+genetic programming shares the evaluation protocol end to end (the
+same instances, interval arithmetic, ranking criterion, inference
+budgets and execution realizations, run in a single harness) but not
+the training side: each learner was trained as its own study
+prescribes. Table~\ref{tab:cost} prices the two training bills in one
+currency, $4.4$ against $16$ hours for the thirty artifacts, but
+pricing is not parity, since neither family was granted the other's
+budget; the comparison of the two paradigms with training matched as
+well, which \citet{Xu2025} call for, remains open.
+
+\FloatBarrier
+\section{Conclusions and Future Work}
+\label{sec:conclusions}
+
+This paper contributes a size-invariant constructive deep
+reinforcement learning policy for the IJSP, trained once on four
+$20{\times}15$ instances and applied to every other size without
+retraining or architectural change, and a controlled comparison of
+the two learned constructive paradigms available for the problem,
+thirty trained artifacts of each family through one harness under one
+selection criterion, at one constructive pass on the seventy interval
+instances and at every budget on the twelve classical ones, and the
+selected pair of each family at every budget throughout. The
+policy improves on every hand-crafted rule on all seventy instances
+of the benchmark, six of whose seven size classes it never saw, and
+the comparison separates the stage at which each paradigm absorbs the
+interval uncertainty. The three questions posed in the introduction
+now have answers.
+
+Neither learned paradigm dominates the other: which of the two leads
+is decided by the inference budget and, on instances neither has
+seen, by the size class.
+Given one constructive pass each the evolved rule leads, and the
+reading over the thirty artifacts of each family, which no selection
+touches, agrees with the one over the selected pair. Sampling
+reverses the ordering, but not at once: at $64$ schedules each the
+two are indistinguishable, and the policy passes the rule at $1024$.
+What the network contributes over a compact formula is
+therefore its sampling distribution rather than its argmax, and that
+contribution is not free: the budget those figures equalize is the
+number of schedules constructed, while a policy costs some four times
+an evolved rule to train and about seven to eleven times as much per
+schedule (Table~\ref{tab:cost}).
+That aggregate covers the ten instances both families trained and
+were selected on. Over the sixty they have never seen, the one-pass
+deficit survives ($p=0.034$) while neither sampled contrast
+separates, and the reason is that two regimes pull against each
+other: up to $30{\times}20$ the policy needs $1024$ schedules to lead
+by a point ($p=0.003$), and on $50{\times}15$ and $50{\times}20$ the
+rule leads at every budget ($p\le0.004$), by a margin that sampling
+narrows without closing. On the twelve
+classical instances, a family neither method was tuned for, it holds
+the lower figure at every budget. Margins under a point in either
+direction should finally be weighed against what the error metric
+does not register: on the rule's side, less technical machinery,
+shorter training and inference times, a decision function that
+remains a readable expression and, on the evidence of the two largest
+classes, the more graceful transfer far above the training size; on
+the policy's side, a sampling distribution that turns additional
+budget into quality at a rate the randomized rule does not match, so
+that the ordering between them moves with the budget rather than
+against it, and weights that further training can still move (Q1).
+
+The paradigms differ in where they handle the uncertainty. For the
+policy the interval widths are inert as inputs: they sit at the floor
+of a permutation audit, and removing them from training costs nothing
+measurable on thirty instances no arm has seen ($-0.02$ points, the
+effect bounded within a third of a point either way). The design
+does not guarantee this: one shaping term of the reward reads a
+lower endpoint, so a channel into the weights exists and the
+inertness is a measured outcome. On the selection side the ranking
+criterion consults the lower endpoints only on exact ties of the
+upper, which decide seven of the three hundred measured pools and
+there choose among schedules with the same worst case. As training
+data the intervals are not inert, but only where the policy samples:
+fitting it to the crisp midpoints instead costs $0.43$ points at the
+deployed budget ($p=0.045$) and nothing at one constructive pass. An
+objective that charges for the width then separates the families. It
+narrows the policy's schedules mainly through which sample is kept,
+the retrained arms proposing rollouts no narrower than the default's
+under a common selection criterion and ranking the default policy's
+own samples by $f_\lambda$ retracing the frontier without any
+retraining, where in the GP study the same objective acts through the
+evolved representation. What distinguishes the two is the stage at which
+robustness is bought rather than its rate, comparable on the two
+sides at roughly two points of RE per point of width. Bought
+deliberately, it reaches execution: the arm trained under that
+objective attains the lowest deviation between predicted and realized
+makespans of the whole comparison (Q2).
+
+Both learners leave the hand-crafted rules behind by a margin that
+dwarfs the one between them, and neither reaches the per-instance
+metaheuristics, which pay for their lead with a search on every new
+instance: the two learned constructive families occupy the same
+ground, between the baselines they dominate and the search algorithms
+they do not attempt to replace, and the choice between them is the
+budget question of Q1 rather than a difference in kind (Q3).
+
+Three directions follow. The first concerns the representation, which
+the width-penalizing arm sharpens rather than settles: paying for the
+width narrows the schedules the policy \emph{selects} without
+measurably changing the policy itself. Whether the gradient never
+reaches those features, or whether a semiactive constructive decision
+fixes the width before the policy has any say in it, separates two
+very different diagnoses, and a reward defined on the width alone
+would tell them apart. The second is deployment: a policy that
+schedules an instance in seconds is a candidate generator of initial
+solutions for population-based search, and the quality of its
+sampling distribution is the property such a use would exploit. The
+third turns the budget analysis inward. The network commits to a
+schedule at $19.5\%$ while a few hundred of its own samples reach
+$14.2\%$, and the evolved rule shows the same separation, so the gap
+belongs to randomized constructive search rather than to learning as
+such. What
+differs is the remedy: the weights of a network can be moved onto its
+own best rollouts by retraining on them and iterating, the
+self-labeling strategy that \citet{Corsini2024} demonstrate on the
+crisp JSP, where a formula would have to be evolved anew.
+
+%<<IDENTIDAD (en el envio anonimo, financiacion y conflictos viven
+% en la title page; el generador elimina este bloque)
+\section*{Funding}
+This work was supported by the Spanish Ministry of
+Science, Innovation and Universities
+(MCIN/AEI/10.13039/501100011033) under grant PID2022-141746OB-I00.
+
+\section*{Declaration of competing interest}
+The authors have no competing interests
+to declare that are relevant to the content of this article.
+%IDENTIDAD>>
+
+\section*{Data availability}
+The benchmark instances, the code,
+the benchmark harness, all experiment records (accepted and
+rejected), the final checkpoints and the figure-generation scripts
+are openly available in a Zenodo
+repository~\citep{DiazDRLDataset2026}.
+
+% BORRADOR pendiente de aprobacion del autor antes del envio
+% (obligatoria en ESWA si se uso IA; plantilla literal de la guia)
+\section*{Declaration of generative AI and AI-assisted technologies
+in the manuscript preparation process}
+During the preparation of this work the authors used Claude
+(Anthropic) in order to assist with the drafting and editing of the
+manuscript. After using this tool, the authors reviewed and edited
+the content as needed and take full responsibility for the content of
+the published article.
+
+\bibliographystyle{elsarticle-harv}
+\bibliography{refs}
+
+\end{document}
