@@ -62,6 +62,10 @@ páginas (38) ni graphical abstract obligatorio.
 - El barrido de λ del estudio GP se describe "hasta 4" (su 1,64 va de
   0,5 a 4).
 - Dos citas de ESWA en el estado del arte.
+- Subsección 7.5 "Practical implications" con la tabla 12 (qué método
+  usar según el tiempo por instancia y el tamaño), una frase en el
+  resumen y otra en las conclusiones que remiten a ella. Solo usa cifras
+  que el artículo ya demuestra; el verificador lo comprueba cifra a cifra.
 
 ## Decisiones de los autores antes de enviar
 

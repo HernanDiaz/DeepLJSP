@@ -2354,6 +2354,31 @@ check_exacto("fig 2: el script etiqueta el eje como peor caso",
 
 
 # =========================================================================
+print("\n== implicaciones practicas (ESWA) ==")
+# la subseccion no aporta cifras propias: cada una tiene que estar ya en
+# la seccion que la demuestra, fuera de ella misma y del resumen. Si una
+# cifra cambia alli y no aqui, salta
+_t1p = re.sub(r"\s+", " ", TEX)
+_ip = _t1p.index("\\subsection{Practical implications}")
+_fp = _t1p.index("\\subsection{Limitations}")
+_prac = _t1p[_ip:_fp]
+_resto = _t1p[_t1p.index("\\end{abstract}"):_ip] + _t1p[_fp:]
+for _c in ("seven to eleven times", "$1.03$ s on a $20{\\times}15$",
+           "$6.4$ s on a $50{\\times}20$", "$18$ minutes and $1.8$ hours",
+           "two points of RE per point of width", "$26$ minutes",
+           "median of $92$", "minutes per instance",
+           "lowest deviation between predicted and realized makespans"):
+    _c1 = _c.replace(" s on", "~s on")
+    check_exacto(f"practicas: '{_c}' esta en la subseccion y en su fuente",
+                 (_c in _prac or _c1 in _prac)
+                 and (_c in _resto or _c1 in _resto))
+# el 0.8 de la primera pasada solo lo da el resumen: se ata a la media de
+# las 30 de cada familia que la seccion de resultados publica
+check_exacto("practicas: la regla lidera por 0.8 a una pasada",
+             "by $0.8$ points of relative error at one pass" in _prac
+             and "$18.99\\%$ against $19.82\\%$" in _t1p
+             and abs((19.82 - 18.99) - 0.8) < 0.05)
+
 print("\n== conformidad con ESWA (guia para autores, 2026-10) ==")
 # ESWA no fija limite de paginas; se informa para seguirlo
 if os.path.exists("paper_eswa/main.log"):
